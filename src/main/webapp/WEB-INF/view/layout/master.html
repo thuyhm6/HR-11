@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:fragment="master">
+
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${title}">Trang mặc định</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A fully responsive premium admin dashboard template" />
+    <meta name="author" content="ThuyHM6" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- App favicon -->
+    <link rel="shortcut icon" href="/assets/images/favicon.ico">
+
+    <!-- Vendor css (Require in all Page) -->
+    <link href="/assets/css/vendor.min.css" rel="stylesheet" type="text/css" />
+
+    <!-- Icons css (Require in all Page) -->
+    <link href="/assets/css/icons.min.css" rel="stylesheet" type="text/css" />
+
+    <!-- Tab System CSS -->
+    <link href="/assets/css/innerTab.css" rel="stylesheet" type="text/css" />
+
+
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+    <!-- App css (Require in all Page) -->
+    <link href="/assets/css/app.min.css" rel="stylesheet" type="text/css" />
+
+    <!-- Theme Config js (Require in all Page) -->
+    <script src="/assets/js/config.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- DataTables CSS/JS -->
+    <link href="/assets/css/jquery.dataTables.min.css" rel="stylesheet" type="text/css" />
+    <link href="/assets/css/select.dataTables.min.css" rel="stylesheet" type="text/css" />
+
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/select/1.7.0/js/dataTables.select.min.js"></script>
+
+    <!-- Buttons extension for export -->
+    <link href="/assets/css/buttons.dataTables.min.css" rel="stylesheet" type="text/css" />
+
+    <!-- Custom CSS -->
+    <link href="/assets/css/style.css" rel="stylesheet" type="text/css" />
+    <!-- Toastr CSS -->
+    <link href="/assets/plugins/toastr/toastr.min.css" rel="stylesheet" type="text/css" />
+
+
+</head>
+
+<body>
+
+    <!-- START Wrapper -->
+    <div class="wrapper">
+        <!-- ========== Topbar Start ========== -->
+        <div th:replace="~{fragments/topbar :: topbar}"></div>
+        <!-- Activity Timeline -->
+        <div th:replace="~{fragments/activityTimeline :: activityTimeline}"></div>
+        <!-- Right Sidebar (Theme Settings) -->
+        <div th:replace="~{fragments/rightSidebar :: rightSidebar}"></div>
+        <!-- ========== Topbar End ========== -->
+
+        <!-- ========== App Menu Start ========== -->
+        <div th:replace="~{fragments/menuStart :: menuStart}"></div>
+        <!-- ========== App Menu End ========== -->
+
+        <!-- ==================================================== -->
+        <!-- Start right Content here -->
+        <!-- ==================================================== -->
+        <div class="page-content">
+            <!-- Start Container Fluid -->
+            <div class="container-fluid">
+                <!-- Tab System Container -->
+                <div id="tab-system-container">
+                    <!-- Tab Navigation -->
+                    <div id="tab-navigation" class="tab-navigation" style="display: none;">
+                        <ul class="nav nav-tabs" id="tab-list" role="tablist">
+                            <!-- Tabs will be dynamically added here -->
+                        </ul>
+                    </div>
+
+                    <!-- Tab Content Area -->
+                    <div id="tab-content-area" class="tab-content-area">
+                        <!-- Default content area -->
+                        <div id="default-content" class="tab-pane active">
+                            <div th:replace="~{::content}">
+                                <!-- phần này sẽ bị trang con override -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- End Container Fluid -->
+
+            <!-- ========== Footer Start ========== -->
+            <div th:replace="~{fragments/footer :: footer}"></div>
+            <!-- ========== Footer End ========== -->
+
+            <!-- ========== Employee Search Modal ========== -->
+            <div th:replace="~{fragments/employeeSearchModal :: content}"></div>
+            <!-- ========== Employee Search Modal End ========== -->
+        </div>
+        <!-- ==================================================== -->
+        <!-- End Page Content -->
+        <!-- ==================================================== -->
+    </div>
+    <!-- END Wrapper -->
+    <!-- DataTables JS -->
+    <script src="/assets/js/dataTables/jquery.dataTables.min.js"></script>
+
+    <script src="/assets/js/dataTables/dataTables.buttons.min.js"></script>
+    <script src="/assets/js/dataTables/jszip.min.js"></script>
+    <script src="/assets/js/dataTables/pdfmake.min.js"></script>
+    <script src="/assets/js/dataTables/vfs_fonts.js"></script>
+    <script src="/assets/js/dataTables/buttons.html5.min.js"></script>
+    <script src="/assets/js/dataTables/buttons.print.min.js"></script>
+    <script src="/assets/js/dataTables/dataTables.select.min.js"></script>
+
+    <!-- Vendor Javascript (Require in all Page) -->
+    <script src="/assets/js/vendor.js"></script>
+
+    <!-- App Javascript (Require in all Page) -->
+    <script src="/assets/js/app.js"></script>
+
+    <!-- Vector Map Js -->
+    <script src="/assets/vendor/jsvectormap/js/jsvectormap.min.js"></script>
+    <script src="/assets/vendor/jsvectormap/maps/world-merc.js"></script>
+    <script src="/assets/vendor/jsvectormap/maps/world.js"></script>
+
+    <!-- Dashboard Js -->
+    <script src="/assets/js/pages/dashboard.js"></script>
+
+    <!-- Tab System JavaScript -->
+    <script src="/assets/js/innerTab.js"></script>
+
+    <!-- Employee Search Modal JavaScript -->
+    <script src="/assets/js/components/employeeSearchModal.js"></script>
+
+    <!-- Toastr JS -->
+    <script src="/assets/plugins/toastr/toastr.min.js"></script>
+    <script>
+        // Global Toastr Config
+        if (typeof toastr !== 'undefined') {
+            toastr.options = {
+                "closeButton": true,
+                "progressBar": true,
+                "positionClass": "toast-top-right",
+                "timeOut": "3000",
+                "showMethod": "slideDown",
+                "hideMethod": "slideUp"
+            };
+        }
+
+        // --- Common Utils JS ---
+        window.loadCodeList = function (selectSelector, parentCodeNo, defaultText, callback) {
+            var select = $(selectSelector);
+            if (!select.length) return;
+            defaultText = defaultText || '-- Chọn --';
+
+            $.ajax({
+                url: '/sys/api/code/list?parentCodeNo=' + parentCodeNo,
+                type: 'GET',
+                success: function (data) {
+                    select.empty();
+                    select.append($('<option></option>').val('').text(defaultText));
+                    data.forEach(function (code) {
+                        var name = code.nameVi || code.description || code.codeId || code.codeNo;
+                        select.append($('<option></option>').val(code.codeNo).text(name));
+                    });
+                    if (typeof callback === 'function') {
+                        callback();
+                    }
+                },
+                error: function (err) {
+                    console.error("Lỗi khi tải danh sách Mã cho parentCodeNo=" + parentCodeNo, err);
+                }
+            });
+        };
+
+        window.initCodeSelects = function (context) {
+            var $context = $(context || document);
+            var $selects = $context.is('select[data-parent-code]') ? $context : $context.find('select[data-parent-code]');
+            $selects.each(function () {
+                var select = $(this);
+                if (select.data('code-initialized')) return;
+                select.data('code-initialized', true);
+
+                var parentCodeNo = select.data('parent-code');
+                var defaultText = select.data('default-text');
+                if (parentCodeNo) {
+                    loadCodeList(this, parentCodeNo, defaultText);
+                }
+            });
+        };
+
+        $(document).ready(function () {
+            // Auto init for config-driven selects on initial load
+            initCodeSelects();
+
+            // Watch for dynamically added elements (like Tabs/Modals)
+            var observer = new MutationObserver(function (mutations) {
+                mutations.forEach(function (mutation) {
+                    if (mutation.addedNodes && mutation.addedNodes.length > 0) {
+                        mutation.addedNodes.forEach(function (node) {
+                            if (node.nodeType === 1) { // ELEMENT_NODE
+                                initCodeSelects(node);
+                            }
+                        });
+                    }
+                });
+            });
+            observer.observe(document.body, { childList: true, subtree: true });
+        });
+    </script>
+
+    <!-- Chèn script fragment -->
+    <div id="dynamic-scripts"></div> <!-- chỗ inject script -->
+
+    <!-- Language Script -->
+    <div th:replace="~{fragments/multilingual :: languageScript}"></div>
+    <script>
+
+        // Recalculate scroll height when window is resized
+        $(window).on('resize', function () {
+            // Debounce the resize event
+            clearTimeout(window.resizeTimeout);
+            window.resizeTimeout = setTimeout(function () {
+                console.log('Window resized, recalculating scroll height...');
+                // Trigger custom event for DataTable to recalculate
+                $(document).trigger('scrollHeightChanged', [getOptimalDataTableHeight()]);
+            }, 250);
+        });
+
+        // Function to get optimal DataTable height based on current layout
+        function getOptimalDataTableHeight() {
+            const viewportHeight = $(window).height();
+            const headerHeight = $('.topbar').outerHeight() || 60;
+            const footerHeight = $('.footer').outerHeight() || 60;
+            const tabNavigationHeight = $('#tab-navigation').outerHeight() || 0;
+            const searchFormHeight = $('.searchForm').outerHeight() || 0;
+            const cardHeaderHeight = $('.card-header').outerHeight() || 0;
+            const paginationHeight = 60; // DataTable pagination
+            const buffer = 100; // Extra buffer for spacing
+
+            const availableHeight = viewportHeight - headerHeight - footerHeight - tabNavigationHeight - searchFormHeight - cardHeaderHeight - paginationHeight - buffer;
+
+            return Math.max(200, availableHeight);
+        }
+    </script>
+
+
+</body>
+
+</html>

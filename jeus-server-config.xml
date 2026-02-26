@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- JEUS Server Configuration for HR-11 Application -->
+<!-- Place this file in: C:\jeus\domains\adminDomain\config\server.xml -->
+
+<server>
+    <name>adminServer</name>
+    
+    <!-- HTTP Listener Configuration -->
+    <http-listener>
+        <name>http-listener-1</name>
+        <port>8080</port>
+        <host>localhost</host>
+        <thread-pool>
+            <min-threads>10</min-threads>
+            <max-threads>200</max-threads>
+            <queue-size>1000</queue-size>
+        </thread-pool>
+        <keep-alive-timeout>30</keep-alive-timeout>
+        <max-keep-alive-requests>100</max-keep-alive-requests>
+    </http-listener>
+    
+    <!-- HTTPS Listener (Optional) -->
+    <https-listener>
+        <name>https-listener-1</name>
+        <port>8443</port>
+        <host>localhost</host>
+        <ssl-config>
+            <key-store>C:\jeus\conf\keystore.jks</key-store>
+            <key-store-password>changeit</key-store-password>
+            <trust-store>C:\jeus\conf\truststore.jks</trust-store>
+            <trust-store-password>changeit</trust-store-password>
+        </ssl-config>
+    </https-listener>
+    
+    <!-- Application Configuration -->
+    <application>
+        <name>HR-11</name>
+        <path>applications\HR-11</path>
+        <context-root>/HR-11</context-root>
+        <auto-start>true</auto-start>
+        <deployment-order>1</deployment-order>
+    </application>
+    
+    <!-- DataSource Configuration -->
+    <data-source>
+        <name>HRDataSource</name>
+        <jndi-name>jdbc/HRDataSource</jndi-name>
+        <driver-class>oracle.jdbc.OracleDriver</driver-class>
+        <url>jdbc:oracle:thin:@14.225.17.145:1521:orcl</url>
+        <user>HTSV_HR</user>
+        <password>htsvhrdb</password>
+        
+        <!-- Connection Pool Configuration -->
+        <connection-pool>
+            <min-pool-size>5</min-pool-size>
+            <max-pool-size>20</max-pool-size>
+            <initial-pool-size>5</initial-pool-size>
+            <connection-timeout>30</connection-timeout>
+            <idle-timeout>600</idle-timeout>
+            <max-lifetime>1800</max-lifetime>
+            <validate-on-borrow>true</validate-on-borrow>
+            <validation-query>SELECT 1 FROM DUAL</validation-query>
+        </connection-pool>
+        
+        <!-- Connection Properties -->
+        <connection-properties>
+            <property>
+                <name>oracle.jdbc.ReadTimeout</name>
+                <value>30000</value>
+            </property>
+            <property>
+                <name>oracle.net.CONNECT_TIMEOUT</name>
+                <value>10000</value>
+            </property>
+        </connection-properties>
+    </data-source>
+    
+    <!-- JVM Configuration -->
+    <jvm-options>
+        <option>-Xms512m</option>
+        <option>-Xmx2048m</option>
+        <option>-XX:PermSize=256m</option>
+        <option>-XX:MaxPermSize=512m</option>
+        <option>-XX:+UseG1GC</option>
+        <option>-XX:MaxGCPauseMillis=200</option>
+        <option>-Djava.awt.headless=true</option>
+        <option>-Dfile.encoding=UTF-8</option>
+        <option>-Duser.timezone=Asia/Ho_Chi_Minh</option>
+    </jvm-options>
+    
+    <!-- Logging Configuration -->
+    <log-config>
+        <log-file>C:\jeus\domains\adminDomain\logs\server.log</log-file>
+        <log-level>INFO</log-level>
+        <max-file-size>10MB</max-file-size>
+        <max-backup-files>10</max-backup-files>
+        <console-output>true</console-output>
+    </log-config>
+    
+    <!-- Session Configuration -->
+    <session-config>
+        <session-timeout>30</session-timeout>
+        <session-persistence>true</session-persistence>
+        <session-persistence-directory>C:\jeus\domains\adminDomain\sessions</session-persistence-directory>
+    </session-config>
+    
+    <!-- Security Configuration -->
+    <security-config>
+        <realm>file</realm>
+        <default-principal>guest</default-principal>
+        <default-role>guest</default-role>
+    </security-config>
+    
+    <!-- Monitoring Configuration -->
+    <monitoring-config>
+        <enable-monitoring>true</enable-monitoring>
+        <monitoring-interval>60</monitoring-interval>
+        <performance-monitoring>true</performance-monitoring>
+    </monitoring-config>
+    
+    <!-- Clustering Configuration (Optional) -->
+    <clustering-config>
+        <enable-clustering>false</enable-clustering>
+        <cluster-name>HR-Cluster</cluster-name>
+        <multicast-address>239.255.0.1</multicast-address>
+        <multicast-port>45566</multicast-port>
+    </clustering-config>
+    
+</server>
+

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/master :: master}">
+<head>
+    <title>Lỗi - HR-11</title>
+</head>
+<body>
+<div th:fragment="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <!-- Error Icon -->
+                        <div class="mb-4">
+                            <i class="fas fa-exclamation-triangle text-warning" style="font-size: 4rem;"></i>
+                        </div>
+                        
+                        <!-- Error Title -->
+                        <h1 class="display-4 text-danger mb-3" th:text="${status}">404</h1>
+                        <h2 class="mb-3" th:text="${error}">Không tìm thấy trang</h2>
+                        
+                        <!-- Error Message -->
+                        <p class="lead mb-4" th:text="${message}">Trang bạn đang tìm kiếm không tồn tại.</p>
+                        
+                        <!-- Error Details (only in development) -->
+                        <div th:if="${trace}" class="alert alert-info text-start">
+                            <h6>Chi tiết lỗi:</h6>
+                            <pre th:text="${trace}" class="mb-0"></pre>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="d-flex justify-content-center gap-3">
+                            <a href="javascript:history.back()" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-1"></i>
+                                Quay lại
+                            </a>
+                            <a href="/login/dashboard" class="btn btn-primary">
+                                <i class="fas fa-home me-1"></i>
+                                Về trang chủ
+                            </a>
+                        </div>
+                        
+                        <!-- Additional Help -->
+                        <div class="mt-5">
+                            <h5>Bạn có thể thử:</h5>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success me-2"></i>Kiểm tra lại URL</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Đăng nhập lại</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Liên hệ quản trị viên</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

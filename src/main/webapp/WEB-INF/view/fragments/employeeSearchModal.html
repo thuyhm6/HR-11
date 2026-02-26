@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Employee Search Modal</title>
+</head>
+<body>
+
+<!-- Employee Search Modal Fragment -->
+<div th:fragment="content">
+    <div class="modal fade" id="employeeSearchModal" tabindex="-1" aria-labelledby="employeeSearchModalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="employeeSearchModalTitle">
+                        <i class="bx bx-search me-2"></i>
+                        Tìm kiếm nhân viên
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Search Form -->
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="popupSearchEmpId" class="form-label">Mã nhân viên</label>
+                            <input type="text" class="form-control" id="popupSearchEmpId" placeholder="Nhập mã nhân viên">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="popupSearchLocalName" class="form-label">Họ tên</label>
+                            <input type="text" class="form-control" id="popupSearchLocalName" placeholder="Nhập họ tên">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="popupSearchDeptNo" class="form-label">Mã phòng ban</label>
+                            <input type="text" class="form-control" id="popupSearchDeptNo" placeholder="Nhập mã phòng ban">
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <button type="button" class="btn btn-primary" onclick="EmployeeSearchModal.search()">
+                                <i class="bx bx-search me-1"></i> Tìm kiếm
+                            </button>
+                            <button type="button" class="btn btn-secondary ms-2" onclick="EmployeeSearchModal.clear()">
+                                <i class="bx bx-x me-1"></i> Xóa bộ lọc
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Employee List Table -->
+                    <div class="table-responsive">
+                        <table id="employeeSearchTable" class="table table-striped table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>STT</th>
+                                    <th>Mã nhân viên</th>
+                                    <th>Họ tên</th>
+                                    <th>Phòng ban</th>
+                                    <th>Chức vụ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Data will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bx bx-x me-1"></i> Đóng
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript is now handled by external file: employeeSearchModal.js -->
+
+</body>
+</html>

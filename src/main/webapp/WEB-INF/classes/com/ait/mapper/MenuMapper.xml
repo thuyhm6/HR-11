@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ait.sy.sys.mapper.MenuMapper">
+
+    <!-- Lấy danh sách menu theo quyền của user -->
+    <select id="getMenusByUserPermission" resultType="com.ait.sy.sys.dto.MenuDTO">
+        SELECT DISTINCT 
+            m.menu_no as menuNo,
+            m.menu_parent_no as menuParentNo,
+            m.menu_code as menuCode,
+            get_global_name(m.menu_no, #{lang}) as menuName,
+            m.menu_img as menuImg,
+            m.menu_url as menuUrl,
+            m.depth,
+            m.orderno as orderNo,
+            m.activity
+        FROM sy_menu m
+        INNER JOIN sy_role_relation rr ON m.menu_no = rr.menu_no
+        INNER JOIN sy_role_group_relation rgr ON rr.role_no = rgr.role_no
+        INNER JOIN sy_user_relation ur ON rgr.role_group_no = ur.role_group_no
+        WHERE ur.user_no = #{userNo}
+        AND m.activity = 1
+        AND rr.activity = 1
+        AND rgr.activity = 1
+        AND ur.activity = 1
+        AND rr.selectr = 1
+        ORDER BY m.depth, m.orderno
+    </select>
+
+    <!-- Lấy danh sách menu theo quyền của user với ngôn ngữ cụ thể -->
+    <select id="getMenusByUserPermissionWithLanguage" resultType="com.ait.sy.sys.dto.MenuDTO">
+        SELECT DISTINCT 
+            m.menu_no as menuNo,
+            m.menu_parent_no as menuParentNo,
+            m.menu_code as menuCode,
+            get_global_name(m.menu_no, #{lang}) as menuName,
+            m.menu_img as menuImg,
+            m.menu_url as menuUrl,
+            m.depth,
+            m.orderno as orderNo,
+            m.activity
+        FROM sy_menu m
+        INNER JOIN sy_role_relation rr ON m.menu_no = rr.menu_no
+        INNER JOIN sy_role_group_relation rgr ON rr.role_no = rgr.role_no
+        INNER JOIN sy_user_relation ur ON rgr.role_group_no = ur.role_group_no
+        WHERE ur.user_no = #{userNo}
+        AND m.activity = 1
+        AND rr.activity = 1
+        AND rgr.activity = 1
+        AND ur.activity = 1
+        AND rr.selectr = 1
+        ORDER BY m.depth, m.orderno
+    </select>
+
+    <!-- Lấy danh sách menu gốc theo quyền của user -->
+    <select id="getRootMenusByUserPermission" resultType="com.ait.sy.sys.dto.MenuDTO">
+        SELECT DISTINCT 
+            m.menu_no as menuNo,
+            m.menu_parent_no as menuParentNo,
+            m.menu_code as menuCode,
+            get_global_name(m.menu_no, #{lang}) as menuName,
+            m.menu_img as menuImg,
+            m.menu_url as menuUrl,
+            m.depth,
+            m.orderno as orderNo,
+            m.activity
+        FROM sy_menu m
+        INNER JOIN sy_role_relation rr ON m.menu_no = rr.menu_no
+        INNER JOIN sy_role_group_relation rgr ON rr.role_no = rgr.role_no
+        INNER JOIN sy_user_relation ur ON rgr.role_group_no = ur.role_group_no
+        WHERE ur.user_no = #{userNo}
+        AND m.activity = 1
+        AND rr.activity = 1
+        AND rgr.activity = 1
+        AND ur.activity = 1
+        AND rr.selectr = 1
+        AND (m.menu_parent_no IS NULL OR m.menu_parent_no = '')
+        ORDER BY m.orderno
+    </select>
+
+    <!-- Lấy danh sách menu con theo parent và quyền của user -->
+    <select id="getChildMenusByUserPermission" resultType="com.ait.sy.sys.dto.MenuDTO">
+        SELECT DISTINCT 
+            m.menu_no as menuNo,
+            m.menu_parent_no as menuParentNo,
+            m.menu_code as menuCode,
+            get_global_name(m.menu_no, #{lang}) as menuName,
+            m.menu_img as menuImg,
+            m.menu_url as menuUrl,
+            m.depth,
+            m.orderno as orderNo,
+            m.activity
+        FROM sy_menu m
+        INNER JOIN sy_role_relation rr ON m.menu_no = rr.menu_no
+        INNER JOIN sy_role_group_relation rgr ON rr.role_no = rgr.role_no
+        INNER JOIN sy_user_relation ur ON rgr.role_group_no = ur.role_group_no
+        WHERE ur.user_no = #{userNo}
+        AND m.activity = 1
+        AND rr.activity = 1
+        AND rgr.activity = 1
+        AND ur.activity = 1
+        AND rr.selectr = 1
+        AND m.menu_parent_no = #{parentMenuNo}
+        ORDER BY m.orderno
+    </select>
+
+</mapper>
