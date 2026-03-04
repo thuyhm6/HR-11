@@ -1,54 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee 
-         http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
-         version="4.0">
+         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee
+         https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
+         version="6.0">
 
     <display-name>HR-11 Application</display-name>
     <description>Human Resources Management System</description>
 
-    <!-- Context Parameters -->
-    <context-param>
-        <param-name>contextConfigLocation</param-name>
-        <param-value>WEB-INF/conf/application-context.xml</param-value>
-    </context-param>
-    
-    <context-param>
-        <param-name>spring.profiles.active</param-name>
-        <param-value>production</param-value>
-    </context-param>
-    
-    <context-param>
-        <param-name>log4jConfiguration</param-name>
-        <param-value>WEB-INF/conf/log4j2.xml</param-value>
-    </context-param>
-
-    <!-- Spring Context Listener -->
-    <listener>
-        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
-    </listener>
-    
-    <!-- Spring Security Context Listener (if using Spring Security) -->
-    <!-- <listener>
-        <listener-class>org.springframework.security.web.session.HttpSessionEventPublisher</listener-class>
-    </listener> -->
-
-    <!-- Spring MVC Dispatcher Servlet -->
-    <servlet>
-        <servlet-name>dispatcher</servlet-name>
-        <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
-        <init-param>
-            <param-name>contextConfigLocation</param-name>
-            <param-value>WEB-INF/conf/application-context.xml</param-value>
-        </init-param>
-        <load-on-startup>1</load-on-startup>
-    </servlet>
-    
-    <servlet-mapping>
-        <servlet-name>dispatcher</servlet-name>
-        <url-pattern>/</url-pattern>
-    </servlet-mapping>
+    <!--
+        Spring Boot WAR deploy on JEUS:
+        - SpringBootServletInitializer (Hr11Application.java) tự đăng ký DispatcherServlet
+        - Không cần ContextLoaderListener, DispatcherServlet hay contextConfigLocation ở đây
+        - application.properties + @Configuration classes xử lý toàn bộ cấu hình
+    -->
 
     <!-- Character Encoding Filter -->
     <filter>
@@ -63,7 +28,6 @@
             <param-value>true</param-value>
         </init-param>
     </filter>
-    
     <filter-mapping>
         <filter-name>characterEncodingFilter</filter-name>
         <url-pattern>/*</url-pattern>
@@ -76,6 +40,7 @@
             <http-only>true</http-only>
             <secure>false</secure>
         </cookie-config>
+        <tracking-mode>COOKIE</tracking-mode>
     </session-config>
 
     <!-- Error Pages -->
@@ -83,12 +48,10 @@
         <error-code>404</error-code>
         <location>/error/404</location>
     </error-page>
-    
     <error-page>
         <error-code>500</error-code>
         <location>/error/500</location>
     </error-page>
-    
     <error-page>
         <exception-type>java.lang.Exception</exception-type>
         <location>/error/general</location>
@@ -97,42 +60,32 @@
     <!-- Welcome Files -->
     <welcome-file-list>
         <welcome-file>index.html</welcome-file>
-        <welcome-file>index.jsp</welcome-file>
     </welcome-file-list>
-
-    <!-- Security Constraints (if needed) -->
-    <!-- <security-constraint>
-        <web-resource-collection>
-            <web-resource-name>Protected Area</web-resource-name>
-            <url-pattern>/admin/*</url-pattern>
-        </web-resource-collection>
-        <auth-constraint>
-            <role-name>ADMIN</role-name>
-        </auth-constraint>
-    </security-constraint> -->
 
     <!-- MIME Type Mappings -->
     <mime-mapping>
         <extension>css</extension>
         <mime-type>text/css</mime-type>
     </mime-mapping>
-    
     <mime-mapping>
         <extension>js</extension>
         <mime-type>application/javascript</mime-type>
     </mime-mapping>
-    
     <mime-mapping>
         <extension>json</extension>
         <mime-type>application/json</mime-type>
     </mime-mapping>
-
-    <!-- JSP Configuration (if using JSP) -->
-    <!-- <jsp-config>
-        <jsp-property-group>
-            <url-pattern>*.jsp</url-pattern>
-            <page-encoding>UTF-8</page-encoding>
-        </jsp-property-group>
-    </jsp-config> -->
+    <mime-mapping>
+        <extension>woff</extension>
+        <mime-type>font/woff</mime-type>
+    </mime-mapping>
+    <mime-mapping>
+        <extension>woff2</extension>
+        <mime-type>font/woff2</mime-type>
+    </mime-mapping>
+    <mime-mapping>
+        <extension>svg</extension>
+        <mime-type>image/svg+xml</mime-type>
+    </mime-mapping>
 
 </web-app>

@@ -1,3 +1,6 @@
+build dụ án để đưa vào JEUS 8
+deploy-jeus.bat
+
 destroy: true,
 
 bạn là người hiểu rất rõ về dự án này. căn cứ vào file viewNOContractInfo.html - ký kết hợp đồng,  hãy tạo cho tôi một file viewContractInfoForSearch.html - Tra cứu hợp đồng, dữ liệu lấy ra là tất cả các hợp đồng trong bảng HR_CONTRACT

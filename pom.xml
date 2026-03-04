@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -28,14 +28,14 @@
         <url/>
     </scm>
     <properties>
-        <java.version>17</java.version>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
+        <java.version>21</java.version>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         
         <!-- JEUS exploded WAR properties -->
-        <jeus.deploy.dir>C:\jeus\domains\adminDomain\applications</jeus.deploy.dir>
+        <jeus.deploy.dir>C:\tmaxsoft\jeus8\resource</jeus.deploy.dir>
         <jeus.app.name>HR-11</jeus.app.name>
     </properties>
     <dependencies>
@@ -151,18 +151,18 @@
 
     <build>
         <finalName>HR-11</finalName>
-        <!-- Cấu hình output directory cho webapp -->
+        <!-- Cáº¥u hÃ¬nh output directory cho webapp -->
         <outputDirectory>src/main/webapp/WEB-INF/classes</outputDirectory>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.12.1</version>
+                <version>3.13.0</version>
                 <configuration>
-                    <source>17</source>
-                    <target>17</target>
-                    <release>17</release>
-                    <!-- Cấu hình output directory cho compiled classes -->
+                    <source>21</source>
+                    <target>21</target>
+                    <release>21</release>
+                    <!-- Cáº¥u hÃ¬nh output directory cho compiled classes -->
                     <outputDirectory>src/main/webapp/WEB-INF/classes</outputDirectory>
                     <annotationProcessorPaths>
                         <path>
@@ -182,7 +182,7 @@
                 <version>3.1.0</version>
                 <configuration>
                     <encoding>UTF-8</encoding>
-                    <!-- Cấu hình output directory cho resources -->
+                    <!-- Cáº¥u hÃ¬nh output directory cho resources -->
                     <outputDirectory>src/main/webapp/WEB-INF/classes</outputDirectory>
                 </configuration>
                 <executions>
@@ -227,7 +227,7 @@
                             <goal>copy-dependencies</goal>
                         </goals>
                         <configuration>
-                            <!-- Copy dependencies vào webapp/WEB-INF/lib -->
+                            <!-- Copy dependencies vÃ o webapp/WEB-INF/lib -->
                             <outputDirectory>src/main/webapp/WEB-INF/lib</outputDirectory>
                             <excludeScope>provided</excludeScope>
                             <includeScope>runtime</includeScope>
@@ -236,7 +236,7 @@
                 </executions>
             </plugin>
             
-            <!-- Maven Antrun Plugin để tạo thư mục classes -->
+            <!-- Maven Antrun Plugin Ä‘á»ƒ táº¡o thÆ° má»¥c classes -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
@@ -259,11 +259,11 @@
                 </executions>
             </plugin>
             
-            <!-- Exploded WAR Plugin for JEUS -->
+            <!-- WAR Plugin for JEUS: build exploded directory + WAR file -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
-                <version>3.2.3</version>
+                <version>3.4.0</version>
                 <configuration>
                     <warSourceDirectory>src/main/webapp</warSourceDirectory>
                     <failOnMissingWebXml>false</failOnMissingWebXml>
@@ -271,9 +271,8 @@
                     <packagingExcludes>
                         WEB-INF/lib/tomcat-*.jar
                     </packagingExcludes>
-                    <!-- Exploded WAR configuration -->
-                    <outputDirectory>${project.build.directory}/exploded-war</outputDirectory>
-                    <exploded>true</exploded>
+                    <!-- ThÆ° má»¥c exploded WAR (dÃ¹ng Ä‘á»ƒ deploy lÃªn JEUS) -->
+                    <webappDirectory>${project.build.directory}/exploded-war</webappDirectory>
                     <archive>
                         <manifest>
                             <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
@@ -282,6 +281,7 @@
                     </archive>
                 </configuration>
                 <executions>
+                    <!-- Goal exploded: táº¡o thÆ° má»¥c exploded táº¡i target/exploded-war -->
                     <execution>
                         <id>create-exploded-war</id>
                         <phase>package</phase>
@@ -333,3 +333,4 @@
     </build>
 
 </project>
+

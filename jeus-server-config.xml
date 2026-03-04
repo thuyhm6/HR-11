@@ -1,15 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- JEUS Server Configuration for HR-11 Application -->
-<!-- Place this file in: C:\jeus\domains\adminDomain\config\server.xml -->
+<!--
+    JEUS 8 Server Configuration for HR-11 Application
+    JDK 21 + Spring Boot 3.5.5
+    ================================================
+    File này là tài liệu tham khảo cấu hình JEUS.
+    Cấu hình thực tế trên JEUS server phải được set qua:
+      - JEUS WebAdmin Console (http://JEUS_HOST:9736/webadmin)
+      - hoặc jeusadmin CLI
+-->
 
 <server>
     <name>adminServer</name>
-    
-    <!-- HTTP Listener Configuration -->
+
+    <!-- HTTP Listener -->
     <http-listener>
         <name>http-listener-1</name>
         <port>8080</port>
-        <host>localhost</host>
+        <host>0.0.0.0</host>
         <thread-pool>
             <min-threads>10</min-threads>
             <max-threads>200</max-threads>
@@ -18,113 +25,68 @@
         <keep-alive-timeout>30</keep-alive-timeout>
         <max-keep-alive-requests>100</max-keep-alive-requests>
     </http-listener>
-    
-    <!-- HTTPS Listener (Optional) -->
-    <https-listener>
-        <name>https-listener-1</name>
-        <port>8443</port>
-        <host>localhost</host>
-        <ssl-config>
-            <key-store>C:\jeus\conf\keystore.jks</key-store>
-            <key-store-password>changeit</key-store-password>
-            <trust-store>C:\jeus\conf\truststore.jks</trust-store>
-            <trust-store-password>changeit</trust-store-password>
-        </ssl-config>
-    </https-listener>
-    
-    <!-- Application Configuration -->
+
+    <!--
+        Application Configuration
+        path: đường dẫn TƯƠNG ĐỐI hoặc TUYỆT ĐỐI tới thư mục exploded WAR
+        → Thư mục này chứa toàn bộ sourcecode copy vào C:\tmaxsoft\jeus8\resource\HR-11\
+    -->
     <application>
         <name>HR-11</name>
-        <path>applications\HR-11</path>
+        <path>C:\tmaxsoft\jeus8\resource\HR-11</path>
         <context-root>/HR-11</context-root>
         <auto-start>true</auto-start>
         <deployment-order>1</deployment-order>
     </application>
-    
-    <!-- DataSource Configuration -->
-    <data-source>
-        <name>HRDataSource</name>
-        <jndi-name>jdbc/HRDataSource</jndi-name>
-        <driver-class>oracle.jdbc.OracleDriver</driver-class>
-        <url>jdbc:oracle:thin:@14.225.17.145:1521:orcl</url>
-        <user>HTSV_HR</user>
-        <password>htsvhrdb</password>
-        
-        <!-- Connection Pool Configuration -->
-        <connection-pool>
-            <min-pool-size>5</min-pool-size>
-            <max-pool-size>20</max-pool-size>
-            <initial-pool-size>5</initial-pool-size>
-            <connection-timeout>30</connection-timeout>
-            <idle-timeout>600</idle-timeout>
-            <max-lifetime>1800</max-lifetime>
-            <validate-on-borrow>true</validate-on-borrow>
-            <validation-query>SELECT 1 FROM DUAL</validation-query>
-        </connection-pool>
-        
-        <!-- Connection Properties -->
-        <connection-properties>
-            <property>
-                <name>oracle.jdbc.ReadTimeout</name>
-                <value>30000</value>
-            </property>
-            <property>
-                <name>oracle.net.CONNECT_TIMEOUT</name>
-                <value>10000</value>
-            </property>
-        </connection-properties>
-    </data-source>
-    
-    <!-- JVM Configuration -->
+
+    <!--
+        JVM Configuration for JDK 21
+        Cấu hình này phải được thêm vào JVM options của JEUS server
+        trong WebAdmin: Servers > adminServer > JVM Options
+        hoặc file: C:\tmaxsoft\jeus8\domains\<domain>\servers\adminServer\config.xml
+    -->
     <jvm-options>
+        <!-- Memory -->
         <option>-Xms512m</option>
         <option>-Xmx2048m</option>
-        <option>-XX:PermSize=256m</option>
-        <option>-XX:MaxPermSize=512m</option>
-        <option>-XX:+UseG1GC</option>
+
+        <!-- GC: ZGC cho JDK 21 low-latency -->
+        <option>-XX:+UseZGC</option>
         <option>-XX:MaxGCPauseMillis=200</option>
+
+        <!-- BẮT BUỘC: add-opens cho Spring Boot 3.x + JDK 21 -->
+        <option>--add-opens=java.base/java.lang=ALL-UNNAMED</option>
+        <option>--add-opens=java.base/java.util=ALL-UNNAMED</option>
+        <option>--add-opens=java.base/java.io=ALL-UNNAMED</option>
+        <option>--add-opens=java.base/java.nio=ALL-UNNAMED</option>
+        <option>--add-opens=java.base/java.net=ALL-UNNAMED</option>
+        <option>--add-opens=java.base/java.math=ALL-UNNAMED</option>
+        <option>--add-opens=java.base/sun.nio.ch=ALL-UNNAMED</option>
+        <option>--add-exports=java.base/sun.nio.ch=ALL-UNNAMED</option>
+
+        <!-- System -->
         <option>-Djava.awt.headless=true</option>
         <option>-Dfile.encoding=UTF-8</option>
+        <option>-Dstdout.encoding=UTF-8</option>
         <option>-Duser.timezone=Asia/Ho_Chi_Minh</option>
+
+        <!-- Spring Boot profile & Virtual Threads -->
+        <option>-Dspring.profiles.active=prod</option>
+        <option>-Dspring.threads.virtual.enabled=true</option>
     </jvm-options>
-    
-    <!-- Logging Configuration -->
+
+    <!-- Logging -->
     <log-config>
-        <log-file>C:\jeus\domains\adminDomain\logs\server.log</log-file>
+        <log-file>C:\tmaxsoft\jeus8\domains\adminDomain\logs\server.log</log-file>
         <log-level>INFO</log-level>
         <max-file-size>10MB</max-file-size>
         <max-backup-files>10</max-backup-files>
         <console-output>true</console-output>
     </log-config>
-    
-    <!-- Session Configuration -->
+
+    <!-- Session -->
     <session-config>
         <session-timeout>30</session-timeout>
-        <session-persistence>true</session-persistence>
-        <session-persistence-directory>C:\jeus\domains\adminDomain\sessions</session-persistence-directory>
     </session-config>
-    
-    <!-- Security Configuration -->
-    <security-config>
-        <realm>file</realm>
-        <default-principal>guest</default-principal>
-        <default-role>guest</default-role>
-    </security-config>
-    
-    <!-- Monitoring Configuration -->
-    <monitoring-config>
-        <enable-monitoring>true</enable-monitoring>
-        <monitoring-interval>60</monitoring-interval>
-        <performance-monitoring>true</performance-monitoring>
-    </monitoring-config>
-    
-    <!-- Clustering Configuration (Optional) -->
-    <clustering-config>
-        <enable-clustering>false</enable-clustering>
-        <cluster-name>HR-Cluster</cluster-name>
-        <multicast-address>239.255.0.1</multicast-address>
-        <multicast-port>45566</multicast-port>
-    </clustering-config>
-    
-</server>
 
+</server>
