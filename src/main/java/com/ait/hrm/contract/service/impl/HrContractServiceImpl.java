@@ -121,8 +121,7 @@ public class HrContractServiceImpl implements HrContractService {
         try {
             return hrContractMapper.searchContractsWithConditions(request);
         } catch (Exception e) {
-            System.err.println("Error getting contracts for export: " + e.getMessage());
-            e.printStackTrace();
+            logger.error("Failed to get contracts for export", e);
             return new ArrayList<>();
         }
     }
@@ -138,12 +137,9 @@ public class HrContractServiceImpl implements HrContractService {
     @Override
     public DataTablesResponse<HrContract> getContractsForDataTables(DataTablesRequest request) {
         try {
-            System.out.println("=== HrContractService: Processing DataTables request ===");
-            System.out.println("Request: " + request);
 
             // Get search value
             String searchValue = request.getSearch() != null ? request.getSearch().getValue() : "";
-            System.out.println("Service: Search value = '" + searchValue + "'");
 
             // Get order information
             String orderColumn = "createDate";
@@ -162,8 +158,6 @@ public class HrContractServiceImpl implements HrContractService {
                 orderDir = request.getOrder()[0].getDir();
             }
 
-            System.out.println("Service: Order column = " + orderColumn + ", Order dir = " + orderDir);
-            System.out.println("Service: Start = " + request.getStart() + ", Length = " + request.getLength());
 
             // Set order and search parameters
             request.setOrderColumn(orderColumn);
@@ -173,19 +167,11 @@ public class HrContractServiceImpl implements HrContractService {
             request.setLimit(request.getLength());
 
             // Get data
-            System.out.println("Service: Calling mapper with params:");
-            System.out.println("  - searchValue: '" + searchValue + "'");
-            System.out.println("  - orderColumn: '" + orderColumn + "'");
-            System.out.println("  - orderDir: '" + orderDir + "'");
-            System.out.println("  - start: " + request.getStart());
-            System.out.println("  - length: " + request.getLength());
 
             List<HrContract> contracts = hrContractMapper.getContractsForDataTables(request);
-            System.out.println("Service: Retrieved " + contracts.size() + " contracts");
 
             // Get total count
             int totalRecords = hrContractMapper.countContractsForDataTables(request);
-            System.out.println("Service: Total records = " + totalRecords);
 
             // Create response
             DataTablesResponse<HrContract> response = new DataTablesResponse<>();
@@ -194,16 +180,14 @@ public class HrContractServiceImpl implements HrContractService {
             response.setRecordsFiltered(totalRecords);
             response.setData(contracts);
 
-            System.out.println("Service: Response created successfully");
             return response;
 
         } catch (Exception e) {
-            System.err.println("Error in getContractsForDataTables: " + e.getMessage());
-            e.printStackTrace();
+            logger.error("Failed to process contracts DataTables request", e);
 
             DataTablesResponse<HrContract> errorResponse = new DataTablesResponse<>();
             errorResponse.setDraw(request.getDraw());
-            errorResponse.setError("Lỗi xử lý dữ liệu: " + e.getMessage());
+            errorResponse.setError("Loi he thong khi xu ly du lieu hop dong.");
             return errorResponse;
         }
     }
@@ -245,7 +229,7 @@ public class HrContractServiceImpl implements HrContractService {
             HrContract existingContract = hrContractMapper.getContractByContractNo(contractNo);
             return existingContract != null;
         } catch (Exception e) {
-            System.err.println("Error checking contract number existence: " + e.getMessage());
+            logger.error("Failed to check contract existence contractNo={}", contractNo, e);
             return false;
         }
     }
