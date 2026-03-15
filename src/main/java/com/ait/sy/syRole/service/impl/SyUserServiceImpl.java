@@ -119,6 +119,17 @@ public class SyUserServiceImpl implements SyUserService {
     private String escapeCsv(String s) {
         if (s == null)
             return "";
+        if (isPotentialFormula(s)) {
+            s = "'" + s;
+        }
         return "\"" + s.replace("\"", "\"\"") + "\"";
+    }
+
+    private boolean isPotentialFormula(String value) {
+        if (value.isEmpty()) {
+            return false;
+        }
+        char firstChar = value.charAt(0);
+        return firstChar == '=' || firstChar == '+' || firstChar == '-' || firstChar == '@';
     }
 }

@@ -316,11 +316,22 @@ public class HrContractController {
         if (value == null) {
             return "";
         }
+        if (isPotentialFormula(value)) {
+            value = "'" + value;
+        }
         // Escape quotes and wrap in quotes if contains comma, quote, or newline
         if (value.contains(",") || value.contains("\"") || value.contains("\n")) {
             return "\"" + value.replace("\"", "\"\"") + "\"";
         }
         return value;
+    }
+
+    private boolean isPotentialFormula(String value) {
+        if (value.isEmpty()) {
+            return false;
+        }
+        char firstChar = value.charAt(0);
+        return firstChar == '=' || firstChar == '+' || firstChar == '-' || firstChar == '@';
     }
 
     /**

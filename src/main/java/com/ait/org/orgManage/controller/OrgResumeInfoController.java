@@ -219,10 +219,21 @@ public class OrgResumeInfoController {
     private String escapeCsv(String val) {
         if (val == null)
             return "";
+        if (isPotentialFormula(val)) {
+            val = "'" + val;
+        }
         if (val.contains(",") || val.contains("\n") || val.contains("\"")) {
             return "\"" + val.replace("\"", "\"\"") + "\"";
         }
         return val;
+    }
+
+    private boolean isPotentialFormula(String value) {
+        if (value.isEmpty()) {
+            return false;
+        }
+        char firstChar = value.charAt(0);
+        return firstChar == '=' || firstChar == '+' || firstChar == '-' || firstChar == '@';
     }
 
     private HrUserInfo getAuthenticatedUser(HttpSession session) {
