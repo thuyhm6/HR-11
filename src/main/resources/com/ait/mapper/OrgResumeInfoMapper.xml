@@ -55,15 +55,21 @@
                 <include refid="Base_Column_List"/>,
                 ROW_NUMBER() OVER (ORDER BY 
                     <choose>
-                        <when test="order != null and order.length > 0">
-                            <foreach item="item" index="index" collection="order" separator=",">
-                                ${columns[item.column].data} ${item.dir}
-                            </foreach>
-                        </when>
-                        <otherwise>
-                            CHANGE_DATE DESC, NO DESC
-                        </otherwise>
+                        <when test="orderColumn == 'NO'">NO</when>
+                        <when test="orderColumn == 'CHANGE_DATE'">CHANGE_DATE</when>
+                        <when test="orderColumn == 'RESUME_NAME'">RESUME_NAME</when>
+                        <when test="orderColumn == 'IS_CURRENT_ORG'">IS_CURRENT_ORG</when>
+                        <when test="orderColumn == 'CHANGE_REASON'">CHANGE_REASON</when>
+                        <when test="orderColumn == 'ACTIVITY'">ACTIVITY</when>
+                        <when test="orderColumn == 'CREATED_BY'">CREATED_BY</when>
+                        <when test="orderColumn == 'CREATE_DATE'">CREATE_DATE</when>
+                        <otherwise>CHANGE_DATE</otherwise>
                     </choose>
+                    <choose>
+                        <when test="orderDir == 'ASC'"> ASC</when>
+                        <otherwise> DESC</otherwise>
+                    </choose>
+                    , NO DESC
                 ) as rn
             FROM ORG_RESUME_INFO
             <include refid="searchConditions"/>

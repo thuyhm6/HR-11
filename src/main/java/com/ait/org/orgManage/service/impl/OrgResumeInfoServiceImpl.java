@@ -14,12 +14,22 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class OrgResumeInfoServiceImpl implements OrgResumeInfoService {
 
     @Autowired
     private OrgResumeInfoMapper orgResumeInfoMapper;
+    private static final Map<String, String> ORDERABLE_COLUMNS = Map.of(
+            "no", "NO",
+            "changeDate", "CHANGE_DATE",
+            "resumeName", "RESUME_NAME",
+            "isCurrentOrg", "IS_CURRENT_ORG",
+            "changeReason", "CHANGE_REASON",
+            "activity", "ACTIVITY",
+            "createdBy", "CREATED_BY",
+            "createDate", "CREATE_DATE");
 
     @Override
     public DataTablesResponse<OrgResumeInfo> getResumeListForDataTables(DataTablesRequest request) {
@@ -30,10 +40,7 @@ public class OrgResumeInfoServiceImpl implements OrgResumeInfoService {
         request.setOffset(request.getStart());
         request.setLimit(request.getLength());
 
-        // Basic sorting logic if needed, preventing SQL Injection
-        // If DataTables sends order info, you might want to validate or map column
-        // names here
-        // For now, relying on Mapper's default or secure dynamic SQL if implemented
+        applySafeSorting(request);
 
         int totalRecords = orgResumeInfoMapper.countResumeListForDataTables(request);
         response.setRecordsTotal(totalRecords);
@@ -47,6 +54,39 @@ public class OrgResumeInfoServiceImpl implements OrgResumeInfoService {
         }
 
         return response;
+    }
+
+    private void applySafeSorting(DataTablesRequest request) {
+        request.setOrderColumn("CHANGE_DATE");
+        request.setOrderDir("DESC");
+
+        if (request.getOrder() == null || request.getOrder().length == 0 ||
+                request.getColumns() == null || request.getColumns().length == 0) {
+            return;
+        }
+
+        DataTablesRequest.Order order = request.getOrder()[0];
+        int requestedColumnIndex = order.getColumn();
+        if (requestedColumnIndex < 0 || requestedColumnIndex >= request.getColumns().length) {
+            return;
+        }
+
+        DataTablesRequest.Column requestedColumn = request.getColumns()[requestedColumnIndex];
+        if (requestedColumn == null) {
+            return;
+        }
+
+        String safeColumn = ORDERABLE_COLUMNS.get(requestedColumn.getData());
+        if (safeColumn != null) {
+            request.setOrderColumn(safeColumn);
+        }
+
+        String requestedDirection = order.getDir();
+        if ("asc".equalsIgnoreCase(requestedDirection)) {
+            request.setOrderDir("ASC");
+        } else if ("desc".equalsIgnoreCase(requestedDirection)) {
+            request.setOrderDir("DESC");
+        }
     }
 
     @Override
