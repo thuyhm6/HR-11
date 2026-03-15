@@ -48,7 +48,7 @@ public class MonitoringController {
 
         } catch (Exception e) {
             response.put("status", "DOWN");
-            response.put("error", e.getMessage());
+            response.put("error", "Monitoring request failed.");
             response.put("timestamp", System.currentTimeMillis());
             return ResponseEntity.status(500).body(response);
         }
@@ -73,7 +73,7 @@ public class MonitoringController {
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            response.put("error", e.getMessage());
+            response.put("error", "Monitoring request failed.");
             response.put("timestamp", System.currentTimeMillis());
             return ResponseEntity.status(500).body(response);
         }
@@ -94,7 +94,7 @@ public class MonitoringController {
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            response.put("error", e.getMessage());
+            response.put("error", "Monitoring request failed.");
             response.put("timestamp", System.currentTimeMillis());
             return ResponseEntity.status(500).body(response);
         }
@@ -116,7 +116,7 @@ public class MonitoringController {
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            response.put("error", e.getMessage());
+            response.put("error", "Monitoring request failed.");
             response.put("timestamp", System.currentTimeMillis());
             return ResponseEntity.status(500).body(response);
         }
@@ -139,7 +139,7 @@ public class MonitoringController {
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            response.put("error", e.getMessage());
+            response.put("error", "Monitoring request failed.");
             response.put("timestamp", System.currentTimeMillis());
             return ResponseEntity.status(500).body(response);
         }
@@ -160,7 +160,7 @@ public class MonitoringController {
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            response.put("error", e.getMessage());
+            response.put("error", "Monitoring request failed.");
             response.put("timestamp", System.currentTimeMillis());
             return ResponseEntity.status(500).body(response);
         }
@@ -181,7 +181,7 @@ public class MonitoringController {
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            response.put("error", e.getMessage());
+            response.put("error", "Monitoring request failed.");
             response.put("timestamp", System.currentTimeMillis());
             return ResponseEntity.status(500).body(response);
         }
@@ -202,7 +202,7 @@ public class MonitoringController {
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            response.put("error", e.getMessage());
+            response.put("error", "Monitoring request failed.");
             response.put("timestamp", System.currentTimeMillis());
             return ResponseEntity.status(500).body(response);
         }
@@ -223,7 +223,7 @@ public class MonitoringController {
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            response.put("error", e.getMessage());
+            response.put("error", "Monitoring request failed.");
             response.put("timestamp", System.currentTimeMillis());
             return ResponseEntity.status(500).body(response);
         }
@@ -258,7 +258,7 @@ public class MonitoringController {
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            response.put("error", e.getMessage());
+            response.put("error", "Monitoring request failed.");
             response.put("timestamp", System.currentTimeMillis());
             return ResponseEntity.status(500).body(response);
         }
@@ -297,7 +297,7 @@ public class MonitoringController {
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            response.put("error", e.getMessage());
+            response.put("error", "Monitoring request failed.");
             response.put("timestamp", System.currentTimeMillis());
             return ResponseEntity.status(500).body(response);
         }
@@ -329,9 +329,10 @@ public class MonitoringController {
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            response.put("error", e.getMessage());
+            response.put("error", "Monitoring request failed.");
             response.put("timestamp", System.currentTimeMillis());
             return ResponseEntity.status(500).body(response);
         }
     }
 }
+

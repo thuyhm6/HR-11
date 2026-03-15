@@ -45,7 +45,7 @@ public class PerformanceController {
 
         } catch (Exception e) {
             Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("error", "Failed to get performance stats: " + e.getMessage());
+            errorResponse.put("error", "Failed to get performance stats.");
             return ResponseEntity.internalServerError().body(errorResponse);
         }
     }
@@ -73,7 +73,7 @@ public class PerformanceController {
 
         } catch (Exception e) {
             Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("error", "Failed to get memory usage: " + e.getMessage());
+            errorResponse.put("error", "Failed to get memory usage.");
             return ResponseEntity.internalServerError().body(errorResponse);
         }
     }
@@ -103,7 +103,7 @@ public class PerformanceController {
         } catch (Exception e) {
             response.put("performance", "ERROR");
             response.put("healthy", false);
-            response.put("error", e.getMessage());
+            response.put("error", "Performance check failed.");
         }
 
         return ResponseEntity.ok(response);
@@ -120,3 +120,4 @@ public class PerformanceController {
         return String.format("%.1f %sB", bytes / Math.pow(1024, exp), pre);
     }
 }
+
