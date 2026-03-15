@@ -6,6 +6,8 @@ import com.ait.sy.sys.dto.DataTablesRequest;
 import com.ait.sy.sys.dto.DataTablesResponse;
 import com.ait.sy.sys.service.HrAuthenticationService.HrUserInfo;
 import com.ait.util.DataTablesSearchUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -27,6 +29,7 @@ import java.util.Map;
 @Controller
 @RequestMapping("/hrm/contractInfo")
 public class HrContractController {
+    private static final Logger log = LoggerFactory.getLogger(HrContractController.class);
 
     @Autowired
     private HrContractService hrContractService;
@@ -76,28 +79,18 @@ public class HrContractController {
             @RequestBody DataTablesRequest request,
             HttpSession session) {
 
-        System.out.println("=== DataTables Contract Request ===");
-        System.out.println("Draw: " + request.getDraw());
-        System.out.println("Start: " + request.getStart());
-        System.out.println("Length: " + request.getLength());
-        System.out.println("Search: " + (request.getSearch() != null ? request.getSearch().getValue() : "null"));
-        System.out.println("Order: " + (request.getOrder() != null ? request.getOrder().length : 0) + " items");
-        System.out.println("Columns: " + (request.getColumns() != null ? request.getColumns().length : 0) + " items");
-
         // Kiểm tra authentication
         HrUserInfo currentHrUser = getAuthenticatedUser(session); // Will throw exception if null
 
         try {
-            System.out.println("Processing contract request for user: " + currentHrUser.getUsername());
+            log.debug("Processing contract DataTables request for user={}", currentHrUser.getUsername());
             DataTablesResponse<HrContract> response = hrContractService.getContractsForDataTables(request);
-            System.out.println("Contract response generated: " + response);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            System.err.println("Error processing contract DataTables request: " + e.getMessage());
-            e.printStackTrace();
+            log.error("Failed to process contract DataTables request for user={}", currentHrUser.getUsername(), e);
             DataTablesResponse<HrContract> errorResponse = new DataTablesResponse<>();
             errorResponse.setDraw(request.getDraw());
-            errorResponse.setError("Lỗi server: " + e.getMessage());
+            errorResponse.setError("Loi he thong khi tai du lieu hop dong.");
             return ResponseEntity.status(500).body(errorResponse);
         }
     }
@@ -108,6 +101,7 @@ public class HrContractController {
     @GetMapping("/api/contract/{contractNo}")
     @ResponseBody
     public ResponseEntity<?> getContract(@PathVariable String contractNo, HttpSession session) {
+        getAuthenticatedUser(session);
         try {
             HrContract contract = hrContractService.getContractByContractNo(contractNo);
             if (contract == null) {
@@ -115,9 +109,8 @@ public class HrContractController {
             }
             return ResponseEntity.ok(contract);
         } catch (Exception e) {
-            System.err.println("Error getting contract: " + e.getMessage());
-            e.printStackTrace();
-            return ResponseEntity.status(500).body(Map.of("error", "Lỗi server: " + e.getMessage()));
+            log.error("Failed to get contract contractNo={}", contractNo, e);
+            return ResponseEntity.status(500).body(Map.of("error", "Loi he thong. Vui long thu lai."));
         }
     }
 
@@ -156,9 +149,8 @@ public class HrContractController {
                 return ResponseEntity.status(500).body(Map.of("error", "Không thể thêm hợp đồng"));
             }
         } catch (Exception e) {
-            System.err.println("Error adding contract: " + e.getMessage());
-            e.printStackTrace();
-            return ResponseEntity.status(500).body(Map.of("error", "Lỗi server: " + e.getMessage()));
+            log.error("Failed to add contract contractNo={}", contract.getContractNo(), e);
+            return ResponseEntity.status(500).body(Map.of("error", "Loi he thong. Vui long thu lai."));
         }
     }
 
@@ -196,9 +188,8 @@ public class HrContractController {
                 return ResponseEntity.status(500).body(Map.of("error", "Không thể cập nhật hợp đồng"));
             }
         } catch (Exception e) {
-            System.err.println("Error updating contract: " + e.getMessage());
-            e.printStackTrace();
-            return ResponseEntity.status(500).body(Map.of("error", "Lỗi server: " + e.getMessage()));
+            log.error("Failed to update contract contractNo={}", contract.getContractNo(), e);
+            return ResponseEntity.status(500).body(Map.of("error", "Loi he thong. Vui long thu lai."));
         }
     }
 
@@ -209,10 +200,7 @@ public class HrContractController {
     @ResponseBody
     public ResponseEntity<?> deleteContract(@PathVariable String contractNo, HttpSession session) {
         // Check authentication
-        HrUserInfo currentHrUser = (HrUserInfo) session.getAttribute("currentHrUser");
-        if (currentHrUser == null) {
-            return ResponseEntity.status(401).body(Map.of("error", "Chưa đăng nhập"));
-        }
+        getAuthenticatedUser(session);
 
         try {
             // Check if contract exists
@@ -229,9 +217,8 @@ public class HrContractController {
                 return ResponseEntity.status(500).body(Map.of("error", "Không thể xóa hợp đồng"));
             }
         } catch (Exception e) {
-            System.err.println("Error deleting contract: " + e.getMessage());
-            e.printStackTrace();
-            return ResponseEntity.status(500).body(Map.of("error", "Lỗi server: " + e.getMessage()));
+            log.error("Failed to delete contract contractNo={}", contractNo, e);
+            return ResponseEntity.status(500).body(Map.of("error", "Loi he thong. Vui long thu lai."));
         }
     }
 
@@ -254,6 +241,8 @@ public class HrContractController {
             @RequestParam(required = false) String salaryTo,
             HttpSession session,
             HttpServletResponse response) throws IOException {
+
+        getAuthenticatedUser(session);
 
         try {
             // Create search request using utility class
@@ -303,9 +292,8 @@ public class HrContractController {
             writer.close();
 
         } catch (Exception e) {
-            System.err.println("Error exporting contracts: " + e.getMessage());
-            e.printStackTrace();
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Lỗi xuất dữ liệu: " + e.getMessage());
+            log.error("Failed to export contracts", e);
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Loi he thong khi xuat du lieu hop dong.");
         }
     }
 
