@@ -5,6 +5,8 @@ import com.ait.ar.attendanceSettings.service.ArShiftService;
 import com.ait.sy.basicMaintenance.dto.SyCodeParamDto;
 import com.ait.sy.basicMaintenance.service.SyCodeParamService;
 import com.ait.sy.excel.service.ExcelService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +22,8 @@ import java.util.*;
 @Controller
 @RequestMapping("/sy/excel")
 public class ExcelController {
+    private static final Logger log = LoggerFactory.getLogger(ExcelController.class);
+    private static final long MAX_UPLOAD_SIZE_BYTES = 5L * 1024L * 1024L;
 
     @Autowired
     private ExcelService excelService;
@@ -91,6 +95,13 @@ public class ExcelController {
     public ResponseEntity<Map<String, Object>> upload(@RequestParam("file") MultipartFile file) {
         Map<String, Object> result = new HashMap<>();
         try {
+            String validationError = validateUploadFile(file);
+            if (validationError != null) {
+                result.put("success", false);
+                result.put("message", validationError);
+                return ResponseEntity.badRequest().body(result);
+            }
+
             List<String> errors = excelService.importScheduleHtsv(file);
             if (errors.isEmpty()) {
                 result.put("success", true);
@@ -101,9 +112,47 @@ public class ExcelController {
                 result.put("message", "Import hoàn tất nhưng có " + errors.size() + " lỗi.");
             }
         } catch (Exception e) {
+            log.error("Failed to import schedule file", e);
             result.put("success", false);
-            result.put("message", "Lỗi xử lý file: " + e.getMessage());
+            result.put("message", "Loi he thong khi xu ly file import.");
         }
         return ResponseEntity.ok(result);
+    }
+
+    private String validateUploadFile(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            return "Vui long chon file de import.";
+        }
+
+        if (file.getSize() > MAX_UPLOAD_SIZE_BYTES) {
+            return "File vuot qua kich thuoc toi da 5MB.";
+        }
+
+        String originalFilename = file.getOriginalFilename();
+        if (originalFilename == null || originalFilename.isBlank()) {
+            return "Ten file khong hop le.";
+        }
+
+        String normalizedFileName = originalFilename.toLowerCase(Locale.ROOT);
+        boolean hasExcelExtension = normalizedFileName.endsWith(".xlsx") || normalizedFileName.endsWith(".xls");
+        if (!hasExcelExtension) {
+            return "Chi ho tro file Excel .xlsx hoac .xls.";
+        }
+
+        String contentType = file.getContentType();
+        if (contentType == null || contentType.isBlank()) {
+            return "Khong xac dinh duoc dinh dang file upload.";
+        }
+
+        Set<String> allowedContentTypes = Set.of(
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "application/vnd.ms-excel",
+                "application/octet-stream"
+        );
+        if (!allowedContentTypes.contains(contentType.toLowerCase(Locale.ROOT))) {
+            return "Dinh dang file upload khong hop le.";
+        }
+
+        return null;
     }
 }
