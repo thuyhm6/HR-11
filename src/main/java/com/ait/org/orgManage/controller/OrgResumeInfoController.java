@@ -8,6 +8,8 @@ import com.ait.sy.sys.service.HrAuthenticationService.HrUserInfo;
 import com.ait.util.DataTablesSearchUtil;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -23,6 +25,7 @@ import java.text.SimpleDateFormat;
 @Controller
 @RequestMapping("/org")
 public class OrgResumeInfoController {
+    private static final Logger log = LoggerFactory.getLogger(OrgResumeInfoController.class);
 
     @Autowired
     private OrgResumeInfoService resumeService;
@@ -66,8 +69,8 @@ public class OrgResumeInfoController {
                     getClientIpAddress(session), user.getCpnyId());
             return ResponseEntity.ok(Map.of("message", result));
         } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
+            log.error("Failed to execute resume process", e);
+            return ResponseEntity.status(500).body(Map.of("error", "Lỗi hệ thống khi thực hiện xử lý hồ sơ"));
         }
     }
 
@@ -80,7 +83,7 @@ public class OrgResumeInfoController {
             DataTablesResponse<OrgResumeInfo> response = resumeService.getResumeListForDataTables(request);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Failed to get resumes for DataTables", e);
             return ResponseEntity.status(500).body(new DataTablesResponse<>());
         }
     }
@@ -96,7 +99,8 @@ public class OrgResumeInfoController {
             }
             return ResponseEntity.ok(info);
         } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
+            log.error("Failed to get resume by no {}", no, e);
+            return ResponseEntity.status(500).body(Map.of("error", "Lỗi hệ thống khi tải dữ liệu"));
         }
     }
 
@@ -122,8 +126,8 @@ public class OrgResumeInfoController {
             }
             return ResponseEntity.status(500).body(Map.of("error", "Thất bại"));
         } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
+            log.error("Failed to add resume", e);
+            return ResponseEntity.status(500).body(Map.of("error", "Lỗi hệ thống khi thêm mới"));
         }
     }
 
@@ -149,8 +153,8 @@ public class OrgResumeInfoController {
             }
             return ResponseEntity.status(500).body(Map.of("error", "Thất bại"));
         } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
+            log.error("Failed to update resume {}", info.getNo(), e);
+            return ResponseEntity.status(500).body(Map.of("error", "Lỗi hệ thống khi cập nhật"));
         }
     }
 
@@ -165,8 +169,8 @@ public class OrgResumeInfoController {
             }
             return ResponseEntity.status(500).body(Map.of("error", "Xóa thất bại"));
         } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
+            log.error("Failed to delete resume {}", no, e);
+            return ResponseEntity.status(500).body(Map.of("error", "Lỗi hệ thống khi xóa"));
         }
     }
 
