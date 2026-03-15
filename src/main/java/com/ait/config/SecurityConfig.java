@@ -48,6 +48,8 @@ public class SecurityConfig implements WebMvcConfigurer {
                                 "/error/**", "/favicon.ico",
                                 "/actuator/health", "/api/health", "/api/csrf-token")
                         .permitAll()
+                        .requestMatchers("/api/admin/**", "/sys/api/user/**", "/sys/syRole/viewLoginUser")
+                        .hasAnyRole("ADMIN", "SYS")
                         .anyRequest().authenticated())
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
