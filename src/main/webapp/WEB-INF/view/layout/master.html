@@ -8,6 +8,9 @@
     <meta name="description" content="A fully responsive premium admin dashboard template" />
     <meta name="author" content="ThuyHM6" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="_csrf" th:if="${_csrf != null}" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:if="${_csrf != null}" th:content="${_csrf.headerName}" />
+    <meta name="_csrf_parameter" th:if="${_csrf != null}" th:content="${_csrf.parameterName}" />
 
     <!-- App favicon -->
     <link rel="shortcut icon" href="/assets/images/favicon.ico">
@@ -166,6 +169,35 @@
         }
 
         // --- Common Utils JS ---
+        (function setupCsrfForAjaxAndForms() {
+            const csrfToken = $('meta[name="_csrf"]').attr('content');
+            const csrfHeader = $('meta[name="_csrf_header"]').attr('content');
+            const csrfParameter = $('meta[name="_csrf_parameter"]').attr('content') || '_csrf';
+
+            if (csrfToken && csrfHeader) {
+                $.ajaxPrefilter(function (options, originalOptions, jqXHR) {
+                    const method = ((options.type || 'GET') + '').toUpperCase();
+                    if (!['GET', 'HEAD', 'OPTIONS', 'TRACE'].includes(method)) {
+                        jqXHR.setRequestHeader(csrfHeader, csrfToken);
+                    }
+                });
+            }
+
+            $(document).on('submit', 'form[method="post"], form[method="POST"]', function () {
+                if (!csrfToken) {
+                    return;
+                }
+                const hasCsrfInput = $(this).find('input[name="' + csrfParameter + '"]').length > 0;
+                if (!hasCsrfInput) {
+                    $('<input>', {
+                        type: 'hidden',
+                        name: csrfParameter,
+                        value: csrfToken
+                    }).appendTo(this);
+                }
+            });
+        })();
+
         window.loadCodeList = function (selectSelector, parentCodeNo, defaultText, callback) {
             var select = $(selectSelector);
             if (!select.length) return;

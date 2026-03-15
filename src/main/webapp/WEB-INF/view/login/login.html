@@ -124,6 +124,7 @@
             <!-- Login Form -->
             <form th:action="@{/login}" method="post">
                 <input type="hidden" name="csrfToken" th:value="${csrfToken}">
+                <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                 <div class="form-floating">
                     <input type="text" class="form-control" id="username" name="username"
                         th:placeholder="#{login.username}" th:value="${username}" required>

@@ -28,20 +28,29 @@ public class SyUserController {
     private SyUserService syUserService;
 
     @GetMapping("/sys/syRole/viewLoginUser")
-    public String viewLoginUser(Model model) {
+    public String viewLoginUser(Model model, HttpSession session) {
+        if (!isAdmin(session)) {
+            return "error/403";
+        }
         model.addAttribute("title", "Quản lý Người dùng");
         return "sys/syRole/viewLoginUser";
     }
 
     @GetMapping("/sys/api/user/list")
     @ResponseBody
-    public List<SyUserDto> list(@RequestParam(required = false) String keyword) {
+    public List<SyUserDto> list(@RequestParam(required = false) String keyword, HttpSession session) {
+        if (!isAdmin(session)) {
+            return List.of();
+        }
         return syUserService.searchUsers(keyword);
     }
 
     @GetMapping("/sys/api/user/detail")
     @ResponseBody
-    public SyUserDto getDetail(@RequestParam String userNo) {
+    public SyUserDto getDetail(@RequestParam String userNo, HttpSession session) {
+        if (!isAdmin(session)) {
+            return null;
+        }
         return syUserService.findByUserNo(userNo);
     }
 
