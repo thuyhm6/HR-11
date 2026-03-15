@@ -1,58 +1,65 @@
 package com.ait.config;
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.lang.NonNull;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import org.springframework.web.servlet.HandlerInterceptor;
-
+import com.ait.sy.sys.service.HrAuthenticationService.HrUserInfo;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.lang.NonNull;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-/**
- * SecurityConfig - Cấu hình bảo mật và interceptor
- * Đã được tối ưu hóa với BCrypt password encoder và session security
- */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig implements WebMvcConfigurer {
 
-    /**
-     * Bean để mã hóa mật khẩu với BCrypt
-     */
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(12); // Strength 12 cho bảo mật cao
+        return new BCryptPasswordEncoder(12);
     }
 
-    /**
-     * SecurityFilterChain - Disable Spring Security completely
-     * Sử dụng custom authentication interceptor thay thế
-     */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authz -> authz
-                        .anyRequest().permitAll()) // Allow all requests, let interceptor handle auth
-                .httpBasic(AbstractHttpConfigurer::disable) // Disable HTTP Basic Auth
-                .formLogin(AbstractHttpConfigurer::disable) // Disable default form login
-                .logout(AbstractHttpConfigurer::disable); // Disable default logout
+                        .requestMatchers(
+                                "/", "/login", "/auth/login", "/logout",
+                                "/assets/**", "/static/**", "/webjars/**",
+                                "/error/**", "/favicon.ico",
+                                "/actuator/health", "/api/health", "/api/csrf-token")
+                        .permitAll()
+                        .anyRequest().authenticated())
+                .httpBasic(AbstractHttpConfigurer::disable)
+                .formLogin(AbstractHttpConfigurer::disable)
+                .logout(AbstractHttpConfigurer::disable)
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint((request, response, authException) -> response.sendRedirect("/login")))
+                .addFilterBefore(new SessionAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-    /**
-     * Thêm interceptor để kiểm tra đăng nhập
-     */
     @Override
     public void addInterceptors(@NonNull InterceptorRegistry registry) {
         registry.addInterceptor(new AuthenticationInterceptor())
@@ -61,38 +68,28 @@ public class SecurityConfig implements WebMvcConfigurer {
                         "/", "/login", "/auth/login", "/logout",
                         "/assets/**", "/static/**", "/webjars/**",
                         "/error/**", "/favicon.ico", "/actuator/**",
-                        "/api/health", "/api/csrf-token", "/password/update");
+                        "/api/health", "/api/csrf-token");
     }
 
-    /**
-     * AuthenticationInterceptor - Kiểm tra user đã đăng nhập chưa với session
-     * security
-     */
     public static class AuthenticationInterceptor implements HandlerInterceptor {
 
         @Override
         public boolean preHandle(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
-                @NonNull Object handler)
-                throws Exception {
+                @NonNull Object handler) throws Exception {
             HttpSession session = request.getSession(false);
-
-            // Kiểm tra các URL không cần đăng nhập
-            String requestURI = request.getRequestURI();
-            if (isPublicUrl(requestURI)) {
+            String requestUri = request.getRequestURI();
+            if (isPublicUrl(requestUri)) {
                 return true;
             }
 
-            // Kiểm tra session và user
             if (session == null || session.getAttribute("currentHrUser") == null) {
-                // Redirect đến trang login
                 response.sendRedirect("/login");
                 return false;
             }
 
-            // Kiểm tra session timeout (30 phút)
             long lastAccessedTime = session.getLastAccessedTime();
             long currentTime = System.currentTimeMillis();
-            long sessionTimeout = 30 * 60 * 1000; // 30 phút
+            long sessionTimeout = 30L * 60L * 1000L;
 
             if (currentTime - lastAccessedTime > sessionTimeout) {
                 session.invalidate();
@@ -103,14 +100,10 @@ public class SecurityConfig implements WebMvcConfigurer {
             return true;
         }
 
-        /**
-         * Kiểm tra URL có phải là public không
-         */
         private boolean isPublicUrl(String uri) {
             return uri.equals("/") ||
                     uri.equals("/login") ||
                     uri.equals("/logout") ||
-                    uri.equals("/password/update") ||
                     uri.startsWith("/assets/") ||
                     uri.startsWith("/static/") ||
                     uri.startsWith("/webjars/") ||
@@ -119,6 +112,36 @@ public class SecurityConfig implements WebMvcConfigurer {
                     uri.equals("/favicon.ico") ||
                     uri.equals("/api/health") ||
                     uri.equals("/api/csrf-token");
+        }
+    }
+
+    public static class SessionAuthenticationFilter extends OncePerRequestFilter {
+        @Override
+        protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
+                @NonNull FilterChain filterChain) throws ServletException, IOException {
+
+            if (SecurityContextHolder.getContext().getAuthentication() == null) {
+                HttpSession session = request.getSession(false);
+                if (session != null) {
+                    HrUserInfo currentHrUser = (HrUserInfo) session.getAttribute("currentHrUser");
+                    if (currentHrUser != null && currentHrUser.getSyUser() != null) {
+                        String username = currentHrUser.getSyUser().getUserName();
+                        List<GrantedAuthority> authorities = new ArrayList<>();
+
+                        String userType = currentHrUser.getSyUser().getUserType();
+                        if (userType != null && !userType.isBlank()) {
+                            authorities.add(new SimpleGrantedAuthority("ROLE_" + userType.toUpperCase()));
+                        }
+
+                        UsernamePasswordAuthenticationToken authentication =
+                                new UsernamePasswordAuthenticationToken(username, null, authorities);
+                        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                        SecurityContextHolder.getContext().setAuthentication(authentication);
+                    }
+                }
+            }
+
+            filterChain.doFilter(request, response);
         }
     }
 }
