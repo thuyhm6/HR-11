@@ -5,6 +5,8 @@ import com.ait.sy.sys.service.PasswordUpdateService.UserPasswordInfo;
 import jakarta.servlet.http.HttpSession;
 import java.util.HashMap;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -23,6 +25,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 @RequestMapping("/password")
 public class PasswordUpdateController {
+    private static final Logger log = LoggerFactory.getLogger(PasswordUpdateController.class);
 
     @Autowired
     private PasswordUpdateService passwordUpdateService;
@@ -96,7 +99,8 @@ public class PasswordUpdateController {
             redirectAttributes.addFlashAttribute("error", "Failed to update password");
             return "redirect:/password/update";
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "System error: " + e.getMessage());
+            log.error("Failed to update password", e);
+            redirectAttributes.addFlashAttribute("error", "System error while updating password");
             return "redirect:/password/update";
         }
     }
@@ -122,8 +126,9 @@ public class PasswordUpdateController {
             response.put("message", isValid ? "Current password is valid" : "Current password is invalid");
             return ResponseEntity.ok(response);
         } catch (Exception e) {
+            log.error("Failed to verify current password", e);
             response.put("success", false);
-            response.put("message", "System error: " + e.getMessage());
+            response.put("message", "System error");
             return ResponseEntity.internalServerError().body(response);
         }
     }
@@ -142,8 +147,9 @@ public class PasswordUpdateController {
                     : "Password must be at least 8 chars and include uppercase, lowercase, number, and special char");
             return ResponseEntity.ok(response);
         } catch (Exception e) {
+            log.error("Failed to check password strength", e);
             response.put("isStrong", false);
-            response.put("message", "Password check error: " + e.getMessage());
+            response.put("message", "Password check error");
             return ResponseEntity.internalServerError().body(response);
         }
     }
