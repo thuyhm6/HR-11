@@ -67,7 +67,7 @@ public class DatabaseController {
 
         } catch (Exception e) {
             Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("error", "Failed to get connection pool info: " + e.getMessage());
+            errorResponse.put("error", "Failed to get connection pool info.");
             return ResponseEntity.internalServerError().body(errorResponse);
         }
     }
@@ -92,7 +92,7 @@ public class DatabaseController {
 
         } catch (Exception e) {
             Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("error", "Failed to get slow queries: " + e.getMessage());
+            errorResponse.put("error", "Failed to get slow queries.");
             return ResponseEntity.internalServerError().body(errorResponse);
         }
     }
@@ -116,7 +116,7 @@ public class DatabaseController {
 
         } catch (Exception e) {
             Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("error", "Failed to get table statistics: " + e.getMessage());
+            errorResponse.put("error", "Failed to get table statistics.");
             return ResponseEntity.internalServerError().body(errorResponse);
         }
     }
@@ -142,7 +142,7 @@ public class DatabaseController {
 
         } catch (Exception e) {
             Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("error", "Failed to get index usage: " + e.getMessage());
+            errorResponse.put("error", "Failed to get index usage.");
             return ResponseEntity.internalServerError().body(errorResponse);
         }
     }
@@ -169,7 +169,7 @@ public class DatabaseController {
 
         } catch (Exception e) {
             Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("error", "Failed to get database health: " + e.getMessage());
+            errorResponse.put("error", "Failed to get database health.");
             errorResponse.put("healthy", false);
             errorResponse.put("status", "ERROR");
             return ResponseEntity.internalServerError().body(errorResponse);
@@ -195,7 +195,7 @@ public class DatabaseController {
 
         } catch (Exception e) {
             Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("error", "Failed to get active sessions: " + e.getMessage());
+            errorResponse.put("error", "Failed to get active sessions.");
             return ResponseEntity.internalServerError().body(errorResponse);
         }
     }
@@ -219,7 +219,7 @@ public class DatabaseController {
 
         } catch (Exception e) {
             Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("error", "Failed to get database locks: " + e.getMessage());
+            errorResponse.put("error", "Failed to get database locks.");
             return ResponseEntity.internalServerError().body(errorResponse);
         }
     }
@@ -243,7 +243,7 @@ public class DatabaseController {
 
         } catch (Exception e) {
             Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("error", "Failed to refresh database statistics: " + e.getMessage());
+            errorResponse.put("error", "Failed to refresh database statistics.");
             return ResponseEntity.internalServerError().body(errorResponse);
         }
     }
@@ -293,8 +293,9 @@ public class DatabaseController {
 
         } catch (Exception e) {
             Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("error", "Failed to get database summary: " + e.getMessage());
+            errorResponse.put("error", "Failed to get database summary.");
             return ResponseEntity.internalServerError().body(errorResponse);
         }
     }
 }
+
