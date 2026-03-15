@@ -64,7 +64,6 @@ public class HrCompanyController {
     }
 
     @GetMapping("/api/company/export")
-    @SuppressWarnings("null")
     public ResponseEntity<byte[]> exportExcel() {
         byte[] data = hrCompanyService.exportExcel();
         return ResponseEntity.ok()

@@ -62,9 +62,7 @@
         LEFT JOIN SY_GLOBAL_NAME gko ON a.ITEM_NO = gko.NO AND gko.LANGUAGE = 'ko'
         WHERE a.CPNY_ID = #{cpnyId}
             <if test="itemNo != null and itemNo != ''">
-                AND (a.ITEM_NO LIKE '%' || #{itemNo} || '%' OR 
-                     gvi.CONTENT LIKE '%' || #{itemNo} || '%' OR 
-                     a.AR_PARAM_NO LIKE '%' || #{itemNo} || '%')
+                AND a.ITEM_NO = #{itemNo}
             </if>
         ORDER BY a.ORDERNO, a.AR_PARAM_NO
     </select>

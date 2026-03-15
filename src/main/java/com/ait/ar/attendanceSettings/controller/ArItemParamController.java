@@ -28,6 +28,14 @@ public class ArItemParamController {
     }
 
     /**
+     * Mở giao diện trang Quản lý tham số hạng mục (Tree-Table)
+     */
+    @GetMapping("/viewItemParameter")
+    public String viewItemParameter() {
+        return "ar/attendanceSettings/viewItemParameter";
+    }
+
+    /**
      * API: Lấy danh sách tham số hoặc tìm kiếm
      */
     @GetMapping("/api/arItemParam")

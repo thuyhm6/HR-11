@@ -4,6 +4,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
+import com.ait.sy.basicMaintenance.dto.SyCodeParamDto;
 import com.ait.sy.basicMaintenance.model.SyCodeParam;
 
 import java.util.List;
@@ -83,7 +84,7 @@ public interface SyCodeParamMapper {
     /**
      * Lấy danh sách code kèm thông tin tham số theo Parent và Company
      */
-    List<com.ait.sy.basicMaintenance.dto.SyCodeParamDto> selectParamByParentAndCompany(@Param("parentCode") String parentCode,
+    List<SyCodeParamDto> selectParamByParentAndCompany(@Param("parentCode") String parentCode,
             @Param("cpnyId") String cpnyId, @Param("lang") String lang);
 
 }

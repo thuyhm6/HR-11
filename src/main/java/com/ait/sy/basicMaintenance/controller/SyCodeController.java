@@ -73,7 +73,6 @@ public class SyCodeController {
     }
 
     @GetMapping("/api/code/export")
-    @SuppressWarnings("null")
     public ResponseEntity<byte[]> exportExcel() {
         byte[] data = syCodeService.exportExcel();
         return ResponseEntity.ok()

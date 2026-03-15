@@ -45,6 +45,7 @@
 
     <!-- Custom CSS -->
     <link href="/assets/css/style.css" rel="stylesheet" type="text/css" />
+    <link href="/assets/css/components/deptTree.css" rel="stylesheet" type="text/css" />
     <!-- Toastr CSS -->
     <link href="/assets/plugins/toastr/toastr.min.css" rel="stylesheet" type="text/css" />
 
@@ -102,6 +103,10 @@
             <!-- ========== Employee Search Modal ========== -->
             <div th:replace="~{fragments/employeeSearchModal :: content}"></div>
             <!-- ========== Employee Search Modal End ========== -->
+
+            <!-- ========== Excel Import Modal ========== -->
+            <div th:replace="~{fragments/excelImportModal :: content}"></div>
+            <!-- ========== Excel Import Modal End ========== -->
         </div>
         <!-- ==================================================== -->
         <!-- End Page Content -->
@@ -136,8 +141,14 @@
     <!-- Tab System JavaScript -->
     <script src="/assets/js/innerTab.js"></script>
 
-    <!-- Employee Search Modal JavaScript -->
+    <!-- Dept Tree Shared Component -->
+    <script src="/assets/js/components/deptTree.js"></script>
+
+    <!-- UI Components JavaScript -->
     <script src="/assets/js/components/employeeSearchModal.js"></script>
+
+    <!-- Excel Import Shared Component -->
+    <script src="/assets/js/components/excelImport.js"></script>
 
     <!-- Toastr JS -->
     <script src="/assets/plugins/toastr/toastr.min.js"></script>
@@ -158,14 +169,17 @@
         window.loadCodeList = function (selectSelector, parentCodeNo, defaultText, callback) {
             var select = $(selectSelector);
             if (!select.length) return;
-            defaultText = defaultText || '-- Chọn --';
+            //defaultText = defaultText || '-- Chọn --';
 
             $.ajax({
                 url: '/sys/api/code/list?parentCodeNo=' + parentCodeNo,
                 type: 'GET',
                 success: function (data) {
                     select.empty();
-                    select.append($('<option></option>').val('').text(defaultText));
+                    // Chỉ thêm option mặc định nếu defaultText có giá trị (không rỗng, không undefined)
+                    if (defaultText !== undefined && defaultText !== null && defaultText !== '') {
+                        select.append($('<option></option>').val('').text(defaultText));
+                    }
                     data.forEach(function (code) {
                         var name = code.nameVi || code.description || code.codeId || code.codeNo;
                         select.append($('<option></option>').val(code.codeNo).text(name));

@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ait.ar.attendanceMintenance.mapper.EssLeaveApplyMapper">
+
+    <resultMap id="EssLeaveApplyResultMap" type="com.ait.ar.attendanceMintenance.dto.EssLeaveApplyDto" extends="DtoResultMap">
+        <id property="applyNo" column="APPLY_NO"/>
+        <result property="personId" column="PERSON_ID"/>
+        <result property="leaveFromTime" column="LEAVE_FROM_TIME"/>
+        <result property="leaveToTime" column="LEAVE_TO_TIME"/>
+        <result property="leaveReason" column="LEAVE_REASON"/>
+        <result property="leaveTypeNo" column="LEAVE_TYPE_NO"/>
+        <result property="leaveTypeCode" column="LEAVE_TYPE_CODE"/>
+        <result property="applyLength" column="APPLY_LENGTH"/>
+        <result property="applyTime" column="CREATE_DATE"/>
+        <result property="affirmFlag" column="AFFIRM_FLAG"/>
+        <result property="confirmFlag" column="CONFIRM_FLAG"/>
+        <result property="createDate" column="CREATE_DATE"/>
+        <result property="createdBy" column="CREATED_BY"/>
+        <result property="createdIp" column="CREATED_IP"/>
+        <result property="updateDate" column="UPDATE_DATE"/>
+        <result property="updatedBy" column="UPDATED_BY"/>
+        <result property="updatedIp" column="UPDATED_IP"/>
+        <result property="activity" column="ACTIVITY"/>
+        <result property="orderNo" column="ORDERNO"/>
+        <result property="confirmDate" column="CONFIRM_DATE"/>
+        <result property="confirmIp" column="CONFIRM_IP"/>
+        <result property="confirmBy" column="CONFIRM_BY"/>
+        <result property="cpnyId" column="CPNY_ID"/>
+        <result property="batchYn" column="BATCH_YN"/>
+        <result property="detailType" column="DETAIL_TYPE"/>
+        <result property="proofYn" column="PROOF_YN"/>
+        <result property="proofConfirmDate" column="PROOF_CONFIRM_DATE"/>
+        <result property="proofConfirmBy" column="PROOF_CONFIRM_BY"/>
+        <result property="proofConfirmIp" column="PROOF_CONFIRM_IP"/>
+        <result property="batchNo" column="BATCH_NO"/>
+        <result property="hrComment" column="HR_COMMENT"/>
+        <result property="annualLeaveCount" column="ANNUAL_LEAVE_COUNT"/>
+        <result property="affirmStr" column="AFFIRM_STR"/>
+    </resultMap>
+
+    <resultMap id="DtoResultMap" type="com.ait.hrm.empinfo.dto.EmployeeNameDto">
+        <result column="EMPID" property="empId" />
+        <result column="LOCAL_NAME" property="localName" />
+        <result column="DEPT_NO" property="deptNo" />
+        <result column="DEPT_NAME" property="deptName" />
+        <result column="POSITION_NO" property="positionNo" />
+        <result column="POSITION_NO_NAME" property="positionNoName" />
+        <result column="POST_GRADE_NO" property="postGradeNo" />
+        <result column="POST_GRADE_NAME" property="postGradeName" />
+        <result column="EMP_TYPE_CODE" property="empTypeCode" />
+        <result column="EMP_TYPE_NAME" property="empTypeName" />
+        <result column="MAIN_BUSINESS_NO" property="mainBusinessNo" />
+        <result column="MAIN_BUSINESS_NAME" property="mainBusinessName" />
+        <result column="DUTY_NO" property="dutyNo" />
+        <result column="DUTY_NAME" property="dutyName" />
+        <result column="POST_NO" property="postNo" />
+        <result column="POST_NAME" property="postName" />
+        <result column="STATUS_CODE_NO" property="statusCodeNo" />
+        <result column="STATUS_CODE_NAME" property="statusCodeName" />
+        <result column="SHIFT_NO" property="shiftNo" />
+        <result column="SHIFT_NAME" property="shiftName" />
+        <result column="EMP_OFFICE" property="empOffice" />
+        <result column="EMP_OFFICE_NAME" property="empOfficeName" />
+        <result column="POST_FAMILY" property="postFamily" />
+        <result column="POST_FAMILY_NAME" property="postFamilyName" />
+        <result column="WORK_HOUR_TYPE" property="workHourType" />
+        <result column="WORK_HOUR_TYPE_NAME" property="workHourTypeName" />
+        <result column="POSITION" property="position" />
+        <result column="POSITION_NAME" property="positionName" />
+    </resultMap>
+
+    <select id="selectList" resultMap="EssLeaveApplyResultMap">
+        SELECT
+            a.APPLY_NO,
+            a.PERSON_ID,
+            e.EMPID,
+            e.LOCAL_NAME,
+            TO_CHAR(a.LEAVE_FROM_TIME, 'YYYY-MM-DD HH24:MI') AS LEAVE_FROM_TIME,
+            TO_CHAR(a.LEAVE_TO_TIME, 'YYYY-MM-DD HH24:MI') AS LEAVE_TO_TIME,
+            a.LEAVE_REASON,
+            a.LEAVE_TYPE_NO,
+            a.LEAVE_TYPE_CODE,
+            a.APPLY_LENGTH,
+            GET_VAC_COUNT(a.PERSON_ID, a.CPNY_ID, TO_CHAR(a.LEAVE_FROM_TIME, 'YYYY-MM-DD'), TO_CHAR(a.LEAVE_TO_TIME, 'YYYY-MM-DD')) AS ANNUAL_LEAVE_COUNT,
+            TO_CHAR(a.CREATE_DATE, 'YYYY-MM-DD HH24:MI:SS') AS CREATE_DATE,
+            GET_DEPT_NAME(e.DEPTNO, #{lang}) AS DEPT_NAME,
+            a.AFFIRM_FLAG,
+            a.CREATED_BY,
+            a.CREATED_IP,
+            TO_CHAR(a.UPDATE_DATE, 'YYYY-MM-DD HH24:MI:SS') AS UPDATE_DATE,
+            a.UPDATED_BY,
+            a.UPDATED_IP,
+            (SELECT LISTAGG(HE.EMPID || ' - ' || HE.LOCAL_NAME, ', ') WITHIN GROUP (ORDER BY S.AFFIRM_LEVEL)
+             FROM SY_AFFIRM_EMAIL S
+             LEFT JOIN HR_EMPLOYEE HE ON S.AFFIRM_PERSON_ID = HE.PERSON_ID
+             WHERE S.APPLY_NO = TO_CHAR(a.APPLY_NO) AND S.AFFIRM_LEVEL > 0) AS AFFIRM_STR
+        FROM ESS_LEAVE_APPLY_TB a
+        LEFT JOIN HR_EMPLOYEE e ON e.PERSON_ID = a.PERSON_ID
+        WHERE a.CPNY_ID = #{cpnyId}
+          <if test="empId != null and empId != ''">
+              AND UPPER(e.EMPID) LIKE '%' || UPPER(#{empId, jdbcType=VARCHAR}) || '%'
+          </if>
+          <if test="localName != null and localName != ''">
+              AND UPPER(e.LOCAL_NAME) LIKE '%' || UPPER(#{localName, jdbcType=VARCHAR}) || '%'
+          </if>
+          <if test="fromDate != null and fromDate != ''">
+              AND a.LEAVE_FROM_TIME &gt;= TO_DATE(#{fromDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')
+          </if>
+          <if test="toDate != null and toDate != ''">
+              AND a.LEAVE_FROM_TIME &lt; TO_DATE(#{toDate, jdbcType=VARCHAR}, 'YYYY-MM-DD') + 1
+          </if>
+        ORDER BY a.CREATE_DATE DESC, e.EMPID
+    </select>
+
+    <select id="getNextApplySeq" resultType="java.lang.Long">
+        SELECT ESS_APPLY_SEQ.NEXTVAL FROM DUAL
+    </select>
+
+    <insert id="insertLeaveApply" useGeneratedKeys="false">
+        INSERT INTO ESS_LEAVE_APPLY_TB (
+            APPLY_NO, PERSON_ID, APPLY_TIME, LEAVE_FROM_TIME, LEAVE_TO_TIME, 
+            LEAVE_REASON, LEAVE_TYPE_NO, LEAVE_TYPE_CODE, 
+            APPLY_LENGTH, 
+            AFFIRM_FLAG, 
+            CONFIRM_FLAG, CPNY_ID, CREATE_DATE, CREATED_BY, CREATED_IP, ACTIVITY
+        ) VALUES (
+            #{applyNo, jdbcType=VARCHAR}, #{personId, jdbcType=VARCHAR}, SYSDATE,
+            TO_DATE(#{leaveFromTime, jdbcType=VARCHAR}, 'YYYY-MM-DD HH24:MI'), 
+            TO_DATE(#{leaveToTime, jdbcType=VARCHAR}, 'YYYY-MM-DD HH24:MI'), 
+            #{leaveReason, jdbcType=VARCHAR}, '21', #{leaveTypeCode, jdbcType=VARCHAR}, 
+            GET_AR_LEAVE_LENGTH(#{personId, jdbcType=VARCHAR},#{cpnyId, jdbcType=VARCHAR},to_date(#{leaveFromTime, jdbcType=VARCHAR},'YYYY-MM-DD HH24:MI'),TO_DATE(#{leaveToTime, jdbcType=VARCHAR},'YYYY-MM-DD HH24:MI'),GET_CODE_NO(#{leaveTypeCode, jdbcType=VARCHAR},'21',#{cpnyId, jdbcType=VARCHAR},'CODE')), 
+            '14014306', 
+            0, #{cpnyId}, SYSDATE, #{adminID}, #{adminIP}, 1
+        )
+    </insert>
+
+    <update id="updateLeaveApply">
+        UPDATE ESS_LEAVE_APPLY_TB
+        SET PERSON_ID = #{personId, jdbcType=VARCHAR},
+            APPLY_TIME = SYSDATE,
+            LEAVE_FROM_TIME = TO_DATE(#{leaveFromTime, jdbcType=VARCHAR}, 'YYYY-MM-DD HH24:MI'),
+            LEAVE_TO_TIME = TO_DATE(#{leaveToTime, jdbcType=VARCHAR}, 'YYYY-MM-DD HH24:MI'),
+            LEAVE_REASON = #{leaveReason, jdbcType=VARCHAR},
+            LEAVE_TYPE_CODE = #{leaveTypeCode, jdbcType=VARCHAR},
+            APPLY_LENGTH = GET_AR_LEAVE_LENGTH(#{personId, jdbcType=VARCHAR},#{cpnyId, jdbcType=VARCHAR},to_date(#{leaveFromTime, jdbcType=VARCHAR},'YYYY-MM-DD HH24:MI'),TO_DATE(#{leaveToTime, jdbcType=VARCHAR},'YYYY-MM-DD HH24:MI'),GET_CODE_NO(#{leaveTypeCode, jdbcType=VARCHAR},'21',#{cpnyId, jdbcType=VARCHAR},'CODE')),
+            AFFIRM_FLAG = '14014306',
+			ACTIVITY = 1,
+            CONFIRM_FLAG = 0,
+            CONFIRM_DATE = NULL,
+			CONFIRM_BY = NULL,
+			CONFIRM_IP = NULL,
+			CPNY_ID = #{cpnyId},
+            UPDATE_DATE = SYSDATE,
+            UPDATED_BY = #{adminID},
+            UPDATED_IP = #{adminIP}
+        WHERE APPLY_NO = #{applyNo}
+    </update>
+
+    <update id="callDeleteLeaveConfirm" statementType="CALLABLE">
+        {CALL PKG_AFFIRM_EMAIL.PR_DELETE_LEAVE_CONFIRM(
+            #{applyNo, jdbcType=VARCHAR, mode=IN},
+            #{message, jdbcType=VARCHAR, mode=OUT}
+        )}
+    </update>
+
+    <delete id="deleteArApplyResult">
+        DELETE FROM AR_APPLY_RESULT WHERE APPLY_NO = #{applyNo, jdbcType=VARCHAR}
+    </delete>
+
+</mapper>
