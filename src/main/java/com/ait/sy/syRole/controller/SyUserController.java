@@ -2,6 +2,7 @@ package com.ait.sy.syRole.controller;
 
 import com.ait.sy.syRole.dto.SyUserDto;
 import com.ait.sy.syRole.service.SyUserService;
+import com.ait.sy.sys.service.HrAuthenticationService.HrUserInfo;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -17,6 +18,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import jakarta.servlet.http.HttpSession;
 
 @Controller
 public class SyUserController {
@@ -44,8 +47,14 @@ public class SyUserController {
 
     @PostMapping("/sys/api/user/saveRelations")
     @ResponseBody
-    public Map<String, Object> saveRelations(@RequestBody SyUserDto dto) {
+    public Map<String, Object> saveRelations(@RequestBody SyUserDto dto, HttpSession session) {
         Map<String, Object> response = new HashMap<>();
+        if (!isAdmin(session)) {
+            response.put("success", false);
+            response.put("message", "Không có quyền truy cập. Chỉ dành cho Admin.");
+            return response;
+        }
+
         try {
             syUserService.saveRelations(dto.getUserNo(), dto.getRoleGroupNos());
             response.put("success", true);
@@ -60,8 +69,15 @@ public class SyUserController {
 
     @PostMapping("/sys/api/user/resetPassword")
     @ResponseBody
-    public Map<String, Object> resetPassword(@RequestParam String userNo, @RequestParam String newPassword) {
+    public Map<String, Object> resetPassword(@RequestParam String userNo, @RequestParam String newPassword,
+            HttpSession session) {
         Map<String, Object> response = new HashMap<>();
+        if (!isAdmin(session)) {
+            response.put("success", false);
+            response.put("message", "Không có quyền truy cập. Chỉ dành cho Admin.");
+            return response;
+        }
+
         try {
             syUserService.resetPassword(userNo, newPassword);
             response.put("success", true);
@@ -75,7 +91,11 @@ public class SyUserController {
     }
 
     @GetMapping("/sys/api/user/export")
-    public ResponseEntity<byte[]> exportExcel() {
+    public ResponseEntity<byte[]> exportExcel(HttpSession session) {
+        if (!isAdmin(session)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+
         try {
             byte[] fileBytes = syUserService.exportExcel();
             String fileName = URLEncoder.encode("DanhSach_NguoiDung.csv", StandardCharsets.UTF_8.toString());
@@ -90,5 +110,19 @@ public class SyUserController {
             e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    private boolean isAdmin(HttpSession session) {
+        if (session == null) {
+            return false;
+        }
+
+        HrUserInfo user = (HrUserInfo) session.getAttribute("currentHrUser");
+        if (user == null || user.getSyUser() == null) {
+            return false;
+        }
+
+        String userType = user.getSyUser().getUserType();
+        return "ADMIN".equalsIgnoreCase(userType) || "SYS".equalsIgnoreCase(userType);
     }
 }
