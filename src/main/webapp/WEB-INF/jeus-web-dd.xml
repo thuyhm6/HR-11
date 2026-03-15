@@ -30,7 +30,7 @@
             <name>JESSIONID_HR11</name>
             <path>/HR-11</path>
             <http-only>true</http-only>
-            <secure>false</secure>
+            <secure>true</secure>
         </cookie-config>
         <tracking-mode>COOKIE</tracking-mode>
     </session-config>
