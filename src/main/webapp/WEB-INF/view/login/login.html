@@ -66,19 +66,6 @@
             margin-bottom: 1rem;
         }
 
-        .demo-credentials {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 1rem;
-            margin-top: 1rem;
-            font-size: 0.9rem;
-        }
-
-        .demo-credentials h6 {
-            color: #667eea;
-            margin-bottom: 0.5rem;
-        }
-
         .form-check {
             display: flex;
             align-items: center;
@@ -172,13 +159,13 @@
                 <div class="row">
                     <div class="col-6">
                         <strong>Admin:</strong><br>
-                        Username: <code>admin</code><br>
-                        Password: <code>Thuyhm6^</code>
+                        Username: <code>***</code><br>
+                        Password: <code>***</code>
                     </div>
                     <div class="col-6">
                         <strong>HR:</strong><br>
-                        Username: <code>hr</code><br>
-                        Password: <code>Thuyhm6^</code>
+                        Username: <code>***</code><br>
+                        Password: <code>***</code>
                     </div>
                 </div>
             </div>
@@ -226,7 +213,7 @@
 
                 // Save credentials if remember me is checked
                 if (rememberMe) {
-                    saveCredentials(username, password);
+                    saveCredentials(username);
                 } else {
                     clearSavedCredentials();
                 }
@@ -236,12 +223,10 @@
             function loadSavedCredentials() {
                 try {
                     const savedUsername = localStorage.getItem('hr_remembered_username');
-                    const savedPassword = localStorage.getItem('hr_remembered_password');
                     const rememberMe = localStorage.getItem('hr_remember_me');
 
-                    if (savedUsername && savedPassword && rememberMe === 'true') {
+                    if (savedUsername && rememberMe === 'true') {
                         $('#username').val(savedUsername);
-                        $('#password').val(savedPassword);
                         $('#rememberMe').prop('checked', true);
 
                         // Show success message
@@ -253,10 +238,9 @@
             }
 
             // Save credentials function
-            function saveCredentials(username, password) {
+            function saveCredentials(username) {
                 try {
                     localStorage.setItem('hr_remembered_username', username);
-                    localStorage.setItem('hr_remembered_password', password);
                     localStorage.setItem('hr_remember_me', 'true');
                     console.log('Đã lưu thông tin đăng nhập');
                 } catch (error) {
@@ -268,7 +252,6 @@
             function clearSavedCredentials() {
                 try {
                     localStorage.removeItem('hr_remembered_username');
-                    localStorage.removeItem('hr_remembered_password');
                     localStorage.removeItem('hr_remember_me');
                     console.log('Đã xóa thông tin đăng nhập đã lưu');
                 } catch (error) {
