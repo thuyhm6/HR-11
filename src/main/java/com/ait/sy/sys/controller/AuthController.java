@@ -133,6 +133,7 @@ public class AuthController {
 
             if (hrUserInfo != null && hrUserInfo.isActive()) {
                 // Đăng nhập thành công
+                request.changeSessionId();
                 session.setAttribute("currentHrUser", hrUserInfo);
                 session.setAttribute("isLoggedIn", true);
 
