@@ -4,6 +4,8 @@ import com.ait.org.orgManage.model.OrgBusinessRelation;
 import com.ait.org.orgManage.service.OrgBusinessService;
 import com.ait.sy.sys.service.HrAuthenticationService.HrUserInfo;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -14,6 +16,7 @@ import java.util.Map;
 
 @Controller
 public class OrgBusinessController {
+    private static final Logger log = LoggerFactory.getLogger(OrgBusinessController.class);
 
     @Autowired
     private OrgBusinessService orgBusinessService;
@@ -39,7 +42,9 @@ public class OrgBusinessController {
             List<OrgBusinessRelation> list = orgBusinessService.getList(resumeNo, deptNo);
             return org.springframework.http.ResponseEntity.ok(list);
         } catch (Exception e) {
-            return org.springframework.http.ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
+            log.error("Failed to load business list resumeNo={} deptNo={}", resumeNo, deptNo, e);
+            return org.springframework.http.ResponseEntity.status(500)
+                    .body(Map.of("error", "Loi he thong khi tai danh sach nghiep vu."));
         }
     }
 
@@ -59,7 +64,9 @@ public class OrgBusinessController {
             orgBusinessService.save(obj);
             return org.springframework.http.ResponseEntity.ok(Map.of("message", "Lưu thành công"));
         } catch (Exception e) {
-            return org.springframework.http.ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
+            log.error("Failed to save business relation seq={}", obj.getSeq(), e);
+            return org.springframework.http.ResponseEntity.status(500)
+                    .body(Map.of("error", "Loi he thong khi luu nghiep vu phong ban."));
         }
     }
 
@@ -70,7 +77,9 @@ public class OrgBusinessController {
             orgBusinessService.delete(seq);
             return org.springframework.http.ResponseEntity.ok(Map.of("message", "Xóa thành công"));
         } catch (Exception e) {
-            return org.springframework.http.ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
+            log.error("Failed to delete business relation seq={}", seq, e);
+            return org.springframework.http.ResponseEntity.status(500)
+                    .body(Map.of("error", "Loi he thong khi xoa nghiep vu phong ban."));
         }
     }
 }
