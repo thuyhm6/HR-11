@@ -3,6 +3,8 @@ package com.ait.sy.basicMaintenance.controller;
 import com.ait.sy.basicMaintenance.dto.SyMenuDto;
 import com.ait.sy.basicMaintenance.service.SyMenuService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -17,6 +19,7 @@ import java.util.Map;
 @Controller
 @RequestMapping("/sys")
 public class SyMenuController {
+    private static final Logger log = LoggerFactory.getLogger(SyMenuController.class);
 
     @Autowired
     private SyMenuService syMenuService;
@@ -41,9 +44,9 @@ public class SyMenuController {
             response.put("success", true);
             response.put("message", "Lưu thành công!");
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Failed to save menu menuNo={}", dto.getMenuNo(), e);
             response.put("success", false);
-            response.put("message", "Lỗi: " + e.getMessage());
+            response.put("message", "Loi he thong khi luu menu.");
         }
         return response;
     }
@@ -58,7 +61,8 @@ public class SyMenuController {
             response.put("message", "Xóa thành công!");
         } catch (Exception e) {
             response.put("success", false);
-            response.put("message", "Lỗi: " + e.getMessage());
+            log.error("Failed to delete menu menuNo={}", menuNo, e);
+            response.put("message", "Loi he thong khi xoa menu.");
         }
         return response;
     }
