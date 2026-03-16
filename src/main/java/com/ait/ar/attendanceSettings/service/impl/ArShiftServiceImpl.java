@@ -9,6 +9,8 @@ import com.ait.ar.attendanceSettings.model.ArShift020;
 import com.ait.ar.attendanceSettings.service.ArShiftService;
 import com.ait.sy.sys.mapper.SyGlobalNameMapper;
 import com.ait.sy.sys.model.SyGlobalName;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,6 +23,7 @@ import java.util.List;
 @Service
 @Transactional
 public class ArShiftServiceImpl implements ArShiftService {
+    private static final Logger log = LoggerFactory.getLogger(ArShiftServiceImpl.class);
 
     @Autowired
     private ArShift010Mapper arShift010Mapper;
@@ -156,7 +159,7 @@ public class ArShiftServiceImpl implements ArShiftService {
             if (dto.getToTimeStr() != null && !dto.getToTimeStr().trim().isEmpty())
                 entity.setToTime(sdf.parse(dto.getToTimeStr()));
         } catch (ParseException e) {
-            e.printStackTrace();
+            log.error("Invalid shift detail time format for shiftNo={}", dto.getShiftNo(), e);
         }
 
         if (isNew) {
