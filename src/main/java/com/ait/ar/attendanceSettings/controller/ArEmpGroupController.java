@@ -3,6 +3,8 @@ package com.ait.ar.attendanceSettings.controller;
 import com.ait.ar.attendanceSettings.dto.ArEmpGroupDto;
 import com.ait.ar.attendanceSettings.model.ArEmpGroup;
 import com.ait.ar.attendanceSettings.service.ArEmpGroupService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -15,6 +17,7 @@ import java.util.Map;
 @Controller
 @RequestMapping("/ar/attendanceSettings")
 public class ArEmpGroupController {
+    private static final Logger log = LoggerFactory.getLogger(ArEmpGroupController.class);
 
     @Autowired
     private ArEmpGroupService service;
@@ -46,7 +49,8 @@ public class ArEmpGroupController {
             response.put("message", "Lưu thành công");
         } catch (Exception e) {
             response.put("success", false);
-            response.put("error", e.getMessage());
+            log.error("Failed to save dynamic group personId={}", model.getPersonId(), e);
+            response.put("error", "Loi he thong khi luu nhom dong.");
         }
         return ResponseEntity.ok(response);
     }
@@ -60,7 +64,8 @@ public class ArEmpGroupController {
             response.put("message", "Xóa thành công");
         } catch (Exception e) {
             response.put("success", false);
-            response.put("error", e.getMessage());
+            log.error("Failed to delete dynamic group personId={}", personId, e);
+            response.put("error", "Loi he thong khi xoa nhom dong.");
         }
         return ResponseEntity.ok(response);
     }
