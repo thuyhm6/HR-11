@@ -3,6 +3,8 @@ package com.ait.ar.attendanceMintenance.controller;
 import com.ait.ar.attendanceMintenance.dto.ArScheduleHtsvDto;
 import com.ait.ar.attendanceMintenance.model.ArScheduleHtsv;
 import com.ait.ar.attendanceMintenance.service.ArScheduleHtsvService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -17,6 +19,7 @@ import java.util.Map;
 @Controller
 @RequestMapping("/ar/attendanceMintenance")
 public class ArScheduleHtsvController {
+    private static final Logger log = LoggerFactory.getLogger(ArScheduleHtsvController.class);
 
     @Autowired
     private ArScheduleHtsvService service;
@@ -57,7 +60,8 @@ public class ArScheduleHtsvController {
             response.put("message", "Lưu thành công");
         } catch (Exception e) {
             response.put("success", false);
-            response.put("error", e.getMessage());
+            log.error("Failed to save schedule HTSV pkNo={}", model.getPkNo(), e);
+            response.put("error", "Loi he thong khi luu xep ca nhan vien.");
         }
         return ResponseEntity.ok(response);
     }
@@ -71,7 +75,8 @@ public class ArScheduleHtsvController {
             response.put("message", "Xóa thành công");
         } catch (Exception e) {
             response.put("success", false);
-            response.put("error", e.getMessage());
+            log.error("Failed to delete schedule HTSV pkNo={}", pkNo, e);
+            response.put("error", "Loi he thong khi xoa xep ca nhan vien.");
         }
         return ResponseEntity.ok(response);
     }
