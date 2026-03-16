@@ -3,6 +3,8 @@ package com.ait.sy.basicMaintenance.controller;
 import com.ait.sy.basicMaintenance.dto.SyCodeDto;
 import com.ait.sy.basicMaintenance.service.SyCodeService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -17,6 +19,7 @@ import java.util.Map;
 @Controller
 @RequestMapping("/sys")
 public class SyCodeController {
+    private static final Logger log = LoggerFactory.getLogger(SyCodeController.class);
 
     @Autowired
     private SyCodeService syCodeService;
@@ -48,9 +51,9 @@ public class SyCodeController {
             response.put("message", "Lưu thành công");
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Failed to save code codeNo={}", dto.getCodeNo(), e);
             response.put("success", false);
-            response.put("message", "Lỗi: " + e.getMessage());
+            response.put("message", "Loi he thong khi luu ma danh muc.");
             return ResponseEntity.badRequest().body(response);
         }
     }
@@ -65,9 +68,9 @@ public class SyCodeController {
             response.put("message", "Xóa thành công");
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Failed to delete code codeNo={}", codeNo, e);
             response.put("success", false);
-            response.put("message", "Lỗi: " + e.getMessage());
+            response.put("message", "Loi he thong khi xoa ma danh muc.");
             return ResponseEntity.badRequest().body(response);
         }
     }
