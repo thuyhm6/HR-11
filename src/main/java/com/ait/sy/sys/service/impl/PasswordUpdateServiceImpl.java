@@ -58,7 +58,7 @@ public class PasswordUpdateServiceImpl implements PasswordUpdateService {
             return false;
 
         } catch (Exception e) {
-            logger.error("Error verifying old password for user {}: {}", userNo, e.getMessage(), e);
+            logger.error("Error verifying old password for user {}", userNo, e);
             return false;
         }
     }
@@ -87,7 +87,7 @@ public class PasswordUpdateServiceImpl implements PasswordUpdateService {
             }
 
         } catch (Exception e) {
-            logger.error("Error updating password for user {}: {}", userNo, e.getMessage(), e);
+            logger.error("Error updating password for user {}", userNo, e);
             return false;
         }
     }
@@ -131,7 +131,7 @@ public class PasswordUpdateServiceImpl implements PasswordUpdateService {
                     isPasswordEncoded);
 
         } catch (Exception e) {
-            logger.error("Error getting user password info for user {}: {}", userNo, e.getMessage(), e);
+            logger.error("Error getting user password info for user {}", userNo, e);
             return null;
         }
     }

@@ -84,7 +84,7 @@ public class HrContractServiceImpl implements HrContractService {
             int result = hrContractMapper.addContract(contract);
             return result > 0;
         } catch (Exception e) {
-            logger.error("Error adding contract: {}", e.getMessage(), e);
+            logger.error("Error adding contract", e);
             return false;
         }
     }
@@ -99,7 +99,7 @@ public class HrContractServiceImpl implements HrContractService {
             int result = hrContractMapper.updateContract(contract);
             return result > 0;
         } catch (Exception e) {
-            logger.error("Error updating contract: {}", e.getMessage(), e);
+            logger.error("Error updating contract", e);
             return false;
         }
     }
@@ -111,7 +111,7 @@ public class HrContractServiceImpl implements HrContractService {
             int result = hrContractMapper.deleteContract(contractNo);
             return result > 0;
         } catch (Exception e) {
-            logger.error("Error deleting contract: {}", e.getMessage(), e);
+            logger.error("Error deleting contract contractNo={}", contractNo, e);
             return false;
         }
     }
