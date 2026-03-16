@@ -6,6 +6,8 @@ import com.ait.org.orgManage.service.OrgStructureService;
 import com.ait.sy.sys.service.HrAuthenticationService.HrUserInfo;
 
 import jakarta.servlet.http.HttpSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -21,6 +23,7 @@ import java.util.Map;
 @Controller
 @RequestMapping("/org")
 public class OrgComposeController {
+    private static final Logger log = LoggerFactory.getLogger(OrgComposeController.class);
 
     @Autowired
     private OrgStructureService orgStructureService;
@@ -47,7 +50,8 @@ public class OrgComposeController {
             List<OrgInfo> list = orgStructureService.getOrgStructure(resumeNo);
             return ResponseEntity.ok(list);
         } catch (Exception e) {
-            return ResponseEntity.status(500).body(null);
+            log.error("Failed to load org structure resumeNo={}", resumeNo, e);
+            return ResponseEntity.status(500).body(java.util.Collections.emptyList());
         }
     }
 
@@ -60,7 +64,8 @@ public class OrgComposeController {
             OrgInfo info = orgStructureService.getOrgDetail(resumeNo, deptNo);
             return ResponseEntity.ok(info);
         } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
+            log.error("Failed to load org detail resumeNo={} deptNo={}", resumeNo, deptNo, e);
+            return ResponseEntity.status(500).body(Map.of("error", "Loi he thong khi tai chi tiet phong ban."));
         }
     }
 
@@ -73,7 +78,8 @@ public class OrgComposeController {
             List<OrgEmployee> list = orgStructureService.getEmployeesByDept(resumeNo, deptNo);
             return ResponseEntity.ok(list);
         } catch (Exception e) {
-            return ResponseEntity.status(500).body(null);
+            log.error("Failed to load employees resumeNo={} deptNo={}", resumeNo, deptNo, e);
+            return ResponseEntity.status(500).body(java.util.Collections.emptyList());
         }
     }
 
@@ -86,7 +92,8 @@ public class OrgComposeController {
             orgStructureService.saveOrgInfo(orgInfo, isNew);
             return ResponseEntity.ok(Map.of("message", "Lưu thành công"));
         } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
+            log.error("Failed to save org info", e);
+            return ResponseEntity.status(500).body(Map.of("error", "Loi he thong khi luu thong tin to chuc."));
         }
     }
 
@@ -99,7 +106,8 @@ public class OrgComposeController {
             orgStructureService.deleteOrgInfo(resumeNo, deptNo);
             return ResponseEntity.ok(Map.of("message", "Xóa thành công"));
         } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
+            log.error("Failed to delete org info resumeNo={} deptNo={}", resumeNo, deptNo, e);
+            return ResponseEntity.status(500).body(Map.of("error", "Loi he thong khi xoa thong tin to chuc."));
         }
     }
 
@@ -117,7 +125,8 @@ public class OrgComposeController {
             orgStructureService.transferEmployees(resumeNo, targetDeptNo, empIds);
             return ResponseEntity.ok(Map.of("message", "Điều chuyển thành công"));
         } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
+            log.error("Failed to transfer employees payload={}", payload, e);
+            return ResponseEntity.status(500).body(Map.of("error", "Loi he thong khi dieu chuyen nhan vien."));
         }
     }
 
@@ -138,7 +147,8 @@ public class OrgComposeController {
             List<Map<String, Object>> list = orgStructureService.getDeptManagerCheckList(resumeNo);
             return ResponseEntity.ok(list);
         } catch (Exception e) {
-            return ResponseEntity.status(500).body(null);
+            log.error("Failed to load manager check list resumeNo={}", resumeNo, e);
+            return ResponseEntity.status(500).body(java.util.Collections.emptyList());
         }
     }
 
@@ -157,7 +167,8 @@ public class OrgComposeController {
             orgStructureService.updateOrgManager(resumeNo, deptNo, managerEmpId, isPartTime);
             return ResponseEntity.ok(Map.of("message", "Cập nhật thành công"));
         } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
+            log.error("Failed to update org manager payload={}", payload, e);
+            return ResponseEntity.status(500).body(Map.of("error", "Loi he thong khi cap nhat truong bo phan."));
         }
     }
 
