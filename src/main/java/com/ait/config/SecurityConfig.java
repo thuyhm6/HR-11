@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -53,10 +54,17 @@ public class SecurityConfig implements WebMvcConfigurer {
                                 "/api/monitoring/**",
                                 "/api/performance/**",
                                 "/api/database/**",
+                                "/multilingual/**",
                                 "/sys/api/**",
                                 "/sys/api/user/**",
                                 "/sy/excel/api/**",
                                 "/sys/syRole/viewLoginUser")
+                        .hasAnyRole("ADMIN", "SYS")
+                        .requestMatchers(HttpMethod.POST, "/api/multilingual/content", "/api/multilingual/code-param/link")
+                        .hasAnyRole("ADMIN", "SYS")
+                        .requestMatchers(HttpMethod.PUT, "/api/multilingual/content")
+                        .hasAnyRole("ADMIN", "SYS")
+                        .requestMatchers(HttpMethod.DELETE, "/api/multilingual/code-param/unlink")
                         .hasAnyRole("ADMIN", "SYS")
                         .anyRequest().authenticated())
                 .httpBasic(AbstractHttpConfigurer::disable)
