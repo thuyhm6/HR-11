@@ -3,6 +3,8 @@ package com.ait.ar.attendanceSettings.controller;
 import com.ait.ar.attendanceSettings.model.ArStatisticDateParam;
 import com.ait.ar.attendanceSettings.service.ArStatisticDateParamService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -15,6 +17,7 @@ import java.util.Map;
 @Controller
 @RequestMapping("/ar/attendanceSettings")
 public class ArStatisticDateParamController {
+    private static final Logger log = LoggerFactory.getLogger(ArStatisticDateParamController.class);
 
     @Autowired
     private ArStatisticDateParamService cycleParamService;
@@ -67,7 +70,8 @@ public class ArStatisticDateParamController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             response.put("success", false);
-            response.put("error", "Lỗi khi lưu thông số chu kỳ: " + e.getMessage());
+            log.error("Failed to save cycle parameter paramNo={}", param.getParamNo(), e);
+            response.put("error", "Loi he thong khi luu thong so chu ky cham cong.");
             return ResponseEntity.internalServerError().body(response);
         }
     }
@@ -86,7 +90,8 @@ public class ArStatisticDateParamController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             response.put("success", false);
-            response.put("error", "Lỗi khi xóa thông số chu kỳ: " + e.getMessage());
+            log.error("Failed to delete cycle parameter paramNo={}", paramNo, e);
+            response.put("error", "Loi he thong khi xoa thong so chu ky cham cong.");
             return ResponseEntity.internalServerError().body(response);
         }
     }
