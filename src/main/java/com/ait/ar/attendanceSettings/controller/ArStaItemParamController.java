@@ -2,6 +2,8 @@ package com.ait.ar.attendanceSettings.controller;
 
 import com.ait.ar.attendanceSettings.dto.ArStaItemParamDto;
 import com.ait.ar.attendanceSettings.service.ArStaItemParamService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -14,6 +16,7 @@ import java.util.Map;
 @Controller
 @RequestMapping("/ar/attendanceSettings")
 public class ArStaItemParamController {
+    private static final Logger log = LoggerFactory.getLogger(ArStaItemParamController.class);
 
     @Autowired
     private ArStaItemParamService service;
@@ -56,7 +59,8 @@ public class ArStaItemParamController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             response.put("success", false);
-            response.put("error", "Lỗi: " + e.getMessage());
+            log.error("Failed to save summary param item paramNo={}", dto.getParamNo(), e);
+            response.put("error", "Loi he thong khi luu tham so chi tieu tong hop.");
             return ResponseEntity.internalServerError().body(response);
         }
     }
@@ -72,7 +76,8 @@ public class ArStaItemParamController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             response.put("success", false);
-            response.put("error", "Lỗi: " + e.getMessage());
+            log.error("Failed to delete summary param item paramNo={}", paramNo, e);
+            response.put("error", "Loi he thong khi xoa tham so chi tieu tong hop.");
             return ResponseEntity.internalServerError().body(response);
         }
     }
