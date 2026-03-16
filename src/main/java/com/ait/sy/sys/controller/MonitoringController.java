@@ -283,7 +283,7 @@ public class MonitoringController {
     /**
      * Dashboard data endpoint
      */
-    @GetMapping("/api/dashboard/data")
+    @GetMapping("/dashboard/data")
     public ResponseEntity<Map<String, Object>> getDashboardData() {
         Map<String, Object> response = new HashMap<>();
 
