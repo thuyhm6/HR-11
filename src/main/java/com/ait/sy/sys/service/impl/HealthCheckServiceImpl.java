@@ -3,6 +3,8 @@ package com.ait.sy.sys.service.impl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.ait.sy.sys.service.HealthCheckService;
 
@@ -21,6 +23,8 @@ import java.util.concurrent.TimeUnit;
  */
 @Service
 public class HealthCheckServiceImpl implements HealthCheckService {
+
+    private static final Logger log = LoggerFactory.getLogger(HealthCheckServiceImpl.class);
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -230,7 +234,8 @@ public class HealthCheckServiceImpl implements HealthCheckService {
             dbDetails.put("connectionPool", getConnectionPoolInfo());
             dbDetails.put("activeConnections", getActiveConnections());
         } catch (Exception e) {
-            dbDetails.put("error", e.getMessage());
+            log.warn("Failed to collect database health details", e);
+            dbDetails.put("error", "Unable to collect database details.");
         }
         dbResult.setDetails(dbDetails);
         detailedChecks.put("database", dbResult);
@@ -246,7 +251,8 @@ public class HealthCheckServiceImpl implements HealthCheckService {
             memoryDetails.put("heapUsagePercent", (double) heapUsage.getUsed() / heapUsage.getMax() * 100);
             memoryDetails.put("nonHeapUsed", memoryBean.getNonHeapMemoryUsage().getUsed());
         } catch (Exception e) {
-            memoryDetails.put("error", e.getMessage());
+            log.warn("Failed to collect memory health details", e);
+            memoryDetails.put("error", "Unable to collect memory details.");
         }
         memoryResult.setDetails(memoryDetails);
         detailedChecks.put("memory", memoryResult);
@@ -264,7 +270,8 @@ public class HealthCheckServiceImpl implements HealthCheckService {
             diskDetails.put("usedSpace", totalSpace - freeSpace);
             diskDetails.put("usagePercent", (double) (totalSpace - freeSpace) / totalSpace * 100);
         } catch (Exception e) {
-            diskDetails.put("error", e.getMessage());
+            log.warn("Failed to collect disk health details", e);
+            diskDetails.put("error", "Unable to collect disk details.");
         }
         diskResult.setDetails(diskDetails);
         detailedChecks.put("disk", diskResult);
@@ -284,7 +291,8 @@ public class HealthCheckServiceImpl implements HealthCheckService {
                 poolInfo.put("totalConnections", hikariDS.getHikariPoolMXBean().getTotalConnections());
             }
         } catch (Exception e) {
-            poolInfo.put("error", "Unable to get connection pool info: " + e.getMessage());
+            log.warn("Failed to collect connection pool info", e);
+            poolInfo.put("error", "Unable to get connection pool info.");
         }
         return poolInfo;
     }
