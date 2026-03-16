@@ -2,6 +2,8 @@ package com.ait.sy.syAffirm.controller;
 
 import com.ait.sy.syAffirm.dto.SyAffirmEmailDto;
 import com.ait.sy.syAffirm.service.SyAffirmEmailService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -14,6 +16,7 @@ import java.util.Map;
 @Controller
 @RequestMapping("/sy/syAffirm/api")
 public class SyAffirmEmailController {
+    private static final Logger log = LoggerFactory.getLogger(SyAffirmEmailController.class);
 
     @Autowired
     private SyAffirmEmailService service;
@@ -36,9 +39,9 @@ public class SyAffirmEmailController {
             response.put("success", true);
             response.put("message", "Lưu thành công");
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Failed to save affirmation email seq={}", dto.getSeq(), e);
             response.put("success", false);
-            response.put("error", e.getMessage());
+            response.put("error", "Loi he thong khi luu thong tin xac nhan email.");
         }
         return ResponseEntity.ok(response);
     }
@@ -51,9 +54,9 @@ public class SyAffirmEmailController {
             response.put("success", true);
             response.put("message", "Xóa thành công");
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Failed to delete affirmation email seq={}", seq, e);
             response.put("success", false);
-            response.put("error", e.getMessage());
+            response.put("error", "Loi he thong khi xoa thong tin xac nhan email.");
         }
         return ResponseEntity.ok(response);
     }
