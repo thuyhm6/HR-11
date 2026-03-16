@@ -5,6 +5,8 @@ import com.ait.ar.attendanceSettings.dto.ArEmpCalenderDto;
 import com.ait.ar.attendanceSettings.dto.ArCalenderGroupDto;
 import com.ait.sy.sys.service.HrAuthenticationService.HrUserInfo;
 import com.ait.ar.attendanceSettings.service.ArCalenderService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -19,6 +21,7 @@ import java.util.Map;
 @Controller
 @RequestMapping("/ar/attendanceSettings")
 public class ArCalenderController {
+    private static final Logger log = LoggerFactory.getLogger(ArCalenderController.class);
 
     @Autowired
     private ArCalenderService arCalenderService;
@@ -80,7 +83,8 @@ public class ArCalenderController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             response.put("success", false);
-            response.put("error", "Lỗi: " + e.getMessage());
+            log.error("Failed to save holiday date={}", dto.getDdateStr(), e);
+            response.put("error", "Loi he thong khi luu ngay le.");
             return ResponseEntity.internalServerError().body(response);
         }
     }
@@ -98,7 +102,8 @@ public class ArCalenderController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             response.put("success", false);
-            response.put("error", "Lỗi: " + e.getMessage());
+            log.error("Failed to delete holiday date={}", ddateStr, e);
+            response.put("error", "Loi he thong khi xoa ngay le.");
             return ResponseEntity.internalServerError().body(response);
         }
     }
@@ -150,7 +155,8 @@ public class ArCalenderController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             response.put("success", false);
-            response.put("error", "Lỗi: " + e.getMessage());
+            log.error("Failed to batch save group calendar groupId={} startDate={} endDate={}", groupId, startDate, endDate, e);
+            response.put("error", "Loi he thong khi them lich nhom ca.");
             return ResponseEntity.internalServerError().body(response);
         }
     }
@@ -170,7 +176,8 @@ public class ArCalenderController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             response.put("success", false);
-            response.put("error", "Lỗi: " + e.getMessage());
+            log.error("Failed to save group calendar single date={} groupId={}", dto.getArDateStr(), dto.getGroupId(), e);
+            response.put("error", "Loi he thong khi cap nhat lich nhom ca.");
             return ResponseEntity.internalServerError().body(response);
         }
     }
@@ -226,7 +233,8 @@ public class ArCalenderController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             response.put("success", false);
-            response.put("error", "Lỗi: " + e.getMessage());
+            log.error("Failed to save employee calendar day personId={} date={}", dto.getPersonId(), dto.getArDateStr(), e);
+            response.put("error", "Loi he thong khi cap nhat lich ca nhan.");
             return ResponseEntity.internalServerError().body(response);
         }
     }
