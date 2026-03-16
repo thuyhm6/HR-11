@@ -158,9 +158,13 @@ class LazyLoader {
      */
     async loadContent(element) {
         const url = element.getAttribute('data-src');
+        const safeUrl = this.resolveUrl(url);
+        if (!safeUrl || safeUrl.origin !== window.location.origin) {
+            throw new Error('Only same-origin content URLs are allowed');
+        }
         
         try {
-            const response = await fetch(url);
+            const response = await fetch(safeUrl.toString());
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             
             const content = await response.text();
@@ -208,13 +212,26 @@ class LazyLoader {
      * Load script dynamically
      */
     loadScript(url) {
+        const safeUrl = this.resolveUrl(url);
+        if (!safeUrl || safeUrl.origin !== window.location.origin) {
+            return Promise.reject(new Error('Only same-origin script URLs are allowed'));
+        }
+
         return new Promise((resolve, reject) => {
             const script = document.createElement('script');
-            script.src = url;
+            script.src = safeUrl.toString();
             script.onload = resolve;
             script.onerror = reject;
             document.head.appendChild(script);
         });
+    }
+
+    resolveUrl(url) {
+        try {
+            return new URL(url, window.location.origin);
+        } catch {
+            return null;
+        }
     }
     
     /**
