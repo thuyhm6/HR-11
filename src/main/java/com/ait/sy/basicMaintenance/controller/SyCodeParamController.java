@@ -3,6 +3,8 @@ package com.ait.sy.basicMaintenance.controller;
 import com.ait.sy.basicMaintenance.dto.SyCodeParamDto;
 import com.ait.sy.basicMaintenance.service.SyCodeParamService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -15,6 +17,7 @@ import java.util.Map;
 @Controller
 @RequestMapping("/sys")
 public class SyCodeParamController {
+    private static final Logger log = LoggerFactory.getLogger(SyCodeParamController.class);
 
     @Autowired
     private SyCodeParamService syCodeParamService;
@@ -44,7 +47,8 @@ public class SyCodeParamController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             response.put("success", false);
-            response.put("message", "Lỗi: " + e.getMessage());
+            log.error("Failed to save code param codeNo={} cpnyId={}", dto.getCodeNo(), dto.getCpnyId(), e);
+            response.put("message", "Loi he thong khi luu tham so ma.");
             return ResponseEntity.badRequest().body(response);
         }
     }
@@ -61,7 +65,8 @@ public class SyCodeParamController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             response.put("success", false);
-            response.put("message", "Lỗi: " + e.getMessage());
+            log.error("Failed to update code param codeNo={} cpnyId={}", dto.getCodeNo(), dto.getCpnyId(), e);
+            response.put("message", "Loi he thong khi cap nhat tham so ma.");
             return ResponseEntity.badRequest().body(response);
         }
     }
@@ -77,7 +82,8 @@ public class SyCodeParamController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             response.put("success", false);
-            response.put("message", "Lỗi: " + e.getMessage());
+            log.error("Failed to delete code param codeNo={} cpnyId={}", dto.getCodeNo(), dto.getCpnyId(), e);
+            response.put("message", "Loi he thong khi xoa tham so ma.");
             return ResponseEntity.badRequest().body(response);
         }
     }
