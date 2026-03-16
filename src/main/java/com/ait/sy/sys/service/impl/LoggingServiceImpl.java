@@ -312,18 +312,8 @@ public class LoggingServiceImpl implements LoggingService {
         try {
             if (request == null)
                 return null;
-
-            String xForwardedFor = request.getHeader("X-Forwarded-For");
-            if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
-                return xForwardedFor.split(",")[0].trim();
-            }
-
-            String xRealIp = request.getHeader("X-Real-IP");
-            if (xRealIp != null && !xRealIp.isEmpty()) {
-                return xRealIp;
-            }
-
-            return request.getRemoteAddr();
+            String remoteAddr = request.getRemoteAddr();
+            return (remoteAddr == null || remoteAddr.isBlank()) ? null : remoteAddr;
         } catch (Exception e) {
             // Return null if not in web request context (e.g., scheduled tasks)
             return null;
