@@ -53,7 +53,8 @@ public class EssDeptEmpAttController {
             response.put("message", "Lưu thành công");
         } catch (Exception e) {
             response.put("success", false);
-            log.error("Failed to save shift group change payload={}", body, e);
+            log.error("Failed to save shift group change payloadKeys={}",
+                    body != null ? body.keySet() : null, e);
             response.put("error", "Loi he thong khi luu thay doi ca.");
         }
         return ResponseEntity.ok(response);

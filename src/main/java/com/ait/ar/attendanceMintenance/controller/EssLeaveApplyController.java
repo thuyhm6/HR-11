@@ -74,7 +74,8 @@ public class EssLeaveApplyController {
             response.put("success", true);
             response.put("message", "Lưu thành công");
         } catch (Exception e) {
-            log.error("Failed to save leave application params={}", params, e);
+            log.error("Failed to save leave application payloadKeys={}",
+                    params != null ? params.keySet() : null, e);
             response.put("success", false);
             response.put("error", "Loi he thong khi luu don nghi phep.");
         }
