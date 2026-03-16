@@ -189,7 +189,7 @@ public class AuthController {
 
         } catch (SecurityException e) {
             // Rate limiting exception
-            model.addAttribute("error", e.getMessage());
+            model.addAttribute("error", "Qua nhieu lan dang nhap that bai. Vui long thu lai sau.");
             model.addAttribute("username", username);
             model.addAttribute("csrfToken", csrfUtil.getCsrfToken(session));
             return "login/login";
