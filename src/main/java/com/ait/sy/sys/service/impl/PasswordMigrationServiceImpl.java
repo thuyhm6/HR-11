@@ -69,7 +69,7 @@ public class PasswordMigrationServiceImpl implements PasswordMigrationService {
                     }
 
                 } catch (Exception e) {
-                    logger.error("Error migrating password for user {}: {}", user.getUserNo(), e.getMessage(), e);
+                    logger.error("Error migrating password for user {}", user.getUserNo(), e);
                     errorCount++;
                 }
             }
@@ -78,8 +78,8 @@ public class PasswordMigrationServiceImpl implements PasswordMigrationService {
                     migratedCount, skippedCount, errorCount);
 
         } catch (Exception e) {
-            logger.error("Error during password migration: {}", e.getMessage(), e);
-            throw new RuntimeException("Password migration failed: " + e.getMessage(), e);
+            logger.error("Error during password migration", e);
+            throw new RuntimeException("Password migration failed.", e);
         }
     }
 
@@ -113,7 +113,7 @@ public class PasswordMigrationServiceImpl implements PasswordMigrationService {
             }
 
         } catch (Exception e) {
-            logger.error("Error migrating password for user {}: {}", userNo, e.getMessage(), e);
+            logger.error("Error migrating password for user {}", userNo, e);
             return false;
         }
     }
@@ -123,7 +123,7 @@ public class PasswordMigrationServiceImpl implements PasswordMigrationService {
         try {
             return syUserMapper.isMigrationCompleted();
         } catch (Exception e) {
-            logger.error("Error checking migration status: {}", e.getMessage(), e);
+            logger.error("Error checking migration status", e);
             return false;
         }
     }
@@ -133,7 +133,7 @@ public class PasswordMigrationServiceImpl implements PasswordMigrationService {
         try {
             return syUserMapper.countUsersNeedingMigration();
         } catch (Exception e) {
-            logger.error("Error counting users needing migration: {}", e.getMessage(), e);
+            logger.error("Error counting users needing migration", e);
             return 0;
         }
     }
