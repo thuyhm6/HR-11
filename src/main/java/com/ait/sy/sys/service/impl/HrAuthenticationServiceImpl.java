@@ -11,20 +11,15 @@ import com.ait.sy.syRole.model.SyUser;
 import com.ait.sy.sys.service.HrAuthenticationService;
 import com.ait.sy.sys.service.RateLimitingService;
 import com.ait.util.CsrfUtil;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
-
-/**
- * HrAuthenticationServiceImpl - Implementation của HrAuthenticationService
- * Xử lý xác thực đăng nhập với 3 bảng: sy_user, hr_employee, hr_department
- */
 @Service
 @Transactional
 public class HrAuthenticationServiceImpl implements HrAuthenticationService {
@@ -57,120 +52,102 @@ public class HrAuthenticationServiceImpl implements HrAuthenticationService {
         return authenticate(username, password, null, null);
     }
 
-    /**
-     * Xác thực đăng nhập với bảo mật nâng cao
-     */
     public HrUserInfo authenticate(String username, String password, HttpServletRequest request, HttpSession session) {
         try {
-            // Bước 1: Kiểm tra rate limiting
             String clientIp = getClientIpAddress(request);
             if (!rateLimitingService.isAllowed(clientIp, "login")) {
-                logger.warn("Rate limit exceeded for IP: {}", clientIp);
-                throw new SecurityException("Quá nhiều lần đăng nhập thất bại. Vui lòng thử lại sau 15 phút.");
+                logger.warn("Rate limit exceeded for IP={}", clientIp);
+                throw new SecurityException("Qua nhieu lan dang nhap that bai. Vui long thu lai sau 15 phut.");
             }
 
-            // Bước 2: Validate input
             if (username == null || username.trim().isEmpty()) {
                 recordFailedLogin(clientIp, "login");
-                throw new IllegalArgumentException("Tên đăng nhập không được để trống");
+                throw new IllegalArgumentException("Ten dang nhap khong duoc de trong");
             }
 
             if (password == null || password.trim().isEmpty()) {
                 recordFailedLogin(clientIp, "login");
-                throw new IllegalArgumentException("Mật khẩu không được để trống");
+                throw new IllegalArgumentException("Mat khau khong duoc de trong");
             }
 
-            // Bước 3: Tìm user trong bảng sy_user theo username
             SyUser syUser = syUserMapper.findByUserName(username.trim());
             if (syUser == null) {
                 recordFailedLogin(clientIp, "login");
-                logger.warn("Login attempt with non-existent username: {}", username);
-                return null; // User không tồn tại
+                logger.warn("Login attempt with non-existent username={}", username);
+                return null;
             }
 
-            // Bước 4: Kiểm tra trạng thái hoạt động của user
             if (!syUser.isActive()) {
                 recordFailedLogin(clientIp, "login");
-                logger.warn("Login attempt with inactive user: {}", username);
-                return null; // User không hoạt động
+                logger.warn("Login attempt with inactive user={}", username);
+                return null;
             }
 
-            // Bước 5: Kiểm tra mật khẩu với BCrypt
             if (!syUser.matchesPassword(password, passwordEncoder)) {
                 recordFailedLogin(clientIp, "login");
-                logger.warn("Invalid password for user: {}", username);
-                return null; // Mật khẩu không đúng
+                logger.warn("Invalid password for user={}", username);
+                return null;
             }
 
-            // Bước 6: Tìm thông tin nhân viên theo PERSON_ID
             HrEmployee hrEmployee = hrEmployeeMapper.findByPersonId(syUser.getPersonId());
             if (hrEmployee == null) {
                 recordFailedLogin(clientIp, "login");
-                logger.warn("No employee found for user: {}", username);
-                return null; // Không tìm thấy thông tin nhân viên
+                logger.warn("No employee found for user={}", username);
+                return null;
             }
 
-            // Bước 7: Kiểm tra trạng thái hoạt động của nhân viên
             if (!hrEmployee.isActive()) {
                 recordFailedLogin(clientIp, "login");
-                logger.warn("Inactive employee for user: {}", username);
-                return null; // Nhân viên không hoạt động
+                logger.warn("Inactive employee for user={}", username);
+                return null;
             }
 
             HrPersonalInfo hrPersonalInfo = hrPersonalInfoMapper.findByPersonId(syUser.getPersonId());
             if (hrPersonalInfo == null) {
                 recordFailedLogin(clientIp, "login");
-                logger.warn("No personal info found for user: {}", username);
-                return null; // Không tìm thấy thông tin nhân viên
+                logger.warn("No personal info found for user={}", username);
+                return null;
             }
 
-            // Bước 8: Tìm thông tin phòng ban theo DEPTNO
             HrDepartment hrDepartment = hrDepartmentMapper.findByDeptNo(hrEmployee.getDeptNo());
             if (hrDepartment == null) {
                 recordFailedLogin(clientIp, "login");
-                logger.warn("No department found for user: {}", username);
-                return null; // Không tìm thấy thông tin phòng ban
+                logger.warn("No department found for user={}", username);
+                return null;
             }
 
-            // Bước 9: Kiểm tra trạng thái hoạt động của phòng ban
             if (!hrDepartment.isActive()) {
                 recordFailedLogin(clientIp, "login");
-                logger.warn("Inactive department for user: {}", username);
-                return null; // Phòng ban không hoạt động
+                logger.warn("Inactive department for user={}", username);
+                return null;
             }
 
-            // Bước 10: Cập nhật thời gian đăng nhập cuối
             syUserMapper.updateLastLogin(syUser.getUserNo());
 
-            // Bước 11: Tạo CSRF token cho session
             if (session != null) {
                 csrfUtil.saveCsrfToken(session);
             }
 
-            // Bước 12: Reset rate limit cho IP thành công
             rateLimitingService.resetRateLimit(clientIp, "login");
+            logger.info("Successful login for user={} from IP={}", username, clientIp);
 
-            // Bước 13: Log thành công
-            logger.info("Successful login for user: {} from IP: {}", username, clientIp);
-
-            // Bước 14: Tạo và trả về thông tin user đầy đủ
             return new HrUserInfo(syUser, hrEmployee, hrDepartment, hrPersonalInfo);
-
+        } catch (SecurityException | IllegalArgumentException e) {
+            throw e;
         } catch (Exception e) {
-            throw new RuntimeException("Lỗi xác thực đăng nhập: " + e.getMessage(), e);
+            logger.error("Authentication flow failed for username={}", username, e);
+            throw new RuntimeException("Loi he thong khi xac thuc dang nhap.", e);
         }
     }
 
     @Override
     public HrUserInfo findByUsername(String username) {
         try {
-            // Tìm user theo username
             SyUser syUser = syUserMapper.findByUserName(username);
             if (syUser == null) {
                 return null;
             }
 
-            // Tìm thông tin nhân viên
             HrEmployee hrEmployee = hrEmployeeMapper.findByPersonId(syUser.getPersonId());
             if (hrEmployee == null) {
                 return null;
@@ -178,32 +155,29 @@ public class HrAuthenticationServiceImpl implements HrAuthenticationService {
 
             HrPersonalInfo hrPersonalInfo = hrPersonalInfoMapper.findByPersonId(syUser.getPersonId());
             if (hrPersonalInfo == null) {
-                return null; // Không tìm thấy thông tin nhân viên
+                return null;
             }
 
-            // Tìm thông tin phòng ban
             HrDepartment hrDepartment = hrDepartmentMapper.findByDeptNo(hrEmployee.getDeptNo());
             if (hrDepartment == null) {
                 return null;
             }
 
             return new HrUserInfo(syUser, hrEmployee, hrDepartment, hrPersonalInfo);
-
         } catch (Exception e) {
-            throw new RuntimeException("Lỗi tìm thông tin user: " + e.getMessage(), e);
+            logger.error("Failed to find user info by username={}", username, e);
+            throw new RuntimeException("Loi he thong khi lay thong tin user.", e);
         }
     }
 
     @Override
     public HrUserInfo findByPersonId(String personId) {
         try {
-            // Tìm user theo personId
             SyUser syUser = syUserMapper.findByPersonId(personId);
             if (syUser == null) {
                 return null;
             }
 
-            // Tìm thông tin nhân viên
             HrEmployee hrEmployee = hrEmployeeMapper.findByPersonId(personId);
             if (hrEmployee == null) {
                 return null;
@@ -211,19 +185,18 @@ public class HrAuthenticationServiceImpl implements HrAuthenticationService {
 
             HrPersonalInfo hrPersonalInfo = hrPersonalInfoMapper.findByPersonId(syUser.getPersonId());
             if (hrPersonalInfo == null) {
-                return null; // Không tìm thấy thông tin nhân viên
+                return null;
             }
 
-            // Tìm thông tin phòng ban
             HrDepartment hrDepartment = hrDepartmentMapper.findByDeptNo(hrEmployee.getDeptNo());
             if (hrDepartment == null) {
                 return null;
             }
 
             return new HrUserInfo(syUser, hrEmployee, hrDepartment, hrPersonalInfo);
-
         } catch (Exception e) {
-            throw new RuntimeException("Lỗi tìm thông tin user theo personId: " + e.getMessage(), e);
+            logger.error("Failed to find user info by personId={}", personId, e);
+            throw new RuntimeException("Loi he thong khi lay thong tin user theo personId.", e);
         }
     }
 
@@ -233,7 +206,8 @@ public class HrAuthenticationServiceImpl implements HrAuthenticationService {
             int result = syUserMapper.updateLastLogin(userNo);
             return result > 0;
         } catch (Exception e) {
-            throw new RuntimeException("Lỗi cập nhật thời gian đăng nhập: " + e.getMessage(), e);
+            logger.error("Failed to update last login for userNo={}", userNo, e);
+            throw new RuntimeException("Loi he thong khi cap nhat thoi gian dang nhap.", e);
         }
     }
 
@@ -242,20 +216,15 @@ public class HrAuthenticationServiceImpl implements HrAuthenticationService {
         try {
             return syUserMapper.existsByUserName(username);
         } catch (Exception e) {
-            throw new RuntimeException("Lỗi kiểm tra username: " + e.getMessage(), e);
+            logger.error("Failed to check username existence username={}", username, e);
+            throw new RuntimeException("Loi he thong khi kiem tra username.", e);
         }
     }
 
-    /**
-     * Ghi nhận login thất bại
-     */
     private void recordFailedLogin(String clientIp, String operation) {
         rateLimitingService.recordRequest(clientIp, operation);
     }
 
-    /**
-     * Lấy IP address của client
-     */
     private String getClientIpAddress(HttpServletRequest request) {
         if (request == null) {
             return "unknown";
@@ -274,24 +243,15 @@ public class HrAuthenticationServiceImpl implements HrAuthenticationService {
         return request.getRemoteAddr();
     }
 
-    /**
-     * Kiểm tra CSRF token
-     */
     public boolean validateCsrfToken(HttpServletRequest request) {
         return csrfUtil.validateCsrfToken(request);
     }
 
-    /**
-     * Lấy thông tin rate limiting
-     */
     public int getRemainingLoginAttempts(HttpServletRequest request) {
         String clientIp = getClientIpAddress(request);
         return rateLimitingService.getRemainingAttempts(clientIp, "login");
     }
 
-    /**
-     * Lấy thời gian còn lại cho rate limiting
-     */
     public long getTimeUntilRateLimitReset(HttpServletRequest request) {
         String clientIp = getClientIpAddress(request);
         return rateLimitingService.getTimeUntilReset(clientIp, "login");
