@@ -2,6 +2,8 @@ package com.ait.ess.deptEmpAtt.controller;
 
 import com.ait.ess.deptEmpAtt.dto.ArShiftGroupManagementDto;
 import com.ait.ess.deptEmpAtt.service.ArShiftGroupManagementService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -14,6 +16,7 @@ import java.util.Map;
 @Controller
 @RequestMapping("/ess/deptEmpAtt")
 public class EssDeptEmpAttController {
+    private static final Logger log = LoggerFactory.getLogger(EssDeptEmpAttController.class);
 
     @Autowired
     private ArShiftGroupManagementService service;
@@ -50,7 +53,8 @@ public class EssDeptEmpAttController {
             response.put("message", "Lưu thành công");
         } catch (Exception e) {
             response.put("success", false);
-            response.put("error", e.getMessage());
+            log.error("Failed to save shift group change payload={}", body, e);
+            response.put("error", "Loi he thong khi luu thay doi ca.");
         }
         return ResponseEntity.ok(response);
     }
