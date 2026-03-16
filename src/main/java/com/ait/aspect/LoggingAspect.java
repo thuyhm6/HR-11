@@ -87,7 +87,7 @@ public class LoggingAspect {
 
             // Log error
             logger.error("💥 [{}] {}.{}() - Failed in {}ms ({}) - Error: {}",
-                    operationType, className, methodName, executionTime, endTimeStr, e.getMessage());
+                    operationType, className, methodName, executionTime, endTimeStr, e.getClass().getSimpleName());
 
             // Log stack trace at debug level
             logger.debug("💥 [{}] Stack trace:", operationType, e);
@@ -136,7 +136,7 @@ public class LoggingAspect {
         } catch (Exception e) {
             long executionTime = System.currentTimeMillis() - startTime;
             logger.error("💥 [MAPPER] {}.{}() - Failed in {}ms - Error: {}",
-                    className, methodName, executionTime, e.getMessage());
+                    className, methodName, executionTime, e.getClass().getSimpleName());
             throw e;
         }
     }
@@ -253,3 +253,4 @@ public class LoggingAspect {
         }
     }
 }
+
