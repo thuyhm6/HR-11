@@ -53,6 +53,7 @@ public class SecurityConfig implements WebMvcConfigurer {
                                 "/api/monitoring/**",
                                 "/api/performance/**",
                                 "/api/database/**",
+                                "/sys/api/**",
                                 "/sys/api/user/**",
                                 "/sys/syRole/viewLoginUser")
                         .hasAnyRole("ADMIN", "SYS")
