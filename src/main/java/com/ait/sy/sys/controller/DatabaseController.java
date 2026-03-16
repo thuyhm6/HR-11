@@ -82,11 +82,13 @@ public class DatabaseController {
         if (authError != null)
             return authError;
         try {
-            List<DatabaseMonitoringService.SlowQueryInfo> slowQueries = databaseMonitoringService.getSlowQueries(limit);
+            int safeLimit = Math.min(Math.max(limit, 1), 100);
+            List<DatabaseMonitoringService.SlowQueryInfo> slowQueries = databaseMonitoringService.getSlowQueries(safeLimit);
 
             Map<String, Object> response = new HashMap<>();
             response.put("slowQueries", slowQueries);
             response.put("count", slowQueries.size());
+            response.put("limit", safeLimit);
 
             return ResponseEntity.ok(response);
 
