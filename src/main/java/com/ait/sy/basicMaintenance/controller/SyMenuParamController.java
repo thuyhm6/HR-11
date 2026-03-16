@@ -3,6 +3,8 @@ package com.ait.sy.basicMaintenance.controller;
 import com.ait.sy.basicMaintenance.dto.SyMenuParamDto;
 import com.ait.sy.basicMaintenance.service.SyMenuParamService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -17,6 +19,7 @@ import java.util.Map;
 @Controller
 @RequestMapping("/sys")
 public class SyMenuParamController {
+    private static final Logger log = LoggerFactory.getLogger(SyMenuParamController.class);
 
     @Autowired
     private SyMenuParamService syMenuParamService;
@@ -43,9 +46,9 @@ public class SyMenuParamController {
             response.put("success", true);
             response.put("message", "Lưu thành công!");
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Failed to save menu param cpnyId={} menuNo={}", dto.getCpnyId(), dto.getMenuNo(), e);
             response.put("success", false);
-            response.put("message", "Lỗi: " + e.getMessage());
+            response.put("message", "Loi he thong khi luu thong so menu.");
         }
         return response;
     }
@@ -60,7 +63,8 @@ public class SyMenuParamController {
             response.put("message", "Xóa thành công!");
         } catch (Exception e) {
             response.put("success", false);
-            response.put("message", "Lỗi: " + e.getMessage());
+            log.error("Failed to delete menu param cpnyId={} menuNo={}", dto.getCpnyId(), dto.getMenuNo(), e);
+            response.put("message", "Loi he thong khi xoa thong so menu.");
         }
         return response;
     }
