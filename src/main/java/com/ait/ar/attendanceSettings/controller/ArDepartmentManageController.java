@@ -3,6 +3,8 @@ package com.ait.ar.attendanceSettings.controller;
 import com.ait.ar.attendanceSettings.dto.ArDepartmentManageDto;
 import com.ait.ar.attendanceSettings.model.ArDepartmentManage;
 import com.ait.ar.attendanceSettings.service.ArDepartmentManageService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -16,6 +18,7 @@ import java.util.Map;
 @Controller
 @RequestMapping("/ar/attendanceSettings")
 public class ArDepartmentManageController {
+    private static final Logger log = LoggerFactory.getLogger(ArDepartmentManageController.class);
 
     @Autowired
     private ArDepartmentManageService service;
@@ -45,9 +48,9 @@ public class ArDepartmentManageController {
             result.put("success", true);
             result.put("message", "Lưu chốt công thành công.");
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Failed to save department attendance lock info", e);
             result.put("success", false);
-            result.put("error", e.getMessage());
+            result.put("error", "Loi he thong khi luu chot cong phong ban.");
         }
         return ResponseEntity.ok(result);
     }
