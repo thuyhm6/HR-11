@@ -4,6 +4,8 @@ import com.ait.ar.attendanceMintenance.dto.EssLeaveApplyDto;
 import com.ait.sy.syAffirm.dto.SyAffirmEmailDto;
 import com.ait.ar.attendanceMintenance.service.EssLeaveApplyService;
 import com.ait.sy.syAffirm.service.SyAffirmEmailService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -16,6 +18,7 @@ import java.util.Map;
 @Controller
 @RequestMapping("/ar/attendanceMintenance")
 public class EssLeaveApplyController {
+    private static final Logger log = LoggerFactory.getLogger(EssLeaveApplyController.class);
 
     @Autowired
     private EssLeaveApplyService service;
@@ -71,9 +74,9 @@ public class EssLeaveApplyController {
             response.put("success", true);
             response.put("message", "Lưu thành công");
         } catch (Exception e) {
-            e.printStackTrace(); // In lỗi ra log Console
+            log.error("Failed to save leave application params={}", params, e);
             response.put("success", false);
-            response.put("error", e.getMessage());
+            response.put("error", "Loi he thong khi luu don nghi phep.");
         }
         return ResponseEntity.ok(response);
     }
