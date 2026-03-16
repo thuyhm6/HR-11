@@ -3,6 +3,8 @@ package com.ait.sy.sys.controller;
 import com.ait.sy.basicMaintenance.model.SyCode;
 import com.ait.sy.sys.service.MultilingualService;
 import com.ait.util.MultilingualUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,6 +20,7 @@ import java.util.Map;
 @Controller
 @RequestMapping("/multilingual")
 public class MultilingualManagementController {
+    private static final Logger log = LoggerFactory.getLogger(MultilingualManagementController.class);
 
     @Autowired
     private MultilingualService multilingualService;
@@ -85,9 +88,10 @@ public class MultilingualManagementController {
                     "success", true,
                     "message", "Nội dung đã được lưu thành công");
         } catch (Exception e) {
+            log.error("Failed to save multilingual content no={} language={}", no, language, e);
             return Map.of(
                     "success", false,
-                    "message", "Lỗi khi lưu nội dung: " + e.getMessage());
+                    "message", "Loi he thong khi luu noi dung da ngon ngu.");
         }
     }
 
@@ -108,9 +112,10 @@ public class MultilingualManagementController {
                     "success", true,
                     "message", "Nội dung đã được cập nhật thành công");
         } catch (Exception e) {
+            log.error("Failed to update multilingual content no={} language={}", no, language, e);
             return Map.of(
                     "success", false,
-                    "message", "Lỗi khi cập nhật nội dung: " + e.getMessage());
+                    "message", "Loi he thong khi cap nhat noi dung da ngon ngu.");
         }
     }
 
@@ -129,9 +134,10 @@ public class MultilingualManagementController {
                     "success", true,
                     "message", "Nội dung đã được xóa thành công");
         } catch (Exception e) {
+            log.error("Failed to delete multilingual content no={} language={}", no, language, e);
             return Map.of(
                     "success", false,
-                    "message", "Lỗi khi xóa nội dung: " + e.getMessage());
+                    "message", "Loi he thong khi xoa noi dung da ngon ngu.");
         }
     }
 
@@ -259,9 +265,10 @@ public class MultilingualManagementController {
                     "success", true,
                     "message", "Dữ liệu mẫu đã được tạo thành công");
         } catch (Exception e) {
+            log.error("Failed to create multilingual sample data", e);
             return Map.of(
                     "success", false,
-                    "message", "Lỗi khi tạo dữ liệu mẫu: " + e.getMessage());
+                    "message", "Loi he thong khi tao du lieu mau da ngon ngu.");
         }
     }
 }
