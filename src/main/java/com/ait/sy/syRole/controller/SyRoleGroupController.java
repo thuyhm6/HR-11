@@ -3,6 +3,8 @@ package com.ait.sy.syRole.controller;
 import com.ait.sy.syRole.dto.SyRoleGroupDto;
 import com.ait.sy.syRole.service.SyRoleGroupService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -17,6 +19,7 @@ import java.util.Map;
 @Controller
 @RequestMapping("/sys")
 public class SyRoleGroupController {
+    private static final Logger log = LoggerFactory.getLogger(SyRoleGroupController.class);
 
     @Autowired
     private SyRoleGroupService syRoleGroupService;
@@ -47,9 +50,9 @@ public class SyRoleGroupController {
             response.put("success", true);
             response.put("message", "Lưu thành công!");
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Failed to save role group roleGroupNo={}", dto.getRoleGroupNo(), e);
             response.put("success", false);
-            response.put("message", "Lỗi: " + e.getMessage());
+            response.put("message", "Loi he thong khi luu nhom vai tro.");
         }
         return response;
     }
@@ -63,9 +66,9 @@ public class SyRoleGroupController {
             response.put("success", true);
             response.put("message", "Lưu phân quyền thành công!");
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Failed to save role group relations roleGroupNo={}", dto.getRoleGroupNo(), e);
             response.put("success", false);
-            response.put("message", "Lỗi: " + e.getMessage());
+            response.put("message", "Loi he thong khi luu phan quyen nhom vai tro.");
         }
         return response;
     }
@@ -80,7 +83,8 @@ public class SyRoleGroupController {
             response.put("message", "Xóa thành công!");
         } catch (Exception e) {
             response.put("success", false);
-            response.put("message", "Lỗi: " + e.getMessage());
+            log.error("Failed to delete role group roleGroupId={}", roleGroupId, e);
+            response.put("message", "Loi he thong khi xoa nhom vai tro.");
         }
         return response;
     }
