@@ -5,6 +5,8 @@ import com.ait.ar.attendanceSettings.model.ArSupervisor;
 import com.ait.ar.attendanceSettings.service.ArSupervisorService;
 import com.ait.hrm.empinfo.mapper.HrEmployeeMapper;
 import com.ait.hrm.empinfo.model.HrEmployee;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -17,6 +19,7 @@ import java.util.Map;
 @Controller
 @RequestMapping("/ar/attendanceSettings")
 public class ArSupervisorController {
+    private static final Logger log = LoggerFactory.getLogger(ArSupervisorController.class);
 
     @Autowired
     private ArSupervisorService service;
@@ -89,7 +92,8 @@ public class ArSupervisorController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             response.put("success", false);
-            response.put("error", "Lỗi: " + e.getMessage());
+            log.error("Failed to save supervisor personId={}", model.getPersonId(), e);
+            response.put("error", "Loi he thong khi luu thong tin nguoi cham cong.");
             return ResponseEntity.internalServerError().body(response);
         }
     }
@@ -106,7 +110,8 @@ public class ArSupervisorController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             response.put("success", false);
-            response.put("error", "Lỗi: " + e.getMessage());
+            log.error("Failed to delete supervisor personId={}", personId, e);
+            response.put("error", "Loi he thong khi xoa nguoi cham cong.");
             return ResponseEntity.internalServerError().body(response);
         }
     }
@@ -125,7 +130,8 @@ public class ArSupervisorController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             response.put("success", false);
-            response.put("error", "Lỗi: " + e.getMessage());
+            log.error("Failed to save supervisor departments personId={}", personId, e);
+            response.put("error", "Loi he thong khi cap nhat phong ban duoc phan quyen.");
             return ResponseEntity.internalServerError().body(response);
         }
     }
