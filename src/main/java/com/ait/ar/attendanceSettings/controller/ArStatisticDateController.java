@@ -3,6 +3,8 @@ package com.ait.ar.attendanceSettings.controller;
 import com.ait.ar.attendanceSettings.dto.ArStatisticDateDto;
 import com.ait.ar.attendanceSettings.service.ArStatisticDateService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -14,6 +16,7 @@ import java.util.Map;
 @Controller
 @RequestMapping("/ar/attendanceSettings")
 public class ArStatisticDateController {
+    private static final Logger log = LoggerFactory.getLogger(ArStatisticDateController.class);
 
     @Autowired
     private ArStatisticDateService arStatisticDateService;
@@ -65,7 +68,8 @@ public class ArStatisticDateController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             response.put("success", false);
-            response.put("error", "Lỗi khi lưu thông tin: " + e.getMessage());
+            log.error("Failed to save statistic cycle statNo={}", dto.getStatNo(), e);
+            response.put("error", "Loi he thong khi luu chu ky cham cong.");
             return ResponseEntity.internalServerError().body(response);
         }
     }
@@ -84,7 +88,8 @@ public class ArStatisticDateController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             response.put("success", false);
-            response.put("error", "Lỗi khi xóa thông tin: " + e.getMessage());
+            log.error("Failed to delete statistic cycle statNo={}", statNo, e);
+            response.put("error", "Loi he thong khi xoa chu ky cham cong.");
             return ResponseEntity.internalServerError().body(response);
         }
     }
