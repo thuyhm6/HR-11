@@ -1,0 +1,28 @@
+package com.ait.config;
+
+import jakarta.servlet.http.HttpServletRequest;
+import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+
+@ControllerAdvice
+public class GlobalApiExceptionHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(GlobalApiExceptionHandler.class);
+
+    @ExceptionHandler(Exception.class)
+    public Object handleUnexpectedException(Exception ex, HttpServletRequest request) {
+        String uri = request.getRequestURI();
+        log.error("Unhandled exception for uri={}", uri, ex);
+
+        // Keep API responses sanitized even when a controller misses try/catch.
+        if (uri != null && uri.contains("/api/")) {
+            return ResponseEntity.status(500).body(Map.of("error", "Loi he thong. Vui long thu lai."));
+        }
+
+        return "error/500";
+    }
+}
