@@ -7,6 +7,8 @@ import com.ait.org.orgManage.service.CurrentOrgService;
 import com.ait.sy.sys.service.HrAuthenticationService.HrUserInfo;
 
 import jakarta.servlet.http.HttpSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,6 +20,7 @@ import java.util.List;
 
 @Controller
 public class CurrentOrgController {
+    private static final Logger log = LoggerFactory.getLogger(CurrentOrgController.class);
 
     @Autowired
     private CurrentOrgService service;
@@ -51,8 +54,9 @@ public class CurrentOrgController {
             List<HrDepartment> list = service.getOrgTree();
             return org.springframework.http.ResponseEntity.ok(list);
         } catch (Exception e) {
-            e.printStackTrace();
-            return org.springframework.http.ResponseEntity.status(500).body(e.getMessage());
+            log.error("Failed to load current org structure", e);
+            return org.springframework.http.ResponseEntity.status(500)
+                    .body(java.util.Map.of("error", "Loi he thong khi tai cau truc to chuc."));
         }
     }
 
@@ -63,8 +67,9 @@ public class CurrentOrgController {
             List<OrgNode> list = service.getVisualOrgTree();
             return org.springframework.http.ResponseEntity.ok(list);
         } catch (Exception e) {
-            e.printStackTrace();
-            return org.springframework.http.ResponseEntity.status(500).body(e.getMessage());
+            log.error("Failed to load visual org tree", e);
+            return org.springframework.http.ResponseEntity.status(500)
+                    .body(java.util.Map.of("error", "Loi he thong khi tai so do to chuc."));
         }
     }
 
@@ -75,8 +80,9 @@ public class CurrentOrgController {
             List<HrEmployee> list = service.getEmployeeList(deptNo);
             return org.springframework.http.ResponseEntity.ok(list);
         } catch (Exception e) {
-            e.printStackTrace();
-            return org.springframework.http.ResponseEntity.status(500).body(e.getMessage());
+            log.error("Failed to load employees for deptNo={}", deptNo, e);
+            return org.springframework.http.ResponseEntity.status(500)
+                    .body(java.util.Map.of("error", "Loi he thong khi tai danh sach nhan vien."));
         }
     }
 }
