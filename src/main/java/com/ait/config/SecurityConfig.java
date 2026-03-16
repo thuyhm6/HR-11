@@ -55,6 +55,7 @@ public class SecurityConfig implements WebMvcConfigurer {
                                 "/api/database/**",
                                 "/sys/api/**",
                                 "/sys/api/user/**",
+                                "/sy/excel/api/**",
                                 "/sys/syRole/viewLoginUser")
                         .hasAnyRole("ADMIN", "SYS")
                         .anyRequest().authenticated())
