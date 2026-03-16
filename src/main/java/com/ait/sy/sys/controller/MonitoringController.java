@@ -241,17 +241,25 @@ public class MonitoringController {
         Map<String, Object> response = new HashMap<>();
 
         try {
+            String safeEventType = sanitizeLogInput(eventType, 50);
+            String safeMessage = sanitizeLogInput(message, 500);
+            if (safeMessage == null || safeMessage.isBlank()) {
+                response.put("error", "Message must not be empty");
+                response.put("timestamp", System.currentTimeMillis());
+                return ResponseEntity.badRequest().body(response);
+            }
+
             // Validate event type
             try {
-                LoggingService.EventType.valueOf(eventType.toUpperCase());
+                LoggingService.EventType.valueOf(safeEventType.toUpperCase());
             } catch (IllegalArgumentException e) {
                 // Use default event type
             }
 
-            loggingService.logEvent(eventType, message, context);
+            loggingService.logEvent(safeEventType, safeMessage, context);
 
             response.put("message", "Test event logged successfully");
-            response.put("eventType", eventType);
+            response.put("eventType", safeEventType);
             response.put("correlationId", loggingService.getCorrelationId());
             response.put("timestamp", System.currentTimeMillis());
 
@@ -262,6 +270,14 @@ public class MonitoringController {
             response.put("timestamp", System.currentTimeMillis());
             return ResponseEntity.status(500).body(response);
         }
+    }
+
+    private String sanitizeLogInput(String value, int maxLength) {
+        if (value == null) {
+            return null;
+        }
+        String sanitized = value.replaceAll("[\\r\\n\\t\\f]", " ").trim();
+        return sanitized.length() <= maxLength ? sanitized : sanitized.substring(0, maxLength);
     }
 
     /**
