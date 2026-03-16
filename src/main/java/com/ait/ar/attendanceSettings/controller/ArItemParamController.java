@@ -3,6 +3,8 @@ package com.ait.ar.attendanceSettings.controller;
 import com.ait.ar.attendanceSettings.dto.ArItemParamDto;
 import com.ait.ar.attendanceSettings.service.ArItemParamService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -15,6 +17,7 @@ import java.util.Map;
 @Controller
 @RequestMapping("/ar/attendanceSettings")
 public class ArItemParamController {
+    private static final Logger log = LoggerFactory.getLogger(ArItemParamController.class);
 
     @Autowired
     private ArItemParamService arItemParamService;
@@ -74,7 +77,8 @@ public class ArItemParamController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             response.put("success", false);
-            response.put("error", "Lỗi khi lưu thông tin: " + e.getMessage());
+            log.error("Failed to save AR item parameter paramNo={}", dto.getArParamNo(), e);
+            response.put("error", "Loi he thong khi luu thong tin tham so hang muc.");
             return ResponseEntity.internalServerError().body(response);
         }
     }
@@ -93,7 +97,8 @@ public class ArItemParamController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             response.put("success", false);
-            response.put("error", "Lỗi khi xóa thông tin: " + e.getMessage());
+            log.error("Failed to delete AR item parameter paramNo={}", arParamNo, e);
+            response.put("error", "Loi he thong khi xoa tham so hang muc.");
             return ResponseEntity.internalServerError().body(response);
         }
     }
