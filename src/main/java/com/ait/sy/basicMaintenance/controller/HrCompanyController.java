@@ -3,6 +3,8 @@ package com.ait.sy.basicMaintenance.controller;
 import com.ait.sy.basicMaintenance.dto.HrCompanyDto;
 import com.ait.sy.basicMaintenance.service.HrCompanyService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -17,6 +19,7 @@ import java.util.Map;
 @Controller
 @RequestMapping("/sys")
 public class HrCompanyController {
+    private static final Logger log = LoggerFactory.getLogger(HrCompanyController.class);
 
     @Autowired
     private HrCompanyService hrCompanyService;
@@ -42,8 +45,8 @@ public class HrCompanyController {
             response.put("message", "Lưu thành công");
         } catch (Exception e) {
             response.put("success", false);
-            response.put("message", "Lỗi: " + e.getMessage());
-            e.printStackTrace();
+            response.put("message", "Loi he thong khi luu thong tin cong ty.");
+            log.error("Failed to save company cpnyNo={}", dto.getCpnyNo(), e);
         }
         return response;
     }
@@ -58,7 +61,8 @@ public class HrCompanyController {
             response.put("message", "Xóa thành công");
         } catch (Exception e) {
             response.put("success", false);
-            response.put("message", "Lỗi: " + e.getMessage());
+            log.error("Failed to delete company cpnyNo={}", cpnyNo, e);
+            response.put("message", "Loi he thong khi xoa thong tin cong ty.");
         }
         return response;
     }
