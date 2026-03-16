@@ -229,18 +229,9 @@ public class HrAuthenticationServiceImpl implements HrAuthenticationService {
         if (request == null) {
             return "unknown";
         }
-
-        String xForwardedFor = request.getHeader("X-Forwarded-For");
-        if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
-            return xForwardedFor.split(",")[0].trim();
-        }
-
-        String xRealIp = request.getHeader("X-Real-IP");
-        if (xRealIp != null && !xRealIp.isEmpty()) {
-            return xRealIp;
-        }
-
-        return request.getRemoteAddr();
+        // Security-sensitive flow (rate limit): avoid trusting user-controlled forwarded headers.
+        String remoteAddr = request.getRemoteAddr();
+        return (remoteAddr == null || remoteAddr.isBlank()) ? "unknown" : remoteAddr;
     }
 
     public boolean validateCsrfToken(HttpServletRequest request) {
