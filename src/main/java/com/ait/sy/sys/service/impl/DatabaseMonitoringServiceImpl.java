@@ -3,9 +3,11 @@ package com.ait.sy.sys.service.impl;
 import com.ait.sy.sys.service.DatabaseMonitoringService;
 import com.zaxxer.hikari.HikariDataSource;
 import com.zaxxer.hikari.HikariPoolMXBean;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Service;
 
 import javax.sql.DataSource;
 import java.util.ArrayList;
@@ -17,6 +19,8 @@ import java.util.Map;
  */
 @Service
 public class DatabaseMonitoringServiceImpl implements DatabaseMonitoringService {
+
+    private static final Logger log = LoggerFactory.getLogger(DatabaseMonitoringServiceImpl.class);
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -207,8 +211,9 @@ public class DatabaseMonitoringServiceImpl implements DatabaseMonitoringService 
             }
 
         } catch (Exception e) {
+            log.error("Database health check failed", e);
             status.setStatus("ERROR");
-            status.setIssues("Database connection error: " + e.getMessage());
+            status.setIssues("Database connection error.");
             status.setHealthy(false);
         }
 
@@ -297,7 +302,8 @@ public class DatabaseMonitoringServiceImpl implements DatabaseMonitoringService 
             }
 
         } catch (Exception e) {
-            throw new RuntimeException("Failed to refresh database statistics: " + e.getMessage(), e);
+            log.error("Failed to refresh database statistics", e);
+            throw new RuntimeException("Failed to refresh database statistics.", e);
         }
     }
 }

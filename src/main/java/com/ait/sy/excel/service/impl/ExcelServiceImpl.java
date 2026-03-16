@@ -4,6 +4,8 @@ import com.ait.sy.excel.mapper.ExcelMapper;
 import com.ait.sy.excel.service.ExcelService;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
@@ -16,6 +18,8 @@ import java.util.*;
 
 @Service
 public class ExcelServiceImpl implements ExcelService {
+
+    private static final Logger log = LoggerFactory.getLogger(ExcelServiceImpl.class);
 
     @Autowired
     private ExcelMapper mapper;
@@ -59,7 +63,8 @@ public class ExcelServiceImpl implements ExcelService {
             return wb;
 
         } catch (IOException e) {
-            throw new RuntimeException("Không thể đọc file mẫu AR_SCHEDULE_HTSV_Template.xlsx từ classpath: " + e.getMessage(), e);
+            log.error("Failed to load schedule template from classpath", e);
+            throw new RuntimeException("Khong the doc file mau AR_SCHEDULE_HTSV_Template.xlsx.", e);
         }
     }
 
@@ -165,3 +170,4 @@ public class ExcelServiceImpl implements ExcelService {
         return null;
     }
 }
+
