@@ -5,6 +5,8 @@ import com.ait.hrm.empinfo.model.HrQualification;
 import com.ait.hrm.empinfo.service.HrQualificationService;
 import com.ait.sy.sys.service.HrAuthenticationService.HrUserInfo;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +19,7 @@ import java.util.List;
 @Service
 @Transactional
 public class HrQualificationServiceImpl implements HrQualificationService {
+    private static final Logger log = LoggerFactory.getLogger(HrQualificationServiceImpl.class);
 
     @Autowired
     private HrQualificationMapper mapper;
@@ -48,7 +51,7 @@ public class HrQualificationServiceImpl implements HrQualificationService {
                 return mapper.update(info) > 0;
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Failed to save qualification qualNo={}", info.getQualNo(), e);
             return false;
         }
     }

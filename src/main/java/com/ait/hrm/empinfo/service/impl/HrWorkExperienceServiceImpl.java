@@ -4,6 +4,8 @@ import com.ait.hrm.empinfo.mapper.HrWorkExperienceMapper;
 import com.ait.hrm.empinfo.model.HrWorkExperience;
 import com.ait.hrm.empinfo.service.HrWorkExperienceService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,6 +16,7 @@ import java.util.List;
 @Service
 @Transactional
 public class HrWorkExperienceServiceImpl implements HrWorkExperienceService {
+    private static final Logger log = LoggerFactory.getLogger(HrWorkExperienceServiceImpl.class);
 
     @Autowired
     private HrWorkExperienceMapper mapper;
@@ -44,7 +47,7 @@ public class HrWorkExperienceServiceImpl implements HrWorkExperienceService {
                 return mapper.update(info) > 0;
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Failed to save work experience workExpNo={}", info.getWorkExpNo(), e);
             return false;
         }
     }
