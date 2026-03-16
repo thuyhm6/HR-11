@@ -6,6 +6,8 @@ import com.ait.org.orgManage.service.OrgResumeInfoService;
 import com.ait.sy.sys.dto.DataTablesRequest;
 import com.ait.sy.sys.dto.DataTablesResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +20,7 @@ import java.util.Map;
 
 @Service
 public class OrgResumeInfoServiceImpl implements OrgResumeInfoService {
+    private static final Logger log = LoggerFactory.getLogger(OrgResumeInfoServiceImpl.class);
 
     @Autowired
     private OrgResumeInfoMapper orgResumeInfoMapper;
@@ -154,7 +157,7 @@ public class OrgResumeInfoServiceImpl implements OrgResumeInfoService {
             seq++;
             return prefix + String.format("%04d", seq);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.warn("Failed to generate next resume number from maxNo={}", maxNo, e);
             // Fallback strategy or throw error
             return prefix + String.format("%04d", System.currentTimeMillis() % 10000);
         }
@@ -223,8 +226,8 @@ public class OrgResumeInfoServiceImpl implements OrgResumeInfoService {
                     resultMessage.append("Bước ").append(type).append(": ").append(message).append("; ");
                 }
             } catch (Exception e) {
-                e.printStackTrace();
-                throw new RuntimeException("Lỗi khi thực hiện bước " + type + ": " + e.getMessage());
+                log.error("Failed to execute resume process step type={} resumeNo={}", type, resumeNo, e);
+                throw new RuntimeException("Loi khi thuc hien buoc " + type + ".", e);
             }
         }
 
@@ -235,3 +238,6 @@ public class OrgResumeInfoServiceImpl implements OrgResumeInfoService {
         return "Thực hiện thành công";
     }
 }
+
+
+
