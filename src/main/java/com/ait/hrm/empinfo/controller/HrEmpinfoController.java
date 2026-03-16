@@ -23,6 +23,8 @@ import com.ait.sy.sys.dto.DataTablesResponse;
 import com.ait.sy.sys.service.PermissionService;
 import com.ait.sy.sys.service.HrAuthenticationService.HrUserInfo;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -42,6 +44,7 @@ import java.util.List;
 @Controller
 @RequestMapping("/hrm/empinfo")
 public class HrEmpinfoController {
+    private static final Logger log = LoggerFactory.getLogger(HrEmpinfoController.class);
 
     @Autowired
     private HrSpecialMatterService hrSpecialMatterService;
@@ -151,7 +154,7 @@ public class HrEmpinfoController {
 
             return "hrm/empinfo/exportFemaleEmployees";
         } catch (Exception e) {
-            model.addAttribute("error", "Lỗi khi xuất dữ liệu: " + e.getMessage());
+            model.addAttribute("error", "Loi he thong khi xu ly du lieu.");
             return "hrm/empinfo/tempEmpInfoList";
         }
     }
@@ -170,7 +173,7 @@ public class HrEmpinfoController {
             }
             return ResponseEntity.ok(employee);
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("Lỗi server: " + e.getMessage());
+            return ResponseEntity.status(500).body("Loi he thong. Vui long thu lai.");
         }
     }
 
@@ -193,7 +196,7 @@ public class HrEmpinfoController {
                 return ResponseEntity.status(500).body("Cập nhật thất bại");
             }
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("Lỗi server: " + e.getMessage());
+            return ResponseEntity.status(500).body("Loi he thong. Vui long thu lai.");
         }
     }
 
@@ -213,9 +216,9 @@ public class HrEmpinfoController {
                 return ResponseEntity.badRequest().body("Thêm mới thất bại");
             }
         } catch (Exception e) {
-            System.err.println("Error adding employee: " + e.getMessage());
-            e.printStackTrace();
-            return ResponseEntity.status(500).body("Lỗi server: " + e.getMessage());
+            log.error("Error adding employee: ", e);
+            
+            return ResponseEntity.status(500).body("Loi he thong. Vui long thu lai.");
         }
     }
 
@@ -232,9 +235,9 @@ public class HrEmpinfoController {
                 return ResponseEntity.badRequest().body("Xóa thất bại - Không tìm thấy thông tin");
             }
         } catch (Exception e) {
-            System.err.println("Error deleting employee: " + e.getMessage());
-            e.printStackTrace();
-            return ResponseEntity.status(500).body("Lỗi server: " + e.getMessage());
+            log.error("Error deleting employee: ", e);
+            
+            return ResponseEntity.status(500).body("Loi he thong. Vui long thu lai.");
         }
     }
 
@@ -247,9 +250,9 @@ public class HrEmpinfoController {
             List<EmployeeSearchResponse> employees = hrEmployeeService.searchEmployees(empId, localName, deptNo);
             return ResponseEntity.ok(employees);
         } catch (Exception e) {
-            System.err.println("Error searching employees: " + e.getMessage());
-            e.printStackTrace();
-            return ResponseEntity.status(500).body("Lỗi server: " + e.getMessage());
+            log.error("Error searching employees: ", e);
+            
+            return ResponseEntity.status(500).body("Loi he thong. Vui long thu lai.");
         }
     }
 
@@ -262,31 +265,14 @@ public class HrEmpinfoController {
             @RequestBody DataTablesRequest request,
             HttpSession session) {
 
-        System.out.println("=== DataTables Request ===");
-        System.out.println("Draw: " + request.getDraw());
-        System.out.println("Start: " + request.getStart());
-        System.out.println("Length: " + request.getLength());
-        System.out.println("Search: " + (request.getSearch() != null ? request.getSearch().getValue() : "null"));
-        System.out.println("Order: " + (request.getOrder() != null ? request.getOrder().length : 0) + " items");
-        System.out.println("Columns: " + (request.getColumns() != null ? request.getColumns().length : 0) + " items");
 
         // Log search parameters from form
-        System.out.println("Search Params: " + request.getSearchParams());
         if (request.getSearchParams() != null) {
-            System.out.println("LocalName: " + request.getSearchParams().get("localName"));
-            System.out.println("EmpId: " + request.getSearchParams().get("empId"));
-            System.out.println("DeptNo: " + request.getSearchParams().get("deptNo"));
-            System.out.println("Position: " + request.getSearchParams().get("position"));
-            System.out.println("CreateDateFrom: " + request.getSearchParams().get("createDateFrom"));
-            System.out.println("CreateDateTo: " + request.getSearchParams().get("createDateTo"));
-            System.out.println("Activity: " + request.getSearchParams().get("activity"));
-            System.out.println("OtFlag: " + request.getSearchParams().get("otFlag"));
         }
 
         // Kiểm tra authentication
         HrUserInfo currentHrUser = (HrUserInfo) session.getAttribute("currentHrUser");
         if (currentHrUser == null) {
-            System.out.println("User not authenticated");
             DataTablesResponse<HrSpecialMatter> errorResponse = new DataTablesResponse<>();
             errorResponse.setDraw(request.getDraw());
             errorResponse.setError("Chưa đăng nhập");
@@ -294,17 +280,15 @@ public class HrEmpinfoController {
         }
 
         try {
-            System.out.println("Processing request for user: " + currentHrUser.getUsername());
             DataTablesResponse<HrSpecialMatter> response = hrSpecialMatterService
                     .getFemaleEmployeesForDataTables(request);
-            System.out.println("Response generated: " + response);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            System.err.println("Error processing DataTables request: " + e.getMessage());
-            e.printStackTrace();
+            log.error("Error processing DataTables request: ", e);
+            
             DataTablesResponse<HrSpecialMatter> errorResponse = new DataTablesResponse<>();
             errorResponse.setDraw(request.getDraw());
-            errorResponse.setError("Lỗi server: " + e.getMessage());
+            errorResponse.setError("Loi he thong khi xu ly du lieu nhan vien.");
             return ResponseEntity.status(500).body(errorResponse);
         }
     }
@@ -332,7 +316,7 @@ public class HrEmpinfoController {
         try {
             return ResponseEntity.ok(hrWorkExperienceService.searchWorkExperience(empId, localName, companyName));
         } catch (Exception e) {
-            e.printStackTrace();
+            
             return ResponseEntity.status(500).body(null);
         }
     }
@@ -353,9 +337,9 @@ public class HrEmpinfoController {
                 return ResponseEntity.status(500).body(java.util.Collections.singletonMap("error", "Lưu thất bại"));
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            
             return ResponseEntity.status(500)
-                    .body(java.util.Collections.singletonMap("error", "Lỗi server: " + e.getMessage()));
+                    .body(java.util.Collections.singletonMap("error", "Loi he thong. Vui long thu lai."));
         }
     }
 
@@ -372,9 +356,9 @@ public class HrEmpinfoController {
                 return ResponseEntity.status(500).body(java.util.Collections.singletonMap("error", "Xóa thất bại"));
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            
             return ResponseEntity.status(500)
-                    .body(java.util.Collections.singletonMap("error", "Lỗi server: " + e.getMessage()));
+                    .body(java.util.Collections.singletonMap("error", "Loi he thong. Vui long thu lai."));
         }
     }
 
@@ -392,8 +376,8 @@ public class HrEmpinfoController {
                 return ResponseEntity.status(404).body("Không tìm thấy thông tin");
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(500).body("Lỗi server: " + e.getMessage());
+            
+            return ResponseEntity.status(500).body("Loi he thong. Vui long thu lai.");
         }
     }
 
@@ -420,7 +404,7 @@ public class HrEmpinfoController {
         try {
             return ResponseEntity.ok(hrEducationService.searchEducation(empId, localName, institutionName));
         } catch (Exception e) {
-            e.printStackTrace();
+            
             return ResponseEntity.status(500).body(null);
         }
     }
@@ -442,9 +426,9 @@ public class HrEmpinfoController {
                 return ResponseEntity.status(500).body(java.util.Collections.singletonMap("error", "Lưu thất bại"));
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            
             return ResponseEntity.status(500)
-                    .body(java.util.Collections.singletonMap("error", "Lỗi server: " + e.getMessage()));
+                    .body(java.util.Collections.singletonMap("error", "Loi he thong. Vui long thu lai."));
         }
     }
 
@@ -461,9 +445,9 @@ public class HrEmpinfoController {
                 return ResponseEntity.status(500).body(java.util.Collections.singletonMap("error", "Xóa thất bại"));
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            
             return ResponseEntity.status(500)
-                    .body(java.util.Collections.singletonMap("error", "Lỗi server: " + e.getMessage()));
+                    .body(java.util.Collections.singletonMap("error", "Loi he thong. Vui long thu lai."));
         }
     }
 
@@ -481,8 +465,8 @@ public class HrEmpinfoController {
                 return ResponseEntity.status(404).body("Không tìm thấy thông tin");
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(500).body("Lỗi server: " + e.getMessage());
+            
+            return ResponseEntity.status(500).body("Loi he thong. Vui long thu lai.");
         }
     }
 
@@ -509,7 +493,7 @@ public class HrEmpinfoController {
         try {
             return ResponseEntity.ok(hrAddressMattersService.searchAddress(empId, localName, addressContent));
         } catch (Exception e) {
-            e.printStackTrace();
+            
             return ResponseEntity.status(500).body(null);
         }
     }
@@ -531,9 +515,9 @@ public class HrEmpinfoController {
                 return ResponseEntity.status(500).body(java.util.Collections.singletonMap("error", "Lưu thất bại"));
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            
             return ResponseEntity.status(500)
-                    .body(java.util.Collections.singletonMap("error", "Lỗi server: " + e.getMessage()));
+                    .body(java.util.Collections.singletonMap("error", "Loi he thong. Vui long thu lai."));
         }
     }
 
@@ -550,9 +534,9 @@ public class HrEmpinfoController {
                 return ResponseEntity.status(500).body(java.util.Collections.singletonMap("error", "Xóa thất bại"));
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            
             return ResponseEntity.status(500)
-                    .body(java.util.Collections.singletonMap("error", "Lỗi server: " + e.getMessage()));
+                    .body(java.util.Collections.singletonMap("error", "Loi he thong. Vui long thu lai."));
         }
     }
 
@@ -570,8 +554,8 @@ public class HrEmpinfoController {
                 return ResponseEntity.status(404).body("Không tìm thấy thông tin");
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(500).body("Lỗi server: " + e.getMessage());
+            
+            return ResponseEntity.status(500).body("Loi he thong. Vui long thu lai.");
         }
     }
 
@@ -598,7 +582,7 @@ public class HrEmpinfoController {
         try {
             return ResponseEntity.ok(hrFamilyService.searchFamily(empId, localName, famName));
         } catch (Exception e) {
-            e.printStackTrace();
+            
             return ResponseEntity.status(500).body(null);
         }
     }
@@ -620,9 +604,9 @@ public class HrEmpinfoController {
                 return ResponseEntity.status(500).body(java.util.Collections.singletonMap("error", "Lưu thất bại"));
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            
             return ResponseEntity.status(500)
-                    .body(java.util.Collections.singletonMap("error", "Lỗi server: " + e.getMessage()));
+                    .body(java.util.Collections.singletonMap("error", "Loi he thong. Vui long thu lai."));
         }
     }
 
@@ -639,9 +623,9 @@ public class HrEmpinfoController {
                 return ResponseEntity.status(500).body(java.util.Collections.singletonMap("error", "Xóa thất bại"));
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            
             return ResponseEntity.status(500)
-                    .body(java.util.Collections.singletonMap("error", "Lỗi server: " + e.getMessage()));
+                    .body(java.util.Collections.singletonMap("error", "Loi he thong. Vui long thu lai."));
         }
     }
 
@@ -659,8 +643,8 @@ public class HrEmpinfoController {
                 return ResponseEntity.status(404).body("Không tìm thấy thông tin");
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(500).body("Lỗi server: " + e.getMessage());
+            
+            return ResponseEntity.status(500).body("Loi he thong. Vui long thu lai.");
         }
     }
 
@@ -687,7 +671,7 @@ public class HrEmpinfoController {
         try {
             return ResponseEntity.ok(hrEmergencyAddressService.searchEmergencyAddress(empId, localName, emerName));
         } catch (Exception e) {
-            e.printStackTrace();
+            
             return ResponseEntity.status(500).body(null);
         }
     }
@@ -709,9 +693,9 @@ public class HrEmpinfoController {
                 return ResponseEntity.status(500).body(java.util.Collections.singletonMap("error", "Lưu thất bại"));
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            
             return ResponseEntity.status(500)
-                    .body(java.util.Collections.singletonMap("error", "Lỗi server: " + e.getMessage()));
+                    .body(java.util.Collections.singletonMap("error", "Loi he thong. Vui long thu lai."));
         }
     }
 
@@ -728,9 +712,9 @@ public class HrEmpinfoController {
                 return ResponseEntity.status(500).body(java.util.Collections.singletonMap("error", "Xóa thất bại"));
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            
             return ResponseEntity.status(500)
-                    .body(java.util.Collections.singletonMap("error", "Lỗi server: " + e.getMessage()));
+                    .body(java.util.Collections.singletonMap("error", "Loi he thong. Vui long thu lai."));
         }
     }
 
@@ -748,8 +732,8 @@ public class HrEmpinfoController {
                 return ResponseEntity.status(404).body("Không tìm thấy thông tin");
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(500).body("Lỗi server: " + e.getMessage());
+            
+            return ResponseEntity.status(500).body("Loi he thong. Vui long thu lai.");
         }
     }
 
@@ -776,7 +760,7 @@ public class HrEmpinfoController {
         try {
             return ResponseEntity.ok(hrRewardService.searchReward(empId, localName, rewardType));
         } catch (Exception e) {
-            e.printStackTrace();
+            
             return ResponseEntity.status(500).body(null);
         }
     }
@@ -797,9 +781,9 @@ public class HrEmpinfoController {
                 return ResponseEntity.status(500).body(java.util.Collections.singletonMap("error", "Lưu thất bại"));
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            
             return ResponseEntity.status(500)
-                    .body(java.util.Collections.singletonMap("error", "Lỗi server: " + e.getMessage()));
+                    .body(java.util.Collections.singletonMap("error", "Loi he thong. Vui long thu lai."));
         }
     }
 
@@ -826,7 +810,7 @@ public class HrEmpinfoController {
         try {
             return ResponseEntity.ok(hrQualificationService.searchQualification(empId, localName, qualName));
         } catch (Exception e) {
-            e.printStackTrace();
+            
             return ResponseEntity.status(500).body(null);
         }
     }
@@ -847,9 +831,9 @@ public class HrEmpinfoController {
                 return ResponseEntity.status(500).body(java.util.Collections.singletonMap("error", "Lưu thất bại"));
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            
             return ResponseEntity.status(500)
-                    .body(java.util.Collections.singletonMap("error", "Lỗi server: " + e.getMessage()));
+                    .body(java.util.Collections.singletonMap("error", "Loi he thong. Vui long thu lai."));
         }
     }
 
@@ -866,9 +850,9 @@ public class HrEmpinfoController {
                 return ResponseEntity.status(500).body(java.util.Collections.singletonMap("error", "Xóa thất bại"));
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            
             return ResponseEntity.status(500)
-                    .body(java.util.Collections.singletonMap("error", "Lỗi server: " + e.getMessage()));
+                    .body(java.util.Collections.singletonMap("error", "Loi he thong. Vui long thu lai."));
         }
     }
 
@@ -886,8 +870,8 @@ public class HrEmpinfoController {
                 return ResponseEntity.status(404).body("Không tìm thấy thông tin");
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(500).body("Lỗi server: " + e.getMessage());
+            
+            return ResponseEntity.status(500).body("Loi he thong. Vui long thu lai.");
         }
     }
 
@@ -904,9 +888,9 @@ public class HrEmpinfoController {
                 return ResponseEntity.status(500).body(java.util.Collections.singletonMap("error", "Xóa thất bại"));
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            
             return ResponseEntity.status(500)
-                    .body(java.util.Collections.singletonMap("error", "Lỗi server: " + e.getMessage()));
+                    .body(java.util.Collections.singletonMap("error", "Loi he thong. Vui long thu lai."));
         }
     }
 
@@ -924,8 +908,8 @@ public class HrEmpinfoController {
                 return ResponseEntity.status(404).body("Không tìm thấy thông tin");
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(500).body("Lỗi server: " + e.getMessage());
+            
+            return ResponseEntity.status(500).body("Loi he thong. Vui long thu lai.");
         }
     }
 
@@ -952,7 +936,7 @@ public class HrEmpinfoController {
         try {
             return ResponseEntity.ok(hrPunishmentService.searchPunishment(empId, localName, punishCode));
         } catch (Exception e) {
-            e.printStackTrace();
+            
             return ResponseEntity.status(500).body(null);
         }
     }
@@ -973,9 +957,9 @@ public class HrEmpinfoController {
                 return ResponseEntity.status(500).body(java.util.Collections.singletonMap("error", "Lưu thất bại"));
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            
             return ResponseEntity.status(500)
-                    .body(java.util.Collections.singletonMap("error", "Lỗi server: " + e.getMessage()));
+                    .body(java.util.Collections.singletonMap("error", "Loi he thong. Vui long thu lai."));
         }
     }
 
@@ -992,9 +976,9 @@ public class HrEmpinfoController {
                 return ResponseEntity.status(500).body(java.util.Collections.singletonMap("error", "Xóa thất bại"));
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            
             return ResponseEntity.status(500)
-                    .body(java.util.Collections.singletonMap("error", "Lỗi server: " + e.getMessage()));
+                    .body(java.util.Collections.singletonMap("error", "Loi he thong. Vui long thu lai."));
         }
     }
 
@@ -1012,8 +996,9 @@ public class HrEmpinfoController {
                 return ResponseEntity.status(404).body("Không tìm thấy thông tin");
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(500).body("Lỗi server: " + e.getMessage());
+            
+            return ResponseEntity.status(500).body("Loi he thong. Vui long thu lai.");
         }
     }
 }
+
