@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import jakarta.servlet.http.HttpSession;
 
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -185,7 +186,7 @@ public class ArCalenderController {
     // ================= EMP CALENDAR API =================
 
     @GetMapping("/viewEmpCalendar")
-    public String viewEmpCalendar(Model model, jakarta.servlet.http.HttpSession session) {
+    public String viewEmpCalendar(Model model, HttpSession session) {
         HrUserInfo currentHrUser = 
             (HrUserInfo) session.getAttribute("currentHrUser");
         
@@ -204,18 +205,22 @@ public class ArCalenderController {
     public ResponseEntity<List<ArEmpCalenderDto>> getEmpCalendarMonth(
             @RequestParam(required = false, defaultValue = "0") int year,
             @RequestParam(required = false, defaultValue = "0") int month,
-            @RequestParam(required = false) String personId) {
+            @RequestParam(required = false) String personId,
+            HttpSession session) {
         if (year == 0) year = LocalDate.now().getYear();
         if (month == 0) month = LocalDate.now().getMonthValue();
-        return ResponseEntity.ok(arCalenderService.getEmpCalendarMonth(year, month, personId));
+        String effectivePersonId = resolvePersonIdForRequest(personId, session);
+        return ResponseEntity.ok(arCalenderService.getEmpCalendarMonth(year, month, effectivePersonId));
     }
 
     @GetMapping("/api/calender/emp/detail")
     @ResponseBody
     public ResponseEntity<ArEmpCalenderDto> getEmpCalendarDetail(
             @RequestParam String arDateStr,
-            @RequestParam(required = false) String personId) {
-        ArEmpCalenderDto dto = arCalenderService.getEmpScheduleDetail(personId, arDateStr);
+            @RequestParam(required = false) String personId,
+            HttpSession session) {
+        String effectivePersonId = resolvePersonIdForRequest(personId, session);
+        ArEmpCalenderDto dto = arCalenderService.getEmpScheduleDetail(effectivePersonId, arDateStr);
         if (dto != null) return ResponseEntity.ok(dto);
         return ResponseEntity.notFound().build();
     }
@@ -223,20 +228,63 @@ public class ArCalenderController {
     @PostMapping("/api/calender/emp/save")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> saveEmpCalendarDay(
-            @RequestBody ArEmpCalenderDto dto) {
+            @RequestBody ArEmpCalenderDto dto,
+            HttpSession session) {
         Map<String, Object> response = new HashMap<>();
         try {
-            dto.setPersonId(dto.getPersonId());
+            String effectivePersonId = resolvePersonIdForWrite(dto.getPersonId(), session);
+            dto.setPersonId(effectivePersonId);
             arCalenderService.saveEmpCalendarDay(dto);
             response.put("success", true);
             response.put("message", "Cập nhật lịch cá nhân thành công!");
             return ResponseEntity.ok(response);
+        } catch (SecurityException e) {
+            response.put("success", false);
+            response.put("error", "Khong co quyen cap nhat lich cua nhan vien khac.");
+            return ResponseEntity.status(403).body(response);
         } catch (Exception e) {
             response.put("success", false);
             log.error("Failed to save employee calendar day personId={} date={}", dto.getPersonId(), dto.getArDateStr(), e);
             response.put("error", "Loi he thong khi cap nhat lich ca nhan.");
             return ResponseEntity.internalServerError().body(response);
         }
+    }
+
+    private String resolvePersonIdForRequest(String requestedPersonId, HttpSession session) {
+        HrUserInfo currentUser = requireAuthenticatedUser(session);
+        if (isPrivilegedUser(currentUser)) {
+            return (requestedPersonId == null || requestedPersonId.isBlank())
+                    ? currentUser.getPersonId()
+                    : requestedPersonId;
+        }
+        return currentUser.getPersonId();
+    }
+
+    private String resolvePersonIdForWrite(String requestedPersonId, HttpSession session) {
+        HrUserInfo currentUser = requireAuthenticatedUser(session);
+        if (isPrivilegedUser(currentUser)) {
+            return (requestedPersonId == null || requestedPersonId.isBlank())
+                    ? currentUser.getPersonId()
+                    : requestedPersonId;
+        }
+        if (requestedPersonId != null && !requestedPersonId.isBlank()
+                && !requestedPersonId.equals(currentUser.getPersonId())) {
+            throw new SecurityException("Cross-user calendar update is not allowed");
+        }
+        return currentUser.getPersonId();
+    }
+
+    private HrUserInfo requireAuthenticatedUser(HttpSession session) {
+        HrUserInfo currentUser = (HrUserInfo) session.getAttribute("currentHrUser");
+        if (currentUser == null || currentUser.getSyUser() == null) {
+            throw new SecurityException("Unauthenticated session");
+        }
+        return currentUser;
+    }
+
+    private boolean isPrivilegedUser(HrUserInfo user) {
+        String userType = user.getSyUser().getUserType();
+        return "ADMIN".equalsIgnoreCase(userType) || "SYS".equalsIgnoreCase(userType);
     }
 }
 
