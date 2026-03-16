@@ -2,6 +2,8 @@ package com.ait.ar.attendanceSettings.controller;
 
 import com.ait.ar.attendanceSettings.dto.ArStaFormulaDto;
 import com.ait.ar.attendanceSettings.service.ArStaFormulaService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -14,6 +16,7 @@ import java.util.Map;
 @Controller
 @RequestMapping("/ar/attendanceSettings")
 public class ArStaFormulaController {
+    private static final Logger log = LoggerFactory.getLogger(ArStaFormulaController.class);
 
     @Autowired
     private ArStaFormulaService service;
@@ -74,7 +77,8 @@ public class ArStaFormulaController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             response.put("success", false);
-            response.put("error", "Lỗi: " + e.getMessage());
+            log.error("Failed to save summary formula formularNo={}", dto.getFormularNo(), e);
+            response.put("error", "Loi he thong khi luu cong thuc tong hop.");
             return ResponseEntity.internalServerError().body(response);
         }
     }
@@ -90,7 +94,8 @@ public class ArStaFormulaController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             response.put("success", false);
-            response.put("error", "Lỗi: " + e.getMessage());
+            log.error("Failed to delete summary formula formularNo={}", formularNo, e);
+            response.put("error", "Loi he thong khi xoa cong thuc tong hop.");
             return ResponseEntity.internalServerError().body(response);
         }
     }
