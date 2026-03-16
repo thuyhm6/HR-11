@@ -9,8 +9,6 @@ import org.springframework.stereotype.Service;
 import com.ait.sy.sys.service.LoggingService;
 
 import jakarta.servlet.http.HttpServletRequest;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -198,14 +196,10 @@ public class LoggingServiceImpl implements LoggingService {
     public void logError(String errorType, String message, Throwable throwable, Map<String, Object> context) {
         LogEntry logEntry = createLogEntry(LogLevel.ERROR, EventType.API_ERROR, message);
 
-        if (throwable != null) {
-            logEntry.setStackTrace(getStackTrace(throwable));
-        }
-
         Map<String, Object> errorContext = new HashMap<>();
         errorContext.put("errorType", errorType);
         errorContext.put("exceptionClass", throwable != null ? throwable.getClass().getSimpleName() : null);
-        errorContext.put("exceptionMessage", throwable != null ? throwable.getMessage() : null);
+        errorContext.put("exceptionMessage", throwable != null ? "REDACTED" : null);
 
         if (context != null) {
             errorContext.putAll(context);
@@ -337,16 +331,6 @@ public class LoggingServiceImpl implements LoggingService {
     }
 
     /**
-     * Get stack trace từ throwable
-     */
-    private String getStackTrace(Throwable throwable) {
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-        throwable.printStackTrace(pw);
-        return sw.toString();
-    }
-
-    /**
      * Check if performance threshold exceeded
      */
     private boolean isPerformanceThresholdExceeded(String metricName, long value) {
@@ -361,3 +345,5 @@ public class LoggingServiceImpl implements LoggingService {
         return threshold != null && value > threshold;
     }
 }
+
+
