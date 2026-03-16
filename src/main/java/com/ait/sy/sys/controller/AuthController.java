@@ -194,7 +194,7 @@ public class AuthController {
             model.addAttribute("csrfToken", csrfUtil.getCsrfToken(session));
             return "login/login";
         } catch (Exception e) {
-            log.error("Login error for user [{}]: {}", username, e.getMessage(), e);
+            log.error("Login error for user [{}]", username, e);
             model.addAttribute("error", "Có lỗi xảy ra. Vui lòng thử lại sau.");
             model.addAttribute("username", username);
             model.addAttribute("csrfToken", csrfUtil.getCsrfToken(session));
