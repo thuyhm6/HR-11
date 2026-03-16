@@ -3,6 +3,8 @@ package com.ait.ar.attendanceSettings.controller;
 import com.ait.ar.attendanceSettings.dto.ArShift010Dto;
 import com.ait.ar.attendanceSettings.dto.ArShift020Dto;
 import com.ait.ar.attendanceSettings.service.ArShiftService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -14,6 +16,7 @@ import java.util.Map;
 @Controller
 @RequestMapping("/ar/attendanceSettings")
 public class ArShiftController {
+    private static final Logger log = LoggerFactory.getLogger(ArShiftController.class);
 
     @Autowired
     private ArShiftService arShiftService;
@@ -55,7 +58,8 @@ public class ArShiftController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             response.put("success", false);
-            response.put("error", "Lỗi: " + e.getMessage());
+            log.error("Failed to save shift shiftNo={}", dto.getShiftNo(), e);
+            response.put("error", "Loi he thong khi luu ca lam viec.");
             return ResponseEntity.internalServerError().body(response);
         }
     }
@@ -71,7 +75,8 @@ public class ArShiftController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             response.put("success", false);
-            response.put("error", "Lỗi: " + e.getMessage());
+            log.error("Failed to delete shift shiftNo={}", shiftNo, e);
+            response.put("error", "Loi he thong khi xoa ca lam viec.");
             return ResponseEntity.internalServerError().body(response);
         }
     }
@@ -105,7 +110,8 @@ public class ArShiftController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             response.put("success", false);
-            response.put("error", "Lỗi: " + e.getMessage());
+            log.error("Failed to save shift detail pkNo={}", dto.getPkNo(), e);
+            response.put("error", "Loi he thong khi luu tham so ca lam viec.");
             return ResponseEntity.internalServerError().body(response);
         }
     }
@@ -121,7 +127,8 @@ public class ArShiftController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             response.put("success", false);
-            response.put("error", "Lỗi: " + e.getMessage());
+            log.error("Failed to delete shift detail pkNo={}", pkNo, e);
+            response.put("error", "Loi he thong khi xoa tham so ca lam viec.");
             return ResponseEntity.internalServerError().body(response);
         }
     }
