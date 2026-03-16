@@ -71,7 +71,7 @@ public abstract class BaseService<T, ID> {
      * Log error
      */
     protected void logError(String operation, Exception e) {
-        logger.error("Error during {} operation: {}", operation, e.getMessage(), e);
+        logger.error("Error during {} operation", operation, e);
     }
 
     /**
@@ -82,7 +82,7 @@ public abstract class BaseService<T, ID> {
         if (e instanceof BusinessException) {
             throw (BusinessException) e;
         }
-        throw BusinessException.invalidInput(operation, e.getMessage());
+        throw BusinessException.invalidInput(operation, "Loi he thong khi xu ly du lieu.");
     }
 
     /**
