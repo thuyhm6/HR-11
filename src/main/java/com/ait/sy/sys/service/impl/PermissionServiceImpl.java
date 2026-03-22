@@ -71,7 +71,7 @@ public class PermissionServiceImpl implements PermissionService {
             List<SyRoleGroup> roleGroups = getUserRoleGroups(userNo);
             List<SyRole> roles = roleGroups.stream()
                     .flatMap(roleGroup -> syRoleMapper.findByRoleGroupNo(roleGroup.getRoleGroupNo()).stream())
-                    .filter(role -> role != null && role.isActive())
+                    .filter(role -> role != null && role.isActive() && isMenuRole(role))
                     .distinct()
                     .collect(Collectors.toList());
 
@@ -202,5 +202,9 @@ public class PermissionServiceImpl implements PermissionService {
     @CacheEvict(value = { "userPermissions", "menuCache" }, allEntries = true)
     public void clearAllPermissionCache() {
         logger.warn("Clearing all permission caches");
+    }
+
+    private boolean isMenuRole(SyRole role) {
+        return "1".equals(role.getSysType());
     }
 }

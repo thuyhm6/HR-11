@@ -2,8 +2,16 @@ package com.ait.sy.excel.service.impl;
 
 import com.ait.sy.excel.mapper.ExcelMapper;
 import com.ait.sy.excel.service.ExcelService;
-import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.usermodel.*;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.ss.usermodel.DateUtil;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +22,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 @Service
 public class ExcelServiceImpl implements ExcelService {
@@ -24,105 +36,129 @@ public class ExcelServiceImpl implements ExcelService {
     @Autowired
     private ExcelMapper mapper;
 
-    /**
-     * Load file mẫu từ classpath, điền dữ liệu thực (shiftList, typeList) vào sheet TemplateCode rồi trả về.
-     * File mẫu phải đặt tại: src/main/resources/templates/AR_SCHEDULE_HTSV_Template.xlsx
-     * File đã có sẵn: dòng header (dòng 1), 2 sheet Template + TemplateCode.
-     */
     @Override
-    public Workbook buildScheduleHtsvTemplate(List<Map<String, Object>> shiftList,
-                                               List<Map<String, Object>> typeList) {
+    public Workbook buildTemplate(List<Map<String, Object>> shiftList, List<Map<String, Object>> typeList,
+            String templateName) {
         try {
-            ClassPathResource resource = new ClassPathResource("templates/AR_SCHEDULE_HTSV_Template.xlsx");
+            ClassPathResource resource = new ClassPathResource("templates/" + templateName + ".xlsx");
             XSSFWorkbook wb = new XSSFWorkbook(resource.getInputStream());
+            List<Map<String, Object>> safeTypeList = typeList == null ? new ArrayList<>() : typeList;
+            List<Map<String, Object>> safeShiftList = shiftList == null ? new ArrayList<>() : shiftList;
 
-            // Tìm sheet TemplateCode để điền dữ liệu thực
             XSSFSheet codeSheet = wb.getSheet("TemplateCode");
             if (codeSheet != null) {
-                // Xoá các dòng dữ liệu cũ (giữ lại dòng 0 = header)
                 for (int i = codeSheet.getLastRowNum(); i >= 1; i--) {
                     Row row = codeSheet.getRow(i);
-                    if (row != null) codeSheet.removeRow(row);
+                    if (row != null) {
+                        codeSheet.removeRow(row);
+                    }
                 }
 
-                // Điền dữ liệu thực
-                int maxRows = Math.max(typeList.size(), shiftList.size());
+                int maxRows = Math.max(safeTypeList.size(), safeShiftList.size());
                 for (int i = 0; i < maxRows; i++) {
                     Row row = codeSheet.createRow(i + 1);
-                    if (i < typeList.size()) {
-                        row.createCell(0).setCellValue(str(typeList.get(i).get("name")));   // TypeName
-                        row.createCell(1).setCellValue(str(typeList.get(i).get("code")));   // TypeCode
+                    if (i < safeTypeList.size()) {
+                        row.createCell(0).setCellValue(str(safeTypeList.get(i).get("name")));
+                        row.createCell(1).setCellValue(str(safeTypeList.get(i).get("code")));
                     }
-                    if (i < shiftList.size()) {
-                        row.createCell(2).setCellValue(str(shiftList.get(i).get("nameVi"))); // ShiftName
-                        row.createCell(3).setCellValue(str(shiftList.get(i).get("shiftNo"))); // ShiftCode
+                    if (i < safeShiftList.size()) {
+                        row.createCell(2).setCellValue(str(safeShiftList.get(i).get("nameVi")));
+                        row.createCell(3).setCellValue(str(safeShiftList.get(i).get("shiftNo")));
                     }
                 }
             }
 
             return wb;
-
         } catch (IOException e) {
-            log.error("Failed to load schedule template from classpath", e);
-            throw new RuntimeException("Khong the doc file mau AR_SCHEDULE_HTSV_Template.xlsx.", e);
+            log.error("Failed to load template from classpath templateName={}", templateName, e);
+            throw new RuntimeException("Khong the doc file mau " + templateName + ".xlsx.", e);
         }
     }
 
-    /**
-     * Import dữ liệu từ file Excel vào AR_SCHEDULE_HTSV.
-     * Bỏ qua dòng 1 (header). Đọc từ dòng 2 trở đi.
-     */
     @Override
     @Transactional
-    public List<String> importScheduleHtsv(MultipartFile file) throws IOException {
+    public List<String> importTemplate(String templateName, MultipartFile file) throws IOException {
+        String normalizedTemplateName = normalizeTemplateName(templateName);
+        if (normalizedTemplateName == null) {
+            throw new IllegalArgumentException("templateName is required.");
+        }
+
+        if ("AR_SCHEDULE_HTSV_Template".equalsIgnoreCase(normalizedTemplateName)) {
+            return importScheduleHtsvTemplate(file);
+        } else if ("AttendanceApply_add_Template".equalsIgnoreCase(normalizedTemplateName)) {
+            return importAttendanceApplyTemplate(file);
+        } else if ("OvertimeApply_add_Template".equalsIgnoreCase(normalizedTemplateName)) {
+            return importOvertimeApplyTemplate(file);
+        }
+
+        throw new IllegalArgumentException("Template import not supported: " + normalizedTemplateName);
+    }
+
+    private List<String> importScheduleHtsvTemplate(MultipartFile file) throws IOException {
         List<String> errors = new ArrayList<>();
 
         try (Workbook wb = WorkbookFactory.create(file.getInputStream())) {
             Sheet sheet = wb.getSheet("Template");
-            if (sheet == null) sheet = wb.getSheetAt(0);
+            if (sheet == null) {
+                sheet = wb.getSheetAt(0);
+            }
 
             for (int i = 1; i <= sheet.getLastRowNum(); i++) {
                 Row row = sheet.getRow(i);
-                if (row == null) continue;
-
-                String empId        = getCellStr(row.getCell(0)); // A: Employee ID
-                String date         = getCellStr(row.getCell(2)); // C: Date (dd/MM/yyyy)
-                String typeCodeRaw  = getCellStr(row.getCell(4)); // E: Date type code
-                String shiftCode    = getCellStr(row.getCell(6)); // G: Shift code
-                String remark       = getCellStr(row.getCell(7)); // H: Remark
-
-                if (empId.isBlank() && date.isBlank()) continue; // dòng trống, bỏ qua
-
-                if (empId.isBlank())    { errors.add("Dòng " + (i + 1) + ": Thiếu Employee ID"); continue; }
-                if (date.isBlank())     { errors.add("Dòng " + (i + 1) + ": Thiếu Date"); continue; }
-                if (shiftCode.isBlank()) { errors.add("Dòng " + (i + 1) + ": Thiếu Shift Code (cột G)"); continue; }
-
-                // Lookup PERSON_ID từ EMPID
-                String personId = mapper.getPersonIdByEmpId(empId);
-                if (personId == null) {
-                    errors.add("Dòng " + (i + 1) + ": Không tìm thấy nhân viên với EmpId=" + empId);
+                if (row == null) {
                     continue;
                 }
 
-                // Format date dd/MM/yyyy -> yyyy/MM/dd
+                String empId = getCellStr(row.getCell(0));
+                String date = getCellStr(row.getCell(2));
+                String typeCodeRaw = getCellStr(row.getCell(4));
+                String shiftCode = getCellStr(row.getCell(6));
+                String remark = getCellStr(row.getCell(7));
+
+                if (empId.isBlank() && date.isBlank()) {
+                    continue;
+                }
+
+                if (empId.isBlank()) {
+                    errors.add("Dong " + (i + 1) + ": Thieu Employee ID");
+                    continue;
+                }
+                if (date.isBlank()) {
+                    errors.add("Dong " + (i + 1) + ": Thieu Date");
+                    continue;
+                }
+                if (shiftCode.isBlank()) {
+                    errors.add("Dong " + (i + 1) + ": Thieu Shift Code (cot G)");
+                    continue;
+                }
+
+                String personId = mapper.getPersonIdByEmpId(empId);
+                if (personId == null) {
+                    errors.add("Dong " + (i + 1) + ": Khong tim thay nhan vien voi EmpId=" + empId);
+                    continue;
+                }
+
                 String arDateStr = formatDateStr(date);
                 if (arDateStr == null) {
-                    errors.add("Dòng " + (i + 1) + ": Ngày không đúng định dạng dd/MM/yyyy: " + date);
+                    errors.add("Dong " + (i + 1) + ": Ngay khong dung dinh dang dd/MM/yyyy: " + date);
                     continue;
                 }
 
                 Long typeid = null;
                 if (!typeCodeRaw.isBlank()) {
-                    try { typeid = Long.parseLong(typeCodeRaw.replaceAll("\\.0$", "")); }
-                    catch (NumberFormatException ignored) {}
+                    try {
+                        typeid = Long.parseLong(typeCodeRaw.replaceAll("\\.0$", ""));
+                    } catch (NumberFormatException ignored) {
+                        // ignore
+                    }
                 }
 
                 Map<String, Object> rowData = new HashMap<>();
                 rowData.put("personId", personId);
-                rowData.put("shiftNo",  shiftCode);
+                rowData.put("shiftNo", shiftCode);
                 rowData.put("arDateStr", arDateStr);
-                rowData.put("typeid",   typeid);
-                rowData.put("remark",   remark.isBlank() ? null : remark);
+                rowData.put("typeid", typeid);
+                rowData.put("remark", remark.isBlank() ? null : remark);
 
                 mapper.insertScheduleHtsv(rowData);
             }
@@ -130,16 +166,183 @@ public class ExcelServiceImpl implements ExcelService {
         return errors;
     }
 
-    // ---- helper methods ----
+    private List<String> importAttendanceApplyTemplate(MultipartFile file) throws IOException {
+        List<String> errors = new ArrayList<>();
+        Map<String, Object> clearParams = new HashMap<>();
+        mapper.deleteAttendanceApplyTempByUploader(clearParams);
+
+        try (Workbook wb = WorkbookFactory.create(file.getInputStream())) {
+            Sheet sheet = wb.getSheet("Template");
+            if (sheet == null) {
+                sheet = wb.getSheetAt(0);
+            }
+            DataFormatter formatter = new DataFormatter();
+
+            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+                Row row = sheet.getRow(i);
+                if (row == null) {
+                    continue;
+                }
+
+                String empId = getCellText(row.getCell(0), formatter);
+                String applyName = getCellText(row.getCell(1), formatter);
+                String attendanceDate = normalizeDateCell(row.getCell(2), formatter);
+                String affirmFlag = "14014308";
+                String leaveTypeCode = getCellStr(row.getCell(4));
+                String leaveFromDate = normalizeDateCell(row.getCell(5), formatter);
+                String leaveFromTime = normalizeTimeCell(row.getCell(6), formatter);
+                String leaveToDate = normalizeDateCell(row.getCell(7), formatter);
+                String leaveToTime = normalizeTimeCell(row.getCell(8), formatter);
+                String leaveReason = getCellText(row.getCell(9), formatter);
+
+                if (leaveFromDate.isBlank()) {
+                    leaveFromDate = attendanceDate;
+                }
+                if (leaveToDate.isBlank()) {
+                    leaveToDate = attendanceDate;
+                }
+
+                if (isAllBlank(empId, applyName, attendanceDate, affirmFlag, leaveTypeCode, leaveFromDate,
+                        leaveFromTime, leaveToDate, leaveToTime, leaveReason)) {
+                    continue;
+                }
+                if (empId.isBlank()) {
+                    errors.add("Dong " + (i + 1) + ": Thieu Employee ID");
+                    continue;
+                }
+
+                Map<String, Object> rowData = new HashMap<>();
+                rowData.put("empId", empId.isBlank() ? null : empId);
+                rowData.put("applyName", applyName.isBlank() ? null : applyName);
+                rowData.put("leaveTypeCode", leaveTypeCode.isBlank() ? null : leaveTypeCode);
+                rowData.put("leaveFromDate", leaveFromDate.isBlank() ? null : leaveFromDate);
+                rowData.put("leaveFromTime", leaveFromTime.isBlank() ? null : leaveFromTime);
+                rowData.put("leaveToDate", leaveToDate.isBlank() ? null : leaveToDate);
+                rowData.put("leaveToTime", leaveToTime.isBlank() ? null : leaveToTime);
+                rowData.put("applyLength", null);
+                rowData.put("leaveReason", leaveReason.isBlank() ? null : leaveReason);
+                rowData.put("affirmFlag", affirmFlag.isBlank() ? null : affirmFlag);
+                rowData.put("lineId", String.valueOf(i));
+                rowData.put("uploadErrorMsg", null);
+                rowData.put("resultFlag", "N");
+
+                try {
+                    mapper.insertAttendanceApplyTemp(rowData);
+                } catch (Exception ex) {
+                    log.error("Failed to import attendance apply row={} empId={}", i + 1, empId, ex);
+                    errors.add("Dong " + (i + 1) + ": Loi insert du lieu.");
+                }
+            }
+        }
+
+        Map<String, Object> validateParams = new HashMap<>();
+        validateParams.put("message", "");
+        mapper.callValidateAttendanceApplyTemp(validateParams);
+
+        String validateMessage = toTrimmedString(validateParams.get("message"));
+        if (isValidationErrorMessage(validateMessage)) {
+            errors.add(validateMessage);
+        }
+
+        return errors;
+    }
+
+    private List<String> importOvertimeApplyTemplate(MultipartFile file) throws IOException {
+        List<String> errors = new ArrayList<>();
+        Map<String, Object> clearParams = new HashMap<>();
+        mapper.deleteOvertimeApplyTempByUploader(clearParams);
+
+        try (Workbook wb = WorkbookFactory.create(file.getInputStream())) {
+            Sheet sheet = wb.getSheet("Template");
+            if (sheet == null) {
+                sheet = wb.getSheetAt(0);
+            }
+            DataFormatter formatter = new DataFormatter();
+
+            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+                Row row = sheet.getRow(i);
+                if (row == null) {
+                    continue;
+                }
+
+                String empId = getCellText(row.getCell(0), formatter);
+                String applyName = getCellText(row.getCell(1), formatter);
+                String applyOtDate = normalizeDateCell(row.getCell(2), formatter);
+                String otFromDate = normalizeDateCell(row.getCell(3), formatter);
+                String otFromTime = normalizeTimeCell(row.getCell(4), formatter);
+                String otToDate = normalizeDateCell(row.getCell(5), formatter);
+                String otToTime = normalizeTimeCell(row.getCell(6), formatter);
+                String deductYn = normalizeFlagCell(row.getCell(7), formatter);
+                String acrossDayYn = normalizeFlagCell(row.getCell(8), formatter);
+                String applyOtRemark = getCellText(row.getCell(9), formatter);
+
+                if (otFromDate.isBlank()) {
+                    otFromDate = applyOtDate;
+                }
+                if (otToDate.isBlank()) {
+                    otToDate = applyOtDate;
+                }
+
+                if (isAllBlank(empId, applyName, applyOtDate, otFromDate, otFromTime, otToDate, otToTime, deductYn,
+                        acrossDayYn, applyOtRemark)) {
+                    continue;
+                }
+                if (empId.isBlank()) {
+                    errors.add("Dong " + (i + 1) + ": Thieu Employee ID");
+                    continue;
+                }
+
+                Map<String, Object> rowData = new HashMap<>();
+                rowData.put("empId", empId.isBlank() ? null : empId);
+                rowData.put("applyName", applyName.isBlank() ? null : applyName);
+                rowData.put("applyOtDate", applyOtDate.isBlank() ? null : applyOtDate);
+                rowData.put("otFromDate", otFromDate.isBlank() ? null : otFromDate);
+                rowData.put("otFromTime", otFromTime.isBlank() ? null : otFromTime);
+                rowData.put("otToDate", otToDate.isBlank() ? null : otToDate);
+                rowData.put("otToTime", otToTime.isBlank() ? null : otToTime);
+                rowData.put("otApplyHour", null);
+                rowData.put("applyOtRemark", applyOtRemark.isBlank() ? null : applyOtRemark);
+                rowData.put("affirmFlag", "14014306");
+                rowData.put("lineId", String.valueOf(i));
+                rowData.put("uploadErrorMsg", null);
+                rowData.put("resultFlag", "N");
+                rowData.put("otTypeCode", null);
+                rowData.put("adjustYn", "0");
+                rowData.put("specialYn", acrossDayYn.isBlank() ? "0" : acrossDayYn);
+                rowData.put("offsetYn", "0");
+                rowData.put("deductYn", deductYn.isBlank() ? "0" : deductYn);
+
+                try {
+                    mapper.insertOvertimeApplyTemp(rowData);
+                } catch (Exception ex) {
+                    log.error("Failed to import overtime apply row={} empId={}", i + 1, empId, ex);
+                    errors.add("Dong " + (i + 1) + ": Loi insert du lieu.");
+                }
+            }
+        }
+
+        Map<String, Object> validateParams = new HashMap<>();
+        validateParams.put("message", "");
+        mapper.callValidateOvertimeApplyTemp(validateParams);
+
+        String validateMessage = toTrimmedString(validateParams.get("message"));
+        if (isValidationErrorMessage(validateMessage)) {
+            errors.add(validateMessage);
+        }
+
+        return errors;
+    }
 
     private String str(Object o) {
         return o == null ? "" : o.toString();
     }
 
     private String getCellStr(Cell cell) {
-        if (cell == null) return "";
+        if (cell == null) {
+            return "";
+        }
         return switch (cell.getCellType()) {
-            case STRING  -> cell.getStringCellValue().trim();
+            case STRING -> cell.getStringCellValue().trim();
             case NUMERIC -> {
                 if (DateUtil.isCellDateFormatted(cell)) {
                     yield new SimpleDateFormat("dd/MM/yyyy").format(cell.getDateCellValue());
@@ -148,26 +351,156 @@ public class ExcelServiceImpl implements ExcelService {
                 yield (d == Math.floor(d)) ? String.valueOf((long) d) : String.valueOf(d);
             }
             case FORMULA -> {
-                try { yield String.valueOf((long) cell.getNumericCellValue()); }
-                catch (Exception e) { yield cell.getStringCellValue(); }
+                try {
+                    yield String.valueOf((long) cell.getNumericCellValue());
+                } catch (Exception e) {
+                    yield cell.getStringCellValue();
+                }
             }
             case BOOLEAN -> String.valueOf(cell.getBooleanCellValue());
-            default      -> "";
+            default -> "";
         };
     }
 
     private String formatDateStr(String raw) {
         try {
             if (raw.matches("\\d{2}/\\d{2}/\\d{4}")) {
-                // dd/MM/yyyy -> yyyy/MM/dd
                 String[] p = raw.split("/");
                 return p[2] + "/" + p[1] + "/" + p[0];
             } else if (raw.matches("\\d{4}[/-]\\d{2}[/-]\\d{2}")) {
-                // yyyy-MM-dd hoặc yyyy/MM/dd -> yyyy/MM/dd
                 return raw.replace("-", "/");
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+            // ignore
+        }
         return null;
     }
-}
 
+    private String normalizeTemplateName(String templateName) {
+        if (templateName == null) {
+            return null;
+        }
+        String value = templateName.trim();
+        if (value.isEmpty()) {
+            return null;
+        }
+        if (value.toLowerCase(Locale.ROOT).endsWith(".xlsx")) {
+            value = value.substring(0, value.length() - 5);
+        }
+        return value;
+    }
+
+    private String getCellText(Cell cell, DataFormatter formatter) {
+        if (cell == null) {
+            return "";
+        }
+        String value = formatter.formatCellValue(cell);
+        return value == null ? "" : value.trim();
+    }
+
+    private String normalizeDateCell(Cell cell, DataFormatter formatter) {
+        if (cell == null) {
+            return "";
+        }
+        if (cell.getCellType() == CellType.NUMERIC && DateUtil.isCellDateFormatted(cell)) {
+            return new SimpleDateFormat("yyyy-MM-dd").format(cell.getDateCellValue());
+        }
+        String value = getCellText(cell, formatter);
+        if (value.isEmpty()) {
+            return "";
+        }
+
+        if (value.matches("\\d{4}[/-]\\d{1,2}[/-]\\d{1,2}")) {
+            String[] parts = value.replace("/", "-").split("-");
+            return parts[0] + "-" + pad2(parts[1]) + "-" + pad2(parts[2]);
+        }
+
+        if (value.matches("\\d{1,2}[/-]\\d{1,2}[/-]\\d{4}")) {
+            String[] parts = value.replace("/", "-").split("-");
+            return parts[2] + "-" + pad2(parts[1]) + "-" + pad2(parts[0]);
+        }
+        return value;
+    }
+
+    private String normalizeTimeCell(Cell cell, DataFormatter formatter) {
+        if (cell == null) {
+            return "";
+        }
+        if (cell.getCellType() == CellType.NUMERIC) {
+            if (DateUtil.isCellDateFormatted(cell)) {
+                return new SimpleDateFormat("HH:mm").format(cell.getDateCellValue());
+            }
+            double numeric = cell.getNumericCellValue();
+            if (numeric >= 0 && numeric < 1) {
+                int totalMinutes = (int) Math.round(numeric * 24 * 60);
+                int hour = (totalMinutes / 60) % 24;
+                int minute = totalMinutes % 60;
+                return String.format("%02d:%02d", hour, minute);
+            }
+        }
+
+        String value = getCellText(cell, formatter);
+        if (value.isEmpty()) {
+            return "";
+        }
+
+        if (value.matches("\\d{1,2}:\\d{1,2}(:\\d{1,2})?")) {
+            String[] parts = value.split(":");
+            return pad2(parts[0]) + ":" + pad2(parts[1]);
+        }
+
+        if (value.matches("\\d{3,4}")) {
+            String digits = value.length() == 3 ? "0" + value : value;
+            return digits.substring(0, 2) + ":" + digits.substring(2, 4);
+        }
+        return value;
+    }
+
+    private String normalizeFlagCell(Cell cell, DataFormatter formatter) {
+        String value = getCellText(cell, formatter);
+        if (value.isEmpty()) {
+            return "";
+        }
+        if ("1".equals(value) || "0".equals(value)) {
+            return value;
+        }
+        if ("1.0".equals(value)) {
+            return "1";
+        }
+        if ("0.0".equals(value)) {
+            return "0";
+        }
+        return value;
+    }
+
+    private String pad2(String raw) {
+        String value = raw == null ? "" : raw.trim();
+        if (value.length() >= 2) {
+            return value;
+        }
+        return "0" + value;
+    }
+
+    private boolean isAllBlank(String... values) {
+        for (String value : values) {
+            if (value != null && !value.isBlank()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private String toTrimmedString(Object value) {
+        return value == null ? "" : value.toString().trim();
+    }
+
+    private boolean isValidationErrorMessage(String message) {
+        if (message == null || message.isBlank()) {
+            return false;
+        }
+        String normalized = message.toLowerCase(Locale.ROOT);
+        return normalized.contains("error")
+                || normalized.contains("loi")
+                || normalized.contains("ora-");
+    }
+}

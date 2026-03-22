@@ -12,4 +12,6 @@ public interface ArItemParamService {
     void saveParam(ArItemParamDto dto);
 
     void deleteParam(String arParamNo);
+
+    List<ArItemParamDto> getArItemOptions(String type);
 }

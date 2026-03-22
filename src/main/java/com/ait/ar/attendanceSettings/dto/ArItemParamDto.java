@@ -13,4 +13,6 @@ public class ArItemParamDto extends ArItemParam {
     private String itemNameEn;
     private String itemNameZh;
     private String itemNameKo;
+
+    private String itemName;
 }

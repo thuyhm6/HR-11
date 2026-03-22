@@ -196,7 +196,7 @@
 
                 // Save credentials if remember me is checked
                 if (rememberMe) {
-                    saveCredentials(username);
+                    saveCredentials(username, password);
                 } else {
                     clearSavedCredentials();
                 }
@@ -206,10 +206,12 @@
             function loadSavedCredentials() {
                 try {
                     const savedUsername = localStorage.getItem('hr_remembered_username');
+                    const savedPassword = localStorage.getItem('hr_remembered_password');
                     const rememberMe = localStorage.getItem('hr_remember_me');
 
                     if (savedUsername && rememberMe === 'true') {
                         $('#username').val(savedUsername);
+                        $('#password').val(savedPassword);
                         $('#rememberMe').prop('checked', true);
 
                         // Show success message
@@ -221,9 +223,10 @@
             }
 
             // Save credentials function
-            function saveCredentials(username) {
+            function saveCredentials(username, password) {
                 try {
                     localStorage.setItem('hr_remembered_username', username);
+                    localStorage.setItem('hr_remembered_password', password);
                     localStorage.setItem('hr_remember_me', 'true');
                     console.log('Đã lưu thông tin đăng nhập');
                 } catch (error) {
@@ -235,6 +238,7 @@
             function clearSavedCredentials() {
                 try {
                     localStorage.removeItem('hr_remembered_username');
+                    localStorage.removeItem('hr_remembered_password');
                     localStorage.removeItem('hr_remember_me');
                     console.log('Đã xóa thông tin đăng nhập đã lưu');
                 } catch (error) {

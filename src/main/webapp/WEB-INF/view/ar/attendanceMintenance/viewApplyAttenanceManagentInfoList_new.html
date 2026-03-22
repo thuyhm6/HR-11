@@ -1,4 +1,4 @@
-<div th:fragment="content">
+﻿<div th:fragment="content">
     <div class="row">
         <div class="col-12">
             <div class="card">
@@ -30,7 +30,13 @@
                                 <i class="bx bx-x"></i> Xóa lọc
                             </button>
                             <button type="button" class="btn btn-success" onclick="lvAddEmptyRow()">
-                                <i class="bx bx-plus"></i> Thêm trống
+                                <i class="bx bx-plus"></i> Thêm mới
+                            </button>
+                            <button type="button" class="btn btn-info text-white" onclick="attNewDownloadTemplate()">
+                                <i class="bx bx-download"></i> Tải File Mẫu
+                            </button>
+                            <button type="button" class="btn btn-warning" onclick="attNewOpenImportModal()">
+                                <i class="bx bx-upload"></i> Import Excel
                             </button>
                         </div>
                     </form>
@@ -38,22 +44,23 @@
                     <!-- Data Table -->
                     <div class="table-responsive">
                         <table id="lv_dataTable" class="table table-striped table-bordered table-hover"
-                            style="width:100%">
-                            <thead class="table-light">
+                            style="min-width:2000px">
+                            <thead class="table-light text-center align-middle">
                                 <tr>
-                                    <th style="width: 1%;">No</th>
-                                    <th style="width: 10%;">Nhân viên</th>
-                                    <th style="width: 8%;">Phòng ban</th>
-                                    <th style="width: 6%;">Phép còn</th>
-                                    <th style="width: 10%;">Loại nghỉ</th>
-                                    <th style="width: 11%;">Thời gian bắt đầu</th>
-                                    <th style="width: 11%;">Thời gian kết thúc</th>
-                                    <th style="width: 5%;">Số giờ</th>
-                                    <th style="width: 10%;">Lý do</th>
-                                    <th style="width: 7%;">Trạng thái</th>
-                                    <th style="width: 8%;">Người tạo</th>
-                                    <th style="width: 8%;">Người sửa</th>
-                                    <th class="text-center" style="width: 10%;">Thao tác</th>
+                                    <th>No</th>
+                                    <th>Nhân viên</th>
+                                    <th>Phòng ban</th>
+                                    <th>Phép còn</th>
+                                    <th>Loại nghỉ</th>
+                                    <th>Thời gian bắt đầu</th>
+                                    <th>Thời gian kết thúc</th>
+                                    <th>Số giờ</th>
+                                    <th>Lý do</th>
+                                    <th>Trạng thái</th>
+                                    <th>Người tạo</th>
+                                    <th>Người sửa</th>
+                                    <th>Người duyệt</th>
+                                    <th>Thao tác</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
@@ -65,27 +72,92 @@
     </div>
 </div>
 
-<!-- Modal Xem Người Duyệt -->
-<div class="modal fade" id="lv_approverModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+<div class="modal fade" id="lv_applyDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Thông tin người phê duyệt</h5>
+                <h5 class="modal-title" id="lv_applyDetailTitle">[Xin nghỉ phép]</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <table class="table table-bordered">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Mã NV</th>
-                            <th>Tên nhân viên</th>
-                            <th>Vị trí</th>
-                            <th>Bộ phận</th>
-                            <th>Cấp duyệt</th>
-                        </tr>
-                    </thead>
-                    <tbody id="lv_approverTbody"></tbody>
-                </table>
+                <div class="table-responsive mb-3">
+                    <table class="table table-bordered table-sm align-middle mb-0">
+                        <tbody>
+                            <tr>
+                                <th class="table-light text-center" style="width: 160px;">Tiêu đề</th>
+                                <td id="lv_modalApplyTitle"></td>
+                            </tr>
+                            <tr>
+                                <th class="table-light text-center">Người xin phép</th>
+                                <td id="lv_modalApplicant"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="table-responsive mb-4">
+                    <table class="table table-bordered table-sm align-middle mb-0">
+                        <thead class="table-light text-center">
+                            <tr>
+                                <th style="width: 50px;">STT</th>
+                                <th style="width: 90px;">Trình tự duyệt</th>
+                                <th style="width: 110px;">Trạng thái duyệt</th>
+                                <th>Họ tên</th>
+                                <th>Ý kiến</th>
+                                <th style="width: 170px;">Thời gian thực hiện</th>
+                                <th style="width: 120px;">Phòng ban</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lv_modalApprovalBody"></tbody>
+                    </table>
+                </div>
+
+                <h6 class="fw-bold mb-2">Thông tin nhân viên</h6>
+                <div class="table-responsive mb-4">
+                    <table class="table table-bordered table-sm align-middle mb-0">
+                        <tbody>
+                            <tr>
+                                <th class="table-light text-center" style="width: 100px;">Họ tên</th>
+                                <td id="lv_modalEmpName"></td>
+                                <th class="table-light text-center" style="width: 100px;">Mã nhân viên</th>
+                                <td id="lv_modalEmpId"></td>
+                            </tr>
+                            <tr>
+                                <th class="table-light text-center">Phòng ban</th>
+                                <td id="lv_modalEmpDept"></td>
+                                <th class="table-light text-center">Chức vụ</th>
+                                <td id="lv_modalEmpPost"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h6 class="fw-bold mb-2">Thông tin xin phép</h6>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm align-middle mb-0">
+                        <thead class="table-light text-center">
+                            <tr>
+                                <th>Loại nghỉ phép</th>
+                                <th style="width: 170px;">Thời gian bắt đầu</th>
+                                <th style="width: 170px;">Thời gian kết thúc</th>
+                                <th style="width: 140px;">Thời lượng</th>
+                                <th>Lý do</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td id="lv_modalLeaveType" class="text-center"></td>
+                                <td id="lv_modalLeaveFrom" class="text-center"></td>
+                                <td id="lv_modalLeaveTo" class="text-center"></td>
+                                <td id="lv_modalLeaveLength" class="text-center"></td>
+                                <td id="lv_modalLeaveReason" class="text-center"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
             </div>
         </div>
     </div>
@@ -96,19 +168,39 @@
         var _lv_typeList = [];
         var _lv_table;
         var _lv_addedRows = [];
+        var _lv_pageBooted = false;
+        var _lv_detailModal = null;
+
+        function lvNormalizeDateTimeValue(rawValue) {
+            if (!rawValue) return '';
+            var normalized = String(rawValue).trim().replace('T', ' ');
+            var parts = normalized.split(' ');
+            if (parts.length < 2) return '';
+
+            var datePart = parts[0];
+            var timeParts = parts[1].split(':');
+            if (timeParts.length < 2) return '';
+
+            var hour = (timeParts[0] || '00').padStart(2, '0');
+            var minute = (timeParts[1] || '00').padStart(2, '0');
+            return datePart + ' ' + hour + ':' + minute;
+        }
 
         window.lvValidateMinutes = function (input) {
-            if (!input.value) return;
-            var parts = input.value.split('T');
-            if (parts.length < 2) return;
+            if (!input || !input.value) return;
+
+            var normalized = lvNormalizeDateTimeValue(input.value);
+            if (!normalized) return;
+
+            var parts = normalized.split(' ');
             var datePart = parts[0];
             var timeParts = parts[1].split(':');
             if (timeParts.length < 2) return;
-            
+
             var h = timeParts[0];
             var m = parseInt(timeParts[1], 10);
             var allowed = [0, 2, 15, 17, 30, 32, 45, 47];
-            
+
             if (allowed.indexOf(m) === -1) {
                 var closestMinute = 0;
                 for (var i = allowed.length - 1; i >= 0; i--) {
@@ -118,10 +210,26 @@
                     }
                 }
                 var formattedMinute = closestMinute < 10 ? '0' + closestMinute : closestMinute;
-                input.value = datePart + 'T' + h + ':' + formattedMinute;
-                toastr && toastr.warning('Phút không hợp lệ, hệ thống đã tự động điều chỉnh về ' + formattedMinute + ' (chỉ chấp nhận: 00, 02, 15, 17, 30, 32, 45, 47)');
+                input.value = datePart + ' ' + h + ':' + formattedMinute;
+                toastr && toastr.warning('Minute không hợp lệ, hệ thống đã tự động điều chỉnh về ' + formattedMinute);
+            } else {
+                input.value = datePart + ' ' + h + ':' + (m < 10 ? '0' + m : m);
             }
         };
+
+        window.lvNormalizeDateTimePickerValue = function (input, currentValue) {
+            return lvNormalizeDateTimeValue(currentValue);
+        };
+
+        window.lvHandleDateTimePickerApply = function (input) {
+            lvValidateMinutes(input);
+        };
+
+        function lvInitInputPlugins(container) {
+            if (typeof initDateRangePickers === 'function') {
+                initDateRangePickers(container);
+            }
+        }
 
         function lvInitDate() {
             var now = new Date();
@@ -141,7 +249,23 @@
             $('#lv_searchToDate').val(formatDate(sunday));
         }
 
-        $(document).ready(function () {
+        function lvBootPage() {
+            if (_lv_pageBooted) {
+                return;
+            }
+
+            // Script của tab có thể chạy trước khi DOM tab được gắn vào page,
+            // nên chờ element chính xuất hiện rồi mới init.
+            if (!document.getElementById('lv_dataTable')) {
+                setTimeout(lvBootPage, 30);
+                return;
+            }
+
+            _lv_pageBooted = true;
+            if (window.bootstrap && document.getElementById('lv_applyDetailModal')) {
+                _lv_detailModal = new bootstrap.Modal(document.getElementById('lv_applyDetailModal'));
+            }
+
             // Thiết lập giá trị Từ ngày - Đến ngày mặc định (tuần hiện tại)
             lvInitDate();
 
@@ -152,16 +276,33 @@
                     _lv_typeList = data || [];
                     lvInitTable();
                 },
-                error: function () {
-                    toastr && toastr.error('Không tải được danh sách loại nghỉ!');
+                error: function (xhr, status, err) {
+                    if (typeof toastr !== 'undefined') {
+                        toastr.error('Không tải được danh sách loại nghỉ!');
+                    }
+                    console.error('[lvBootPage] load leave type failed:', status, err);
                     lvInitTable();
                 }
             });
-        });
+        }
+
+        // Chạy cho cả trường hợp load trực tiếp và load qua tab động.
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', lvBootPage);
+        }
+        if (typeof $ !== 'undefined') {
+            $(document).ready(lvBootPage);
+        } else {
+            lvBootPage();
+        }
 
         function lvInitTable() {
+            var hasFixedColumns = !!($.fn.dataTable && $.fn.dataTable.FixedColumns);
+
             _lv_table = $('#lv_dataTable').DataTable({
                 destroy: true,
+                scrollX: true,
+                autoWidth: false,
                 scrollY: "calc(100vh - 280px)",
                 scrollCollapse: true,
                 paging: true,
@@ -169,11 +310,42 @@
                 lengthChange: true,
                 pageLength: 25,
                 processing: true,
-                language: { url: '//cdn.datatables.net/plug-ins/1.10.25/i18n/Vietnamese.json' },
+                columnDefs: [
+                    { targets: 0, width: '15px' }, //No
+                    { targets: 1, width: '180px' }, //Nhân viên
+                    { targets: 2, width: '140px' }, //Phòng ban
+                    { targets: 3, width: '40px' }, //Phép còn
+                    { targets: 4, width: '200px' }, //Loại nghỉ
+                    { targets: 5, width: '120px' }, //Thời gian
+                    { targets: 6, width: '120px' }, //Thời gian
+                    { targets: 7, width: '40px' }, //Số giờ
+                    { targets: 8, width: '220px' }, //Lý do
+                    { targets: 9, width: '120px' }, //Trạng thái
+                    { targets: 10, width: '100px' }, //Người tạo
+                    { targets: 11, width: '100px' }, //Người sửa
+                    { targets: 12, width: '160px' }, //Người duyệt
+                    { targets: 13, width: '40px' }
+                ],
+                fixedColumns: hasFixedColumns ? { leftColumns: 2 } : false,
+                initComplete: function () {
+                    this.api().columns.adjust();
+                    lvInitInputPlugins('#lv_dataTable_wrapper');
+                },
+                drawCallback: function () {
+                    lvInitInputPlugins('#lv_dataTable_wrapper');
+                },
+
                 ajax: {
                     url: '/ar/attendanceMintenance/api/leaveApply/list',
                     dataSrc: function (json) {
-                        return _lv_addedRows.concat(json || []);
+                        var dbRows = (json || []).map(function (item) {
+                            if (!item) return item;
+                            if (!item.personId && item.personid) {
+                                item.personId = item.personid;
+                            }
+                            return item;
+                        });
+                        return _lv_addedRows.concat(dbRows);
                     },
                     data: function (d) {
                         d.empId = $('#lv_searchEmpId').val();
@@ -197,7 +369,16 @@
                                     + '<button class="btn btn-outline-secondary" type="button" onclick="lvPickEmp(this)"><i class="bx bx-search"></i></button>'
                                     + '</div>';
                             }
-                            return data + ' - ' + (row.localName || '');
+                            var personIdVal = String(row.personId || row.personid || '').replace(/"/g, '&quot;');
+                            var applyNo = row.applyNo || '';
+                            var applyType = String(row.leaveTypeCode || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+                            var rowLabel = (data || '') + ' - ' + (row.localName || '');
+                            var clickText = applyNo
+                                ? '<a href="javascript:void(0)" onclick="lvOpenApplyDetail(\'' + applyNo + '\', \'' + applyType + '\')">' + rowLabel + '</a>'
+                                : rowLabel;
+                            return clickText
+                                + '<input type="hidden" class="lv-in-personid" value="' + personIdVal + '">'
+                                + '<input type="hidden" class="lv-in-empname" value="' + (row.empId || '') + ' - ' + (row.localName || '') + '">';
                         }
                     },
                     {
@@ -206,6 +387,7 @@
                     },
                     {
                         data: 'annualLeaveCount',
+                        className: 'text-end align-middle',
                         render: function (data) { return data || '0'; }
                     },
                     {
@@ -223,23 +405,29 @@
                     {
                         data: 'leaveFromTime',
                         render: function (data, type, row) {
-                            var val = (data) ? data.replace(' ', 'T') : '';
-                            return '<input type="datetime-local" class="form-control form-control-sm lv-in-from" onchange="lvValidateMinutes(this)" value="' + val + '">';
+                            var val = lvNormalizeDateTimeValue(data || '');
+                            return '<input type="text" class="form-control form-control-sm lv-in-from js-daterangepicker" '
+                                + 'data-drp-format="YYYY-MM-DD HH:mm" data-drp-time="true" data-drp-24h="true" '
+                                + 'data-drp-time-increment="1" data-drp-normalize="lvNormalizeDateTimePickerValue" '
+                                + 'data-drp-on-apply="lvHandleDateTimePickerApply" '
+                                + 'value="' + val + '" placeholder="YYYY-MM-DD HH:mm">';
                         }
                     },
                     {
                         data: 'leaveToTime',
                         render: function (data, type, row) {
-                            var val = (data) ? data.replace(' ', 'T') : '';
-                            return '<input type="datetime-local" class="form-control form-control-sm lv-in-to" onchange="lvValidateMinutes(this)" value="' + val + '">';
+                            var val = lvNormalizeDateTimeValue(data || '');
+                            return '<input type="text" class="form-control form-control-sm lv-in-to js-daterangepicker" '
+                                + 'data-drp-format="YYYY-MM-DD HH:mm" data-drp-time="true" data-drp-24h="true" '
+                                + 'data-drp-time-increment="1" data-drp-normalize="lvNormalizeDateTimePickerValue" '
+                                + 'data-drp-on-apply="lvHandleDateTimePickerApply" '
+                                + 'value="' + val + '" placeholder="YYYY-MM-DD HH:mm">';
                         }
                     },
                     {
                         data: 'applyLength',
-                        render: function (data) {
-                            var val = data || '0';
-                            return '<input type="number" step="0.5" class="form-control form-control-sm lv-in-len" value="' + val + '" readonly>';
-                        }
+                        className: 'text-end align-middle',
+                        render: function (data) { return data || ''; }
                     },
                     {
                         data: 'leaveReason',
@@ -278,20 +466,20 @@
                         }
                     },
                     {
+                        data: 'affirmStr',
+                        render: function (data) { return data || ''; }
+                    },
+                    {
                         data: null,
                         className: "text-center",
                         render: function (data, type, row) {
-                            var btnSave = '<button class="btn btn-sm btn-primary me-1" onclick="lvSaveLine(this, \'' + (row.applyNo || '') + '\', \'' + (row.personId || '') + '\')">'
+                            var rowPersonId = String(row.personId || row.personid || '')
+                                .replace(/\\/g, '\\\\')
+                                .replace(/'/g, "\\'");
+                            var btnSave = '<button class="btn btn-sm btn-primary me-1" onclick="lvSaveLine(this, \'' + (row.applyNo || '') + '\', \'' + rowPersonId + '\')">'
                                 + '<i class="bx bx-save"></i>'
                                 + '</button>';
-
-                            var btnApprovers = '';
-                            if (!row.isNew && row.affirmStr) {
-                                btnApprovers = '<button class="btn btn-sm btn-info text-white" onclick="lvShowApprovers(this, \'' + btoa(unescape(encodeURIComponent(row.affirmStr || ''))) + '\')">'
-                                    + '<i class="bx bx-user-check"></i> Duyệt'
-                                    + '</button>';
-                            }
-                            return btnSave + btnApprovers;
+                            return btnSave;
                         }
                     }
                 ]
@@ -314,6 +502,7 @@
             _lv_addedRows.unshift({
                 isNew: true,
                 applyNo: '',
+                empId: '',
                 personId: '',
                 deptName: '',
                 annualLeaveCount: '0',
@@ -323,12 +512,30 @@
                 applyLength: '0',
                 leaveReason: '',
                 affirmFlag: '',
+                affirmStr: '',
                 createdBy: '',
-                createDate: '',
-                updatedBy: '',
-                updateDate: ''
+                updatedBy: ''
             });
             if (_lv_table) _lv_table.ajax.reload(null, false);
+        };
+
+        // Tải file Excel mẫu
+        window.attNewDownloadTemplate = function () {
+            window.location.href = '/sy/excel/api/downloadTemplate?templateName=AttendanceApply_add_Template';
+        };
+
+        // Mở modal import Excel (dùng shared component ExcelImport)
+        window.attNewOpenImportModal = function () {
+            ExcelImport.open('/sy/excel/api/importTemplate?templateName=AttendanceApply_add_Template', function (res) {
+                if (_lv_table) {
+                    _lv_table.ajax.reload(null, false);
+                }
+                if (typeof tabSystem !== 'undefined' && tabSystem && typeof tabSystem.openTab === 'function') {
+                    tabSystem.openTab('/ar/attendanceMintenance/viewImportAttendanceTempList', 'Kết quả nhập');
+                } else {
+                    window.open('/ar/attendanceMintenance/viewImportAttendanceTempList', '_blank');
+                }
+            });
         };
 
         window.lvPickEmp = function (btn) {
@@ -346,29 +553,154 @@
             }
         };
 
+        function lvEscHtml(value) {
+            if (value === null || value === undefined) return '';
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function lvSetText(selector, value) {
+            $(selector).text(value || '');
+        }
+
+        function lvBuildApplyTitle(info) {
+            var leaveTypeName = info.leaveTypeName || '';
+            var localName = info.localName || '';
+            var fromTime = info.leaveFromTime || '';
+            var toTime = info.leaveToTime || '';
+            if (!leaveTypeName && !localName && !fromTime && !toTime) {
+                return '';
+            }
+            return leaveTypeName + '/Apply(' + localName + ')[Date: ' + fromTime + ' ~ ' + toTime + ']';
+        }
+
+        function lvResetApplyDetailModal() {
+            lvSetText('#lv_modalApplyTitle', '');
+            lvSetText('#lv_modalApplicant', '');
+            lvSetText('#lv_modalEmpName', '');
+            lvSetText('#lv_modalEmpId', '');
+            lvSetText('#lv_modalEmpDept', '');
+            lvSetText('#lv_modalEmpPost', '');
+            lvSetText('#lv_modalLeaveType', '');
+            lvSetText('#lv_modalLeaveFrom', '');
+            lvSetText('#lv_modalLeaveTo', '');
+            lvSetText('#lv_modalLeaveLength', '');
+            lvSetText('#lv_modalLeaveReason', '');
+            $('#lv_modalApprovalBody').html('<tr><td colspan="7" class="text-center text-muted">Đang tải dữ liệu...</td></tr>');
+        }
+
+        function lvRenderApprovalRows(approvalList) {
+            if (!approvalList || !approvalList.length) {
+                $('#lv_modalApprovalBody').html('<tr><td colspan="7" class="text-center text-muted">Không có dữ liệu phê duyệt</td></tr>');
+                return;
+            }
+
+            var html = '';
+            approvalList.forEach(function (item, index) {
+                var stt = item.affirmLevel || (index + 1);
+                if (String(stt) === '100') {
+                    stt = 'HR';
+                }
+                html += '<tr>'
+                    + '<td class="text-center">' + lvEscHtml(stt) + '</td>'
+                    + '<td class="text-center">' + lvEscHtml(item.affirmTypeName || '') + '</td>'
+                    + '<td class="text-center">' + lvEscHtml(item.affirmFlagName || '') + '</td>'
+                    + '<td>' + lvEscHtml(item.affirmName || '') + '</td>'
+                    + '<td>' + lvEscHtml(item.affirmContent || '') + '</td>'
+                    + '<td class="text-center">' + lvEscHtml(item.updateDate || '') + '</td>'
+                    + '<td class="text-center">' + lvEscHtml(item.deptName || '') + '</td>'
+                    + '</tr>';
+            });
+            $('#lv_modalApprovalBody').html(html);
+        }
+
+        function lvRenderApplyDetail(data) {
+            var leaveInfo = data && data.leaveInfo ? data.leaveInfo : {};
+            var employeeInfo = data && data.employeeInfo ? data.employeeInfo : leaveInfo;
+            var approvalList = data && data.approvalList ? data.approvalList : [];
+
+            $('#lv_applyDetailTitle').text('[' + (leaveInfo.leaveTypeName || 'Xin nghỉ phép') + ']');
+            lvSetText('#lv_modalApplyTitle', lvBuildApplyTitle(leaveInfo));
+            lvSetText('#lv_modalApplicant', (employeeInfo.localName || '') + '/' + (employeeInfo.postGradeName || '') + '/' + (employeeInfo.deptName || ''));
+
+            lvSetText('#lv_modalEmpName', employeeInfo.localName || '');
+            lvSetText('#lv_modalEmpId', employeeInfo.empId || '');
+            lvSetText('#lv_modalEmpDept', employeeInfo.deptName || '');
+            lvSetText('#lv_modalEmpPost', employeeInfo.postGradeName || '');
+
+            lvSetText('#lv_modalLeaveType', leaveInfo.leaveTypeName || '');
+            lvSetText('#lv_modalLeaveFrom', leaveInfo.leaveFromTime || '');
+            lvSetText('#lv_modalLeaveTo', leaveInfo.leaveToTime || '');
+            lvSetText('#lv_modalLeaveLength', leaveInfo.applyLength || '');
+            lvSetText('#lv_modalLeaveReason', leaveInfo.leaveReason || '');
+
+            lvRenderApprovalRows(approvalList);
+        }
+
+        window.lvOpenApplyDetail = function (applyNo, applyType) {
+            if (!applyNo) {
+                toastr && toastr.warning('Không tìm thấy số đơn để xem chi tiết');
+                return;
+            }
+            if (!_lv_detailModal && window.bootstrap && document.getElementById('lv_applyDetailModal')) {
+                _lv_detailModal = new bootstrap.Modal(document.getElementById('lv_applyDetailModal'));
+            }
+            lvResetApplyDetailModal();
+            if (_lv_detailModal) {
+                _lv_detailModal.show();
+            }
+
+            $.ajax({
+                url: '/ar/attendanceMintenance/api/leaveApply/detail',
+                type: 'GET',
+                data: {
+                    applyNo: applyNo,
+                    applyType: applyType || ''
+                },
+                success: function (res) {
+                    lvRenderApplyDetail(res || {});
+                },
+                error: function () {
+                    $('#lv_modalApprovalBody').html('<tr><td colspan="7" class="text-center text-danger">Tải dữ liệu thất bại</td></tr>');
+                    toastr && toastr.error('Không tải được thông tin phê duyệt');
+                }
+            });
+        };
+
         window.lvSaveLine = function (btn, applyNo, rowPersonId) {
             var $tr = $(btn).closest('tr');
             var rowData = _lv_table.row($tr).data();
 
-            var personId = rowData.isNew ? $tr.find('.lv-in-personid').val() : rowPersonId;
+            var personId = ($tr.find('.lv-in-personid').val()
+                || rowData.personId
+                || rowData.personid
+                || rowPersonId
+                || '').trim();
+            var localName = $tr.find('.lv-in-empname').val();
             var leaveTypeCode = $tr.find('.lv-in-type').val();
             var leaveFromTime = $tr.find('.lv-in-from').val();
             var leaveToTime = $tr.find('.lv-in-to').val();
-            var applyLength = $tr.find('.lv-in-len').val();
+            var applyLength = rowData.applyLength;
             var leaveReason = $tr.find('.lv-in-reason').val();
+
+            rowData.personId = personId;
 
             if (!personId) { toastr && toastr.warning('Chưa chọn nhân viên!'); return; }
             if (!leaveTypeCode) { toastr && toastr.warning('Chưa chọn loại nghỉ!'); return; }
             if (!leaveFromTime) { toastr && toastr.warning('Chưa chọn Từ lúc!'); return; }
             if (!leaveToTime) { toastr && toastr.warning('Chưa chọn Đến lúc!'); return; }
 
-            // format datetime-local (YYYY-MM-DDTHH:mm) -> YYYY-MM-DD HH:mm
-            leaveFromTime = leaveFromTime.replace('T', ' ');
-            leaveToTime = leaveToTime.replace('T', ' ');
+            leaveFromTime = lvNormalizeDateTimeValue(leaveFromTime);
+            leaveToTime = lvNormalizeDateTimeValue(leaveToTime);
 
             var payload = {
                 applyNo: applyNo,
                 personId: personId,
+                localName: localName,
                 leaveTypeCode: leaveTypeCode,
                 leaveFromTime: leaveFromTime,
                 leaveToTime: leaveToTime,
@@ -386,6 +718,7 @@
             var $btn = $(btn);
             var oHtml = $btn.html();
             $btn.html('<i class="bx bx-loader bx-spin"></i>').prop('disabled', true);
+            console.log(payload);
 
             $.ajax({
                 url: '/ar/attendanceMintenance/api/leaveApply/save',
@@ -409,39 +742,7 @@
             });
         };
 
-        window.lvShowApprovers = function (btn, b64sql) {
-            var sql = decodeURIComponent(escape(atob(b64sql)));
-            if (!sql) {
-                toastr && toastr.warning('Không có thông tin chuỗi câu lệnh'); return;
-            }
-
-            $.ajax({
-                url: '/ar/attendanceMintenance/api/leaveApply/approvers',
-                type: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({ sql: sql }),
-                success: function (data) {
-                    var h = '';
-                    if (data && data.length > 0) {
-                        data.forEach(function (ap) {
-                            h += '<tr>'
-                                + '<td>' + (ap.empId || '') + '</td>'
-                                + '<td>' + (ap.localName || '') + '</td>'
-                                + '<td>' + (ap.positionName || '') + '</td>'
-                                + '<td>' + (ap.deptName || '') + '</td>'
-                                + '<td class="text-center">' + (ap.affirmLevel || '') + '</td>'
-                                + '</tr>';
-                        });
-                    } else {
-                        h = '<tr><td colspan="5" class="text-center">Không có cấp duyệt nào</td></tr>';
-                    }
-                    $('#lv_approverTbody').html(h);
-                    new bootstrap.Modal(document.getElementById('lv_approverModal')).show();
-                },
-                error: function () {
-                    toastr && toastr.error('Lỗi lấy người duyệt!');
-                }
-            });
-        };
     </script>
 </template>
+
+

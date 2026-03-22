@@ -1,6 +1,7 @@
 package com.ait.sy.sys.controller;
 
 import com.ait.sy.basicMaintenance.model.SyMenu;
+import com.ait.sy.sys.service.MenuService;
 import com.ait.sy.sys.service.PermissionService;
 import com.ait.sy.sys.service.HrAuthenticationService.HrUserInfo;
 import com.ait.sy.sys.service.PermissionService.UserPermissionInfo;
@@ -32,6 +33,9 @@ public class AuthController {
 
     @Autowired
     private PermissionService permissionService;
+
+    @Autowired
+    private MenuService menuService;
 
     @Autowired
     private CsrfUtil csrfUtil;
@@ -158,6 +162,8 @@ public class AuthController {
                 UserPermissionInfo permissionInfo = permissionService
                         .getUserPermissionInfo(hrUserInfo.getSyUser().getUserNo());
                 session.setAttribute("currentPermissionInfo", permissionInfo);
+                session.setAttribute("hasSysTypeZeroMenus",
+                        menuService.hasMenusByUserPermissionBySysType(hrUserInfo.getSyUser().getUserNo(), "0"));
 
                 // Debug logging đã được xóa để tránh log object
 
@@ -228,6 +234,7 @@ public class AuthController {
         // Xóa session
         session.removeAttribute("currentHrUser");
         session.removeAttribute("currentPermissionInfo");
+        session.removeAttribute("hasSysTypeZeroMenus");
         session.removeAttribute("isLoggedIn");
         session.invalidate();
 

@@ -146,8 +146,8 @@ public class ArCalenderServiceImpl implements ArCalenderService {
 
     @Override
     public void saveEmpCalendarDay(ArEmpCalenderDto dto) {
-        String personId  = dto.getPersonId();
-        String arDateStr = dto.getDdateStr();
+        String personId = dto.getPersonId();
+        String arDateStr = dto.getArDateStr();
         if (personId == null || arDateStr == null)
             return;
 

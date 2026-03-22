@@ -67,7 +67,7 @@ var ExcelImport = (function () {
                     var modal = bootstrap.Modal.getInstance(document.getElementById('excelImportModal'));
                     if (modal) modal.hide();
 
-                    if (typeof _onSuccess === 'function') _onSuccess();
+                    if (typeof _onSuccess === 'function') _onSuccess(res);
                 } else {
                     var errHtml = '<strong>' + (res.message || 'Import có lỗi') + '</strong>';
                     if (res.errors && res.errors.length) {
@@ -78,7 +78,7 @@ var ExcelImport = (function () {
                     $('#excelImportErrors').html(errHtml).removeClass('d-none');
 
                     // Reload dù có lỗi (các dòng hợp lệ đã được insert)
-                    if (typeof _onSuccess === 'function') _onSuccess();
+                    if (typeof _onSuccess === 'function') _onSuccess(res);
                 }
             },
             error: function () {

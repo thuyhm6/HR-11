@@ -30,6 +30,10 @@ public class SyAffirmEmailDto {
     private String sendFlag;
     private String affirmContent;
     private String lastName;
+    private String affirmTypeName;
+    private String affirmFlagName;
+    private String affirmName;
+    private String applyAffirmFlagNo;
     
 
     // Các trường hệ thống chung

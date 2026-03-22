@@ -5,19 +5,29 @@ import com.ait.ar.attendanceSettings.service.ArShiftService;
 import com.ait.sy.basicMaintenance.dto.SyCodeParamDto;
 import com.ait.sy.basicMaintenance.service.SyCodeParamService;
 import com.ait.sy.excel.service.ExcelService;
+import jakarta.servlet.http.HttpServletResponse;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.*;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 
 @Controller
 @RequestMapping("/sy/excel")
@@ -35,64 +45,31 @@ public class ExcelController {
     private SyCodeParamService syCodeParamService;
 
     /**
-     * Download file Excel mẫu cho AR_SCHEDULE_HTSV.
-     * GET /sy/excel/api/scheduleHtsv/downloadTemplate
+     * Download template dung chung.
+     * GET /sy/excel/api/downloadTemplate?templateName=AR_SCHEDULE_HTSV_Template
      */
-    @GetMapping("/api/scheduleHtsv/downloadTemplate")
-    public void downloadTemplate(HttpServletRequest request, HttpServletResponse response) throws IOException {
-
-        // Lấy danh sách ca làm việc qua Service (không cần HTTP call)
-        List<Map<String, Object>> shiftList = new ArrayList<>();
-        try {
-            List<ArShift010Dto> shifts = arShiftService.getShiftList(null, null);
-            if (shifts != null) {
-                for (ArShift010Dto s : shifts) {
-                    Map<String, Object> item = new HashMap<>();
-                    item.put("shiftNo", s.getShiftNo());
-                    // Ưu tiên nameVi, fallback về shiftNo
-                    String name = s.getNameVi();
-                    if (name == null || name.isBlank()) name = s.getShiftNo();
-                    item.put("nameVi", name);
-                    shiftList.add(item);
-                }
-            }
-        } catch (Exception e) {
-            // Bỏ qua lỗi, tạo template rỗng
-        }
-
-        // Lấy danh sách loại ngày (parent-code=1439) qua Service
-        List<Map<String, Object>> typeList = new ArrayList<>();
-        try {
-            List<SyCodeParamDto> types = syCodeParamService.getList("1439", null);
-            if (types != null) {
-                for (SyCodeParamDto t : types) {
-                    Map<String, Object> item = new HashMap<>();
-                    item.put("code", t.getCodeNo());
-                    // SyCodeParamDto extends SyCodeDto – lấy tên qua nameVi nếu có
-                    String name = t.getNameVi();
-                    if (name == null || name.isBlank()) name = t.getCodeNo();
-                    item.put("name", name);
-                    typeList.add(item);
-                }
-            }
-        } catch (Exception e) {
-            // Bỏ qua lỗi, tạo template rỗng
-        }
-
-        try (Workbook wb = excelService.buildScheduleHtsvTemplate(shiftList, typeList)) {
-            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-            response.setHeader("Content-Disposition", "attachment; filename*=UTF-8''AR_SCHEDULE_HTSV_Template.xlsx");
-            wb.write(response.getOutputStream());
-        }
+    @GetMapping("/api/downloadTemplate")
+    public void downloadTemplate(@RequestParam("templateName") String templateName,
+                                 HttpServletResponse response) throws IOException {
+        downloadTemplateInternal(templateName, response);
     }
 
     /**
-     * Upload file Excel để import vào AR_SCHEDULE_HTSV.
-     * POST /sy/excel/api/scheduleHtsv/upload (multipart)
+     * Alias cu cho AR_SCHEDULE_HTSV.
      */
-    @PostMapping("/api/scheduleHtsv/upload")
+    @GetMapping("/api/scheduleHtsv/downloadTemplate")
+    public void downloadScheduleHtsvTemplate(HttpServletResponse response) throws IOException {
+        downloadTemplateInternal("AR_SCHEDULE_HTSV_Template", response);
+    }
+
+    /**
+     * Import file excel dung chung theo templateName.
+     * POST /sy/excel/api/importTemplate (multipart)
+     */
+    @PostMapping({"/api/importTemplate", "/api/upload"})
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> upload(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<Map<String, Object>> importTemplate(@RequestParam("templateName") String templateName,
+                                                              @RequestParam("file") MultipartFile file) {
         Map<String, Object> result = new HashMap<>();
         try {
             String validationError = validateUploadFile(file);
@@ -102,21 +79,34 @@ public class ExcelController {
                 return ResponseEntity.badRequest().body(result);
             }
 
-            List<String> errors = excelService.importScheduleHtsv(file);
+            List<String> errors = excelService.importTemplate(templateName, file);
             if (errors.isEmpty()) {
                 result.put("success", true);
-                result.put("message", "Import thành công!");
+                result.put("message", "Import thanh cong!");
             } else {
                 result.put("success", false);
                 result.put("errors", errors);
-                result.put("message", "Import hoàn tất nhưng có " + errors.size() + " lỗi.");
+                result.put("message", "Import hoan tat nhung co " + errors.size() + " loi.");
             }
+        } catch (IllegalArgumentException e) {
+            result.put("success", false);
+            result.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(result);
         } catch (Exception e) {
-            log.error("Failed to import schedule file", e);
+            log.error("Failed to import template file templateName={}", templateName, e);
             result.put("success", false);
             result.put("message", "Loi he thong khi xu ly file import.");
         }
         return ResponseEntity.ok(result);
+    }
+
+    /**
+     * Alias cu cho upload schedule.
+     */
+    @PostMapping("/api/scheduleHtsv/upload")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> importScheduleHtsvTemplate(@RequestParam("file") MultipartFile file) {
+        return importTemplate("AR_SCHEDULE_HTSV_Template", file);
     }
 
     private String validateUploadFile(MultipartFile file) {
@@ -154,5 +144,93 @@ public class ExcelController {
         }
 
         return null;
+    }
+
+    private void downloadTemplateInternal(String templateName, HttpServletResponse response) throws IOException {
+        String normalizedName = normalizeTemplateName(templateName);
+        if (normalizedName == null) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "templateName is required.");
+            return;
+        }
+
+        try (Workbook wb = buildTemplateByName(normalizedName)) {
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            String filename = normalizedName + ".xlsx";
+            String encodedFilename = URLEncoder.encode(filename, StandardCharsets.UTF_8).replace("+", "%20");
+            response.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + encodedFilename);
+            wb.write(response.getOutputStream());
+        } catch (IllegalArgumentException ex) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, ex.getMessage());
+        }
+    }
+
+    private String normalizeTemplateName(String templateName) {
+        if (templateName == null) {
+            return null;
+        }
+        String value = templateName.trim();
+        if (value.isEmpty()) {
+            return null;
+        }
+        if (value.toLowerCase(Locale.ROOT).endsWith(".xlsx")) {
+            value = value.substring(0, value.length() - 5);
+        }
+        return value;
+    }
+
+    private Workbook buildTemplateByName(String templateName) {
+        if ("AR_SCHEDULE_HTSV_Template".equalsIgnoreCase(templateName)) {
+            return excelService.buildTemplate(loadShiftList(), loadCodeList("1439"), templateName);
+        } else if ("AttendanceApply_add_Template".equalsIgnoreCase(templateName)) {
+            return excelService.buildTemplate(loadShiftList(), loadCodeList("21"), templateName);
+        } else if ("OvertimeApply_add_Template".equalsIgnoreCase(templateName)) {
+            return excelService.buildTemplate(null, null, templateName);
+        } else {
+            return excelService.buildTemplate(null, null, templateName);
+        }
+    }
+
+    private List<Map<String, Object>> loadShiftList() {
+        List<Map<String, Object>> shiftList = new ArrayList<>();
+        try {
+            List<ArShift010Dto> shifts = arShiftService.getShiftList(null, null);
+            if (shifts != null) {
+                for (ArShift010Dto s : shifts) {
+                    Map<String, Object> item = new HashMap<>();
+                    item.put("shiftNo", s.getShiftNo());
+                    String name = s.getNameVi();
+                    if (name == null || name.isBlank()) {
+                        name = s.getShiftNo();
+                    }
+                    item.put("nameVi", name);
+                    shiftList.add(item);
+                }
+            }
+        } catch (Exception ignored) {
+            // Bo qua loi, tra ve danh sach rong de van tao duoc template.
+        }
+        return shiftList;
+    }
+
+    private List<Map<String, Object>> loadCodeList(String parentCode) {
+        List<Map<String, Object>> typeList = new ArrayList<>();
+        try {
+            List<SyCodeParamDto> types = syCodeParamService.getList(parentCode, null);
+            if (types != null) {
+                for (SyCodeParamDto t : types) {
+                    Map<String, Object> item = new HashMap<>();
+                    item.put("code", t.getCodeNo());
+                    String name = t.getNameVi();
+                    if (name == null || name.isBlank()) {
+                        name = t.getCodeNo();
+                    }
+                    item.put("name", name);
+                    typeList.add(item);
+                }
+            }
+        } catch (Exception ignored) {
+            // Bo qua loi, tra ve danh sach rong de van tao duoc template.
+        }
+        return typeList;
     }
 }

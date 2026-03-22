@@ -1,10 +1,9 @@
 package com.ait.ar.attendanceMintenance.dto;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
-
+import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
@@ -14,9 +13,9 @@ public class EssLeaveApplyDto extends com.ait.hrm.empinfo.dto.EmployeeNameDto {
     private Long applyNo;
     private String personId;
     private String leaveFromTime; // YYYY-MM-DD HH:mm
-    private String leaveToTime;   // YYYY-MM-DD HH:mm
+    private String leaveToTime; // YYYY-MM-DD HH:mm
     private String leaveReason;
-    private String leaveTypeNo;   // default '21'
+    private String leaveTypeNo; // default '21'
     private String leaveTypeCode; // data-parent-code = 21
     private String applyLength;
     private String applyTime;
@@ -44,10 +43,13 @@ public class EssLeaveApplyDto extends com.ait.hrm.empinfo.dto.EmployeeNameDto {
     private String hrComment;
 
     private String annualLeaveCount;
+    private String affirmStr;
+    private String leaveTypeName;
+    private String dayHours;
+    private String affirmFlagName;
+    private String detailTypeName;
 
-    private String affirmStr; // Query phê duyệt 
-
-    // Các biến dùng cho việc tìm kiếm
+    // Cac bien dung cho viec tim kiem
     private String fromDate;
     private String toDate;
 }

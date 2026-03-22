@@ -39,4 +39,6 @@ public interface ArItemParamMapper {
      * Lấy sequence ID
      */
     String getNextParamNoSeq();
+
+    List<ArItemParamDto> selectArItemOptions(@Param("type") String type);
 }

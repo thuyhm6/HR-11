@@ -70,12 +70,14 @@
                     <div class="row g-2">
                         <div class="col-md-6">
                             <label class="form-label form-label-sm">Từ ngày <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control form-control-sm" id="cccal_startDate"
+                            <input type="text" class="form-control form-control-sm js-daterangepicker" id="cccal_startDate"
+                                data-drp-format="DD-MM-YYYY"
                                 placeholder="DD-MM-YYYY">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label form-label-sm">Đến ngày <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control form-control-sm" id="cccal_endDate"
+                            <input type="text" class="form-control form-control-sm js-daterangepicker" id="cccal_endDate"
+                                data-drp-format="DD-MM-YYYY"
                                 placeholder="DD-MM-YYYY">
                         </div>
                         <div class="col-md-12">
@@ -300,9 +302,8 @@
             });
 
             // Setup date pickers (flatpickr nếu có)
-            if (typeof flatpickr === 'function') {
-                flatpickr('#cccal_startDate', { dateFormat: 'd-m-Y' });
-                flatpickr('#cccal_endDate', { dateFormat: 'd-m-Y' });
+            if (typeof initDateRangePickers === 'function') {
+                initDateRangePickers('#cccal_addModal');
             }
 
             // Nav
@@ -447,9 +448,8 @@
             $('#cccal_startDate').val('');
             $('#cccal_endDate').val('');
             // reinit datepicker nếu cần
-            if (typeof flatpickr === 'function' && !$('#cccal_startDate').hasClass('flatpickr-input')) {
-                flatpickr('#cccal_startDate', { dateFormat: 'd-m-Y' });
-                flatpickr('#cccal_endDate', { dateFormat: 'd-m-Y' });
+            if (typeof initDateRangePickers === 'function') {
+                initDateRangePickers('#cccal_addModal');
             }
             new bootstrap.Modal(document.getElementById('cccal_addModal')).show();
         };

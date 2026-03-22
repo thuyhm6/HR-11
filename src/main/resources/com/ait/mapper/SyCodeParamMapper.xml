@@ -146,11 +146,11 @@
             p.ACTIVITY AS PARAM_ACTIVITY,
             CASE WHEN p.PARAM_NO IS NOT NULL THEN 1 ELSE 0 END AS IS_ASSIGNED
         FROM SY_CODE c
-        LEFT JOIN SY_GLOBAL_NAME gvi ON c.CODE_NO = gvi.NO AND gvi.LANGUAGE = 'vi' AND gvi.ACTIVITY = 1
-        LEFT JOIN SY_GLOBAL_NAME gen ON c.CODE_NO = gen.NO AND gen.LANGUAGE = 'en' AND gen.ACTIVITY = 1
-        LEFT JOIN SY_GLOBAL_NAME gzh ON c.CODE_NO = gzh.NO AND gzh.LANGUAGE = 'zh' AND gzh.ACTIVITY = 1
-        LEFT JOIN SY_GLOBAL_NAME gko ON c.CODE_NO = gko.NO AND gko.LANGUAGE = 'ko' AND gko.ACTIVITY = 1
-        LEFT JOIN SY_CODE_PARAM p ON c.CODE_NO = p.CODE_NO AND p.CPNY_ID = #{cpnyId}
+        LEFT JOIN SY_GLOBAL_NAME gvi ON c.CODE_NO = gvi.NO AND gvi.LANGUAGE = 'vi'
+        LEFT JOIN SY_GLOBAL_NAME gen ON c.CODE_NO = gen.NO AND gen.LANGUAGE = 'en'
+        LEFT JOIN SY_GLOBAL_NAME gzh ON c.CODE_NO = gzh.NO AND gzh.LANGUAGE = 'zh'
+        LEFT JOIN SY_GLOBAL_NAME gko ON c.CODE_NO = gko.NO AND gko.LANGUAGE = 'ko'
+        JOIN SY_CODE_PARAM p ON c.CODE_NO = p.CODE_NO AND p.CPNY_ID = #{cpnyId}
         WHERE c.ACTIVITY = 1
         <if test="parentCode != null and parentCode != '' and parentCode != 'ROOT'">
             AND c.PARENT_CODE_NO = #{parentCode}

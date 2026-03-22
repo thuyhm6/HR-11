@@ -102,4 +102,11 @@ public class ArItemParamController {
             return ResponseEntity.internalServerError().body(response);
         }
     }
+
+    @GetMapping("/api/arItemParam/options")
+    @ResponseBody
+    public ResponseEntity<List<ArItemParamDto>> getArItemOptions(
+            @RequestParam(name = "type", required = false, defaultValue = "attendance") String type) {
+        return ResponseEntity.ok(arItemParamService.getArItemOptions(type));
+    }
 }

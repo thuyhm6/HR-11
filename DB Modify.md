@@ -26,3 +26,6 @@ sy0000	\assets\images\icon\system.png
 /sys/rightsManagement/viewSyRolesGroupList?SYS_TYPE=0 đổi thành /sys/syRole/viewSyRolesGroupList?SYS_TYPE=0
 /sys/rightsManagement/viewLoginUser đổi thành /sys/syRole/viewLoginUser
 
+/ess/infoApplyLeave/viewCheckAttencetanceExForBatchList đổi thành /ess/infoApplyAttendance/viewCheckAttencetanceExForBatchList
+
+bảng ESS_OT_APPLY_TB_EXCEL_TEMP đổi UPLOAD_DATE thành date

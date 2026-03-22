@@ -1,6 +1,7 @@
 package com.ait.ar.attendanceMintenance.controller;
 
 import com.ait.ar.attendanceMintenance.dto.EssLeaveApplyDto;
+import com.ait.ar.attendanceMintenance.dto.EssLeaveApplyImportTempDto;
 import com.ait.sy.syAffirm.dto.SyAffirmEmailDto;
 import com.ait.ar.attendanceMintenance.service.EssLeaveApplyService;
 import com.ait.sy.syAffirm.service.SyAffirmEmailService;
@@ -31,6 +32,11 @@ public class EssLeaveApplyController {
         return "ar/attendanceMintenance/viewApplyAttenanceManagentInfoList_new";
     }
 
+    @GetMapping("/viewImportAttendanceTempList")
+    public String viewImportAttendanceTempList() {
+        return "ar/attendanceMintenance/viewImportAttendanceTempList";
+    }
+
     @GetMapping("/api/leaveApply/list")
     @ResponseBody
     public ResponseEntity<List<EssLeaveApplyDto>> getList(
@@ -39,9 +45,19 @@ public class EssLeaveApplyController {
             @RequestParam(required = false) String fromDate,
             @RequestParam(required = false) String toDate) {
         EssLeaveApplyDto dto = new EssLeaveApplyDto();
+        dto.setEmpId(empId);
+        dto.setLocalName(localName);
         dto.setFromDate(fromDate);
         dto.setToDate(toDate);
         return ResponseEntity.ok(service.getList(dto));
+    }
+
+    @GetMapping("/api/leaveApply/detail")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> getLeaveApplyDetail(
+            @RequestParam(name = "applyNo") String applyNo,
+            @RequestParam(name = "applyType", required = false) String applyType) {
+        return ResponseEntity.ok(service.getLeaveApplyDetail(applyNo, applyType));
     }
 
     @PostMapping("/api/leaveApply/approvers")
@@ -78,6 +94,31 @@ public class EssLeaveApplyController {
                     params != null ? params.keySet() : null, e);
             response.put("success", false);
             response.put("error", "Loi he thong khi luu don nghi phep.");
+        }
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/api/leaveApply/importTemp/list")
+    @ResponseBody
+    public ResponseEntity<List<EssLeaveApplyImportTempDto>> getImportTempList(
+            @RequestParam(name = "errorOnly", required = false) String errorOnly) {
+        return ResponseEntity.ok(service.getImportTempList(errorOnly));
+    }
+
+    @PostMapping("/api/leaveApply/importTemp/save")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> importTempToOfficial() {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            String message = service.importTempToOfficial();
+            response.put("success", true);
+            response.put("message", message.isBlank() ? "Luu thanh cong" : message);
+        } catch (Exception e) {
+            log.error("Failed to import attendance apply temp data", e);
+            response.put("success", false);
+            response.put("error", e.getMessage() == null || e.getMessage().isBlank()
+                    ? "Loi he thong khi luu du lieu import."
+                    : e.getMessage());
         }
         return ResponseEntity.ok(response);
     }

@@ -13,12 +13,14 @@ var DeptTree = (function ($) {
         authDeptList: [],
         selectedCodes: [],
         currentInput: null,
-        onSelectCallback: null
+        onSelectCallback: null,
+        cascadeChildren: true
     };
 
-    function init(inputSelector, callback) {
+    function init(inputSelector, callback, options) {
         state.currentInput = $(inputSelector);
         state.onSelectCallback = callback;
+        state.cascadeChildren = !(options && options.cascadeChildren === false);
 
         if (!$('#' + config.containerId).length) {
             createContainer();
@@ -128,8 +130,9 @@ var DeptTree = (function ($) {
             var isChecked = $(this).is(':checked');
             var id = $(this).data('id');
 
-            // Logic: Check all children when checking parent
-            checkChildren(id, isChecked);
+            if (state.cascadeChildren) {
+                checkChildren(id, isChecked);
+            }
 
             updateSelection();
         });

@@ -12,12 +12,61 @@
                          </div>
 
                          <!-- Menu Toggle Button -->
-                         <div class="topbar-item">
+                         <!-- <div class="topbar-item">
                               <h4 class="fw-bold topbar-button pe-none text-uppercase mb-0">Welcome!</h4>
-                         </div>
+                         </div> -->
                     </div>
 
-                    <div class="d-flex align-items-center gap-1">
+                    <nav class="topbar-horizontal-menu" th:if="${userMenus != null and !userMenus.empty}">
+                         <ul class="topbar-menu-nav">
+                              <li class="topbar-menu-item" th:each="menu : ${userMenus}" th:if="${menu.isActive()}"
+                                   th:classappend="${menu.hasChildren()} ? ' has-children'">
+                                   <th:block th:if="${menu.hasChildren()}">
+                                        <a class="topbar-menu-link" href="javascript:void(0);"
+                                             th:attr="data-menu-no=${menu.menuNo}">
+                                             <span th:text="${menu.menuName}">Menu Name</span>
+                                        </a>
+                                        <ul class="topbar-submenu">
+                                             <li class="topbar-submenu-item" th:each="child : ${menu.children}"
+                                                  th:if="${child.isActive()}"
+                                                  th:classappend="${child.hasChildren()} ? ' has-children'">
+                                                  <th:block th:if="${child.hasChildren()}">
+                                                       <a class="topbar-submenu-link" href="javascript:void(0);"
+                                                            th:attr="data-menu-no=${child.menuNo}"
+                                                            th:text="${child.menuName}">Child Menu Name</a>
+                                                       <ul class="topbar-submenu topbar-submenu-nested">
+                                                            <li class="topbar-submenu-item"
+                                                                 th:each="grandChild : ${child.children}"
+                                                                 th:if="${grandChild.isActive()}">
+                                                                 <a class="topbar-submenu-link"
+                                                                      th:href="${grandChild.menuUrl != null and !grandChild.menuUrl.empty} ? ${grandChild.menuUrl} : 'javascript:void(0);'"
+                                                                      th:attr="data-tab=${grandChild.menuUrl != null and !grandChild.menuUrl.empty} ? ${grandChild.menuUrl} : 'javascript:void(0);', data-menu-no=${grandChild.menuNo}"
+                                                                      th:text="${grandChild.menuName}">Grand Child
+                                                                      Menu Name</a>
+                                                            </li>
+                                                       </ul>
+                                                  </th:block>
+                                                  <th:block th:unless="${child.hasChildren()}">
+                                                       <a class="topbar-submenu-link"
+                                                            th:href="${child.menuUrl != null and !child.menuUrl.empty} ? ${child.menuUrl} : 'javascript:void(0);'"
+                                                            th:attr="data-tab=${child.menuUrl != null and !child.menuUrl.empty} ? ${child.menuUrl} : 'javascript:void(0);', data-menu-no=${child.menuNo}"
+                                                            th:text="${child.menuName}">Child Menu Name</a>
+                                                  </th:block>
+                                             </li>
+                                        </ul>
+                                   </th:block>
+                                   <th:block th:unless="${menu.hasChildren()}">
+                                        <a class="topbar-menu-link"
+                                             th:href="${menu.menuUrl != null and !menu.menuUrl.empty} ? ${menu.menuUrl} : 'javascript:void(0);'"
+                                             th:attr="data-tab=${menu.menuUrl != null and !menu.menuUrl.empty} ? ${menu.menuUrl} : 'javascript:void(0);', data-menu-no=${menu.menuNo}">
+                                             <span th:text="${menu.menuName}">Menu Name</span>
+                                        </a>
+                                   </th:block>
+                              </li>
+                         </ul>
+                    </nav>
+
+                    <div class="d-flex align-items-center gap-1 topbar-actions">
 
                          <!-- Theme Color (Light/Dark) -->
                          <div class="topbar-item">
@@ -177,13 +226,23 @@
                               <a type="button" class="topbar-button" id="page-header-user-dropdown"
                                    data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                    <span class="d-flex align-items-center">
-                                        <img class="rounded-circle" width="32" src="/assets/images/users/avatar-1.jpg"
-                                             alt="avatar-3">
+                                        <img class="rounded-circle" width="32"
+                                             th:src="${currentHrUser != null ? currentHrUser.photoUrl : '/assets/images/users/dummy-avatar.jpg'}"
+                                             th:alt="${currentHrUser != null ? currentHrUser.employeeName : 'avatar'}">
                                    </span>
                               </a>
                               <div class="dropdown-menu dropdown-menu-end">
                                    <!-- item-->
-                                   <h6 class="dropdown-header">Welcome Gaston!</h6>
+                                   <h6 class="dropdown-header"
+                                        th:text="${currentHrUser != null and currentHrUser.employeeName != null and !#strings.isEmpty(currentHrUser.employeeName) ? 'Welcome ' + currentHrUser.employeeName + '!' : 'Welcome!'}">
+                                        Welcome!
+                                   </h6>
+                                   <a class="dropdown-item" th:if="${hasSysTypeZeroMenus}"
+                                        th:href="@{/sys/dashboard-sys-type-zero}"
+                                        target="_blank" rel="noopener noreferrer">
+                                        <i class="bx bx-user-circle text-muted fs-18 align-middle me-1"></i><span
+                                             class="align-middle">HR Management System</span>
+                                   </a>
                                    <a class="dropdown-item" href="pages-profile.html">
                                         <i class="bx bx-user-circle text-muted fs-18 align-middle me-1"></i><span
                                              class="align-middle">Profile</span>
@@ -230,4 +289,77 @@
                </div>
           </div>
      </header>
+
+     <script>
+          document.addEventListener("DOMContentLoaded", function () {
+               const mobileWidth = 991.98;
+               const topbarMenu = document.querySelector(".topbar-horizontal-menu");
+               if (!topbarMenu) {
+                    return;
+               }
+
+               function notifySidebar(link) {
+                    if (!link) {
+                         return;
+                    }
+
+                    const payload = {
+                         menuNo: link.getAttribute("data-menu-no") || "",
+                         dataTab: link.getAttribute("data-tab") || "",
+                         href: link.getAttribute("href") || ""
+                    };
+
+                    if (!payload.menuNo && !payload.dataTab && !payload.href) {
+                         return;
+                    }
+
+                    document.dispatchEvent(new CustomEvent("topbar-menu-selected", {
+                         detail: payload
+                    }));
+               }
+
+               topbarMenu.addEventListener("click", function (event) {
+                    const clickedLink = event.target.closest(".topbar-menu-link, .topbar-submenu-link");
+                    if (!clickedLink || !topbarMenu.contains(clickedLink)) {
+                         return;
+                    }
+
+                    const trigger = event.target.closest(".has-children > .topbar-menu-link, .has-children > .topbar-submenu-link");
+                    if (trigger && topbarMenu.contains(trigger) && window.innerWidth <= mobileWidth) {
+                         event.preventDefault();
+
+                         const parentItem = trigger.parentElement;
+                         if (parentItem) {
+                              const sameLevelItems = parentItem.parentElement
+                                   ? Array.from(parentItem.parentElement.children).filter(function (item) {
+                                        return item.classList && item.classList.contains("has-children") && item.classList.contains("mobile-open");
+                                   })
+                                   : [];
+
+                              sameLevelItems.forEach(function (item) {
+                                   if (item !== parentItem) {
+                                        item.classList.remove("mobile-open");
+                                   }
+                              });
+
+                              parentItem.classList.toggle("mobile-open");
+                         }
+                    }
+
+                    notifySidebar(clickedLink);
+               });
+
+               document.addEventListener("click", function (event) {
+                    if (window.innerWidth > mobileWidth) {
+                         return;
+                    }
+                    if (topbarMenu.contains(event.target)) {
+                         return;
+                    }
+                    topbarMenu.querySelectorAll(".mobile-open").forEach(function (item) {
+                         item.classList.remove("mobile-open");
+                    });
+               });
+          });
+     </script>
 </div>

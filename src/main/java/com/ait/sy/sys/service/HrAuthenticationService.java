@@ -131,6 +131,23 @@ public interface HrAuthenticationService {
             return hrDepartment != null ? hrDepartment.getOrgNameLocal() : null;
         }
 
+        public String getPhotoPath() {
+            return hrPersonalInfo != null ? hrPersonalInfo.getPhotoPath() : null;
+        }
+
+        public String getPhotoUrl() {
+            String rawPath = getPhotoPath();
+            if (rawPath == null || rawPath.trim().isEmpty()) {
+                return "/assets/images/users/dummy-avatar.jpg";
+            }
+
+            String normalized = rawPath.trim().replace("\\", "/");
+            if (normalized.startsWith("http://") || normalized.startsWith("https://") || normalized.startsWith("/")) {
+                return normalized;
+            }
+            return "/" + normalized;
+        }
+
         public String getDeptNo() {
             return hrEmployee != null ? hrEmployee.getDeptNo() : null;
         }

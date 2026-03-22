@@ -75,7 +75,7 @@ public class MenuDTO {
      * Kiểm tra có phải menu gốc không
      */
     public boolean isRootMenu() {
-        return menuParentNo == null || menuParentNo.trim().equals("0");
+        return menuParentNo == null || menuParentNo.trim().isEmpty() || menuParentNo.trim().equals("0");
     }
 
     /**

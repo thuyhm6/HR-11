@@ -39,6 +39,7 @@
     <!-- DataTables CSS/JS -->
     <link href="/assets/css/jquery.dataTables.min.css" rel="stylesheet" type="text/css" />
     <link href="/assets/css/select.dataTables.min.css" rel="stylesheet" type="text/css" />
+    <link href="/assets/css/fixedColumns.dataTables.min.css" rel="stylesheet" type="text/css" />
 
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/select/1.7.0/js/dataTables.select.min.js"></script>
@@ -51,6 +52,7 @@
     <link href="/assets/css/components/deptTree.css" rel="stylesheet" type="text/css" />
     <!-- Toastr CSS -->
     <link href="/assets/plugins/toastr/toastr.min.css" rel="stylesheet" type="text/css" />
+    <link href="/assets/plugins/daterangepicker/daterangepicker.css" rel="stylesheet" type="text/css" />
 
 
 </head>
@@ -118,6 +120,7 @@
     <!-- END Wrapper -->
     <!-- DataTables JS -->
     <script src="/assets/js/dataTables/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/fixedcolumns/4.3.0/js/dataTables.fixedColumns.min.js"></script>
 
     <script src="/assets/js/dataTables/dataTables.buttons.min.js"></script>
     <script src="/assets/js/dataTables/jszip.min.js"></script>
@@ -155,6 +158,9 @@
 
     <!-- Toastr JS -->
     <script src="/assets/plugins/toastr/toastr.min.js"></script>
+    <script src="/assets/plugins/moment/moment.min.js"></script>
+    <script src="/assets/plugins/daterangepicker/daterangepicker.js"></script>
+    <script src="/assets/js/components/dateRangePickerHelper.js"></script>
     <script>
         // Global Toastr Config
         if (typeof toastr !== 'undefined') {
@@ -245,6 +251,7 @@
         $(document).ready(function () {
             // Auto init for config-driven selects on initial load
             initCodeSelects();
+            initDateRangePickers();
 
             // Watch for dynamically added elements (like Tabs/Modals)
             var observer = new MutationObserver(function (mutations) {
@@ -253,6 +260,7 @@
                         mutation.addedNodes.forEach(function (node) {
                             if (node.nodeType === 1) { // ELEMENT_NODE
                                 initCodeSelects(node);
+                                initDateRangePickers(node);
                             }
                         });
                     }

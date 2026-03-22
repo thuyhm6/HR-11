@@ -40,6 +40,7 @@
         <result column="ITEM_NAME_EN" property="itemNameEn" />
         <result column="ITEM_NAME_ZH" property="itemNameZh" />
         <result column="ITEM_NAME_KO" property="itemNameKo" />
+        <result column="ITEM_NAME" property="itemName" />
     </resultMap>
 
     <select id="getNextParamNoSeq" resultType="String">
@@ -65,6 +66,24 @@
                 AND a.ITEM_NO = #{itemNo}
             </if>
         ORDER BY a.ORDERNO, a.AR_PARAM_NO
+    </select>
+
+    <select id="selectArItemOptions" resultMap="DtoResultMap">
+        SELECT DISTINCT
+            P.ITEM_NO,
+            GET_GLOBAL_NAME(P.ITEM_NO, #{lang, jdbcType=VARCHAR}) AS ITEM_NAME
+        FROM AR_ITEM_PARAM P
+        INNER JOIN AR_ITEM I ON P.ITEM_NO = I.ITEM_NO
+        WHERE P.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+        <choose>
+            <when test="type != null and type == 'overtime'">
+                AND I.ITEM_GROUP_CODE = '1433'
+            </when>
+            <otherwise>
+                AND I.ITEM_GROUP_CODE &lt;&gt; '1433'
+            </otherwise>
+        </choose>
+        ORDER BY P.ITEM_NO
     </select>
 
     <select id="selectByParamNo" resultMap="BaseResultMap">

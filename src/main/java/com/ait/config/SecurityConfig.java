@@ -49,6 +49,10 @@ public class SecurityConfig implements WebMvcConfigurer {
                                 "/error/**", "/favicon.ico",
                                 "/actuator/health", "/api/health", "/api/csrf-token")
                         .permitAll()
+                        .requestMatchers(HttpMethod.GET, "/sys/api/code/list")
+                        .authenticated()
+                        .requestMatchers("/sy/excel/api/**")
+                        .authenticated()
                         .requestMatchers(
                                 "/api/admin/**",
                                 "/api/monitoring/**",
@@ -57,7 +61,6 @@ public class SecurityConfig implements WebMvcConfigurer {
                                 "/multilingual/**",
                                 "/sys/api/**",
                                 "/sys/api/user/**",
-                                "/sy/excel/api/**",
                                 "/sys/syRole/viewLoginUser")
                         .hasAnyRole("ADMIN", "SYS")
                         .requestMatchers(HttpMethod.POST, "/api/multilingual/content", "/api/multilingual/code-param/link")

@@ -163,9 +163,7 @@
                     { "width": "2%", "targets": 0 },
                 ],
                 processing: true,
-                language: {
-                    url: '//cdn.datatables.net/plug-ins/1.10.25/i18n/Vietnamese.json'
-                },
+
                 dom: 'Blfrtip',
                 buttons: [
                     'copy', 'csv', 'excel', 'pdf', 'print'
@@ -227,12 +225,12 @@
 
             // Tải file Excel mẫu
             window.svDownloadTemplate = function () {
-                window.location.href = '/sy/excel/api/scheduleHtsv/downloadTemplate';
+                window.location.href = '/sy/excel/api/downloadTemplate?templateName=AR_SCHEDULE_HTSV_Template';
             };
 
             // Mở modal import Excel (dùng shared component ExcelImport)
             window.svOpenImportModal = function () {
-                ExcelImport.open('/sy/excel/api/scheduleHtsv/upload', function () {
+                ExcelImport.open('/sy/excel/api/importTemplate?templateName=AR_SCHEDULE_HTSV_Template', function () {
                     table.ajax.reload();
                 });
             };

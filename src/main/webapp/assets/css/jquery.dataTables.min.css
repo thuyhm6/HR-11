@@ -47,7 +47,7 @@ table.dataTable thead>tr>td.sorting_asc_disabled,
 table.dataTable thead>tr>td.sorting_desc_disabled {
     cursor: pointer;
     position: relative;
-    padding-right: 26px
+    /* padding-right: 26px */
 }
 
 table.dataTable thead>tr>th.sorting:before,
@@ -242,13 +242,6 @@ table.dataTable td.dt-justify {
 table.dataTable th.dt-nowrap,
 table.dataTable td.dt-nowrap {
     white-space: nowrap
-}
-
-table.dataTable thead th,
-table.dataTable thead td,
-table.dataTable tfoot th,
-table.dataTable tfoot td {
-    text-align: left
 }
 
 table.dataTable thead th.dt-head-left,

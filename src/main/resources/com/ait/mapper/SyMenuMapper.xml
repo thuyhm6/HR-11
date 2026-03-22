@@ -65,12 +65,15 @@
         SELECT DISTINCT m.*
         FROM sy_menu m
         INNER JOIN sy_role_relation rr ON m.MENU_NO = rr.MENU_NO
+        INNER JOIN sy_role r ON rr.ROLE_NO = r.ROLE_NO
         INNER JOIN sy_role_group_relation rgr ON rr.ROLE_NO = rgr.ROLE_NO
         INNER JOIN sy_user_relation ur ON rgr.ROLE_GROUP_NO = ur.ROLE_GROUP_NO
         WHERE m.ACTIVITY = 1
           AND rr.ACTIVITY = 1
+          AND r.ACTIVITY = 1
           AND rgr.ACTIVITY = 1
           AND ur.ACTIVITY = 1
+          AND NVL(TO_CHAR(r.SYS_TYPE), '0') = '1'
           AND ur.USER_NO = #{userNo}
         ORDER BY m.DEPTH, m.ORDERNO
     </select>

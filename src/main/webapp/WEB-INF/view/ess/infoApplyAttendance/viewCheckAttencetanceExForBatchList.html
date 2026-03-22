@@ -1,0 +1,484 @@
+<div th:fragment="content">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form id="ck_searchForm" class="row g-3 mb-4">
+                        <div class="col-md-3">
+                            <label for="ck_keyword" class="form-label">Mã nhân viên / Họ tên</label>
+                            <input type="text" class="form-control" id="ck_keyword" placeholder="Nhập mã hoặc họ tên">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="ck_deptNo" class="form-label">Phòng ban</label>
+                            <input type="text" class="form-control" id="ck_deptNo" placeholder="Chọn phòng ban"
+                                readonly>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="ck_fromDate" class="form-label">Ngày bắt đầu</label>
+                            <input type="text" class="form-control js-daterangepicker" id="ck_fromDate"
+                                data-drp-format="DD/MM/YYYY" autocomplete="off">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="ck_toDate" class="form-label">Ngày kết thúc</label>
+                            <input type="text" class="form-control js-daterangepicker" id="ck_toDate"
+                                data-drp-format="DD/MM/YYYY" autocomplete="off">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="ck_postFamily" class="form-label">Nhóm nhân viên</label>
+                            <select class="form-select" id="ck_postFamily" data-parent-code="14015812"
+                                data-default-text="-- Tất cả --"></select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="ck_shiftNo" class="form-label">Ca làm việc</label>
+                            <select class="form-select" id="ck_shiftNo">
+                                <option value="">-- Tất cả --</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="ck_itemNo" class="form-label">Loại nghỉ phép</label>
+                            <select class="form-select" id="ck_itemNo">
+                                <option value="">Lựa chọn</option>
+                                <option value="141443">Nghỉ không phép</option>
+                                <option value="141442">Về sớm</option>
+                                <option value="141441">Đến muộn</option>
+                                <option value="14015448">Quên quẹt thẻ</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 d-flex align-items-end gap-2 flex-wrap">
+                            <button type="button" class="btn btn-primary" onclick="ckSearchData()">
+                                <i class="bx bx-search"></i> Tra cứu
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="ckClearSearch()">
+                                <i class="bx bx-x"></i> Xóa lọc
+                            </button>
+                            <button type="button" class="btn btn-success" onclick="ckExportExcel()">
+                                <i class="bx bx-export"></i> Xuất excel
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="table-responsive">
+                        <table id="ck_dataTable" class="table table-striped table-bordered table-hover"
+                            style="width: 100%;">
+                            <thead class="table-light text-center align-middle">
+                                <tr>
+                                    <th>No.</th>
+                                    <th>Mã nhân viên</th>
+                                    <th>Họ tên</th>
+                                    <th>Phòng ban</th>
+                                    <th>Chức vụ</th>
+                                    <th>Nhóm nhân viên</th>
+                                    <th>Ca làm việc</th>
+                                    <th>Loại nghỉ phép</th>
+                                    <th>Ngày công</th>
+                                    <th>Từ thời gian</th>
+                                    <th>Đến thời gian</th>
+                                    <th>Lý do</th>
+                                    <th>Người tạo</th>
+                                    <th>Ngày tạo</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="ck_applyDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="ck_applyDetailTitle">[Thông tin phê duyệt]</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive mb-3">
+                    <table class="table table-bordered table-sm align-middle mb-0">
+                        <tbody>
+                            <tr>
+                                <th class="table-light text-center" style="width: 160px;">Tiêu đề</th>
+                                <td id="ck_modalApplyTitle"></td>
+                            </tr>
+                            <tr>
+                                <th class="table-light text-center">Người xin phép</th>
+                                <td id="ck_modalApplicant"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="table-responsive mb-4">
+                    <table class="table table-bordered table-sm align-middle mb-0">
+                        <thead class="table-light text-center">
+                            <tr>
+                                <th style="width: 50px;">STT</th>
+                                <th style="width: 90px;">Trình tự duyệt</th>
+                                <th style="width: 110px;">Trạng thái duyệt</th>
+                                <th>Họ tên</th>
+                                <th>Ý kiến</th>
+                                <th style="width: 170px;">Thời gian thực hiện</th>
+                                <th style="width: 120px;">Phòng ban</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ck_modalApprovalBody"></tbody>
+                    </table>
+                </div>
+
+                <h6 class="fw-bold mb-2">Thông tin nhân viên</h6>
+                <div class="table-responsive mb-4">
+                    <table class="table table-bordered table-sm align-middle mb-0">
+                        <tbody>
+                            <tr>
+                                <th class="table-light text-center" style="width: 100px;">Họ tên</th>
+                                <td id="ck_modalEmpName"></td>
+                                <th class="table-light text-center" style="width: 100px;">Mã nhân viên</th>
+                                <td id="ck_modalEmpId"></td>
+                            </tr>
+                            <tr>
+                                <th class="table-light text-center">Phòng ban</th>
+                                <td id="ck_modalEmpDept"></td>
+                                <th class="table-light text-center">Chức vụ</th>
+                                <td id="ck_modalEmpPost"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h6 class="fw-bold mb-2">Thông tin xin phép</h6>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm align-middle mb-0">
+                        <thead class="table-light text-center">
+                            <tr>
+                                <th>Loại nghỉ phép</th>
+                                <th style="width: 170px;">Thời gian bắt đầu</th>
+                                <th style="width: 170px;">Thời gian kết thúc</th>
+                                <th style="width: 140px;">Thời lượng</th>
+                                <th>Lý do</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td id="ck_modalLeaveType" class="text-center"></td>
+                                <td id="ck_modalLeaveFrom" class="text-center"></td>
+                                <td id="ck_modalLeaveTo" class="text-center"></td>
+                                <td id="ck_modalLeaveLength" class="text-center"></td>
+                                <td id="ck_modalLeaveReason" class="text-center"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<template id="fragmentScripts">
+    <script th:inline="javascript">
+        var _ck_table = null;
+        var _ck_pageBooted = false;
+        var _ck_selectedDeptCodes = [];
+        var _ck_detailModal = null;
+
+        function ckFormatDate(dateObj) {
+            var d = String(dateObj.getDate()).padStart(2, '0');
+            var m = String(dateObj.getMonth() + 1).padStart(2, '0');
+            var y = dateObj.getFullYear();
+            return d + '/' + m + '/' + y;
+        }
+
+        function ckInitDefaultDateRange() {
+            var today = new Date();
+            var firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+            var lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+            var fromValue = ckFormatDate(firstDay);
+            var toValue = ckFormatDate(lastDay);
+            $('#ck_fromDate').val(fromValue);
+            $('#ck_toDate').val(toValue);
+
+            if ($('#ck_fromDate').data('daterangepicker')) {
+                $('#ck_fromDate').data('daterangepicker').setStartDate(fromValue);
+            }
+            if ($('#ck_toDate').data('daterangepicker')) {
+                $('#ck_toDate').data('daterangepicker').setStartDate(toValue);
+            }
+        }
+
+        function ckInitDeptSelector() {
+            if (typeof DeptTree === 'undefined') {
+                return;
+            }
+            DeptTree.init('#ck_deptNo', function (selectedCodes) {
+                _ck_selectedDeptCodes = selectedCodes || [];
+            });
+        }
+
+        function ckLoadShiftOptions() {
+            return $.ajax({
+                url: '/ar/attendanceSettings/api/shift',
+                type: 'GET',
+                success: function (data) {
+                    var html = '<option value="">-- Tất cả --</option>';
+                    (data || []).forEach(function (item) {
+                        var code = item.shiftNo || '';
+                        var name = item.nameVi || item.shiftName || code;
+                        html += '<option value="' + code + '">' + name + '</option>';
+                    });
+                    $('#ck_shiftNo').html(html);
+                }
+            });
+        }
+
+        function ckInitTable() {
+            _ck_table = $('#ck_dataTable').DataTable({
+                destroy: true,
+                scrollX: true,
+                scrollY: "calc(100vh - 330px)",
+                scrollCollapse: true,
+                paging: true,
+                searching: false,
+                lengthChange: true,
+                pageLength: 25,
+                processing: true,
+                autoWidth: false,
+                dom: 'Blfrtip',
+                buttons: [
+                    {
+                        extend: 'excel',
+                        title: 'check_attendance_ex_for_batch_export'
+                    }
+                ],
+                ajax: {
+                    url: '/ess/infoApplyAttendance/api/checkAttendanceEx/list',
+                    dataSrc: '',
+                    data: function (d) {
+                        d.keyword = $('#ck_keyword').val();
+                        d.deptNos = (_ck_selectedDeptCodes || []).join(',');
+                        d.fromDate = $('#ck_fromDate').val();
+                        d.toDate = $('#ck_toDate').val();
+                        d.postFamily = $('#ck_postFamily').val();
+                        d.shiftNo = $('#ck_shiftNo').val();
+                        d.itemNo = $('#ck_itemNo').val();
+                    }
+                },
+                initComplete: function () {
+                    $('#ck_dataTable_wrapper').find('.dt-buttons').hide();
+                },
+                columns: [
+                    {
+                        data: null,
+                        width: '25px',
+                        className: 'text-center',
+                        render: function (data, type, row, meta) {
+                            return meta.settings._iDisplayStart + meta.row + 1;
+                        }
+                    },
+                    { data: 'empId', className: 'text-center' },
+                    {
+                        data: 'localName',
+                        render: function (data, type, row) {
+                            var name = data || '';
+                            var applyNo = row.applyNo || '';
+                            var applyType = String(row.itemNo || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+                            if (!applyNo) {
+                                return name;
+                            }
+                            return '<a href="javascript:void(0)" onclick="ckOpenApplyDetail(\'' + applyNo + '\', \'' + applyType + '\')">' + ckEscHtml(name) + '</a>';
+                        }
+                    },
+                    { data: 'deptName' },
+                    { data: 'postGradeName' },
+                    { data: 'postFamilyName' },
+                    { data: 'shiftName', className: 'text-center' },
+                    { data: 'itemNoName' },
+                    { data: 'arDateStr', className: 'text-center' },
+                    { data: 'fromDateTime', className: 'text-center' },
+                    { data: 'toDateTime', className: 'text-center' },
+                    { data: 'remark', render: function (data) { return data || ''; } },
+                    { data: 'createdName', render: function (data) { return data || ''; } },
+                    { data: 'createDate', className: 'text-center' }
+                ]
+            });
+        }
+
+        function ckBootPage() {
+            if (_ck_pageBooted) {
+                return;
+            }
+            if (!document.getElementById('ck_dataTable')) {
+                setTimeout(ckBootPage, 30);
+                return;
+            }
+            _ck_pageBooted = true;
+            if (window.bootstrap && document.getElementById('ck_applyDetailModal')) {
+                _ck_detailModal = new bootstrap.Modal(document.getElementById('ck_applyDetailModal'));
+            }
+            ckInitDefaultDateRange();
+            ckInitDeptSelector();
+            $.when(ckLoadShiftOptions()).always(function () {
+                ckInitTable();
+                if (_ck_table) {
+                    _ck_table.ajax.reload();
+                }
+            });
+        }
+
+        window.ckSearchData = function () {
+            if (_ck_table) {
+                _ck_table.ajax.reload();
+            }
+        };
+
+        window.ckClearSearch = function () {
+            $('#ck_keyword').val('');
+            $('#ck_postFamily').val('');
+            $('#ck_shiftNo').val('');
+            $('#ck_itemNo').val('');
+            $('#ck_deptNo').val('');
+            _ck_selectedDeptCodes = [];
+            $('.auth-dept-chk-global').prop('checked', false).trigger('change');
+            ckInitDefaultDateRange();
+            if (_ck_table) {
+                _ck_table.ajax.reload();
+            }
+        };
+
+        window.ckExportExcel = function () {
+            if (_ck_table) {
+                _ck_table.button('.buttons-excel').trigger();
+            }
+        };
+
+        function ckEscHtml(value) {
+            if (value === null || value === undefined) return '';
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function ckSetText(selector, value) {
+            $(selector).text(value || '');
+        }
+
+        function ckBuildApplyTitle(info) {
+            var leaveTypeName = info.leaveTypeName || '';
+            var localName = info.localName || '';
+            var fromTime = info.leaveFromTime || '';
+            var toTime = info.leaveToTime || '';
+            if (!leaveTypeName && !localName && !fromTime && !toTime) {
+                return '';
+            }
+            return leaveTypeName + '/Apply(' + localName + ')[Date: ' + fromTime + ' ~ ' + toTime + ']';
+        }
+
+        function ckResetApplyDetailModal() {
+            ckSetText('#ck_modalApplyTitle', '');
+            ckSetText('#ck_modalApplicant', '');
+            ckSetText('#ck_modalEmpName', '');
+            ckSetText('#ck_modalEmpId', '');
+            ckSetText('#ck_modalEmpDept', '');
+            ckSetText('#ck_modalEmpPost', '');
+            ckSetText('#ck_modalLeaveType', '');
+            ckSetText('#ck_modalLeaveFrom', '');
+            ckSetText('#ck_modalLeaveTo', '');
+            ckSetText('#ck_modalLeaveLength', '');
+            ckSetText('#ck_modalLeaveReason', '');
+            $('#ck_modalApprovalBody').html('<tr><td colspan="7" class="text-center text-muted">Đang tải dữ liệu...</td></tr>');
+        }
+
+        function ckRenderApprovalRows(approvalList) {
+            if (!approvalList || !approvalList.length) {
+                $('#ck_modalApprovalBody').html('<tr><td colspan="7" class="text-center text-muted">Không có dữ liệu phê duyệt</td></tr>');
+                return;
+            }
+
+            var html = '';
+            approvalList.forEach(function (item, index) {
+                var stt = item.affirmLevel || (index + 1);
+                if (String(stt) === '100') {
+                    stt = 'HR';
+                }
+                html += '<tr>'
+                    + '<td class="text-center">' + ckEscHtml(stt) + '</td>'
+                    + '<td class="text-center">' + ckEscHtml(item.affirmTypeName || '') + '</td>'
+                    + '<td class="text-center">' + ckEscHtml(item.affirmFlagName || '') + '</td>'
+                    + '<td>' + ckEscHtml(item.affirmName || '') + '</td>'
+                    + '<td>' + ckEscHtml(item.affirmContent || '') + '</td>'
+                    + '<td class="text-center">' + ckEscHtml(item.updateDate || '') + '</td>'
+                    + '<td class="text-center">' + ckEscHtml(item.deptName || '') + '</td>'
+                    + '</tr>';
+            });
+            $('#ck_modalApprovalBody').html(html);
+        }
+
+        function ckRenderApplyDetail(data) {
+            var leaveInfo = data && data.leaveInfo ? data.leaveInfo : {};
+            var employeeInfo = data && data.employeeInfo ? data.employeeInfo : leaveInfo;
+            var approvalList = data && data.approvalList ? data.approvalList : [];
+
+            $('#ck_applyDetailTitle').text('[' + (leaveInfo.leaveTypeName || 'Thông tin phê duyệt') + ']');
+            ckSetText('#ck_modalApplyTitle', ckBuildApplyTitle(leaveInfo));
+            ckSetText('#ck_modalApplicant', (employeeInfo.localName || '') + '/' + (employeeInfo.postGradeName || '') + '/' + (employeeInfo.deptName || ''));
+
+            ckSetText('#ck_modalEmpName', employeeInfo.localName || '');
+            ckSetText('#ck_modalEmpId', employeeInfo.empId || '');
+            ckSetText('#ck_modalEmpDept', employeeInfo.deptName || '');
+            ckSetText('#ck_modalEmpPost', employeeInfo.postGradeName || '');
+
+            ckSetText('#ck_modalLeaveType', leaveInfo.leaveTypeName || '');
+            ckSetText('#ck_modalLeaveFrom', leaveInfo.leaveFromTime || '');
+            ckSetText('#ck_modalLeaveTo', leaveInfo.leaveToTime || '');
+            ckSetText('#ck_modalLeaveLength', leaveInfo.applyLength || '');
+            ckSetText('#ck_modalLeaveReason', leaveInfo.leaveReason || '');
+
+            ckRenderApprovalRows(approvalList);
+        }
+
+        window.ckOpenApplyDetail = function (applyNo, applyType) {
+            if (!applyNo) {
+                toastr && toastr.warning('Không tìm thấy số đơn để xem chi tiết');
+                return;
+            }
+            if (!_ck_detailModal && window.bootstrap && document.getElementById('ck_applyDetailModal')) {
+                _ck_detailModal = new bootstrap.Modal(document.getElementById('ck_applyDetailModal'));
+            }
+            ckResetApplyDetailModal();
+            if (_ck_detailModal) {
+                _ck_detailModal.show();
+            }
+
+            $.ajax({
+                url: '/ess/infoApplyAttendance/api/checkAttendanceEx/detail',
+                type: 'GET',
+                data: {
+                    applyNo: applyNo,
+                    applyType: applyType || ''
+                },
+                success: function (res) {
+                    ckRenderApplyDetail(res || {});
+                },
+                error: function () {
+                    $('#ck_modalApprovalBody').html('<tr><td colspan="7" class="text-center text-danger">Tải dữ liệu thất bại</td></tr>');
+                    toastr && toastr.error('Không tải được thông tin phê duyệt');
+                }
+            });
+        };
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', ckBootPage);
+        }
+        if (typeof $ !== 'undefined') {
+            $(document).ready(ckBootPage);
+        } else {
+            ckBootPage();
+        }
+    </script>
+</template>

@@ -145,11 +145,11 @@
 
     <select id="getAffirmorList" statementType="CALLABLE" parameterType="java.util.Map">
         { #{resultList, mode=OUT, jdbcType=CURSOR, javaType=java.sql.ResultSet, resultMap=SyAffirmEmailResultMap} = 
-          call GET_AFFIRMOR_LIST_IMPROVE(
+          call PKG_AFFIRM_EMAIL.GET_AFFIRMOR_LIST_IMPROVE(
             #{applyTypeNo, mode=IN, jdbcType=VARCHAR},
             #{personId, mode=IN, jdbcType=VARCHAR},
-            #{applyTypeCode1, mode=IN, jdbcType=VARCHAR},
-            #{applyLength1, mode=IN, jdbcType=VARCHAR},
+            #{applyTypeCode, mode=IN, jdbcType=VARCHAR},
+            #{applyLength, mode=IN, jdbcType=VARCHAR},
             #{lang, mode=IN, jdbcType=VARCHAR}
           ) 
         }

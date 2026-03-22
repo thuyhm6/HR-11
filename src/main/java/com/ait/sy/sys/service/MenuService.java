@@ -18,6 +18,15 @@ public interface MenuService {
     List<MenuDTO> getMenusByUserPermission(String userNo);
 
     /**
+     * Lấy danh sách menu có phân cấp theo quyền của user và SYS_TYPE
+     *
+     * @param userNo  Mã người dùng
+     * @param sysType SYS_TYPE của role
+     * @return Danh sách menu có phân cấp
+     */
+    List<MenuDTO> getMenusByUserPermissionBySysType(String userNo, String sysType);
+
+    /**
      * Lấy danh sách menu có phân cấp theo quyền của user với ngôn ngữ cụ thể
      * 
      * @param userNo   Mã người dùng
@@ -33,4 +42,13 @@ public interface MenuService {
      * @return Danh sách menu gốc
      */
     List<MenuDTO> getRootMenusByUserPermission(String userNo);
+
+    /**
+     * Kiểm tra user có menu theo SYS_TYPE hay không
+     *
+     * @param userNo  Mã người dùng
+     * @param sysType SYS_TYPE của role
+     * @return true nếu có ít nhất một menu
+     */
+    boolean hasMenusByUserPermissionBySysType(String userNo, String sysType);
 }

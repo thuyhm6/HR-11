@@ -60,4 +60,10 @@ public class ArItemParamServiceImpl implements ArItemParamService {
     public void deleteParam(String arParamNo) {
         arItemParamMapper.delete(arParamNo);
     }
+
+    @Override
+    public List<ArItemParamDto> getArItemOptions(String type) {
+        String normalizedType = "overtime".equalsIgnoreCase(type) ? "overtime" : "attendance";
+        return arItemParamMapper.selectArItemOptions(normalizedType);
+    }
 }
