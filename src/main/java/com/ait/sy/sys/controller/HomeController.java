@@ -47,14 +47,14 @@ public class HomeController {
     /**
      * Dashboard mo trong tab trinh duyet moi voi bo menu SYS_TYPE = 0
      */
-    @GetMapping("/sys/dashboard-sys-type-zero")
+    @GetMapping("/sys/hrm")
     public String dashboardSysTypeZero(Model model, HttpSession session) {
         return buildDashboardPage(model, session, "0", "HR Management System");
     }
 
     @GetMapping("/sys/viewSysTypeZeroMenuList")
     public String redirectLegacySysTypeZeroPage() {
-        return "redirect:/sys/dashboard-sys-type-zero";
+        return "redirect:/sys/hrm";
     }
 
     private String buildDashboardPage(Model model, HttpSession session, String sysType, String title) {
@@ -65,8 +65,8 @@ public class HomeController {
             return "redirect:/login";
         }
 
-        List<MenuDTO> userMenus =
-                menuService.getMenusByUserPermissionBySysType(currentHrUser.getSyUser().getUserNo(), sysType);
+        List<MenuDTO> userMenus = menuService.getMenusByUserPermissionBySysType(currentHrUser.getSyUser().getUserNo(),
+                sysType);
         int expiringContractsCount = hrContractService.countExpiringContracts(7);
 
         model.addAttribute("currentHrUser", currentHrUser);

@@ -37,4 +37,10 @@ public class EmployeeNameDto {
     private String workHourTypeName;
     private String position;
     private String positionName;
+
+    //HrPersonalInfo
+    private String nationName;
+    private String nationalityName;
+    private String maritalStatusName;
+    private String regTypeName;
 }

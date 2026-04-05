@@ -9,7 +9,8 @@
     // data-drp-format, data-drp-single, data-drp-time, data-drp-24h,
     // data-drp-time-increment, data-drp-auto-apply, data-drp-auto-update-input,
     // data-drp-show-dropdowns, data-drp-trigger-change, data-drp-opens,
-    // data-drp-drops, data-drp-normalize, data-drp-on-apply, data-drp-on-init
+    // data-drp-drops, data-drp-normalize, data-drp-on-apply, data-drp-on-init,
+    // data-drp-apply-label, data-drp-cancel-label
     // data-drp-skip="true" de bo qua auto-init cho input[type="date"] / datetime-local
 
     function readAttr($input, name, defaultValue) {
@@ -98,6 +99,8 @@
             triggerChange: readBoolAttr($input, 'drp-trigger-change', false),
             opens: readAttr($input, 'drp-opens', 'right'),
             drops: readAttr($input, 'drp-drops', 'down'),
+            applyLabel: readAttr($input, 'drp-apply-label', 'Apply'),
+            cancelLabel: readAttr($input, 'drp-cancel-label', 'Cancel'),
             normalizeHandler: resolveHandler(readAttr($input, 'drp-normalize', '')),
             onApplyHandler: resolveHandler(readAttr($input, 'drp-on-apply', '')),
             onInitHandler: resolveHandler(readAttr($input, 'drp-on-init', ''))
@@ -161,6 +164,13 @@
                 $input.trigger('change');
             }
         });
+        $input.on('cancel.daterangepicker.sharedDrp', function () {
+            $input.val('');
+
+            if (config.triggerChange) {
+                $input.trigger('change');
+            }
+        });
     }
 
     function initPicker($input, options) {
@@ -193,7 +203,9 @@
             opens: config.opens,
             drops: config.drops,
             locale: {
-                format: config.format
+                format: config.format,
+                applyLabel: config.applyLabel,
+                cancelLabel: config.cancelLabel
             }
         });
 

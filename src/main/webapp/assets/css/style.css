@@ -3,17 +3,30 @@ body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-/* Cấu hình cho dataTables */
-table.dataTable {
-    table-layout: fixed;
-    width: 100% !important;
+/* Hiển thị đầy đủ text, không cắt chữ, không xuống dòng */
+table.dataTable td,
+table.dataTable th {
+    white-space: nowrap;
 }
 
-/* Xử lý text dài */
-table.dataTable td {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+/* Override width: 100% của DataTables CSS - để bảng tự co giãn theo nội dung */
+/* DataTables mặc định set width: 100% khiến cột bị chia đều */
+table.dataTable {
+    width: auto !important;
+    min-width: 100%;
+}
+
+/* Wrapper cuộn ngang + dọc dùng chung cho tất cả DataTable */
+.dt-table-wrapper {
+    overflow: auto;
+}
+
+/* Header sticky khi cuộn dọc trong wrapper */
+.dt-table-wrapper table.dataTable thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background-color: #f8f9fa;
 }
 
 /* Đổi màu cả dòng */
@@ -481,8 +494,8 @@ table.dataTable tbody tr:hover>.sorting_1 {
 .nav-link.active-menu,
 .sub-nav-link.active-menu {
     background-color: rgba(13, 110, 253, 0.1) !important;
-    color: #0d6efd !important;
-    font-weight: 600;
-    border-right: 3px solid #0d6efd;
+    color: #fcfcfc !important;
+    font-weight: bold;
+    border-bottom: 3px solid #ffffff;
     border-radius: 4px;
 }

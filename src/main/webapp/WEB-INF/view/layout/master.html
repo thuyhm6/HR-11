@@ -204,12 +204,42 @@
             });
         })();
 
-        window.loadCodeList = function (selectSelector, parentCodeNo, defaultText, callback) {
+        window.applyCodeSelectDefaultValue = function (selectSelector) {
             var select = $(selectSelector);
             if (!select.length) return;
+
+            var defaultValue = select.attr('data-default-value');
+            if (defaultValue === undefined || defaultValue === null || defaultValue === '') {
+                return;
+            }
+
+            select.val(String(defaultValue)).trigger('change');
+        };
+
+        window.resetCodeSelectDefaults = function (context) {
+            var $context = $(context || document);
+            var $selects = $context.is('select[data-parent-code]') ? $context : $context.find('select[data-parent-code]');
+
+            $selects.each(function () {
+                var select = $(this);
+                var defaultValue = select.attr('data-default-value');
+
+                if (defaultValue !== undefined && defaultValue !== null && defaultValue !== '') {
+                    select.val(String(defaultValue)).trigger('change');
+                } else {
+                    select.val('').trigger('change');
+                }
+            });
+        };
+
+        window.loadCodeList = function (selectSelector, parentCodeNo, defaultText, callback) {
+            var select = $(selectSelector);
+            if (!select.length) return $.Deferred().resolve().promise();
+            var existingPromise = select.data('code-load-promise');
+            if (existingPromise) return existingPromise;
             //defaultText = defaultText || '-- Chọn --';
 
-            $.ajax({
+            var request = $.ajax({
                 url: '/sys/api/code/list?parentCodeNo=' + parentCodeNo,
                 type: 'GET',
                 success: function (data) {
@@ -222,6 +252,7 @@
                         var name = code.nameVi || code.description || code.codeId || code.codeNo;
                         select.append($('<option></option>').val(code.codeNo).text(name));
                     });
+                    window.applyCodeSelectDefaultValue(select);
                     if (typeof callback === 'function') {
                         callback();
                     }
@@ -229,23 +260,44 @@
                 error: function (err) {
                     console.error("Lỗi khi tải danh sách Mã cho parentCodeNo=" + parentCodeNo, err);
                 }
+            }).always(function () {
+                select.data('code-loaded', true);
+                select.removeData('code-load-promise');
             });
+
+            select.data('code-load-promise', request);
+            return request;
         };
 
         window.initCodeSelects = function (context) {
             var $context = $(context || document);
             var $selects = $context.is('select[data-parent-code]') ? $context : $context.find('select[data-parent-code]');
+            var requests = [];
             $selects.each(function () {
                 var select = $(this);
-                if (select.data('code-initialized')) return;
-                select.data('code-initialized', true);
-
                 var parentCodeNo = select.data('parent-code');
                 var defaultText = select.data('default-text');
+                var existingPromise = select.data('code-load-promise');
+
+                if (existingPromise) {
+                    requests.push(existingPromise);
+                    return;
+                }
+
+                if (select.data('code-initialized')) {
+                    requests.push($.Deferred().resolve().promise());
+                    return;
+                }
+
+                select.data('code-initialized', true);
                 if (parentCodeNo) {
-                    loadCodeList(this, parentCodeNo, defaultText);
+                    requests.push(loadCodeList(this, parentCodeNo, defaultText));
+                } else {
+                    requests.push($.Deferred().resolve().promise());
                 }
             });
+
+            return requests.length ? $.when.apply($, requests) : $.Deferred().resolve().promise();
         };
 
         $(document).ready(function () {
