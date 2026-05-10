@@ -157,6 +157,14 @@ public class SyUser {
     }
 
     /**
+     * Kiểm tra mật khẩu đã được mã hóa BCrypt chưa.
+     * Mật khẩu BCrypt luôn bắt đầu bằng $2a$, $2b$, hoặc $2y$
+     */
+    public boolean isPasswordEncrypted() {
+        return this.password != null && this.password.matches("^\\$2[ayb]\\$.{56}$");
+    }
+
+    /**
      * Kiểm tra mật khẩu với BCrypt encoder
      * 
      * @param rawPassword     Mật khẩu thô từ user input

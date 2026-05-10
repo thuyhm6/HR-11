@@ -21,6 +21,11 @@ public class HrRewardServiceImpl implements HrRewardService {
     }
 
     @Override
+    public List<HrReward> getByPersonId(String personId) {
+        return hrRewardMapper.getByPersonId(personId);
+    }
+
+    @Override
     public HrReward getById(Long rewardNo) {
         return hrRewardMapper.getById(rewardNo);
     }

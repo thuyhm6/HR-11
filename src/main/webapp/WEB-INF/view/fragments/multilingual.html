@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <title>Multilingual Fragments</title>
 </head>
+
 <body>
 
     <!-- Fragment để hiển thị nội dung đa ngôn ngữ sử dụng Spring i18n -->
@@ -18,9 +20,13 @@
     <!-- Fragment để hiển thị dropdown chọn ngôn ngữ -->
     <div th:fragment="languageSelector">
         <div class="dropdown">
-            <button class="btn btn-light dropdown-toggle" type="button" id="languageDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                <span id="currentLanguageFlag">🇻🇳</span>
-                <span id="currentLanguageName" th:text="#{language.vietnamese}">Tiếng Việt</span>
+            <button class="btn btn-light dropdown-toggle" type="button" id="languageDropdown" data-bs-toggle="dropdown"
+                aria-expanded="false">
+                <span id="currentLanguageFlag"
+                    th:text="${#locale.language == 'en' ? '🇺🇸' : (#locale.language == 'zh' ? '🇨🇳' : (#locale.language == 'ko' ? '🇰🇷' : '🇻🇳'))}">🇻🇳</span>
+                <span id="currentLanguageName"
+                    th:text="${#locale.language == 'en' ? 'English' : (#locale.language == 'zh' ? '中文' : (#locale.language == 'ko' ? '한국어' : 'Tiếng Việt'))}">Tiếng
+                    Việt</span>
             </button>
             <ul class="dropdown-menu" aria-labelledby="languageDropdown">
                 <li>
@@ -54,28 +60,20 @@
     <!-- Fragment để hiển thị nút chuyển đổi ngôn ngữ -->
     <div th:fragment="languageButtons">
         <div class="btn-group" role="group">
-            <button type="button" 
-                    class="btn btn-sm btn-outline-primary language-btn"
-                    data-lang="vi"
-                    onclick="changeLanguage('vi')">
+            <button type="button" class="btn btn-sm btn-outline-primary language-btn" data-lang="vi"
+                onclick="changeLanguage('vi')">
                 🇻🇳 <span th:text="#{language.vietnamese}">Tiếng Việt</span>
             </button>
-            <button type="button" 
-                    class="btn btn-sm btn-outline-primary language-btn"
-                    data-lang="en"
-                    onclick="changeLanguage('en')">
+            <button type="button" class="btn btn-sm btn-outline-primary language-btn" data-lang="en"
+                onclick="changeLanguage('en')">
                 🇺🇸 <span th:text="#{language.english}">English</span>
             </button>
-            <button type="button" 
-                    class="btn btn-sm btn-outline-primary language-btn"
-                    data-lang="zh"
-                    onclick="changeLanguage('zh')">
+            <button type="button" class="btn btn-sm btn-outline-primary language-btn" data-lang="zh"
+                onclick="changeLanguage('zh')">
                 🇨🇳 <span th:text="#{language.chinese}">中文</span>
             </button>
-            <button type="button" 
-                    class="btn btn-sm btn-outline-primary language-btn"
-                    data-lang="ko"
-                    onclick="changeLanguage('ko')">
+            <button type="button" class="btn btn-sm btn-outline-primary language-btn" data-lang="ko"
+                onclick="changeLanguage('ko')">
                 🇰🇷 <span th:text="#{language.korean}">한국어</span>
             </button>
         </div>
@@ -85,10 +83,10 @@
     <div th:fragment="languageSelectorCompact">
         <div class="language-selector-compact">
             <select id="languageSelect" class="form-select form-select-sm" onchange="changeLanguage(this.value)">
-                <option value="vi">🇻🇳 VN</option>
-                <option value="en">🇺🇸 EN</option>
-                <option value="zh">🇨🇳 CN</option>
-                <option value="ko">🇰🇷 KR</option>
+                <option value="vi" th:selected="${#locale.language == 'vi'}" th:text="#{language.vietnamese}">Tiếng Việt</option>
+                <option value="en" th:selected="${#locale.language == 'en'}" th:text="#{language.english}">English</option>
+                <option value="zh" th:selected="${#locale.language == 'zh'}" th:text="#{language.chinese}">中文</option>
+                <option value="ko" th:selected="${#locale.language == 'ko'}" th:text="#{language.korean}">한국어</option>
             </select>
         </div>
     </div>
@@ -99,7 +97,7 @@
         function changeLanguage(language) {
             // Hiển thị loading
             showLanguageLoading();
-            
+
             // Gọi API để thay đổi ngôn ngữ
             fetch('/change-language?lang=' + language, {
                 method: 'GET',
@@ -136,7 +134,7 @@
                 btn.disabled = false;
                 // Restore original content
                 const lang = btn.getAttribute('data-lang');
-                switch(lang) {
+                switch (lang) {
                     case 'vi':
                         btn.innerHTML = '🇻🇳 <span>Tiếng Việt</span>';
                         break;
@@ -154,7 +152,7 @@
         }
 
         // Cập nhật giao diện khi trang load
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             updateLanguageUI();
         });
 
@@ -165,18 +163,23 @@
                 .then(response => response.json())
                 .then(data => {
                     const currentLang = data.languageCode;
-                    
+
                     // Cập nhật dropdown
                     const languageSelect = document.getElementById('languageSelect');
                     if (languageSelect) {
                         languageSelect.value = currentLang;
                     }
-                    
+                    // Sync hidden input cho login form (nếu có)
+                    const loginLangInput = document.getElementById('loginLangInput');
+                    if (loginLangInput) {
+                        loginLangInput.value = currentLang;
+                    }
+
                     // Cập nhật dropdown button
                     const currentLanguageFlag = document.getElementById('currentLanguageFlag');
                     const currentLanguageName = document.getElementById('currentLanguageName');
                     if (currentLanguageFlag && currentLanguageName) {
-                        switch(currentLang) {
+                        switch (currentLang) {
                             case 'vi':
                                 currentLanguageFlag.textContent = '🇻🇳';
                                 currentLanguageName.textContent = 'Tiếng Việt';
@@ -195,7 +198,7 @@
                                 break;
                         }
                     }
-                    
+
                     // Cập nhật active button
                     const languageButtons = document.querySelectorAll('.language-btn');
                     languageButtons.forEach(btn => {
@@ -214,4 +217,5 @@
     </script>
 
 </body>
+
 </html>

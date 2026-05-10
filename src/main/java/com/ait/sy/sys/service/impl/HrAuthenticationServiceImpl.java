@@ -55,10 +55,11 @@ public class HrAuthenticationServiceImpl implements HrAuthenticationService {
     public HrUserInfo authenticate(String username, String password, HttpServletRequest request, HttpSession session) {
         try {
             String clientIp = getClientIpAddress(request);
-            if (!rateLimitingService.isAllowed(clientIp, "login")) {
-                logger.warn("Rate limit exceeded for IP={}", clientIp);
-                throw new SecurityException("Qua nhieu lan dang nhap that bai. Vui long thu lai sau 15 phut.");
-            }
+            // Bỏ tính năng khóa tài khoản/IP khi đăng nhập sai nhiều lần
+            // if (!rateLimitingService.isAllowed(clientIp, "login")) {
+            //     logger.warn("Rate limit exceeded for IP={}", clientIp);
+            //     throw new SecurityException("Qua nhieu lan dang nhap that bai. Vui long thu lai sau 15 phut.");
+            // }
 
             if (username == null || username.trim().isEmpty()) {
                 recordFailedLogin(clientIp, "login");
@@ -83,10 +84,17 @@ public class HrAuthenticationServiceImpl implements HrAuthenticationService {
                 return null;
             }
 
-            if (!syUser.matchesPassword(password, passwordEncoder)) {
-                recordFailedLogin(clientIp, "login");
-                logger.warn("Invalid password for user={}", username);
-                return null;
+            // Kiểm tra mật khẩu: ưu tiên BCrypt, fallback sang plain text cho DB cũ
+            boolean passwordMatches = syUser.matchesPassword(password, passwordEncoder);
+            if (!passwordMatches) {
+                // Fallback: so sánh plain text (đối với mật khẩu chưa mã hóa từ DB cũ)
+                @SuppressWarnings("deprecation")
+                boolean plainMatch = syUser.matchesPassword(password);
+                if (!plainMatch) {
+                    recordFailedLogin(clientIp, "login");
+                    logger.warn("Invalid password for user={}", username);
+                    return null;
+                }
             }
 
             HrEmployee hrEmployee = hrEmployeeMapper.findByPersonId(syUser.getPersonId());
@@ -126,6 +134,11 @@ public class HrAuthenticationServiceImpl implements HrAuthenticationService {
 
             if (session != null) {
                 csrfUtil.saveCsrfToken(session);
+                // Nếu mật khẩu chưa mã hóa → yêu cầu đổi mật khẩu bắt buộc
+                if (!syUser.isPasswordEncrypted()) {
+                    session.setAttribute("requirePasswordChange", true);
+                    logger.info("Plain-text password detected for user={}, requirePasswordChange=true", username);
+                }
             }
 
             rateLimitingService.resetRateLimit(clientIp, "login");

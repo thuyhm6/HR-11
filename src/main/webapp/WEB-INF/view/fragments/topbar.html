@@ -10,11 +10,6 @@
                                         class="fs-24 align-middle"></iconify-icon>
                               </button>
                          </div>
-
-                         <!-- Menu Toggle Button -->
-                         <!-- <div class="topbar-item">
-                              <h4 class="fw-bold topbar-button pe-none text-uppercase mb-0">Welcome!</h4>
-                         </div> -->
                     </div>
 
                     <nav class="topbar-horizontal-menu" th:if="${userMenus != null and !userMenus.empty}">
@@ -41,8 +36,7 @@
                                                                  <a class="topbar-submenu-link"
                                                                       th:href="${grandChild.menuUrl != null and !grandChild.menuUrl.empty} ? ${grandChild.menuUrl} : 'javascript:void(0);'"
                                                                       th:attr="data-tab=${grandChild.menuUrl != null and !grandChild.menuUrl.empty} ? ${grandChild.menuUrl} : 'javascript:void(0);', data-menu-no=${grandChild.menuNo}"
-                                                                      th:text="${grandChild.menuName}">Grand Child
-                                                                      Menu Name</a>
+                                                                      th:text="${grandChild.menuName}">Grand Child Menu Name</a>
                                                             </li>
                                                        </ul>
                                                   </th:block>
@@ -83,34 +77,31 @@
                                    aria-haspopup="true" aria-expanded="false">
                                    <iconify-icon icon="solar:bell-bing-bold-duotone"
                                         class="fs-24 align-middle"></iconify-icon>
-                                   <span
-                                        class="position-absolute topbar-badge fs-10 translate-middle badge bg-danger rounded-pill">3<span
-                                             class="visually-hidden">unread messages</span></span>
+                                   <span class="position-absolute topbar-badge fs-10 translate-middle badge bg-danger rounded-pill">3
+                                        <span class="visually-hidden" th:text="#{topbar.unreadMessages}">tin nhắn chưa đọc</span>
+                                   </span>
                               </button>
                               <div class="dropdown-menu py-0 dropdown-lg dropdown-menu-end"
                                    aria-labelledby="page-header-notifications-dropdown">
                                    <div class="p-3 border-top-0 border-start-0 border-end-0 border-dashed border">
                                         <div class="row align-items-center">
                                              <div class="col">
-                                                  <h6 class="m-0 fs-16 fw-semibold"> Notifications</h6>
+                                                  <h6 class="m-0 fs-16 fw-semibold" th:text="#{topbar.notifications}">Thông báo</h6>
                                              </div>
                                              <div class="col-auto">
-                                                  <a href="javascript: void(0);"
-                                                       class="text-dark text-decoration-underline">
-                                                       <small>Clear All</small>
+                                                  <a href="javascript: void(0);" class="text-dark text-decoration-underline">
+                                                       <small th:text="#{topbar.clearAll}">Xóa tất cả</small>
                                                   </a>
                                              </div>
                                         </div>
                                    </div>
                                    <div data-simplebar style="max-height: 280px;">
                                         <!-- Item -->
-                                        <a href="javascript:void(0);"
-                                             class="dropdown-item py-3 border-bottom text-wrap">
+                                        <a href="javascript:void(0);" class="dropdown-item py-3 border-bottom text-wrap">
                                              <div class="d-flex">
                                                   <div class="flex-shrink-0">
                                                        <img src="/assets/images/users/avatar-1.jpg"
-                                                            class="img-fluid me-2 avatar-sm rounded-circle"
-                                                            alt="avatar-1" />
+                                                            class="img-fluid me-2 avatar-sm rounded-circle" alt="avatar-1" />
                                                   </div>
                                                   <div class="flex-grow-1">
                                                        <p class="mb-0"><span class="fw-medium">Josephine Thompson
@@ -124,17 +115,12 @@
                                              <div class="d-flex">
                                                   <div class="flex-shrink-0">
                                                        <div class="avatar-sm me-2">
-                                                            <span
-                                                                 class="avatar-title bg-soft-info text-info fs-20 rounded-circle">
-                                                                 D
-                                                            </span>
+                                                            <span class="avatar-title bg-soft-info text-info fs-20 rounded-circle">D</span>
                                                        </div>
                                                   </div>
                                                   <div class="flex-grow-1">
                                                        <p class="mb-0 fw-semibold">Donoghue Susan</p>
-                                                       <p class="mb-0 text-wrap">
-                                                            Hi, How are you? What about our next meeting
-                                                       </p>
+                                                       <p class="mb-0 text-wrap">Hi, How are you? What about our next meeting</p>
                                                   </div>
                                              </div>
                                         </a>
@@ -143,13 +129,11 @@
                                              <div class="d-flex">
                                                   <div class="flex-shrink-0">
                                                        <img src="/assets/images/users/avatar-3.jpg"
-                                                            class="img-fluid me-2 avatar-sm rounded-circle"
-                                                            alt="avatar-3" />
+                                                            class="img-fluid me-2 avatar-sm rounded-circle" alt="avatar-3" />
                                                   </div>
                                                   <div class="flex-grow-1">
                                                        <p class="mb-0 fw-semibold">Jacob Gines</p>
-                                                       <p class="mb-0 text-wrap">Answered to your comment on the cash
-                                                            flow forecast's graph 🔔.</p>
+                                                       <p class="mb-0 text-wrap">Answered to your comment on the cash flow forecast's graph 🔔.</p>
                                                   </div>
                                              </div>
                                         </a>
@@ -158,17 +142,13 @@
                                              <div class="d-flex">
                                                   <div class="flex-shrink-0">
                                                        <div class="avatar-sm me-2">
-                                                            <span
-                                                                 class="avatar-title bg-soft-warning text-warning fs-20 rounded-circle">
-                                                                 <iconify-icon
-                                                                      icon="iconamoon:comment-dots-duotone"></iconify-icon>
+                                                            <span class="avatar-title bg-soft-warning text-warning fs-20 rounded-circle">
+                                                                 <iconify-icon icon="iconamoon:comment-dots-duotone"></iconify-icon>
                                                             </span>
                                                        </div>
                                                   </div>
                                                   <div class="flex-grow-1">
-                                                       <p class="mb-0 fw-semibold text-wrap">You have received <b>20</b>
-                                                            new messages in the
-                                                            conversation</p>
+                                                       <p class="mb-0 fw-semibold text-wrap">You have received <b>20</b> new messages in the conversation</p>
                                                   </div>
                                              </div>
                                         </a>
@@ -177,21 +157,20 @@
                                              <div class="d-flex">
                                                   <div class="flex-shrink-0">
                                                        <img src="/assets/images/users/avatar-5.jpg"
-                                                            class="img-fluid me-2 avatar-sm rounded-circle"
-                                                            alt="avatar-5" />
+                                                            class="img-fluid me-2 avatar-sm rounded-circle" alt="avatar-5" />
                                                   </div>
                                                   <div class="flex-grow-1">
                                                        <p class="mb-0 fw-semibold">Shawn Bunch</p>
-                                                       <p class="mb-0 text-wrap">
-                                                            Commented on Admin
-                                                       </p>
+                                                       <p class="mb-0 text-wrap">Commented on Admin</p>
                                                   </div>
                                              </div>
                                         </a>
                                    </div>
                                    <div class="text-center py-3">
-                                        <a href="javascript:void(0);" class="btn btn-primary btn-sm">View All
-                                             Notification <i class="bx bx-right-arrow-alt ms-1"></i></a>
+                                        <a href="javascript:void(0);" class="btn btn-primary btn-sm">
+                                             <span th:text="#{topbar.viewAllNotification}">Xem tất cả thông báo</span>
+                                             <i class="bx bx-right-arrow-alt ms-1"></i>
+                                        </a>
                                    </div>
                               </div>
                          </div>
@@ -213,7 +192,7 @@
 
                          <!-- Activity -->
                          <div class="topbar-item d-none d-md-flex">
-                              <button type="button" class="topbar-button" id="theme-settings-btn"
+                              <button type="button" class="topbar-button" id="theme-activity-btn"
                                    data-bs-toggle="offcanvas" data-bs-target="#theme-activity-offcanvas"
                                    aria-controls="theme-settings-offcanvas">
                                    <iconify-icon icon="solar:clock-circle-bold-duotone"
@@ -232,58 +211,46 @@
                                    </span>
                               </a>
                               <div class="dropdown-menu dropdown-menu-end">
-                                   <!-- item-->
                                    <h6 class="dropdown-header"
-                                        th:text="${currentHrUser != null and currentHrUser.employeeName != null and !#strings.isEmpty(currentHrUser.employeeName) ? 'Welcome ' + currentHrUser.employeeName + '!' : 'Welcome!'}">
-                                        Welcome!
+                                        th:text="${currentHrUser != null and currentHrUser.employeeName != null and !#strings.isEmpty(currentHrUser.employeeName) ? currentHrUser.employeeName : 'HR System'}">
+                                        HR System
                                    </h6>
                                    <a class="dropdown-item" th:if="${hasSysTypeZeroMenus}" th:href="@{/sys/hrm}"
                                         target="_blank" rel="noopener noreferrer">
-                                        <i class="bx bx-user-circle text-muted fs-18 align-middle me-1"></i><span
-                                             class="align-middle">HR Management System</span>
+                                        <i class="bx bx-user-circle text-muted fs-18 align-middle me-1"></i>
+                                        <span class="align-middle">HR Management System</span>
                                    </a>
                                    <a class="dropdown-item" href="pages-profile.html">
-                                        <i class="bx bx-user-circle text-muted fs-18 align-middle me-1"></i><span
-                                             class="align-middle">Profile</span>
+                                        <i class="bx bx-user-circle text-muted fs-18 align-middle me-1"></i>
+                                        <span class="align-middle" th:text="#{topbar.profile}">Hồ sơ cá nhân</span>
                                    </a>
                                    <a class="dropdown-item" href="apps-chat.html">
-                                        <i class="bx bx-message-dots text-muted fs-18 align-middle me-1"></i><span
-                                             class="align-middle">Messages</span>
+                                        <i class="bx bx-message-dots text-muted fs-18 align-middle me-1"></i>
+                                        <span class="align-middle" th:text="#{topbar.messages}">Tin nhắn</span>
                                    </a>
-
                                    <a class="dropdown-item" href="pages-pricing.html">
-                                        <i class="bx bx-wallet text-muted fs-18 align-middle me-1"></i><span
-                                             class="align-middle">Pricing</span>
+                                        <i class="bx bx-wallet text-muted fs-18 align-middle me-1"></i>
+                                        <span class="align-middle" th:text="#{topbar.pricing}">Bảng giá</span>
                                    </a>
                                    <a class="dropdown-item" th:href="@{/change-password}">
-                                        <i class="fas fa-key text-muted fs-18 align-middle me-1"></i><span
-                                             class="align-middle">Cập nhật mật khẩu</span>
+                                        <i class="fas fa-key text-muted fs-18 align-middle me-1"></i>
+                                        <span class="align-middle" th:text="#{topbar.changePassword}">Cập nhật mật khẩu</span>
                                    </a>
                                    <a class="dropdown-item" href="pages-faqs.html">
-                                        <i class="bx bx-help-circle text-muted fs-18 align-middle me-1"></i><span
-                                             class="align-middle">Help</span>
+                                        <i class="bx bx-help-circle text-muted fs-18 align-middle me-1"></i>
+                                        <span class="align-middle" th:text="#{topbar.help}">Trợ giúp</span>
                                    </a>
                                    <a class="dropdown-item" href="auth-lock-screen.html">
-                                        <i class="bx bx-lock text-muted fs-18 align-middle me-1"></i><span
-                                             class="align-middle">Lock screen</span>
+                                        <i class="bx bx-lock text-muted fs-18 align-middle me-1"></i>
+                                        <span class="align-middle" th:text="#{topbar.lockScreen}">Khóa màn hình</span>
                                    </a>
-
                                    <div class="dropdown-divider my-1"></div>
-
                                    <a class="dropdown-item text-danger" th:href="@{/logout}">
-                                        <i class="bx bx-log-out fs-18 align-middle me-1"></i><span
-                                             class="align-middle">Logout</span>
+                                        <i class="bx bx-log-out fs-18 align-middle me-1"></i>
+                                        <span class="align-middle" th:text="#{topbar.logout}">Đăng xuất</span>
                                    </a>
                               </div>
                          </div>
-
-                         <!-- App Search-->
-                         <!-- <form class="app-search d-none d-md-block ms-2">
-                            <div class="position-relative">
-                                 <input type="search" class="form-control" placeholder="Search..." autocomplete="off" value="">
-                                 <iconify-icon icon="solar:magnifer-linear" class="search-widget-icon"></iconify-icon>
-                            </div>
-                       </form> -->
                     </div>
                </div>
           </div>
@@ -293,68 +260,44 @@
           document.addEventListener("DOMContentLoaded", function () {
                const mobileWidth = 991.98;
                const topbarMenu = document.querySelector(".topbar-horizontal-menu");
-               if (!topbarMenu) {
-                    return;
-               }
+               if (!topbarMenu) return;
 
                function notifySidebar(link) {
-                    if (!link) {
-                         return;
-                    }
-
+                    if (!link) return;
                     const payload = {
                          menuNo: link.getAttribute("data-menu-no") || "",
                          dataTab: link.getAttribute("data-tab") || "",
                          href: link.getAttribute("href") || ""
                     };
-
-                    if (!payload.menuNo && !payload.dataTab && !payload.href) {
-                         return;
-                    }
-
-                    document.dispatchEvent(new CustomEvent("topbar-menu-selected", {
-                         detail: payload
-                    }));
+                    if (!payload.menuNo && !payload.dataTab && !payload.href) return;
+                    document.dispatchEvent(new CustomEvent("topbar-menu-selected", { detail: payload }));
                }
 
                topbarMenu.addEventListener("click", function (event) {
                     const clickedLink = event.target.closest(".topbar-menu-link, .topbar-submenu-link");
-                    if (!clickedLink || !topbarMenu.contains(clickedLink)) {
-                         return;
-                    }
+                    if (!clickedLink || !topbarMenu.contains(clickedLink)) return;
 
                     const trigger = event.target.closest(".has-children > .topbar-menu-link, .has-children > .topbar-submenu-link");
                     if (trigger && topbarMenu.contains(trigger) && window.innerWidth <= mobileWidth) {
                          event.preventDefault();
-
                          const parentItem = trigger.parentElement;
                          if (parentItem) {
                               const sameLevelItems = parentItem.parentElement
                                    ? Array.from(parentItem.parentElement.children).filter(function (item) {
                                         return item.classList && item.classList.contains("has-children") && item.classList.contains("mobile-open");
-                                   })
-                                   : [];
-
+                                   }) : [];
                               sameLevelItems.forEach(function (item) {
-                                   if (item !== parentItem) {
-                                        item.classList.remove("mobile-open");
-                                   }
+                                   if (item !== parentItem) item.classList.remove("mobile-open");
                               });
-
                               parentItem.classList.toggle("mobile-open");
                          }
                     }
-
                     notifySidebar(clickedLink);
                });
 
                document.addEventListener("click", function (event) {
-                    if (window.innerWidth > mobileWidth) {
-                         return;
-                    }
-                    if (topbarMenu.contains(event.target)) {
-                         return;
-                    }
+                    if (window.innerWidth > mobileWidth) return;
+                    if (topbarMenu.contains(event.target)) return;
                     topbarMenu.querySelectorAll(".mobile-open").forEach(function (item) {
                          item.classList.remove("mobile-open");
                     });

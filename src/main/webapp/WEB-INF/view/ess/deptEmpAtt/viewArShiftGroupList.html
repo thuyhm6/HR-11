@@ -105,7 +105,7 @@
                             var opts = '';
                             _shg_shiftList.forEach(function (s) {
                                 var selected = (s.codeNo === data) ? 'selected' : '';
-                                var displayName = s.nameVi || s.description || s.codeNo;
+                                var displayName = s.codeName || s.description || s.codeNo;
                                 opts += '<option value="' + s.codeNo + '" ' + selected + '>' + displayName + '</option>';
                             });
                             return '<select class="form-select form-select-sm shg-in-shift">' + opts + '</select>';

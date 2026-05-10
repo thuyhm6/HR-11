@@ -10,6 +10,7 @@ import java.util.List;
 @Mapper
 public interface HrEducationMapper {
     List<HrEducation> searchEducation(@Param("empId") String empId,
+            @Param("personId") String personId,
             @Param("localName") String localName,
             @Param("institutionName") String institutionName);
 

@@ -2,7 +2,7 @@
   <div>
     <div class="offcanvas offcanvas-end border-0" tabindex="-1" id="theme-activity-offcanvas" style="max-width: 450px; width: 100%;">
          <div class="d-flex align-items-center bg-primary p-3 offcanvas-header">
-              <h5 class="text-white m-0 fw-semibold">Activity Stream</h5>
+              <h5 class="text-white m-0 fw-semibold" th:text="#{activity.title}">Activity Stream</h5>
               <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="offcanvas" aria-label="Close"></button>
          </div>
 
@@ -117,7 +117,7 @@
                              </div>
                         </div>
                    </div>
-                   <a href="#!" class="btn btn-outline-dark w-100">View All</a>
+                   <a href="#!" class="btn btn-outline-dark w-100" th:text="#{activity.viewAll}">View All</a>
               </div>
          </div>
     </div>

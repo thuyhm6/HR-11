@@ -35,7 +35,7 @@
         LEFT JOIN SY_GLOBAL_NAME gzh ON r.ROLE_GROUP_NO = gzh.NO AND gzh.LANGUAGE = 'zh'
         LEFT JOIN SY_GLOBAL_NAME gko ON r.ROLE_GROUP_NO = gko.NO AND gko.LANGUAGE = 'ko'
         WHERE 1=1 AND r.ACTIVITY = 1 
-        <if test="cpnyId != null and cpnyId != ''"> AND r.CPNY_ID = #{cpnyId} </if>
+        <if test="cpnyId != null and cpnyId != ''"> AND r.CPNY_ID = #{cpnyId, jdbcType=VARCHAR} </if>
         <if test="keyword != null and keyword != ''">
             AND (
                 r.ROLE_GROUP_ID LIKE '%' || #{keyword} || '%' OR 
@@ -50,17 +50,17 @@
 
     <select id="findByRoleGroupId" resultMap="BaseResultMap">
         SELECT * FROM SY_ROLE_GROUP WHERE ROLE_GROUP_ID = #{roleGroupId} 
-        <if test="cpnyId != null and cpnyId != ''"> AND CPNY_ID = #{cpnyId} </if>
+        <if test="cpnyId != null and cpnyId != ''"> AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR} </if>
     </select>
 
     <select id="findByRoleGroupNo" resultMap="BaseResultMap">
         SELECT * FROM SY_ROLE_GROUP WHERE ROLE_GROUP_NO = #{roleGroupNo} 
-        <if test="cpnyId != null and cpnyId != ''"> AND CPNY_ID = #{cpnyId} </if>
+        <if test="cpnyId != null and cpnyId != ''"> AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR} </if>
     </select>
 
     <select id="existsByRoleGroupId" resultType="boolean">
         SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END FROM SY_ROLE_GROUP WHERE ROLE_GROUP_ID = #{roleGroupId}
-        <if test="cpnyId != null and cpnyId != ''"> AND CPNY_ID = #{cpnyId} </if>
+        <if test="cpnyId != null and cpnyId != ''"> AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR} </if>
     </select>
 
     <insert id="insert">
@@ -69,8 +69,8 @@
             CREATE_DATE, CREATED_BY, UPDATE_DATE, UPDATED_BY,
             ORDERNO, ACTIVITY, SYS_TYPE
         ) VALUES (
-            #{roleGroupNo}, #{roleGroupId}, #{joinDefault}, #{cpnyId},
-            sysdate, #{adminID}, sysdate, #{adminID},
+            #{roleGroupNo}, #{roleGroupId}, #{joinDefault}, #{cpnyId, jdbcType=VARCHAR},
+            sysdate, #{adminID, jdbcType=VARCHAR}, sysdate, #{adminID, jdbcType=VARCHAR},
             #{orderNo}, #{activity}, #{sysType}
         )
     </insert>
@@ -78,9 +78,9 @@
     <update id="update">
         UPDATE SY_ROLE_GROUP SET
             JOIN_DEFAULT = #{joinDefault},
-            CPNY_ID = #{cpnyId},
+            CPNY_ID = #{cpnyId, jdbcType=VARCHAR},
             UPDATE_DATE = sysdate,
-            UPDATED_BY = #{adminID},
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
             ORDERNO = #{orderNo},
             ACTIVITY = #{activity},
             SYS_TYPE = #{sysType}
@@ -90,7 +90,7 @@
     </update>
 
     <delete id="deleteByRoleGroupId">
-        UPDATE SY_ROLE_GROUP SET ACTIVITY = 0, UPDATE_DATE = sysdate, UPDATED_BY = #{adminID} WHERE ROLE_GROUP_ID = #{roleGroupId}
+        UPDATE SY_ROLE_GROUP SET ACTIVITY = 0, UPDATE_DATE = sysdate, UPDATED_BY = #{adminID, jdbcType=VARCHAR} WHERE ROLE_GROUP_ID = #{roleGroupId}
     </delete>
 
     <select id="getNextGlobalNoSeq" resultType="String">

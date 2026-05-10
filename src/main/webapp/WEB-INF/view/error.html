@@ -24,29 +24,29 @@
                         
                         <!-- Error Details (only in development) -->
                         <div th:if="${trace}" class="alert alert-info text-start">
-                            <h6>Chi tiết lỗi:</h6>
+                            <h6 th:text="#{error.detailsTitle}">Chi tiết lỗi:</h6>
                             <pre th:text="${trace}" class="mb-0"></pre>
                         </div>
-                        
+
                         <!-- Action Buttons -->
                         <div class="d-flex justify-content-center gap-3">
                             <a href="javascript:history.back()" class="btn btn-outline-secondary">
                                 <i class="fas fa-arrow-left me-1"></i>
-                                Quay lại
+                                <span th:text="#{common.back}">Quay lại</span>
                             </a>
                             <a href="/login/dashboard" class="btn btn-primary">
                                 <i class="fas fa-home me-1"></i>
-                                Về trang chủ
+                                <span th:text="#{common.goHome}">Về trang chủ</span>
                             </a>
                         </div>
-                        
+
                         <!-- Additional Help -->
                         <div class="mt-5">
-                            <h5>Bạn có thể thử:</h5>
+                            <h5 th:text="#{error.tryTitle}">Bạn có thể thử:</h5>
                             <ul class="list-unstyled">
-                                <li><i class="fas fa-check text-success me-2"></i>Kiểm tra lại URL</li>
-                                <li><i class="fas fa-check text-success me-2"></i>Đăng nhập lại</li>
-                                <li><i class="fas fa-check text-success me-2"></i>Liên hệ quản trị viên</li>
+                                <li><i class="fas fa-check text-success me-2"></i><span th:text="#{error.tryCheckUrl}">Kiểm tra lại URL</span></li>
+                                <li><i class="fas fa-check text-success me-2"></i><span th:text="#{error.tryRelogin}">Đăng nhập lại</span></li>
+                                <li><i class="fas fa-check text-success me-2"></i><span th:text="#{error.tryContact}">Liên hệ quản trị viên</span></li>
                             </ul>
                         </div>
                     </div>

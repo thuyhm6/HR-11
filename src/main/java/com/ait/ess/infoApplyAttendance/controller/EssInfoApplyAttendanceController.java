@@ -1,9 +1,14 @@
 package com.ait.ess.infoApplyAttendance.controller;
 
 import com.ait.ar.attendanceMintenance.controller.EssLeaveApplyController;
+import com.ait.ar.attendanceMintenance.dto.EssLeaveApplyDto;
+import com.ait.ar.attendanceMintenance.service.EssLeaveApplyService;
 import com.ait.ess.infoApplyAttendance.dto.EssAttendanceExForBatchDto;
+import com.ait.ess.infoApplyAttendance.dto.EssAttendancePersonalInfoDto;
 import com.ait.ess.infoApplyAttendance.service.EssAttendanceExForBatchService;
+import com.ait.ess.infoApplyAttendance.service.EssAttendancePersonalInfoService;
 
+import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +27,33 @@ public class EssInfoApplyAttendanceController {
 
     @Autowired
     private EssAttendanceExForBatchService service;
+
+    @Autowired
+    private EssLeaveApplyService essLeaveApplyService;
+
+    @Autowired
+    private EssAttendancePersonalInfoService personalInfoService;
+
+    @GetMapping("/viewSSTApplyAttendance")
+    public String viewSSTApplyAttendance() {
+        return "ess/infoApplyAttendance/viewSSTApplyAttendance";
+    }
+
+    @GetMapping("/api/vacationInfo")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> getMyVacationInfo(HttpSession session) {
+        String personId = (String) session.getAttribute("adminID");
+        return ResponseEntity.ok(essLeaveApplyService.getMyVacationInfo(personId));
+    }
+
+    @GetMapping("/api/leaveLength")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> getLeaveLength(
+            @RequestParam String fromDateTime,
+            @RequestParam String toDateTime,
+            @RequestParam(required = false, defaultValue = "") String leaveTypeCode) {
+        return ResponseEntity.ok(essLeaveApplyService.calculateLeaveLength(fromDateTime, toDateTime, leaveTypeCode));
+    }
 
     @GetMapping("/viewAttendanceExForBatchInfoList")
     public String viewAttendanceExForBatchInfoList() {
@@ -81,6 +113,70 @@ public class EssInfoApplyAttendanceController {
             @RequestParam(name = "applyNo") String applyNo,
             @RequestParam(name = "applyType", required = false) String applyType) {
         return ResponseEntity.ok(service.getCardApplyDetail(applyNo, applyType));
+    }
+
+    @GetMapping("/viewApplyAttendanceInfoList")
+    public String viewApplyAttendanceInfoList() {
+        return "ess/infoApplyAttendance/viewApplyAttendanceInfoList";
+    }
+
+    @GetMapping("/api/myLeaveApply/list")
+    @ResponseBody
+    public ResponseEntity<List<EssLeaveApplyDto>> getMyLeaveApplyList(
+            @RequestParam(required = false) String leaveTypeCode,
+            @RequestParam(required = false) String affirmFlag,
+            @RequestParam(required = false) String fromDate,
+            @RequestParam(required = false) String toDate) {
+        EssLeaveApplyDto params = new EssLeaveApplyDto();
+        params.setLeaveTypeCode(leaveTypeCode);
+        params.setAffirmFlag(affirmFlag);
+        params.setFromDate(fromDate);
+        params.setToDate(toDate);
+        return ResponseEntity.ok(essLeaveApplyService.getMyLeaveApplyList(params));
+    }
+
+    @PostMapping("/api/myLeaveApply/cancel")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> cancelMyLeaveApplyList(
+            @RequestBody List<String> applyNos) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            int count = essLeaveApplyService.cancelMyLeaveApplyList(applyNos);
+            response.put("success", true);
+            response.put("count", count);
+            response.put("message", "Hủy bỏ thành công " + count + " dòng.");
+        } catch (Exception e) {
+            log.error("Failed to cancel leave applications", e);
+            response.put("success", false);
+            response.put("error", e.getMessage() == null || e.getMessage().isBlank()
+                    ? "Hủy bỏ thất bại."
+                    : e.getMessage());
+        }
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/viewAttendancePersonalInfoList")
+    public String viewAttendancePersonalInfoList() {
+        return "ess/infoApplyAttendance/viewAttendancePersonalInfoList";
+    }
+
+    @GetMapping("/api/attendancePersonal/list")
+    @ResponseBody
+    public ResponseEntity<List<EssAttendancePersonalInfoDto>> getPersonalAttendanceList(
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @RequestParam(required = false) String itemNoSearch) {
+        EssAttendancePersonalInfoDto params = new EssAttendancePersonalInfoDto();
+        params.setStartDate(startDate);
+        params.setEndDate(endDate);
+        params.setItemNoSearch(itemNoSearch);
+        return ResponseEntity.ok(personalInfoService.getPersonalAttendanceList(params));
+    }
+
+    @GetMapping("/api/attendancePersonal/items")
+    @ResponseBody
+    public ResponseEntity<List<EssAttendancePersonalInfoDto>> getAttendanceItemList() {
+        return ResponseEntity.ok(personalInfoService.getAttendanceItemList());
     }
 
     @PostMapping("/api/attendanceEx/apply")

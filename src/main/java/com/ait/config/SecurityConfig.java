@@ -47,7 +47,8 @@ public class SecurityConfig implements WebMvcConfigurer {
                                 "/", "/login", "/auth/login", "/logout",
                                 "/assets/**", "/static/**", "/webjars/**",
                                 "/error/**", "/favicon.ico",
-                                "/actuator/health", "/api/health", "/api/csrf-token")
+                                "/actuator/health", "/api/health", "/api/csrf-token",
+                                "/change-language", "/api/current-language", "/api/supported-languages")
                         .permitAll()
                         .requestMatchers(HttpMethod.GET, "/sys/api/code/list")
                         .authenticated()
@@ -77,6 +78,11 @@ public class SecurityConfig implements WebMvcConfigurer {
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
                 .logout(AbstractHttpConfigurer::disable)
+                .csrf(csrf -> csrf
+                        .ignoringRequestMatchers(
+                                "/auth/login", "/logout",
+                                "/api/change-first-password",
+                                "/api/csrf-token"))
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint((request, response, authException) -> response.sendRedirect("/login")))
                 .addFilterBefore(new SessionAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
@@ -111,6 +117,14 @@ public class SecurityConfig implements WebMvcConfigurer {
                 return false;
             }
 
+            // Bắt buộc đổi mật khẩu nếu password chưa mã hóa
+            if (Boolean.TRUE.equals(session.getAttribute("requirePasswordChange"))) {
+                if (!requestUri.equals("/dashboard") && !requestUri.equals("/api/change-first-password")) {
+                    response.sendRedirect("/dashboard");
+                    return false;
+                }
+            }
+
             long lastAccessedTime = session.getLastAccessedTime();
             long currentTime = System.currentTimeMillis();
             long sessionTimeout = 30L * 60L * 1000L;
@@ -135,7 +149,10 @@ public class SecurityConfig implements WebMvcConfigurer {
                     uri.startsWith("/actuator/") ||
                     uri.equals("/favicon.ico") ||
                     uri.equals("/api/health") ||
-                    uri.equals("/api/csrf-token");
+                    uri.equals("/api/csrf-token") ||
+                    uri.equals("/change-language") ||
+                    uri.equals("/api/current-language") ||
+                    uri.equals("/api/supported-languages");
         }
     }
 

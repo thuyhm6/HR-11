@@ -3,8 +3,9 @@ package com.ait.hrm.empinfo.model;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
 
 /**
  * HrFamily Model - Tra cứu gia đình (bảng HR_FAMILY)
@@ -28,6 +29,7 @@ public class HrFamily {
      * Quan hệ (FAM_TYPE_CODE)
      */
     private String famTypeCode;
+    private String famTypeName; // Tên quan hệ (từ get_global_name)
 
     /**
      * Tên người thân (FAM_NAME)
@@ -37,7 +39,7 @@ public class HrFamily {
     /**
      * Ngày sinh (FAM_BORNDATE)
      */
-    private Date famBorndate;
+    private LocalDate famBorndate;
 
     /**
      * CCCD/CMND (FAM_IDCARD)
@@ -73,6 +75,10 @@ public class HrFamily {
      * Địa chỉ (FAM_ADDRESS)
      */
     private String famAddress;
+    /**
+     * Âm lịch (FAM_YINYANGLI)
+     */    
+    private String famYinyangli;
 
     /**
      * Giảm trừ gia cảnh (TAX_YN) - Y/N
@@ -83,6 +89,33 @@ public class HrFamily {
      * Giới tính (GENDER)
      */
     private String gender;
+    private String genderName; // Tên giới tính (từ get_global_name)
+
+    /**
+     * Mã bưu chính (ADDRESS_POSTAL)
+     */    
+    private String addressPostal;
+
+    /**
+     * Trình độ học vấn (FAM_EDUCATION)
+     */
+    private String famEducation;
+
+    /**
+     * Là địa chỉ khẩn cấp (ISEMERGENCYADDRESS)
+     */
+    private String isEmergencyAddress;
+
+    /**
+     * Quốc tịch (NATIONALITY)
+     */
+    private String nationality;
+    private String nationalityName; // Tên quốc tịch (từ get_global_name)
+
+    /**
+     * Số điện thoại công việc (WORK_PHONE)
+     */
+    private String workPhone;
 
     /**
      * Email (FAM_EMAIL)

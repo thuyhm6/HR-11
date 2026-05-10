@@ -1,6 +1,5 @@
 package com.ait.sy.sys.dto;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.validation.constraints.*;
@@ -28,10 +27,8 @@ public class EmployeeDto extends BaseDto {
     @Size(max = 50, message = "Chức vụ không được quá 50 ký tự")
     private String position;
 
-    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate hireDate;
 
-    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate leaveDate;
 
     @NotNull(message = "Trạng thái hoạt động không được null")
@@ -46,7 +43,6 @@ public class EmployeeDto extends BaseDto {
     private String address;
     private String gender;
 
-    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate birthDate;
 
     // Validation groups

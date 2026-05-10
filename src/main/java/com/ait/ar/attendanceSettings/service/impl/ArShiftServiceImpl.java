@@ -16,8 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -131,11 +130,10 @@ public class ArShiftServiceImpl implements ArShiftService {
         ArShift020Dto dto = new ArShift020Dto();
         BeanUtils.copyProperties(entity, dto);
 
-        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
         if (entity.getFromTime() != null)
-            dto.setFromTimeStr(sdf.format(entity.getFromTime()));
+            dto.setFromTimeStr(entity.getFromTime().toString());
         if (entity.getToTime() != null)
-            dto.setToTimeStr(sdf.format(entity.getToTime()));
+            dto.setToTimeStr(entity.getToTime().toString());
 
         return dto;
     }
@@ -151,14 +149,13 @@ public class ArShiftServiceImpl implements ArShiftService {
         ArShift020 entity = new ArShift020();
         BeanUtils.copyProperties(dto, entity);
 
-        // Parse "HH:mm" to Date
-        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
+        // Parse "HH:mm" to LocalTime
         try {
             if (dto.getFromTimeStr() != null && !dto.getFromTimeStr().trim().isEmpty())
-                entity.setFromTime(sdf.parse(dto.getFromTimeStr()));
+                entity.setFromTime(LocalDateTime.parse(dto.getFromTimeStr()));
             if (dto.getToTimeStr() != null && !dto.getToTimeStr().trim().isEmpty())
-                entity.setToTime(sdf.parse(dto.getToTimeStr()));
-        } catch (ParseException e) {
+                entity.setToTime(LocalDateTime.parse(dto.getToTimeStr()));
+        } catch (Exception e) {
             log.error("Invalid shift detail time format for shiftNo={}", dto.getShiftNo(), e);
         }
 

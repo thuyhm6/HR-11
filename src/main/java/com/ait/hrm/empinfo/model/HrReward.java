@@ -3,7 +3,8 @@ package com.ait.hrm.empinfo.model;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /**
  * HrReward Model - Tra cứu khen thưởng (bảng HR_REWARD)
@@ -31,7 +32,7 @@ public class HrReward {
     /**
      * Ngày khen thưởng (REWARD_DATE)
      */
-    private Date rewardDate;
+    private LocalDate rewardDate;
 
     /**
      * Cơ quan khen thưởng (REWARD_CNPY)
@@ -51,7 +52,7 @@ public class HrReward {
     /**
      * Ngày chi trả (REWARD_PAY_DATE)
      */
-    private Date rewardPayDate;
+    private LocalDate rewardPayDate;
 
     /**
      * Hiển thị thẻ nhân sự (PERSONNEL_CARD_INQUIRY) - Y/N
@@ -84,10 +85,10 @@ public class HrReward {
     private Integer activity;
 
     // Audit fields
-    private Date createDate;
+    private LocalDateTime createDate;
     private String createdBy;
     private String createdIp;
-    private Date updatedDate; // Note: Column is UPDATED_DATE based on image
+    private LocalDate updatedDate; // Note: Column is UPDATED_DATE based on image
     private String updatedBy;
     private String updatedIp;
 

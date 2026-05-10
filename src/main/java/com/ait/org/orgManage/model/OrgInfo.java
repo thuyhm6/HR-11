@@ -1,18 +1,16 @@
 package com.ait.org.orgManage.model;
 
 import lombok.Data;
-import java.util.Date;
-import com.fasterxml.jackson.annotation.JsonFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 public class OrgInfo {
     private String resumeNo;
     private String deptId;
     private String cpnyId;
-    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "Asia/Ho_Chi_Minh")
-    private Date dateCreated;
-    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "Asia/Ho_Chi_Minh")
-    private Date dateEnded;
+    private LocalDate dateCreated;
+    private LocalDate dateEnded;
     private Integer deptLevel;
     private String managerEmpId;
     private String deptNo;
@@ -27,12 +25,10 @@ public class OrgInfo {
     private String isPartTime;
     private String productType;
     private String useYn;
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Ho_Chi_Minh")
-    private Date createDate;
+    private LocalDateTime createDate;
     private String createdBy;
     private String createdIp;
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Ho_Chi_Minh")
-    private Date updateDate;
+    private LocalDateTime updateDate;
     private String updatedBy;
     private String updatedIp;
     private Integer orderNo;

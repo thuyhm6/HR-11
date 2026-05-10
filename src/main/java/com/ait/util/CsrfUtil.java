@@ -31,11 +31,12 @@ public class CsrfUtil {
     }
 
     /**
-     * Lưu CSRF token vào session
+     * Lưu CSRF token vào session (chỉ tạo mới nếu chưa có)
      */
     public void saveCsrfToken(HttpSession session) {
-        String token = generateCsrfToken();
-        session.setAttribute(CSRF_TOKEN_NAME, token);
+        if (session.getAttribute(CSRF_TOKEN_NAME) == null) {
+            session.setAttribute(CSRF_TOKEN_NAME, generateCsrfToken());
+        }
     }
 
     /**

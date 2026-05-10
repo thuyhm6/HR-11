@@ -1,7 +1,7 @@
 package com.ait.ar.attendanceSettings.model;
 
 import lombok.Data;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Data
 public class ArDepartmentManage {
@@ -25,10 +25,10 @@ public class ArDepartmentManage {
     private String lockAttenAnnualFlag;
     private String lockAttenAnnualNightFlag;
 
-    private Date createDate;
+    private LocalDateTime createDate;
     private String createdBy;
     private String createdIp;
-    private Date updateDate;
+    private LocalDateTime updateDate;
     private String updatedBy;
     private String updatedIp;
 

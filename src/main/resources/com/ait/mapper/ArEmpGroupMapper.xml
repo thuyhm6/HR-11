@@ -39,7 +39,7 @@
             e.EMPID,
             e.LOCAL_NAME,
             e.DEPTNO,
-            GET_DEPT_NAME(e.DEPTNO, #{lang}) as DEPT_NAME
+            GET_DEPT_NAME(e.DEPTNO, #{lang, jdbcType=VARCHAR}) as DEPT_NAME
         FROM AR_EMP_GROUP g
         LEFT JOIN HR_EMPLOYEE e ON g.PERSON_ID = e.PERSON_ID
         <where>

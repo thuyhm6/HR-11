@@ -46,7 +46,7 @@
         LEFT JOIN SY_GLOBAL_NAME gko ON a.SHIFT_NO = gko.NO AND gko.LANGUAGE = 'ko'
         WHERE 1 = 1
         <if test="cpnyId != null and cpnyId != ''">
-            AND a.CPNY_ID = #{cpnyId}
+            AND a.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
         </if>
         <if test="searchText != null and searchText != ''">
             AND (a.SHIFT_NO LIKE '%' || #{searchText} || '%' OR 
@@ -79,7 +79,7 @@
         <set>
             <if test="datatype != null">DATATYPE = #{datatype},</if>
             <if test="shiftId != null">SHIFT_ID = #{shiftId},</if>
-            <if test="cpnyId != null">CPNY_ID = #{cpnyId},</if>
+            <if test="cpnyId != null">CPNY_ID = #{cpnyId, jdbcType=VARCHAR},</if>
             <if test="deptDistinguishNo != null">DEPT_DISTINGUISH_NO = #{deptDistinguishNo},</if>
             <if test="deductTime != null">DEDUCT_TIME = #{deductTime},</if>
             <if test="otTimeStart != null">OT_TIME_START = #{otTimeStart},</if>
@@ -90,7 +90,7 @@
             <if test="shiftShortname != null">SHIFT_SHORTNAME = #{shiftShortname},</if>
             <if test="shiftLength != null">SHIFT_LENGTH = #{shiftLength},</if>
             UPDATE_DATE = SYSDATE,
-            UPDATED_BY = #{adminID}
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR}
         </set>
         WHERE SHIFT_NO = #{shiftNo}
     </update>

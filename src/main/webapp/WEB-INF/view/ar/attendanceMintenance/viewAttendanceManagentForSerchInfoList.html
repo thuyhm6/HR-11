@@ -5,51 +5,51 @@
                 <div class="card-body">
                     <form id="as_searchForm" class="row g-3 mb-4">
                         <div class="col-md-3">
-                            <label for="as_keyword" class="form-label">Mã nhân viên / Họ tên</label>
-                            <input type="text" class="form-control" id="as_keyword" placeholder="Nhập mã hoặc họ tên">
+                            <label for="as_keyword" class="form-label" th:text="#{common.search.empIdOrName}">Mã nhân viên / Họ tên</label>
+                            <input type="text" class="form-control" id="as_keyword" th:placeholder="#{common.placeholder.enterEmpId}" placeholder="Nhập mã hoặc họ tên">
                         </div>
                         <div class="col-md-3">
-                            <label for="as_deptNo" class="form-label">Phòng ban</label>
-                            <input type="text" class="form-control" id="as_deptNo" placeholder="Chọn phòng ban"
+                            <label for="as_deptNo" class="form-label" th:text="#{common.deptName}">Phòng ban</label>
+                            <input type="text" class="form-control" id="as_deptNo" th:placeholder="#{common.select}" placeholder="Chọn phòng ban"
                                 readonly>
                         </div>
                         <div class="col-md-2">
-                            <label for="as_fromDate" class="form-label">Ngày bắt đầu</label>
+                            <label for="as_fromDate" class="form-label" th:text="#{common.fromDate}">Ngày bắt đầu</label>
                             <input type="text" class="form-control js-daterangepicker" id="as_fromDate"
                                 data-drp-format="YYYY-MM-DD" autocomplete="off">
                         </div>
                         <div class="col-md-2">
-                            <label for="as_toDate" class="form-label">Ngày kết thúc</label>
+                            <label for="as_toDate" class="form-label" th:text="#{common.toDate}">Ngày kết thúc</label>
                             <input type="text" class="form-control js-daterangepicker" id="as_toDate"
                                 data-drp-format="YYYY-MM-DD" autocomplete="off">
                         </div>
                         <div class="col-md-2">
-                            <label for="as_postFamily" class="form-label">Nhóm nhân viên</label>
+                            <label for="as_postFamily" class="form-label" th:text="#{attSearch.empGroup}">Nhóm nhân viên</label>
                             <select class="form-select" id="as_postFamily" data-parent-code="14015812"
-                                data-default-text="-- Chọn mã chấm công --">
+                                th:data-default-text="#{attSearch.selectAttCode}" data-default-text="-- Chọn mã chấm công --">
                             </select>
                         </div>
                         <div class="col-md-3">
-                            <label for="as_shiftNo" class="form-label">Ca làm việc</label>
+                            <label for="as_shiftNo" class="form-label" th:text="#{attSearch.shiftType}">Ca làm việc</label>
                             <select class="form-select" id="as_shiftNo">
-                                <option value="">-- Tất cả --</option>
+                                <option value="" th:text="#{attSearch.all}">-- Tất cả --</option>
                             </select>
                         </div>
                         <div class="col-md-3">
-                            <label for="as_itemNo" class="form-label">Loại nghỉ phép</label>
+                            <label for="as_itemNo" class="form-label" th:text="#{attSearch.leaveType}">Loại nghỉ phép</label>
                             <select class="form-select" id="as_itemNo">
-                                <option value="">-- Tất cả --</option>
+                                <option value="" th:text="#{attSearch.all}">-- Tất cả --</option>
                             </select>
                         </div>
                         <div class="col-md-6 d-flex align-items-end gap-2 flex-wrap">
                             <button type="button" class="btn btn-primary" onclick="asSearchData()">
-                                <i class="bx bx-search"></i> Tra cứu
+                                <i class="bx bx-search"></i> <span th:text="#{common.search}">Tra cứu</span>
                             </button>
                             <button type="button" class="btn btn-secondary" onclick="asClearSearch()">
-                                <i class="bx bx-x"></i> Xóa lọc
+                                <i class="bx bx-x"></i> <span th:text="#{common.clearFilter}">Xóa lọc</span>
                             </button>
                             <button type="button" class="btn btn-success" onclick="asExportExcel()">
-                                <i class="bx bx-export"></i> Xuất excel
+                                <i class="bx bx-export"></i> <span th:text="#{common.exportExcel}">Xuất excel</span>
                             </button>
                         </div>
                     </form>
@@ -59,18 +59,18 @@
                             style="width: 100%;">
                             <thead class="table-light text-center align-middle">
                                 <tr>
-                                    <th>STT</th>
-                                    <th>Ngày công</th>
-                                    <th>Mã nhân viên</th>
-                                    <th>Tên nhân viên</th>
-                                    <th>Phòng ban</th>
-                                    <th>Chức vụ</th>
-                                    <th>Ca làm việc</th>
-                                    <th>Loại nghỉ phép</th>
-                                    <th>Từ thời gian</th>
-                                    <th>Đến thời gian</th>
-                                    <th>Số lượng</th>
-                                    <th>Đơn vị</th>
+                                    <th th:text="#{common.stt}">STT</th>
+                                    <th th:text="#{attSearch.workDate}">Ngày công</th>
+                                    <th th:text="#{common.empId}">Mã nhân viên</th>
+                                    <th th:text="#{common.empName}">Tên nhân viên</th>
+                                    <th th:text="#{common.deptName}">Phòng ban</th>
+                                    <th th:text="#{attSearch.position}">Chức vụ</th>
+                                    <th th:text="#{attSearch.shiftType}">Ca làm việc</th>
+                                    <th th:text="#{attSearch.leaveType}">Loại nghỉ phép</th>
+                                    <th th:text="#{attSearch.fromTime}">Từ thời gian</th>
+                                    <th th:text="#{attSearch.toTime}">Đến thời gian</th>
+                                    <th th:text="#{attSearch.quantity}">Số lượng</th>
+                                    <th th:text="#{attSearch.unit}">Đơn vị</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>

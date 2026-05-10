@@ -304,15 +304,7 @@
                         $('#famName').val(data.famName);
                         $('#famTypeCode').val(data.famTypeCode);
 
-                        if (data.famBorndate) {
-                            var d = new Date(data.famBorndate);
-                            var day = ("0" + d.getDate()).slice(-2);
-                            var month = ("0" + (d.getMonth() + 1)).slice(-2);
-                            var today = d.getFullYear() + "-" + (month) + "-" + (day);
-                            $('#famBorndate').val(today);
-                        } else {
-                            $('#famBorndate').val('');
-                        }
+                        $('#famBorndate').val(data.famBorndate ? data.famBorndate.substring(0, 10) : '');
 
                         $('#famIdcard').val(data.famIdcard);
                         $('#gender').val(data.gender);
@@ -352,7 +344,7 @@
                     personId: $('#personId').val(),
                     famName: $('#famName').val(),
                     famTypeCode: $('#famTypeCode').val(),
-                    famBorndate: $('#famBorndate').val() ? new Date($('#famBorndate').val()) : null,
+                    famBorndate: $('#famBorndate').val() || null,
                     famIdcard: $('#famIdcard').val(),
                     gender: $('#gender').val(),
                     famPhone: $('#famPhone').val(),

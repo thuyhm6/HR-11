@@ -500,27 +500,176 @@
                 <!-- end card -->
             </div>
             <!-- end col -->
-        </div> <!-- end row -->
-    </div> <!-- end content fragment -->
+        <!-- Modal bắt buộc đổi mật khẩu -->
+        <div th:if="${session.requirePasswordChange}" class="modal fade" id="forceChangePasswordModal"
+            data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg">
+                    <div class="modal-header bg-warning text-dark">
+                        <h5 class="modal-title">
+                            <i class="bx bx-lock-alt me-2"></i>Yêu cầu đổi mật khẩu
+                        </h5>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-warning mb-3">
+                            <i class="bx bx-info-circle me-1"></i>
+                            Tài khoản của bạn đang sử dụng mật khẩu <strong>chưa được mã hóa</strong> từ hệ thống cũ.
+                            Vì lý do bảo mật, bạn <strong>bắt buộc phải đổi mật khẩu</strong> trước khi tiếp tục sử dụng hệ thống.
+                        </div>
+                        <div class="fcp_alertBox" style="display:none;"></div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Mật khẩu mới <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <input type="password" class="form-control fcp_newPassword"
+                                    placeholder="Tối thiểu 8 ký tự" autocomplete="new-password">
+                                <button class="btn btn-outline-secondary" type="button" onclick="fcpToggle(this, 'fcp_newPassword')">
+                                    <i class="bx bx-hide"></i>
+                                </button>
+                            </div>
+                            <div class="form-text">Ít nhất 8 ký tự, gồm: chữ hoa, chữ thường, số và ký tự đặc biệt.</div>
+                        </div>
+                        <div class="mb-3">`
+                            <label class="form-label fw-semibold">Xác nhận mật khẩu mới <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <input type="password" class="form-control fcp_confirmPassword"
+                                    placeholder="Nhập lại mật khẩu mới" autocomplete="new-password">
+                                <button class="btn btn-outline-secondary" type="button" onclick="fcpToggle(this, 'fcp_confirmPassword')">
+                                    <i class="bx bx-hide"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer justify-content-between">
+                        <a href="/logout" class="btn btn-outline-secondary">
+                            <i class="bx bx-log-out me-1"></i>Đăng xuất
+                        </a>
+                        <button type="button" class="btn btn-primary" onclick="fcpSubmit(this)">
+                            <i class="bx bx-save me-1"></i>Đổi mật khẩu
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    <template id="fragmentScripts">
+        <!-- Inline Script: Thực thi ngay khi parse để tránh innerTab.js clone HTML -->
+        <script th:if="${session.requirePasswordChange}">
+            (function() {
+                // Đưa modal lên body ngay lập tức (đồng bộ)
+                var modal = document.getElementById('forceChangePasswordModal');
+                if (modal) {
+                    document.body.appendChild(modal);
+                }
+            })();
+
+            // Khởi tạo và show modal sau khi tải xong trang
+            document.addEventListener('DOMContentLoaded', function () {
+                var modalEl = document.getElementById('forceChangePasswordModal');
+                if (modalEl) {
+                    var modal = new bootstrap.Modal(modalEl, { backdrop: 'static', keyboard: false });
+                    modal.show();
+                }
+            });
+
+            // Hàm toggle ẩn/hiện mật khẩu (dùng relative DOM tree để tránh lỗi trùng ID)
+            window.fcpToggle = function(btn, targetClass) {
+                var container = btn.closest('.input-group');
+                var input = container.querySelector('.' + targetClass);
+                var icon = btn.querySelector('i');
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.className = 'bx bx-show';
+                } else {
+                    input.type = 'password';
+                    icon.className = 'bx bx-hide';
+                }
+            };
+
+            // Hàm submit (dùng relative DOM tree)
+            window.fcpSubmit = function(btn) {
+                var modalContent = btn.closest('.modal-content');
+                var newPwdInput = modalContent.querySelector('.fcp_newPassword');
+                var confirmPwdInput = modalContent.querySelector('.fcp_confirmPassword');
+                var alertBox = modalContent.querySelector('.fcp_alertBox');
+                var newPwd = newPwdInput.value.trim();
+                var confirmPwd = confirmPwdInput.value.trim();
+
+                function showAlert(msg, type) {
+                    alertBox.className = 'alert alert-' + (type || 'danger') + ' fcp_alertBox';
+                    alertBox.textContent = msg;
+                    alertBox.style.display = 'block';
+                }
+
+                if (!newPwd || !confirmPwd) {
+                    showAlert('Vui lòng nhập đủ mật khẩu mới và xác nhận.', 'danger');
+                    return;
+                }
+                if (newPwd.length < 8) {
+                    showAlert('Mật khẩu phải có ít nhất 8 ký tự.', 'danger');
+                    return;
+                }
+                if (!/[A-Z]/.test(newPwd)) {
+                    showAlert('Mật khẩu phải chứa ít nhất 1 chữ hoa (A-Z).', 'danger');
+                    return;
+                }
+                if (!/[a-z]/.test(newPwd)) {
+                    showAlert('Mật khẩu phải chứa ít nhất 1 chữ thường (a-z).', 'danger');
+                    return;
+                }
+                if (!/[0-9]/.test(newPwd)) {
+                    showAlert('Mật khẩu phải chứa ít nhất 1 chữ số (0-9).', 'danger');
+                    return;
+                }
+                if (!/[^A-Za-z0-9]/.test(newPwd)) {
+                    showAlert('Mật khẩu phải chứa ít nhất 1 ký tự đặc biệt (!@#$%...).', 'danger');
+                    return;
+                }
+                if (newPwd !== confirmPwd) {
+                    showAlert('Mật khẩu xác nhận không khớp. Vui lòng nhập lại.', 'danger');
+                    return;
+                }
+
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Đang xử lý...';
+
+                $.ajax({
+                    url: '/api/change-first-password',
+                    type: 'POST',
+                    data: { newPassword: newPwd, confirmPassword: confirmPwd },
+                    success: function (data) {
+                        if (data.success) {
+                            showAlert('Đổi mật khẩu thành công! Trang sẽ tự động tải lại...', 'success');
+                            setTimeout(function () { window.location.reload(); }, 1500);
+                        } else {
+                            showAlert(data.message || 'Có lỗi xảy ra.', 'danger');
+                            btn.disabled = false;
+                            btn.innerHTML = '<i class="bx bx-save me-1"></i>Đổi mật khẩu';
+                        }
+                    },
+                    error: function (xhr) {
+                        var msg = 'Lỗi hệ thống.';
+                        try { msg = JSON.parse(xhr.responseText).message || msg; } catch (e) {}
+                        showAlert(msg, 'danger');
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="bx bx-save me-1"></i>Đổi mật khẩu';
+                    }
+                });
+            };
+        </script>
+
+    </div> <!-- end content fragment -->
         <script>
             function changeLanguage(language) {
-                // Lưu ngôn ngữ vào session
                 fetch('/api/multilingual/set-language', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ language: language })
-                }).then(() => {
-                    // Reload trang với ngôn ngữ mới
-                    const url = new URL(window.location);
+                }).then(function () {
+                    var url = new URL(window.location);
                     url.searchParams.set('lang', language);
                     window.location.href = url.toString();
-                }).catch(error => {
+                }).catch(function (error) {
                     console.error('Error changing language:', error);
-                    alert('Có lỗi xảy ra khi thay đổi ngôn ngữ');
+                    alert('C\u00f3 l\u1ed7i x\u1ea3y ra khi thay \u0111\u1ed5i ng\u00f4n ng\u1eef');
                 });
             }
         </script>

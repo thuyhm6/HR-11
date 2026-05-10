@@ -40,4 +40,5 @@ public class ManageEmpPositionInfoDto {
     private String deptNos;
     private String fromDate;
     private String toDate;
+    private String asOfDate;
 }

@@ -1,0 +1,474 @@
+<div th:fragment="content">
+    <div class="row">
+        <div class="col-12" id="vrl_pageWrapper">
+
+            <!-- Điều kiện tìm kiếm -->
+            <div class="card mb-3">
+                <div class="card-body">
+                    <form id="vrl_searchForm" class="row gy-3 align-items-end">
+                        <div class="col-md-3 d-flex align-items-center gap-2">
+                            <label class="form-label small text-muted">Năm đánh giá</label>
+                            <input type="number" class="form-control form-control-sm" id="vrl_yearSearch"
+                                style="max-width:120px;" min="2000" max="2099" step="1">
+                        </div>
+                        <div class="col-md-3 d-flex align-items-center gap-2">
+                            <label class="form-label small text-muted">Chu kỳ</label>
+                            <select class="form-select form-select-sm" id="vrl_cycleSearch" style="max-width:180px;"
+                                data-parent-code="14015038" data-default-text="-- Tất cả --"></select>
+                        </div>
+                        <div class="col-md-6 d-flex gap-2">
+                            <button type="button" class="btn btn-primary btn-sm" onclick="vrlSearch()">
+                                <i class="bi bi-search"></i> Tra cứu
+                            </button>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="vrlClearSearch()">
+                                <i class="bi bi-x-circle"></i> Xóa lọc
+                            </button>
+                            <button type="button" class="btn btn-success btn-sm" onclick="vrlOpenAddModal()">
+                                <i class="bi bi-plus-circle"></i> Thêm mới
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Bảng danh sách -->
+            <div class="card">
+                <div class="card-body p-2">
+                    <div class="table-responsive">
+                        <table id="vrl_table" class="table table-striped table-bordered table-hover table-sm"
+                            style="width:100%">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="text-center">NO</th>
+                                    <th>Tên đánh giá</th>
+                                    <th class="text-center">Chu kỳ</th>
+                                    <th class="text-center">Năm đánh giá</th>
+                                    <th class="text-center">Tháng đánh giá</th>
+                                    <th class="text-center">Ngày tiêu chuẩn</th>
+                                    <th class="text-center">Thời gian bắt đầu</th>
+                                    <th class="text-center">Thời gian kết thúc</th>
+                                    <th class="text-center">Trạng thái</th>
+                                    <th class="text-center">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- /#vrl_pageWrapper -->
+    </div><!-- /.row -->
+
+    <!-- ── Modal thêm / sửa ───────────────────────────────────────────── -->
+    <div class="modal fade" id="vrl_detailModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="vrl_modalTitle">Thêm mới đánh giá</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="vrl_seq">
+                    <table class="table table-bordered table-sm align-middle mb-0" style="table-layout:fixed;">
+                        <colgroup>
+                            <col style="width:25%;">
+                            <col style="width:75%;">
+                        </colgroup>
+                        <tbody>
+                            <tr>
+                                <th class="table-light text-end pe-3">
+                                    Tên đánh giá <span class="text-danger">*</span>
+                                </th>
+                                <td>
+                                    <input type="text" class="form-control form-control-sm" id="vrl_resumeName"
+                                        maxlength="200">
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="table-light text-end pe-3">Giải thích</th>
+                                <td>
+                                    <textarea class="form-control form-control-sm" id="vrl_remark" rows="3"
+                                        maxlength="2000"></textarea>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="table-light text-end pe-3">Chu kỳ</th>
+                                <td>
+                                    <select class="form-select form-select-sm" id="vrl_evsCycle"
+                                        style="max-width:200px;" data-parent-code="14015038"
+                                        data-default-text="-- Chọn --"></select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="table-light text-end pe-3">Năm đánh giá</th>
+                                <td>
+                                    <input type="number" class="form-control form-control-sm" id="vrl_evsYear"
+                                        min="2000" max="2099" style="max-width:120px;">
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="table-light text-end pe-3">Tháng đánh giá</th>
+                                <td>
+                                    <select class="form-select form-select-sm" id="vrl_evsMonth"
+                                        style="max-width:200px;">
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="table-light text-end pe-3">
+                                    Ngày tiêu chuẩn <span class="text-danger">*</span>
+                                </th>
+                                <td>
+                                    <input type="text" class="form-control form-control-sm js-daterangepicker"
+                                        id="vrl_standardDate" data-drp-format="DD/MM/YYYY"
+                                        data-drp-auto-update-input="false" autocomplete="off" style="max-width:140px;">
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="table-light text-end pe-3">Thời gian</th>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                                        <input type="text" class="form-control form-control-sm js-daterangepicker"
+                                            id="vrl_evsStartDate" data-drp-format="DD/MM/YYYY"
+                                            data-drp-auto-update-input="false" autocomplete="off"
+                                            style="max-width:140px;">
+                                        <span>~</span>
+                                        <input type="text" class="form-control form-control-sm js-daterangepicker"
+                                            id="vrl_evsEndDate" data-drp-format="DD/MM/YYYY"
+                                            data-drp-auto-update-input="false" autocomplete="off"
+                                            style="max-width:140px;">
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr id="vrl_activityRow" style="display:none;">
+                                <th class="table-light text-end pe-3">Trạng thái thực hiện</th>
+                                <td>
+                                    <span id="vrl_activityDisplay" class="text-muted"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="table-light text-end pe-3">Số lần đánh giá</th>
+                                <td>
+                                    <select class="form-select form-select-sm" id="vrl_evsLevel"
+                                        style="max-width:200px;" data-parent-code="14015060"
+                                        data-default-text="-- Chọn --"></select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="table-light text-end pe-3">Sao chép đối tượng</th>
+                                <td>
+                                    <select class="form-select form-select-sm" id="vrl_copyObject"
+                                        style="max-width:300px;">
+                                        <option value="">-- Không sao chép --</option>
+                                    </select>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="vrlSave()">
+                        <i class="bi bi-save"></i> Lưu
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Modal xác nhận xóa ─────────────────────────────────────────── -->
+    <div class="modal fade" id="vrl_deleteModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Xác nhận xóa</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Bạn có chắc muốn xóa đánh giá "<strong id="vrl_deleteResumeName"></strong>"?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="vrlConfirmDelete()">
+                        <i class="bi bi-trash"></i> Xóa
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div><!-- th:fragment="content" -->
+
+<template id="fragmentScripts">
+    <script th:inline="javascript">
+        var _vrl_evsType = new URLSearchParams((window._currentTabUrl || window.location.href).split('?')[1] || '').get('evsType') || '';
+        var _vrl_deleteSeq = null;
+        var _vrl_detailModal = null;
+        var _vrl_deleteModal = null;
+        var _vrl_table = null;
+
+        // ── Tiện ích ─────────────────────────────────────────────────────────
+        function vrlEscHtml(s) {
+            if (s == null) return '';
+            return String(s)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        }
+
+        function vrlActivityBadge(activity, name) {
+            var cls = { '2': 'warning', '3': 'primary', '4': 'success', '1': 'info' }[activity] || 'secondary';
+            return '<span class="badge bg-' + cls + '">' + vrlEscHtml(name || activity) + '</span>';
+        }
+
+        // ── Load dropdown Tháng đánh giá theo Chu kỳ ───────────────────────
+        function vrlLoadMonthOptions(parentCode, selectedValue) {
+            reloadCodeSelect('#vrl_evsMonth', parentCode, '-- Chọn --', selectedValue);
+        }
+
+        function vrlLoadCopyOptions() {
+            $.ajax({
+                url: '/evs/manage/api/resume/copyOptions',
+                type: 'GET',
+                data: { evsType: _vrl_evsType },
+                success: function (rows) {
+                    var html = '<option value="">-- Không sao chép --</option>';
+                    (rows || []).forEach(function (r) {
+                        html += '<option value="' + vrlEscHtml(r.seq) + '">'
+                            + vrlEscHtml(r.resumeName)
+                            + (r.evsYear ? ' (' + r.evsYear + ')' : '')
+                            + '</option>';
+                    });
+                    $('#vrl_copyObject').html(html);
+                }
+            });
+        }
+
+        // ── Search ───────────────────────────────────────────────────────────
+        window.vrlSearch = function () {
+            if (_vrl_table) _vrl_table.ajax.reload();
+        };
+
+        window.vrlClearSearch = function () {
+            $('#vrl_yearSearch').val(new Date().getFullYear());
+            $('#vrl_cycleSearch').val('');
+            if (_vrl_table) _vrl_table.ajax.reload();
+        };
+
+        // ── Modal thêm mới ───────────────────────────────────────────────────
+        window.vrlOpenAddModal = function () {
+            $('#vrl_modalTitle').text('Thêm mới đánh giá');
+            $('#vrl_seq').val('');
+            $('#vrl_resumeName').val('');
+            $('#vrl_remark').val('');
+            $('#vrl_evsCycle').val('');
+            $('#vrl_evsYear').val(new Date().getFullYear());
+            vrlLoadMonthOptions('', '');
+            $('#vrl_standardDate').val('');
+            $('#vrl_evsStartDate').val('');
+            $('#vrl_evsEndDate').val('');
+            $('#vrl_evsLevel').val('');
+            $('#vrl_copyObject').val('');
+            $('#vrl_activityRow').hide();
+            vrlLoadCopyOptions();
+            if (typeof initDateRangePickers === 'function') {
+                initDateRangePickers('#vrl_detailModal');
+            }
+            _vrl_detailModal.show();
+        };
+
+        // ── Modal sửa ───────────────────────────────────────────────────────
+        window.vrlOpenEditModal = function (seq) {
+            $.ajax({
+                url: '/evs/manage/api/resume/' + encodeURIComponent(seq),
+                type: 'GET',
+                data: { evsType: _vrl_evsType },
+                success: function (r) {
+                    if (!r) return;
+                    $('#vrl_modalTitle').text('Chỉnh sửa đánh giá');
+                    $('#vrl_seq').val(r.seq || '');
+                    $('#vrl_resumeName').val(r.resumeName || '');
+                    $('#vrl_remark').val(r.remark || '');
+                    $('#vrl_evsCycle').val(r.evsCycle || '');
+                    $('#vrl_evsYear').val(r.evsYear || '');
+                    vrlLoadMonthOptions(r.evsCycle || '', r.evsMonth || '');
+                    $('#vrl_standardDate').val(r.standardDate || '');
+                    $('#vrl_evsStartDate').val(r.evsStartDate || '');
+                    $('#vrl_evsEndDate').val(r.evsEndDate || '');
+                    $('#vrl_evsLevel').val(r.evsLevel || '');
+                    $('#vrl_copyObject').val(r.copyObject || '');
+                    if (r.activityName) {
+                        $('#vrl_activityDisplay').text(r.activityName);
+                        $('#vrl_activityRow').show();
+                    } else {
+                        $('#vrl_activityRow').hide();
+                    }
+                    vrlLoadCopyOptions();
+                    if (typeof initDateRangePickers === 'function') {
+                        initDateRangePickers('#vrl_detailModal');
+                    }
+                    _vrl_detailModal.show();
+                },
+                error: function () {
+                    alert('Lỗi khi tải thông tin đánh giá.');
+                }
+            });
+        };
+
+        // ── Lưu ─────────────────────────────────────────────────────────────
+        window.vrlSave = function () {
+            var resumeName = $('#vrl_resumeName').val().trim();
+            if (!resumeName) {
+                alert('Vui lòng nhập Tên đánh giá.');
+                $('#vrl_resumeName').focus();
+                return;
+            }
+            var standardDate = $('#vrl_standardDate').val().trim();
+            if (!standardDate) {
+                alert('Vui lòng nhập Ngày tiêu chuẩn.');
+                $('#vrl_standardDate').focus();
+                return;
+            }
+            var payload = {
+                seq: $('#vrl_seq').val(),
+                resumeName: resumeName,
+                remark: $('#vrl_remark').val(),
+                evsCycle: $('#vrl_evsCycle').val(),
+                evsYear: $('#vrl_evsYear').val(),
+                evsMonth: $('#vrl_evsMonth').val(),
+                standardDate: standardDate,
+                evsStartDate: $('#vrl_evsStartDate').val(),
+                evsEndDate: $('#vrl_evsEndDate').val(),
+                evsLevel: $('#vrl_evsLevel').val(),
+                copyObject: $('#vrl_copyObject').val(),
+                evsType: _vrl_evsType
+            };
+            $.ajax({
+                url: '/evs/manage/api/resume/save',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(payload),
+                success: function () {
+                    _vrl_detailModal.hide();
+                    if (_vrl_table) _vrl_table.ajax.reload();
+                },
+                error: function () {
+                    alert('Lỗi khi lưu dữ liệu. Vui lòng thử lại.');
+                }
+            });
+        };
+
+        // ── Xóa ─────────────────────────────────────────────────────────────
+        window.vrlOpenDeleteModal = function (seq, resumeName) {
+            _vrl_deleteSeq = seq;
+            $('#vrl_deleteResumeName').text(resumeName || seq);
+            _vrl_deleteModal.show();
+        };
+
+        window.vrlConfirmDelete = function () {
+            if (!_vrl_deleteSeq) return;
+            $.ajax({
+                url: '/evs/manage/api/resume/delete',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ seq: _vrl_deleteSeq, evsType: _vrl_evsType }),
+                success: function () {
+                    _vrl_deleteModal.hide();
+                    _vrl_deleteSeq = null;
+                    if (_vrl_table) _vrl_table.ajax.reload();
+                },
+                error: function () {
+                    alert('Lỗi khi xóa dữ liệu. Vui lòng thử lại.');
+                }
+            });
+        };
+
+        // ── Boot ─────────────────────────────────────────────────────────────
+        $(document).ready(function () {
+            _vrl_detailModal = new bootstrap.Modal(document.getElementById('vrl_detailModal'));
+            _vrl_deleteModal = new bootstrap.Modal(document.getElementById('vrl_deleteModal'));
+
+            $('#vrl_evsCycle').on('change', function () {
+                vrlLoadMonthOptions($(this).val(), '');
+            });
+
+            if (typeof initDateRangePickers === 'function') initDateRangePickers('#vrl_pageWrapper');
+
+            $('#vrl_yearSearch').val(new Date().getFullYear());
+
+            _vrl_table = $('#vrl_table').DataTable({
+                destroy: true,
+                scrollY: 'calc(100vh - 320px)',
+                scrollCollapse: true,
+                paging: true,
+                searching: true,
+                lengthChange: true,
+                pageLength: 25,
+                processing: true,
+                dom: 'Blfrtip',
+                buttons: ['copy', 'csv', 'excel', 'pdf', 'print'],
+                ajax: {
+                    url: '/evs/manage/api/resume/list',
+                    dataSrc: '',
+                    data: function (d) {
+                        d.yearSearch = $('#vrl_yearSearch').val() || '';
+                        d.cycleSearch = $('#vrl_cycleSearch').val() || '';
+                        d.evsType = _vrl_evsType;
+                    }
+                },
+                columns: [
+                    {
+                        data: null,
+                        className: 'text-center',
+                        width: '3%',
+                        render: function (data, type, row, meta) {
+                            return meta.row + 1;
+                        }
+                    },
+                    { data: 'resumeName' },
+                    {
+                        data: 'evsCycleName',
+                        className: 'text-center',
+                        render: function (data, type, row) {
+                            return data || row.evsCycle || '';
+                        }
+                    },
+                    { data: 'evsYear', className: 'text-center' },
+                    {
+                        data: 'evsMonthName',
+                        className: 'text-center',
+                        render: function (data, type, row) {
+                            return data || row.evsMonth || '';
+                        }
+                    },
+                    { data: 'standardDate', className: 'text-center' },
+                    { data: 'evsStartDate', className: 'text-center' },
+                    { data: 'evsEndDate', className: 'text-center' },
+                    {
+                        data: null,
+                        className: 'text-center',
+                        render: function (data, type, row) {
+                            return vrlActivityBadge(row.activity, row.activityName);
+                        }
+                    },
+                    {
+                        data: null,
+                        className: 'text-center',
+                        width: '80px',
+                        orderable: false,
+                        render: function (data, type, row) {
+                            return '<div class="btn-group btn-group-sm">'
+                                + '<button class="btn btn-outline-primary py-0 px-1"'
+                                + ' onclick="vrlOpenEditModal(\'' + vrlEscHtml(row.seq) + '\')">'
+                                + '<i class="bi bi-pencil"></i></button>'
+                                + '<button class="btn btn-outline-danger py-0 px-1"'
+                                + ' onclick="vrlOpenDeleteModal(\'' + vrlEscHtml(row.seq) + '\',\'' + vrlEscHtml(row.resumeName) + '\')">'
+                                + '<i class="bi bi-trash"></i></button>'
+                                + '</div>';
+                        }
+                    }
+                ]
+            });
+        });
+    </script>
+</template>

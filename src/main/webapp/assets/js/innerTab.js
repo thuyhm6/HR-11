@@ -351,6 +351,13 @@
         const scripts = templateDoc.querySelectorAll('script');
         // console.log('Scripts found:', scripts.length);
 
+        // Inject tab URL so fragment scripts can read query params
+        const urlVarScript = document.createElement('script');
+        urlVarScript.textContent = 'window._currentTabUrl = ' + JSON.stringify(tab.url) + ';';
+        if (dynamicScripts) {
+        dynamicScripts.appendChild(urlVarScript);
+    }
+
         scripts.forEach(script => {
         const newScript = document.createElement('script');
 
@@ -439,6 +446,13 @@
         const templateParser = new DOMParser();
         const templateDoc = templateParser.parseFromString(templateContent, 'text/html');
         const scripts = templateDoc.querySelectorAll('script');
+
+        // Inject tab URL so fragment scripts can read query params
+        const urlVarScript = document.createElement('script');
+        urlVarScript.textContent = 'window._currentTabUrl = ' + JSON.stringify(tab.url) + ';';
+        if (dynamicScripts) {
+        dynamicScripts.appendChild(urlVarScript);
+    }
 
         scripts.forEach(script => {
         const newScript = document.createElement('script');

@@ -28,7 +28,7 @@
         FROM AR_STATISTIC_DATE_PARAM
         <where>
             <if test="cpnyId != null and cpnyId != ''">
-                AND CPNY_ID LIKE '%' || #{cpnyId} || '%'
+                AND CPNY_ID LIKE '%' || #{cpnyId, jdbcType=VARCHAR} || '%'
             </if>
             <if test="statNo != null and statNo != ''">
                 AND STAT_NO LIKE '%' || #{statNo} || '%'
@@ -67,7 +67,7 @@
         ) VALUES (
             #{paramNo},
             #{statNo},
-            #{cpnyId},
+            #{cpnyId, jdbcType=VARCHAR},
             <choose>
                 <when test="startDate != null and startDate != ''">TO_DATE(#{startDate}, 'YYYY-MM-DD')</when>
                 <otherwise>NULL</otherwise>
@@ -93,7 +93,7 @@
                 STAT_NO = #{statNo},
             </if>
             <if test="cpnyId != null">
-                CPNY_ID = #{cpnyId},
+                CPNY_ID = #{cpnyId, jdbcType=VARCHAR},
             </if>
             <choose>
                 <when test="startDate != null and startDate != ''">

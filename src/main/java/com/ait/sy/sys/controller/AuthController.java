@@ -2,6 +2,7 @@ package com.ait.sy.sys.controller;
 
 import com.ait.sy.basicMaintenance.model.SyMenu;
 import com.ait.sy.sys.service.MenuService;
+import com.ait.sy.sys.service.PasswordUpdateService;
 import com.ait.sy.sys.service.PermissionService;
 import com.ait.sy.sys.service.HrAuthenticationService.HrUserInfo;
 import com.ait.sy.sys.service.PermissionService.UserPermissionInfo;
@@ -11,6 +12,7 @@ import com.ait.util.IpUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -18,7 +20,9 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * AuthController - Controller xử lý đăng nhập và xác thực
@@ -39,6 +43,9 @@ public class AuthController {
 
     @Autowired
     private CsrfUtil csrfUtil;
+
+    @Autowired
+    private PasswordUpdateService passwordUpdateService;
 
     /**
      * Hiển thị trang đăng nhập (main route)
@@ -283,14 +290,63 @@ public class AuthController {
     /**
      * API lấy menu tree cho user
      */
-    /**
-     * API lấy menu tree cho user
-     */
     @GetMapping("/api/menu-tree")
     @ResponseBody
     public List<SyMenu> getMenuTree(HttpSession session) {
         // Lấy thông tin user từ session (đã được kiểm tra bởi interceptor)
         HrUserInfo currentHrUser = (HrUserInfo) session.getAttribute("currentHrUser");
         return permissionService.getUserMenuTree(currentHrUser.getSyUser().getUserNo());
+    }
+
+    /**
+     * API đổi mật khẩu lần đầu (bắt buộc khi mật khẩu chưa mã hóa)
+     */
+    @PostMapping("/api/change-first-password")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> changeFirstPassword(
+            @RequestParam("newPassword") String newPassword,
+            @RequestParam("confirmPassword") String confirmPassword,
+            HttpSession session) {
+
+        Map<String, Object> resp = new HashMap<>();
+        try {
+            HrUserInfo currentUser = (HrUserInfo) session.getAttribute("currentHrUser");
+            if (currentUser == null) {
+                resp.put("success", false);
+                resp.put("message", "Hết phiên làm việc, vui lòng đăng nhập lại.");
+                return ResponseEntity.status(401).body(resp);
+            }
+
+            if (!newPassword.equals(confirmPassword)) {
+                resp.put("success", false);
+                resp.put("message", "Mật khẩu xác nhận không khớp.");
+                return ResponseEntity.badRequest().body(resp);
+            }
+
+            if (!passwordUpdateService.isPasswordStrong(newPassword)) {
+                resp.put("success", false);
+                resp.put("message", "Mật khẩu phải ít nhất 8 ký tự, gồm chữ hoa, chữ thường, số và ký tự đặc biệt.");
+                return ResponseEntity.badRequest().body(resp);
+            }
+
+            String userNo = currentUser.getSyUser().getUserNo();
+            boolean updated = passwordUpdateService.updatePassword(userNo, newPassword);
+            if (updated) {
+                session.removeAttribute("requirePasswordChange");
+                log.info("First-time password changed for userNo={}", userNo);
+                resp.put("success", true);
+                resp.put("message", "Đổi mật khẩu thành công!");
+                return ResponseEntity.ok(resp);
+            } else {
+                resp.put("success", false);
+                resp.put("message", "Không thể cập nhật mật khẩu. Vui lòng thử lại.");
+                return ResponseEntity.internalServerError().body(resp);
+            }
+        } catch (Exception e) {
+            log.error("Error changing first password", e);
+            resp.put("success", false);
+            resp.put("message", "Lỗi hệ thống.");
+            return ResponseEntity.internalServerError().body(resp);
+        }
     }
 }

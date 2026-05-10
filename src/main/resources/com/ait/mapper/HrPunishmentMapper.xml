@@ -76,7 +76,7 @@
             #{releaseDate}, #{punishDepartment}, #{punishScore}, #{paycutStartDate},
             #{paycutEndDate}, #{personnelCardInquiry}, #{faultTypeCode}, #{remarks},
             1,
-            SYSDATE, #{adminID}, #{adminIP}, SYSDATE, #{adminID}, #{adminIP}
+            SYSDATE, #{adminID, jdbcType=VARCHAR}, #{adminIP, jdbcType=VARCHAR}, SYSDATE, #{adminID, jdbcType=VARCHAR}, #{adminIP, jdbcType=VARCHAR}
         )
     </insert>
 
@@ -96,8 +96,8 @@
             FAULT_TYPE_CODE = #{faultTypeCode},
             REMARKS = #{remarks},
             UPDATE_DATE = SYSDATE,
-            UPDATED_BY = #{adminID},
-            UPDATED_IP = #{adminIP}
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+            UPDATED_IP = #{adminIP, jdbcType=VARCHAR}
         WHERE PUNISH_NO = #{punishNo}
     </update>
 
@@ -105,8 +105,8 @@
         UPDATE HR_PUNISHMENT 
         SET ACTIVITY = 0,
             UPDATE_DATE = SYSDATE, 
-            UPDATED_BY = #{adminID}, 
-            UPDATED_IP = #{adminIP} 
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR}, 
+            UPDATED_IP = #{adminIP, jdbcType=VARCHAR} 
         WHERE PUNISH_NO = #{punishNo}
     </delete>
 

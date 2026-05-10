@@ -245,7 +245,7 @@
             AND he.DEPTNO LIKE '%' || #{deptNo} || '%'
         </if>
         <if test="cpnyId != null and cpnyId != ''">
-            AND he.CPNY_ID = #{cpnyId}
+            AND he.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
         </if>
         <if test="position != null and position != ''">
             AND he.POSITION LIKE '%' || #{position} || '%'
@@ -385,7 +385,7 @@
             <include refid="baseColumns"/>
         <include refid="baseFromClause"/>
         <include refid="baseWhereClause"/>
-        AND he.CPNY_ID = #{cpnyId}
+        AND he.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
         <include refid="activeEmployeesFilter"/>
         ORDER BY he.DEPTNO ASC, he.EMPID ASC
     </select>
@@ -509,9 +509,9 @@
             UPDATED_OT_LIMIT_BY, UPDATE_OT_LIMIT_DATE
         ) VALUES (
             #{empId}, #{chinesePinyin}, #{englishName}, #{positionNo}, #{postGradeNo},
-            #{dateStarted}, #{endProbationDate}, #{empTypeCode}, #{cpnyId}, #{personId},
-            #{deptNo}, #{localName}, #{workArea}, #{createDate}, #{adminID}, #{updateDate},
-            #{adminID}, #{activity}, #{mainBusiness}, #{experience}, #{updatedIp}, #{createdIp},
+            #{dateStarted}, #{endProbationDate}, #{empTypeCode}, #{cpnyId, jdbcType=VARCHAR}, #{personId},
+            #{deptNo}, #{localName}, #{workArea}, #{createDate}, #{adminID, jdbcType=VARCHAR}, #{updateDate},
+            #{adminID, jdbcType=VARCHAR}, #{activity}, #{mainBusiness}, #{experience}, #{updatedIp}, #{createdIp},
             #{koreanName}, #{empCommonTypeCode}, #{standardPosition}, #{dutyNo}, #{postNo},
             #{statusCode}, #{dateLeft}, #{idCardNo}, #{shiftNo}, #{empOffice}, #{incumbency},
             #{promotionDay}, #{postFamily}, #{affirmWorkAge}, #{workHourType},
@@ -550,7 +550,7 @@
                 EMP_TYPE_CODE = #{empTypeCode},
             </if>
             <if test="cpnyId != null">
-                CPNY_ID = #{cpnyId},
+                CPNY_ID = #{cpnyId, jdbcType=VARCHAR},
             </if>
             <if test="deptNo != null">
                 DEPTNO = #{deptNo},
@@ -689,7 +689,7 @@
             </if>
             <!-- Audit fields - luôn update -->
             UPDATE_DATE = #{updateDate},
-            UPDATED_BY = #{adminID},
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
             UPDATED_IP = #{updatedIp}
         </set>
         WHERE EMPID = #{empId}

@@ -1,15 +1,15 @@
 package com.ait.ar.attendanceSettings.dto;
 
 import lombok.Data;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Data
 public class ArEmpGroupDto {
     private String personId;
     private String groupNo;
-    private Date createDate;
+    private LocalDateTime createDate;
     private String createdBy;
-    private Date updateDate;
+    private LocalDateTime updateDate;
     private String updatedBy;
     private Integer activity;
     private Integer orderno;

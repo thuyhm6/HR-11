@@ -36,7 +36,14 @@
                         <div class="col-md-2">
                             <label for="mep_empOffice" class="form-label">Trạng thái</label>
                             <select class="form-select" id="mep_empOffice" data-parent-code="15118"
-                                data-default-text="-- Tất cả --" data-default-value="15119"></select>
+                                data-default-text="-- Tất cả --" data-default-value="15119"
+                                onchange="mepToggleAsOfDate(this.value)"></select>
+                        </div>
+                        <div class="col-md-2" id="mep_asOfDateWrap">
+                            <label for="mep_asOfDate" class="form-label">Ngày tra cứu</label>
+                            <input type="text" class="form-control js-daterangepicker" id="mep_asOfDate"
+                                data-drp-format="YYYY-MM-DD" data-drp-auto-update-input="false"
+                                autocomplete="off" placeholder="DD/MM/YYYY">
                         </div>
                         <div class="col-md-2">
                             <label for="mep_nationalityCode" class="form-label">Quốc tịch</label>
@@ -116,6 +123,11 @@
                             <tr>
                                 <th class="table-light text-center">Phòng ban</th>
                                 <td id="mep_detailDeptName"></td>
+                            </tr>
+                            <tr>
+                                <th class="table-light text-center">Tên phòng local</th>
+                                <td id="mep_detailOrgNameLocal" colspan="3"></td>
+                            </tr>
                             <tr>
                                 <th class="table-light text-center">Chức vụ</th>
                                 <td id="mep_detailDutyName"></td>
@@ -376,6 +388,7 @@
                         d.empTypeCode = $('#mep_empTypeCode').val();
                         d.empOffice = $('#mep_empOffice').val();
                         d.nationalityCode = $('#mep_nationalityCode').val();
+                        d.asOfDate = $('#mep_asOfDate').val();
                     }
                 },
                 initComplete: function () {
@@ -439,7 +452,10 @@
                 _mep_detailModal = new bootstrap.Modal(document.getElementById('mep_detailModal'));
             }
             mepInitDeptSelector();
+            if (typeof initDateRangePickers === 'function') initDateRangePickers('#mep_searchForm');
             $.when(typeof initCodeSelects === 'function' ? initCodeSelects('#mep_searchForm') : null).always(function () {
+                // Hiển thị/ẩn ô ngày tra cứu theo giá trị mặc định của Trạng thái
+                mepToggleAsOfDate($('#mep_empOffice').val() || '15119');
                 mepInitTable();
                 if (_mep_table) {
                     _mep_table.ajax.reload();
@@ -453,11 +469,21 @@
             }
         };
 
+        window.mepToggleAsOfDate = function (val) {
+            if (val === '15119') {
+                $('#mep_asOfDateWrap').show();
+            } else {
+                $('#mep_asOfDate').val('');
+                $('#mep_asOfDateWrap').hide();
+            }
+        };
+
         window.mepClearSearch = function () {
             $('#mep_keyword').val('');
             $('#mep_deptNo').val('');
             $('#mep_fromDate').val('');
             $('#mep_toDate').val('');
+            $('#mep_asOfDate').val('');
             _mep_selectedDeptCodes = [];
             $('.auth-dept-chk-global').prop('checked', false).trigger('change');
             if (typeof resetCodeSelectDefaults === 'function') {

@@ -22,8 +22,8 @@ public class HrFamilyServiceImpl implements HrFamilyService {
     private HrEmergencyAddressMapper hrEmergencyAddressMapper;
 
     @Override
-    public List<HrFamily> searchFamily(String empId, String localName, String famName) {
-        return hrFamilyMapper.searchFamily(empId, localName, famName);
+    public List<HrFamily> searchFamily(String empId, String personId, String localName, String famName) {
+        return hrFamilyMapper.searchFamily(empId, personId, localName, famName);
     }
 
     @Override

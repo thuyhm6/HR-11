@@ -9,5 +9,7 @@ public interface ArShiftGroupManagementService {
 
     List<ArShiftGroupManagementDto> getList(ArShiftGroupManagementDto dto);
 
+    List<ArShiftGroupManagementDto> getListByPersonId(ArShiftGroupManagementDto dto);
+
     void saveChange(Map<String, Object> params);
 }

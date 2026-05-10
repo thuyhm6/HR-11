@@ -60,13 +60,11 @@ public class OrgResumeInfoController {
     @ResponseBody
     public ResponseEntity<?> executeProcess(@RequestBody Map<String, Object> payload, HttpSession session) {
         try {
-            HrUserInfo user = getAuthenticatedUser(session);
             String resumeNo = (String) payload.get("resumeNo");
             @SuppressWarnings("unchecked")
             List<String> types = (List<String>) payload.get("types");
 
-            String result = resumeService.executeResumeProcess(resumeNo, types, user.getUsername(),
-                    getClientIpAddress(session), user.getCpnyId());
+            String result = resumeService.executeResumeProcess(resumeNo, types);
             return ResponseEntity.ok(Map.of("message", result));
         } catch (Exception e) {
             log.error("Failed to execute resume process", e);

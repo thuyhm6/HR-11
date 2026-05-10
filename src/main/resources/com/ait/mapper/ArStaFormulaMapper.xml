@@ -40,7 +40,7 @@
         LEFT JOIN SY_GLOBAL_NAME gen ON p.ITEM_NO = gen.NO AND gen.LANGUAGE = 'en'
         LEFT JOIN SY_GLOBAL_NAME gzh ON p.ITEM_NO = gzh.NO AND gzh.LANGUAGE = 'zh'
         LEFT JOIN SY_GLOBAL_NAME gko ON p.ITEM_NO = gko.NO AND gko.LANGUAGE = 'ko'
-        WHERE p.CPNY_ID = #{cpnyId}
+        WHERE p.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
           AND p.ACTIVITY = 1
         ORDER BY p.CAL_ORDER ASC
     </select>
@@ -56,7 +56,7 @@
         LEFT JOIN SY_GLOBAL_NAME gen ON a.ITEM_NO = gen.NO AND gen.LANGUAGE = 'en'
         LEFT JOIN SY_GLOBAL_NAME gzh ON a.ITEM_NO = gzh.NO AND gzh.LANGUAGE = 'zh'
         LEFT JOIN SY_GLOBAL_NAME gko ON a.ITEM_NO = gko.NO AND gko.LANGUAGE = 'ko'
-        WHERE a.CPNY_ID = #{cpnyId}
+        WHERE a.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
           <if test="itemNo != null and itemNo != ''">
               AND a.ITEM_NO = #{itemNo}
           </if>
@@ -74,8 +74,8 @@
             FORMULAR_NO, ITEM_NO, CONDITION, FORMULAR, CPNY_ID, 
             ACTIVITY, ORDERNO, CREATE_DATE, CREATED_BY
         ) VALUES (
-            #{formularNo}, #{itemNo}, #{condition}, #{formular}, #{cpnyId}, 
-            #{activity}, #{orderno}, SYSDATE, #{adminID}
+            #{formularNo}, #{itemNo}, #{condition}, #{formular}, #{cpnyId, jdbcType=VARCHAR}, 
+            #{activity}, #{orderno}, SYSDATE, #{adminID, jdbcType=VARCHAR}
         )
     </insert>
 
@@ -86,7 +86,7 @@
             ACTIVITY = #{activity},
             ORDERNO = #{orderno},
             UPDATE_DATE = SYSDATE,
-            UPDATED_BY = #{adminID}
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR}
         WHERE FORMULAR_NO = #{formularNo}
     </update>
 
@@ -100,9 +100,9 @@
                S1.CONTENT as "itemGroupName"
         FROM AR_ITEM A
         JOIN AR_ITEM_PARAM C ON A.ITEM_NO = C.ITEM_NO
-        LEFT JOIN SY_GLOBAL_NAME S1 ON A.ITEM_GROUP_CODE = S1.NO AND S1.LANGUAGE = #{lang}
-        LEFT JOIN SY_GLOBAL_NAME S2 ON A.ITEM_NO = S2.NO AND S2.LANGUAGE = #{lang}
-        WHERE C.CPNY_ID = #{cpnyId}
+        LEFT JOIN SY_GLOBAL_NAME S1 ON A.ITEM_GROUP_CODE = S1.NO AND S1.LANGUAGE = #{lang, jdbcType=VARCHAR}
+        LEFT JOIN SY_GLOBAL_NAME S2 ON A.ITEM_NO = S2.NO AND S2.LANGUAGE = #{lang, jdbcType=VARCHAR}
+        WHERE C.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
         ORDER BY A.ITEM_ID
     </select>
 
@@ -115,9 +115,9 @@
                S2.CONTENT as "dataTypeName"
         FROM AR_STA_ITEM T
         JOIN AR_STA_ITEM_PARAM PA ON T.ITEM_NO = PA.ITEM_NO
-        LEFT JOIN SY_GLOBAL_NAME S1 ON PA.ITEM_NO = S1.NO AND S1.LANGUAGE = #{lang}
-        LEFT JOIN SY_GLOBAL_NAME S2 ON T.DATATYPE = S2.NO AND S2.LANGUAGE = #{lang}
-        WHERE PA.CPNY_ID = #{cpnyId}
+        LEFT JOIN SY_GLOBAL_NAME S1 ON PA.ITEM_NO = S1.NO AND S1.LANGUAGE = #{lang, jdbcType=VARCHAR}
+        LEFT JOIN SY_GLOBAL_NAME S2 ON T.DATATYPE = S2.NO AND S2.LANGUAGE = #{lang, jdbcType=VARCHAR}
+        WHERE PA.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
           AND T.ACTIVITY = 1 
           AND PA.ACTIVITY = 1
         ORDER BY PA.CAL_ORDER
@@ -127,9 +127,9 @@
         SELECT D.DISTINCT_FIELD as "distinctField",
                S1.CONTENT as "fieldName"
         FROM PA_DISTINCT_LIST D
-        LEFT JOIN SY_GLOBAL_NAME S1 ON D.ID = S1.NO AND S1.LANGUAGE = #{lang}
+        LEFT JOIN SY_GLOBAL_NAME S1 ON D.ID = S1.NO AND S1.LANGUAGE = #{lang, jdbcType=VARCHAR}
         WHERE D.TABLE_NAME = 'PA_HR_V'
-          AND D.CPNY_ID = #{cpnyId}
+          AND D.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
           AND D.ACTIVITY = 1
         ORDER BY D.ORDERNO
     </select>

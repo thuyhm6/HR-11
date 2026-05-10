@@ -5,7 +5,7 @@ import java.util.List;
 import com.ait.hrm.empinfo.model.HrEmergencyAddress;
 
 public interface HrEmergencyAddressService {
-    List<HrEmergencyAddress> searchEmergencyAddress(String empId, String localName, String emerName);
+    List<HrEmergencyAddress> searchEmergencyAddress(String empId, String personId, String localName, String emerName);
 
     HrEmergencyAddress getById(Long emergencyNo);
 

@@ -49,7 +49,17 @@ public class EssLeaveApplyDto extends com.ait.hrm.empinfo.dto.EmployeeNameDto {
     private String affirmFlagName;
     private String detailTypeName;
 
+    // Display fields for list view
+    private String itemNo;
+    private String applyDate;
+    private String leaveFromDate;
+    private String leaveFromTimeOnly;
+    private String leaveToDate;
+    private String leaveToTimeOnly;
+    private String confirmFlagName;
+
     // Cac bien dung cho viec tim kiem
     private String fromDate;
     private String toDate;
+    private String keyword;
 }

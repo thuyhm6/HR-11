@@ -21,6 +21,11 @@ public class ArShiftGroupManagementServiceImpl implements ArShiftGroupManagement
     }
 
     @Override
+    public List<ArShiftGroupManagementDto> getListByPersonId(ArShiftGroupManagementDto dto) {
+        return mapper.selectByPersonId(dto);
+    }
+
+    @Override
     public void saveChange(Map<String, Object> params) {
         mapper.callChangeProcedure(params);
     }

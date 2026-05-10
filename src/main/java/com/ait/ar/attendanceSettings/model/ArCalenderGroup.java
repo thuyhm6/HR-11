@@ -3,13 +3,14 @@ package com.ait.ar.attendanceSettings.model;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class ArCalenderGroup {
-    private Date ddate;
+    private LocalDate ddate;
     private Integer iyear;
     private Integer imonth;
     private Integer iday;
@@ -22,9 +23,9 @@ public class ArCalenderGroup {
     private Integer shiftNo;
     private String arDateStr; // AR_DATE_STR: YYYY/MM/DD
     private String cpnyId;
-    private Date createDate;
+    private LocalDateTime createDate;
     private String createdBy;
-    private Date updateDate;
+    private LocalDateTime updateDate;
     private String updatedBy;
     private Integer activity;
     private Integer orderno;

@@ -44,7 +44,7 @@
             CREATE_DATE, CREATED_BY, CREATED_IP
         ) VALUES (
             #{personId}, #{activity, jdbcType=NUMERIC}, #{orderno, jdbcType=NUMERIC}, #{modifyYn, jdbcType=NUMERIC},
-            SYSDATE, #{adminID}, #{adminIP}
+            SYSDATE, #{adminID, jdbcType=VARCHAR}, #{adminIP, jdbcType=VARCHAR}
         )
     </insert>
 
@@ -54,8 +54,8 @@
             ORDERNO = #{orderno, jdbcType=NUMERIC},
             MODIFY_YN = #{modifyYn, jdbcType=NUMERIC},
             UPDATE_DATE = SYSDATE,
-            UPDATED_BY = #{adminID},
-            UPDATED_IP = #{adminIP}
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+            UPDATED_IP = #{adminIP, jdbcType=VARCHAR}
         WHERE PERSON_ID = #{personId}
     </update>
 
@@ -90,7 +90,7 @@
             CREATE_DATE, CREATED_BY, CREATED_IP
         ) VALUES (
             #{arSupervisorNo, jdbcType=NUMERIC}, #{personId}, #{deptno}, #{activity, jdbcType=NUMERIC}, #{orderno, jdbcType=NUMERIC},
-            SYSDATE, #{adminID}, #{adminIP}
+            SYSDATE, #{adminID, jdbcType=VARCHAR}, #{adminIP, jdbcType=VARCHAR}
         )
     </insert>
 
@@ -105,8 +105,8 @@
             d.PARENT_DEPT_NO as "parent"
         FROM HR_DEPARTMENT d
         INNER JOIN AR_SUPERVISOR_INFO si ON d.DEPTNO = si.DEPTNO
-        WHERE d.CPNY_ID = #{cpnyId}
-          AND si.PERSON_ID = #{adminID}
+        WHERE d.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+          AND si.PERSON_ID = #{adminID, jdbcType=VARCHAR}
           AND d.ACTIVITY = 1
         ORDER BY d.DEPT_LEVEL ASC, d.DEPTNO ASC
     </select>

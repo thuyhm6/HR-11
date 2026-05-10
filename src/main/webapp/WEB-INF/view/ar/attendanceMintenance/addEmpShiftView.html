@@ -6,30 +6,30 @@
                     <!-- Search Form -->
                     <form id="shiftSearchForm" class="row g-3 mb-4">
                         <div class="col-md-3">
-                            <label for="searchMonth" class="form-label">Tháng</label>
+                            <label for="searchMonth" class="form-label" th:text="#{addShift.month}">Tháng</label>
                             <input type="month" class="form-control" id="searchMonth">
                         </div>
                         <div class="col-md-3">
-                            <label for="searchEmpId" class="form-label">Nhân viên</label>
+                            <label for="searchEmpId" class="form-label" th:text="#{addShift.employee}">Nhân viên</label>
                             <input type="text" class="form-control" id="searchEmpId"
-                                placeholder="Nhập mã / tên nhân viên">
+                                th:placeholder="#{addShift.placeholder.empIdOrName}" placeholder="Nhập mã / tên nhân viên">
                         </div>
 
                         <div class="col-md-4 d-flex align-items-end flex-wrap gap-1">
                             <button type="button" class="btn btn-primary" onclick="svSearchData()">
-                                <i class="bx bx-search"></i> Tìm kiếm
+                                <i class="bx bx-search"></i> <span th:text="#{common.search}">Tìm kiếm</span>
                             </button>
                             <button type="button" class="btn btn-secondary" onclick="svClearSearch()">
-                                <i class="bx bx-x"></i> Xóa lọc
+                                <i class="bx bx-x"></i> <span th:text="#{common.clearFilter}">Xóa lọc</span>
                             </button>
                             <button type="button" class="btn btn-success" onclick="svOpenModal()">
-                                <i class="bx bx-plus"></i> Thêm mới
+                                <i class="bx bx-plus"></i> <span th:text="#{common.addNew}">Thêm mới</span>
                             </button>
                             <button type="button" class="btn btn-info text-white" onclick="svDownloadTemplate()">
-                                <i class="bx bx-download"></i> Tải File Mẫu
+                                <i class="bx bx-download"></i> <span th:text="#{common.downloadTemplate}">Tải File Mẫu</span>
                             </button>
                             <button type="button" class="btn btn-warning" onclick="svOpenImportModal()">
-                                <i class="bx bx-upload"></i> Import Excel
+                                <i class="bx bx-upload"></i> <span th:text="#{common.importExcel}">Import Excel</span>
                             </button>
                         </div>
                     </form>
@@ -40,14 +40,14 @@
                             style="width:100%">
                             <thead class="table-light">
                                 <tr>
-                                    <th>STT</th>
-                                    <th>Ngày</th>
-                                    <th>Mã nhân viên</th>
-                                    <th>Tên nhân viên</th>
-                                    <th>Ca quy định</th>
-                                    <th>Loại ngày</th>
-                                    <th>Ghi chú</th>
-                                    <th class="text-center" style="width: 100px;">Thao tác</th>
+                                    <th th:text="#{common.stt}">STT</th>
+                                    <th th:text="#{common.date}">Ngày</th>
+                                    <th th:text="#{common.empId}">Mã nhân viên</th>
+                                    <th th:text="#{common.empName}">Tên nhân viên</th>
+                                    <th th:text="#{addShift.shift}">Ca quy định</th>
+                                    <th th:text="#{addShift.dayType}">Loại ngày</th>
+                                    <th th:text="#{common.remark}">Ghi chú</th>
+                                    <th class="text-center" style="width: 100px;" th:text="#{common.action}">Thao tác</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -66,7 +66,7 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="shiftModalTitle">Cập nhật Xếp ca làm việc (AR_SCHEDULE_HTSV)</h5>
+                <h5 class="modal-title" id="shiftModalTitle" th:text="#{addShift.modal.title.edit}">Cập nhật Xếp ca làm việc</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -75,11 +75,12 @@
 
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label for="svEmpNameDisplay" class="form-label">Nhân viên <span
-                                    class="text-danger">*</span></label>
+                            <label for="svEmpNameDisplay" class="form-label">
+                                <span th:text="#{addShift.employee}">Nhân viên</span> <span class="text-danger">*</span>
+                            </label>
                             <div class="input-group">
                                 <input type="text" class="form-control" id="svEmpNameDisplay"
-                                    placeholder="Chọn nhân viên..." readonly required>
+                                    th:placeholder="#{addShift.selectEmployee}" placeholder="Chọn nhân viên..." readonly required>
                                 <input type="hidden" id="svPersonId" name="personId">
                                 <button class="btn btn-outline-primary" type="button"
                                     onclick="openEmployeeSearchPopup()">
@@ -89,34 +90,36 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label for="svArDateStr" class="form-label">Ngày công <span
-                                    class="text-danger">*</span></label>
+                            <label for="svArDateStr" class="form-label">
+                                <span th:text="#{addShift.shiftDate}">Ngày công</span> <span class="text-danger">*</span>
+                            </label>
                             <input type="date" class="form-control" id="svArDateStr" name="arDateStr" required>
                         </div>
 
                         <div class="col-md-6">
-                            <label for="svShiftNo" class="form-label">Ca làm việc <span
-                                    class="text-danger">*</span></label>
+                            <label for="svShiftNo" class="form-label">
+                                <span th:text="#{addShift.shift}">Ca làm việc</span> <span class="text-danger">*</span>
+                            </label>
                             <select class="form-select" id="svShiftNo" name="shiftNo" required>
-                                <option value="">-- Chọn ca làm việc --</option>
+                                <option value="" th:text="#{addShift.selectShift}">-- Chọn ca làm việc --</option>
                             </select>
                         </div>
 
                         <div class="col-md-6">
-                            <label for="svTypeid" class="form-label">Loại ngày (Type ID)</label>
+                            <label for="svTypeid" class="form-label" th:text="#{addShift.dayType}">Loại ngày</label>
                             <select class="form-select" id="svTypeid" name="typeid" data-parent-code="1439"></select>
                         </div>
 
                         <div class="col-md-12">
-                            <label for="svRemark" class="form-label">Ghi chú (Remark)</label>
+                            <label for="svRemark" class="form-label" th:text="#{common.remark}">Ghi chú</label>
                             <textarea class="form-control" id="svRemark" name="remark" rows="2"></textarea>
                         </div>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                <button type="button" class="btn btn-primary" onclick="svSaveData()">Lưu</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" th:text="#{common.close}">Đóng</button>
+                <button type="button" class="btn btn-primary" onclick="svSaveData()" th:text="#{common.save}">Lưu</button>
             </div>
         </div>
     </div>
@@ -126,6 +129,16 @@
 
 <template id="fragmentScripts">
     <script th:inline="javascript">
+        var _addShift_i18n = {
+            msgSelectEmployee: /*[[#{addShift.msg.selectEmployee}]]*/ 'Vui lòng chọn nhân viên',
+            msgSelectDate: /*[[#{addShift.msg.selectDate}]]*/ 'Vui lòng chọn Ngày công',
+            msgSelectShift: /*[[#{addShift.msg.selectShift}]]*/ 'Vui lòng chọn Ca làm việc',
+            msgConfirmDelete: /*[[#{addShift.msg.confirmDelete}]]*/ 'Bạn có chắc chắn muốn xóa dữ liệu xếp ca này không?',
+            msgErrorLoad: /*[[#{addShift.msg.errorLoad}]]*/ 'Lỗi khi lấy thông tin',
+            msgErrorConnect: /*[[#{addShift.msg.errorConnect}]]*/ 'Lỗi kết nối',
+            modalTitleAdd: /*[[#{addShift.modal.title.add}]]*/ 'Thêm mới Xếp ca làm việc',
+            modalTitleEdit: /*[[#{addShift.modal.title.edit}]]*/ 'Cập nhật Xếp ca làm việc'
+        };
         $(document).ready(function () {
             // Khởi tạo tháng hiện tại
             var now = new Date();
@@ -243,13 +256,13 @@
                         $('#svEmpNameDisplay').val(employee.empId + ' - ' + employee.localName);
                     });
                 } else {
-                    alert('Component tìm kiếm nhân viên chưa được tải!');
+                    alert(_addShift_i18n.msgSelectEmployee);
                 }
             };
 
             // Mở modal thêm mới
             window.svOpenModal = function () {
-                $('#shiftModalTitle').text('Thêm mới Xếp ca làm việc');
+                $('#shiftModalTitle').text(_addShift_i18n.modalTitleAdd);
                 $('#shiftForm')[0].reset();
                 $('#svPkNo').val('');
                 $('#svPersonId').val('');
@@ -264,7 +277,7 @@
                     url: '/ar/attendanceMintenance/api/scheduleHtsv/' + pkNo,
                     type: 'GET',
                     success: function (data) {
-                        $('#shiftModalTitle').text('Cập nhật Xếp ca làm việc');
+                        $('#shiftModalTitle').text(_addShift_i18n.modalTitleEdit);
                         $('#svPkNo').val(data.pkNo);
                         $('#svPersonId').val(data.personId);
                         $('#svEmpNameDisplay').val((data.empId || '') + ' - ' + (data.localName || ''));
@@ -277,8 +290,8 @@
                         modal.show();
                     },
                     error: function (err) {
-                        if (typeof toastr !== 'undefined') toastr.error('Lỗi khi lấy thông tin');
-                        else alert('Lỗi khi lấy thông tin');
+                        if (typeof toastr !== 'undefined') toastr.error(_addShift_i18n.msgErrorLoad);
+                        else alert(_addShift_i18n.msgErrorLoad);
                     }
                 });
             };
@@ -287,20 +300,20 @@
             window.svSaveData = function () {
                 var personId = $('#svPersonId').val();
                 if (!personId) {
-                    if (typeof toastr !== 'undefined') toastr.warning('Vui lòng chọn nhân viên');
-                    else alert('Vui lòng chọn nhân viên');
+                    if (typeof toastr !== 'undefined') toastr.warning(_addShift_i18n.msgSelectEmployee);
+                    else alert(_addShift_i18n.msgSelectEmployee);
                     return;
                 }
                 var arDateStr = $('#svArDateStr').val();
                 if (!arDateStr) {
-                    if (typeof toastr !== 'undefined') toastr.warning('Vui lòng chọn Ngày công');
-                    else alert('Vui lòng chọn Ngày công');
+                    if (typeof toastr !== 'undefined') toastr.warning(_addShift_i18n.msgSelectDate);
+                    else alert(_addShift_i18n.msgSelectDate);
                     return;
                 }
                 var shiftNo = $('#svShiftNo').val();
                 if (!shiftNo) {
-                    if (typeof toastr !== 'undefined') toastr.warning('Vui lòng chọn Ca làm việc');
-                    else alert('Vui lòng chọn Ca làm việc');
+                    if (typeof toastr !== 'undefined') toastr.warning(_addShift_i18n.msgSelectShift);
+                    else alert(_addShift_i18n.msgSelectShift);
                     return;
                 }
 
@@ -338,15 +351,15 @@
                         }
                     },
                     error: function (err) {
-                        if (typeof toastr !== 'undefined') toastr.error('Lỗi kết nối');
-                        else alert('Lỗi kết nối');
+                        if (typeof toastr !== 'undefined') toastr.error(_addShift_i18n.msgErrorConnect);
+                        else alert(_addShift_i18n.msgErrorConnect);
                     }
                 });
             };
 
             // Xóa
             window.svDeleteRaw = function (pkNo) {
-                if (confirm('Bạn có chắc chắn muốn xóa dữ liệu xếp ca này không?')) {
+                if (confirm(_addShift_i18n.msgConfirmDelete)) {
                     $.ajax({
                         url: '/ar/attendanceMintenance/api/scheduleHtsv/delete/' + pkNo,
                         type: 'DELETE',
@@ -361,8 +374,8 @@
                             }
                         },
                         error: function (err) {
-                            if (typeof toastr !== 'undefined') toastr.error('Lỗi kết nối');
-                            else alert('Lỗi kết nối');
+                            if (typeof toastr !== 'undefined') toastr.error(_addShift_i18n.msgErrorConnect);
+                            else alert(_addShift_i18n.msgErrorConnect);
                         }
                     });
                 }

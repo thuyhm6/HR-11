@@ -125,6 +125,7 @@
             <form th:action="@{/login}" method="post">
                 <input type="hidden" name="csrfToken" th:value="${csrfToken}">
                 <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <input type="hidden" name="lang" id="loginLangInput" value="vi">
                 <div class="form-floating">
                     <input type="text" class="form-control" id="username" name="username"
                         th:placeholder="#{login.username}" th:value="${username}" required>
@@ -155,7 +156,7 @@
             </form>
             <!-- Footer -->
             <div class="text-center mt-3">
-                <small class="text-muted">
+                <small class="text-muted" th:text="#{login.copyright}">
                     © 2025 HR System. Tất cả quyền được bảo lưu.
                 </small>
             </div>
@@ -166,35 +167,43 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="/assets/js/app.js"></script>
 
-    <script>
-        $(document).ready(function () {
-            // Load saved credentials if remember me was checked
-            loadSavedCredentials();
+    <script th:inline="javascript">
+        var I18N_LOGIN = {
+            validateUsername:     /*[[#{login.validate.username}]]*/    'Vui lòng nhập tên đăng nhập!',
+            validatePassword:     /*[[#{login.validate.password}]]*/    'Vui lòng nhập mật khẩu!',
+            credentialsRestored:  /*[[#{login.credentials.restored}]]*/ 'Đã khôi phục thông tin đăng nhập đã lưu',
+            rememberMeDisabled:   /*[[#{login.rememberMe.disabled}]]*/  'Đã tắt chức năng nhớ thông tin đăng nhập'
+        };
 
-            // Auto focus on username field
+        // Sync hidden lang input với languageSelect
+        document.addEventListener('change', function(e) {
+            if (e.target && e.target.id === 'languageSelect') {
+                var inp = document.getElementById('loginLangInput');
+                if (inp) inp.value = e.target.value;
+            }
+        });
+
+        $(document).ready(function () {
+            loadSavedCredentials();
             $('#username').focus();
 
-            // Form validation
             $('form').on('submit', function (e) {
-                const username = $('#username').val().trim();
-                const password = $('#password').val().trim();
+                const username  = $('#username').val().trim();
+                const password  = $('#password').val().trim();
                 const rememberMe = $('#rememberMe').is(':checked');
 
                 if (!username) {
                     e.preventDefault();
                     $('#username').focus();
-                    showAlert('Vui lòng nhập tên đăng nhập', 'danger');
+                    showAlert(I18N_LOGIN.validateUsername, 'danger');
                     return false;
                 }
-
                 if (!password) {
                     e.preventDefault();
                     $('#password').focus();
-                    showAlert('Vui lòng nhập mật khẩu', 'danger');
+                    showAlert(I18N_LOGIN.validatePassword, 'danger');
                     return false;
                 }
-
-                // Save credentials if remember me is checked
                 if (rememberMe) {
                     saveCredentials(username, password);
                 } else {
@@ -202,59 +211,43 @@
                 }
             });
 
-            // Load saved credentials function
             function loadSavedCredentials() {
                 try {
                     const savedUsername = localStorage.getItem('hr_remembered_username');
                     const savedPassword = localStorage.getItem('hr_remembered_password');
-                    const rememberMe = localStorage.getItem('hr_remember_me');
-
+                    const rememberMe    = localStorage.getItem('hr_remember_me');
                     if (savedUsername && rememberMe === 'true') {
                         $('#username').val(savedUsername);
                         $('#password').val(savedPassword);
                         $('#rememberMe').prop('checked', true);
-
-                        // Show success message
-                        showAlert('Đã khôi phục thông tin đăng nhập đã lưu', 'success');
+                        showAlert(I18N_LOGIN.credentialsRestored, 'success');
                     }
-                } catch (error) {
-                    console.log('Không thể khôi phục thông tin đăng nhập:', error);
-                }
+                } catch (error) { console.log(error); }
             }
 
-            // Save credentials function
             function saveCredentials(username, password) {
                 try {
                     localStorage.setItem('hr_remembered_username', username);
                     localStorage.setItem('hr_remembered_password', password);
                     localStorage.setItem('hr_remember_me', 'true');
-                    console.log('Đã lưu thông tin đăng nhập');
-                } catch (error) {
-                    console.log('Không thể lưu thông tin đăng nhập:', error);
-                }
+                } catch (error) { console.log(error); }
             }
 
-            // Clear saved credentials function
             function clearSavedCredentials() {
                 try {
                     localStorage.removeItem('hr_remembered_username');
                     localStorage.removeItem('hr_remembered_password');
                     localStorage.removeItem('hr_remember_me');
-                    console.log('Đã xóa thông tin đăng nhập đã lưu');
-                } catch (error) {
-                    console.log('Không thể xóa thông tin đăng nhập:', error);
-                }
+                } catch (error) { console.log(error); }
             }
 
-            // Handle remember me checkbox change
             $('#rememberMe').on('change', function () {
                 if (!$(this).is(':checked')) {
                     clearSavedCredentials();
-                    showAlert('Đã tắt chức năng nhớ thông tin đăng nhập', 'info');
+                    showAlert(I18N_LOGIN.rememberMeDisabled, 'info');
                 }
             });
 
-            // Show alert function
             function showAlert(message, type) {
                 const alertHtml = `
                     <div class="alert alert-${type} alert-dismissible fade show" role="alert">
@@ -264,11 +257,7 @@
                     </div>
                 `;
                 $('.login-body').prepend(alertHtml);
-
-                // Auto remove after 5 seconds
-                setTimeout(() => {
-                    $('.alert').fadeOut();
-                }, 5000);
+                setTimeout(() => { $('.alert').fadeOut(); }, 5000);
             }
         });
     </script>

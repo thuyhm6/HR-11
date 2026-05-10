@@ -26,6 +26,5 @@ public interface OrgResumeInfoService {
     List<OrgResumeInfo> getResumeListForDropdown();
 
     // Order: copyOrg -> scfl -> sczz -> qdzz
-    String executeResumeProcess(String resumeNo, List<String> types, String adminId, String adminIp,
-            String interCpnyId);
+    String executeResumeProcess(String resumeNo, List<String> types);
 }

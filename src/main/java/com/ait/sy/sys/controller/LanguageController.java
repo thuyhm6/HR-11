@@ -32,6 +32,9 @@ public class LanguageController {
             localeResolver.setLocale(request, response, locale);
         }
 
+        // Đồng bộ session attribute "language" để LanguageParameterInterceptor đọc được
+        request.getSession(true).setAttribute("language", lang);
+
         return "redirect:" + resolveSafeRedirectTarget(request);
     }
 

@@ -3,6 +3,7 @@ package com.ait.hrm.empinfo.model;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
@@ -31,7 +32,7 @@ public class HrQualification {
     /**
      * Ngày nhận (DATE_OBTAINED)
      */
-    private String dateObtained;
+    private LocalDate dateObtained;
 
     /**
      * Số chứng chỉ (QUAL_CARD_NO)
@@ -46,7 +47,7 @@ public class HrQualification {
     /**
      * Ngày hết hạn (VALIDITY_DATE)
      */
-    private String validityDate;
+    private LocalDate validityDate;
 
     /**
      * Hình thức đạt được (ACQUISITION_MODES)

@@ -17,8 +17,8 @@ public class HrEmergencyAddressServiceImpl implements HrEmergencyAddressService 
     private HrEmergencyAddressMapper hrEmergencyAddressMapper;
 
     @Override
-    public List<HrEmergencyAddress> searchEmergencyAddress(String empId, String localName, String emerName) {
-        return hrEmergencyAddressMapper.searchEmergencyAddress(empId, localName, emerName);
+    public List<HrEmergencyAddress> searchEmergencyAddress(String empId, String personId, String localName, String emerName) {
+        return hrEmergencyAddressMapper.searchEmergencyAddress(empId, personId, localName, emerName);
     }
 
     @Override

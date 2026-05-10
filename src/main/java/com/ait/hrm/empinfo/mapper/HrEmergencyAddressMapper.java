@@ -10,6 +10,7 @@ import java.util.List;
 @Mapper
 public interface HrEmergencyAddressMapper {
     List<HrEmergencyAddress> searchEmergencyAddress(@Param("empId") String empId,
+            @Param("personId") String personId,
             @Param("localName") String localName,
             @Param("emerName") String emerName);
 

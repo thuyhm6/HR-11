@@ -240,7 +240,7 @@
         <div style="display: flex; height: calc(100vh - 60px);">
             <!-- Sidebar -->
             <div class="sidebar">
-                <div class="sidebar-header">
+                <div class="sidebar-header" th:text="#{mgmt.sidebarTitle}">
                     Dữ liệu đa ngôn ngữ
                 </div>
                 <div class="tree-view" id="treeView">
@@ -252,13 +252,13 @@
             <div class="content-area">
                 <!-- Search Section -->
                 <div class="search-section">
-                    <input type="text" class="search-input" id="searchInput" placeholder="Tên mã:" />
-                    <button class="btn btn-primary" onclick="searchData()">Tra cứu</button>
+                    <input type="text" class="search-input" id="searchInput" th:placeholder="#{mgmt.searchPlaceholder}" placeholder="Tên mã:" />
+                    <button class="btn btn-primary" onclick="searchData()" th:text="#{common.search}">Tra cứu</button>
                     <div class="btn-group">
-                        <button class="btn btn-success" onclick="showAddModal()">Thêm mới</button>
-                        <button class="btn btn-warning" onclick="showEditModal()" id="editBtn" disabled>Sửa</button>
-                        <button class="btn btn-danger" onclick="deleteSelected()" id="deleteBtn" disabled>Xóa</button>
-                        <button class="btn btn-info" onclick="createSampleData()">Tạo dữ liệu mẫu</button>
+                        <button class="btn btn-success" onclick="showAddModal()" th:text="#{common.addNew}">Thêm mới</button>
+                        <button class="btn btn-warning" onclick="showEditModal()" id="editBtn" disabled th:text="#{common.edit}">Sửa</button>
+                        <button class="btn btn-danger" onclick="deleteSelected()" id="deleteBtn" disabled th:text="#{common.delete}">Xóa</button>
+                        <button class="btn btn-info" onclick="createSampleData()" th:text="#{mgmt.btn.createSample}">Tạo dữ liệu mẫu</button>
                     </div>
                 </div>
                 
@@ -276,11 +276,11 @@
                 <table class="data-table" id="dataTable">
                     <thead>
                         <tr>
-                            <th>STT</th>
-                            <th>Mã số</th>
-                            <th>Ngôn ngữ</th>
-                            <th>Nội dung</th>
-                            <th>Thao tác</th>
+                            <th th:text="#{common.stt}">STT</th>
+                            <th th:text="#{mgmt.col.codeNo}">Mã số</th>
+                            <th th:text="#{mgmt.col.language}">Ngôn ngữ</th>
+                            <th th:text="#{mgmt.col.content}">Nội dung</th>
+                            <th th:text="#{common.action}">Thao tác</th>
                         </tr>
                     </thead>
                     <tbody id="dataTableBody">
@@ -294,16 +294,16 @@
         <div id="contentModal" class="modal">
             <div class="modal-content">
                 <span class="close" onclick="closeModal()">&times;</span>
-                <h2 id="modalTitle">Thêm nội dung đa ngôn ngữ</h2>
+                <h2 id="modalTitle" th:text="#{mgmt.modal.title.add}">Thêm nội dung đa ngôn ngữ</h2>
                 <form id="contentForm">
                     <div class="form-group">
-                        <label class="form-label">Mã số:</label>
+                        <label class="form-label" th:text="#{mgmt.field.codeNo}">Mã số:</label>
                         <input type="text" class="form-input" id="inputNo" required />
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Ngôn ngữ:</label>
+                        <label class="form-label" th:text="#{mgmt.field.language}">Ngôn ngữ:</label>
                         <select class="form-input" id="inputLanguage" required>
-                            <option value="">Chọn ngôn ngữ</option>
+                            <option value="" th:text="#{common.select}">Chọn ngôn ngữ</option>
                             <option th:each="lang : ${availableLanguages}" 
                                     th:value="${lang}"
                                     th:text="${#strings.equals(lang, 'vi') ? 'Tiếng Việt' : #strings.equals(lang, 'en') ? 'English' : #strings.equals(lang, 'zh') ? '中文' : #strings.equals(lang, 'ko') ? '한국어' : lang}">
@@ -312,19 +312,36 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Nội dung:</label>
+                        <label class="form-label" th:text="#{mgmt.field.content}">Nội dung:</label>
                         <textarea class="form-textarea" id="inputContent" required></textarea>
                     </div>
                     <div style="text-align: right; margin-top: 20px;">
-                        <button type="button" class="btn" onclick="closeModal()">Hủy</button>
-                        <button type="submit" class="btn btn-primary">Lưu</button>
+                        <button type="button" class="btn" onclick="closeModal()" th:text="#{common.cancel}">Hủy</button>
+                        <button type="submit" class="btn btn-primary" th:text="#{common.save}">Lưu</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
     
-    <script>
+    <script th:inline="javascript">
+        var I18N_MGMT = {
+            modalTitleAdd:       /*[[#{mgmt.modal.title.add}]]*/  'Thêm nội dung đa ngôn ngữ',
+            modalTitleEdit:      /*[[#{mgmt.modal.title.edit}]]*/ 'Sửa nội dung đa ngôn ngữ',
+            confirmDelete:       /*[[#{mgmt.confirm.delete}]]*/   'Bạn có chắc chắn muốn xóa nội dung này?',
+            confirmCreateSample: /*[[#{mgmt.confirm.createSample}]]*/ 'Bạn có chắc chắn muốn tạo dữ liệu mẫu? Dữ liệu cũ sẽ bị ghi đè.',
+            noData:              /*[[#{mgmt.noData}]]*/            'Chưa có nội dung đa ngôn ngữ cho mã code này',
+            codeInfo:            /*[[#{mgmt.codeInfo}]]*/          'Thông tin mã code',
+            childCodesHeader:    /*[[#{mgmt.childCodesHeader}]]*/ 'Mã code con',
+            editLabel:           /*[[#{common.edit}]]*/           'Sửa',
+            deleteLabel:         /*[[#{common.delete}]]*/         'Xóa',
+            chooseLabel:         /*[[#{common.select}]]*/         'Chọn',
+            errorPrefix:         /*[[#{common.error}]]*/          'Lỗi',
+            errorSave:           /*[[#{mgmt.error.save}]]*/       'Có lỗi xảy ra khi lưu dữ liệu',
+            errorDelete:         /*[[#{mgmt.error.delete}]]*/     'Có lỗi xảy ra khi xóa dữ liệu',
+            errorCreateSample:   /*[[#{mgmt.error.createSample}]]*/ 'Có lỗi xảy ra khi tạo dữ liệu mẫu'
+        };
+
         let currentCodeNo = null;
         let currentLanguage = 'vi';
         let selectedRow = null;
@@ -518,7 +535,7 @@
                 infoRow.className = 'table-info';
                 infoRow.innerHTML = `
                     <td colspan="5">
-                        <strong>Thông tin mã code:</strong> ${codeInfo.description || codeInfo.codeNo}
+                        <strong>${I18N_MGMT.codeInfo}:</strong> ${codeInfo.description || codeInfo.codeNo}
                         ${codeInfo.remark ? '<br><small class="text-muted">' + codeInfo.remark + '</small>' : ''}
                     </td>
                 `;
@@ -536,8 +553,8 @@
                         <td>${getLanguageName(language)}</td>
                         <td>${content}</td>
                         <td>
-                            <button class="btn btn-warning btn-sm" onclick="editRow(this)">Sửa</button>
-                            <button class="btn btn-danger btn-sm" onclick="deleteRow(this)">Xóa</button>
+                            <button class="btn btn-warning btn-sm" onclick="editRow(this)">${I18N_MGMT.editLabel}</button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteRow(this)">${I18N_MGMT.deleteLabel}</button>
                         </td>
                     `;
                     row.dataset.language = language;
@@ -548,7 +565,7 @@
                 const noDataRow = document.createElement('tr');
                 noDataRow.innerHTML = `
                     <td colspan="5" class="text-center text-muted">
-                        <i>Chưa có nội dung đa ngôn ngữ cho mã code này</i>
+                        <i>${I18N_MGMT.noData}</i>
                     </td>
                 `;
                 tbody.appendChild(noDataRow);
@@ -560,7 +577,7 @@
                 childHeaderRow.className = 'table-secondary';
                 childHeaderRow.innerHTML = `
                     <td colspan="5">
-                        <strong>Mã code con (${childCodes.length}):</strong>
+                        <strong>${I18N_MGMT.childCodesHeader} (${childCodes.length}):</strong>
                     </td>
                 `;
                 tbody.appendChild(childHeaderRow);
@@ -574,7 +591,7 @@
                         <td>${childCode.description || 'N/A'}</td>
                         <td>${childCode.remark || 'N/A'}</td>
                         <td>
-                            <button class="btn btn-primary btn-sm" onclick="selectChildCode('${childCode.codeNo}')">Chọn</button>
+                            <button class="btn btn-primary btn-sm" onclick="selectChildCode('${childCode.codeNo}')">${I18N_MGMT.chooseLabel}</button>
                         </td>
                     `;
                     tbody.appendChild(childRow);
@@ -613,7 +630,7 @@
         
         // Show add modal
         function showAddModal() {
-            document.getElementById('modalTitle').textContent = 'Thêm nội dung đa ngôn ngữ';
+            document.getElementById('modalTitle').textContent = I18N_MGMT.modalTitleAdd;
             document.getElementById('contentForm').reset();
             document.getElementById('inputNo').value = currentCodeNo || '';
             document.getElementById('contentModal').style.display = 'block';
@@ -623,7 +640,7 @@
         function showEditModal() {
             if (!selectedRow) return;
             
-            document.getElementById('modalTitle').textContent = 'Sửa nội dung đa ngôn ngữ';
+            document.getElementById('modalTitle').textContent = I18N_MGMT.modalTitleEdit;
             document.getElementById('inputNo').value = currentCodeNo;
             document.getElementById('inputLanguage').value = selectedRow.dataset.language;
             document.getElementById('inputContent').value = selectedRow.cells[3].textContent;
@@ -640,7 +657,7 @@
         
         // Delete row
         function deleteRow(button) {
-            if (confirm('Bạn có chắc chắn muốn xóa nội dung này?')) {
+            if (confirm(I18N_MGMT.confirmDelete)) {
                 const row = button.closest('tr');
                 const language = row.dataset.language;
                 
@@ -657,12 +674,12 @@
                         loadData();
                         alert(data.message);
                     } else {
-                        alert('Lỗi: ' + data.message);
+                        alert(I18N_MGMT.errorPrefix + ': ' + data.message);
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('Có lỗi xảy ra khi xóa dữ liệu');
+                    alert(I18N_MGMT.errorDelete);
                 });
             }
         }
@@ -690,7 +707,7 @@
             const language = document.getElementById('inputLanguage').value;
             const content = document.getElementById('inputContent').value;
             
-            const isEdit = document.getElementById('modalTitle').textContent.includes('Sửa');
+            const isEdit = document.getElementById('modalTitle').textContent === I18N_MGMT.modalTitleEdit;
             const url = isEdit ? '/multilingual/update' : '/multilingual/save';
             const method = isEdit ? 'PUT' : 'POST';
             
@@ -708,12 +725,12 @@
                     loadData();
                     alert(data.message);
                 } else {
-                    alert('Lỗi: ' + data.message);
+                    alert(I18N_MGMT.errorPrefix + ': ' + data.message);
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Có lỗi xảy ra khi lưu dữ liệu');
+                alert(I18N_MGMT.errorSave);
             });
         });
         
@@ -727,7 +744,7 @@
         
         // Create sample data
         function createSampleData() {
-            if (confirm('Bạn có chắc chắn muốn tạo dữ liệu mẫu? Dữ liệu cũ sẽ bị ghi đè.')) {
+            if (confirm(I18N_MGMT.confirmCreateSample)) {
                 fetch('/multilingual/create-sample-data', {
                     method: 'POST',
                     headers: {
@@ -746,7 +763,7 @@
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('Có lỗi xảy ra khi tạo dữ liệu mẫu');
+                    alert(I18N_MGMT.errorCreateSample);
                 });
             }
         }

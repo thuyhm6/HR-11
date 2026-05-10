@@ -11,6 +11,8 @@ public interface HrQualificationService {
      */
     List<HrQualification> searchQualification(String empId, String localName, String qualName);
 
+    List<HrQualification> getByPersonId(String personId);
+
     /**
      * Lưu thông tin (Thêm mới hoặc Cập nhật)
      * qualNo có giá trị -> Update, null/empty -> Insert

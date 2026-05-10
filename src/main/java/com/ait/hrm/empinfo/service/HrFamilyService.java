@@ -5,7 +5,7 @@ import java.util.List;
 import com.ait.hrm.empinfo.model.HrFamily;
 
 public interface HrFamilyService {
-    List<HrFamily> searchFamily(String empId, String localName, String famName);
+    List<HrFamily> searchFamily(String empId, String personId, String localName, String famName);
 
     HrFamily getById(Long familyNo);
 

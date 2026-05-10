@@ -28,4 +28,8 @@ public class ArShiftGroupManagementDto {
     private String updateDate;
     private String updatedBy;
     private Integer activity;
+
+    // Filter params (ESS query)
+    private String fromDate;
+    private String toDate;
 }

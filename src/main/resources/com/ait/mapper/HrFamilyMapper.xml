@@ -6,6 +6,7 @@
         <id property="familyNo" column="FAMILY_NO"/>
         <result property="personId" column="PERSON_ID"/>
         <result property="famTypeCode" column="FAM_TYPE_CODE"/>
+        <result property="famTypeName" column="FAM_TYPE_NAME"/>
         <result property="famName" column="FAM_NAME"/>
         <result property="famBorndate" column="FAM_BORNDATE"/>
         <result property="famIdcard" column="FAM_IDCARD"/>
@@ -15,8 +16,16 @@
         <result property="emergencyContactYn" column="EMERGENCY_CONTACT_YN"/>
         <result property="famPersonId" column="FAM_PERSON_ID"/>
         <result property="famAddress" column="FAM_ADDRESS"/>
+        <result property="famYinyangli" column="FAM_YINYANGLI"/>
         <result property="taxYn" column="TAX_YN"/>
         <result property="gender" column="GENDER"/>
+        <result property="genderName" column="GENDER_NAME"/>
+        <result property="addressPostal" column="ADDRESS_POSTAL"/>
+        <result property="famEducation" column="FAM_EDUCATION"/>
+        <result property="isEmergencyAddress" column="ISEMERGENCYADDRESS"/>
+        <result property="nationality" column="NATIONALITY"/>
+        <result property="nationalityName" column="NATIONALITY_NAME"/>
+        <result property="workPhone" column="WORK_PHONE"/>
         <result property="famEmail" column="FAM_EMAIL"/>
         <result property="ocupation" column="OCUPATION"/>
         <result property="remarks" column="REMARKS"/>
@@ -37,7 +46,16 @@
 
     <select id="searchFamily" resultMap="HrFamilyResultMap">
         SELECT 
-            t1.*,
+            t1.FAMILY_NO, t1.PERSON_ID,
+            t1.FAM_TYPE_CODE,
+            GET_GLOBAL_NAME(t1.FAM_TYPE_CODE, #{lang, jdbcType=VARCHAR}) AS FAM_TYPE_NAME,
+            t1.FAM_NAME, t1.FAM_BORNDATE, t1.FAM_IDCARD, t1.FAM_PHONE, t1.FAM_COMPANY_NAME, t1.LIVE_YN, t1.EMERGENCY_CONTACT_YN, t1.FAM_PERSON_ID, t1.FAM_ADDRESS, t1.FAM_YINYANGLI, t1.TAX_YN,
+            t1.GENDER,
+            GET_GLOBAL_NAME(t1.GENDER, #{lang, jdbcType=VARCHAR}) AS GENDER_NAME,
+            t1.ADDRESS_POSTAL, t1.CREATE_DATE, t1.CREATED_BY, t1.UPDATE_DATE, t1.UPDATED_BY, t1.ORDERNO, t1.ACTIVITY, t1.FAM_EMAIL, t1.FAM_EDUCATION, t1.ISEMERGENCYADDRESS, 
+            t1.NATIONALITY,
+            GET_GLOBAL_NAME(t1.NATIONALITY, #{lang, jdbcType=VARCHAR}) AS NATIONALITY_NAME,
+            t1.WORK_PHONE, t1.WELFARE_TYPE, t1.CREATED_IP, t1.UPDATED_IP, t1.FAM_ENGLISH_NAME, t1.FAM_KOREAN_NAME, t1.FAM_ANOTHER_NAME, t1.EFFECTIVE_START_DATE, t1.FAM_FAMILY_PHONE, t1.REMARKS, t1.EMERGENCY_LIAISON_OFFICE, t1.OCUPATION, t1.AGE, t1.NOTE,
             t2.EMPID,
             t2.LOCAL_NAME,
             t3.ORG_NAME_LOCAL
@@ -48,7 +66,9 @@
         <if test="empId != null and empId != ''">
             AND t2.EMPID LIKE '%' || #{empId} || '%'
         </if>
-        
+        <if test="personId != null and personId != ''">
+            AND t1.PERSON_ID = #{personId}
+        </if>
         <if test="localName != null and localName != ''">
             AND t2.LOCAL_NAME LIKE '%' || #{localName} || '%'
         </if>
@@ -60,7 +80,16 @@
 
     <select id="getById" resultMap="HrFamilyResultMap">
         SELECT 
-            t1.*,
+            t1.FAMILY_NO, t1.PERSON_ID,
+            t1.FAM_TYPE_CODE,
+            GET_GLOBAL_NAME(t1.FAM_TYPE_CODE, #{lang, jdbcType=VARCHAR}) AS FAM_TYPE_NAME,
+            t1.FAM_NAME, t1.FAM_BORNDATE, t1.FAM_IDCARD, t1.FAM_PHONE, t1.FAM_COMPANY_NAME, t1.LIVE_YN, t1.EMERGENCY_CONTACT_YN, t1.FAM_PERSON_ID, t1.FAM_ADDRESS, t1.FAM_YINYANGLI, t1.TAX_YN,
+            t1.GENDER,
+            GET_GLOBAL_NAME(t1.GENDER, #{lang, jdbcType=VARCHAR}) AS GENDER_NAME,
+            t1.ADDRESS_POSTAL, t1.CREATE_DATE, t1.CREATED_BY, t1.UPDATE_DATE, t1.UPDATED_BY, t1.ORDERNO, t1.ACTIVITY, t1.FAM_EMAIL, t1.FAM_EDUCATION, t1.ISEMERGENCYADDRESS, 
+            t1.NATIONALITY,
+            GET_GLOBAL_NAME(t1.NATIONALITY, #{lang, jdbcType=VARCHAR}) AS NATIONALITY_NAME,
+            t1.WORK_PHONE, t1.WELFARE_TYPE, t1.CREATED_IP, t1.UPDATED_IP, t1.FAM_ENGLISH_NAME, t1.FAM_KOREAN_NAME, t1.FAM_ANOTHER_NAME, t1.EFFECTIVE_START_DATE, t1.FAM_FAMILY_PHONE, t1.REMARKS, t1.EMERGENCY_LIAISON_OFFICE, t1.OCUPATION, t1.AGE, t1.NOTE,
             t2.EMPID,
             t2.LOCAL_NAME,
             t3.ORG_NAME_LOCAL
@@ -82,7 +111,7 @@
             #{famIdcard}, #{famPhone}, #{famCompanyName}, #{liveYn}, #{emergencyContactYn},
             #{famPersonId}, #{famAddress}, #{taxYn}, #{gender}, #{famEmail}, #{ocupation}, #{remarks},
             1,
-            SYSDATE, #{adminID}, #{adminIP}, SYSDATE, #{adminID}, #{adminIP}
+            SYSDATE, #{adminID, jdbcType=VARCHAR}, #{adminIP, jdbcType=VARCHAR}, SYSDATE, #{adminID, jdbcType=VARCHAR}, #{adminIP, jdbcType=VARCHAR}
         )
     </insert>
 
@@ -106,8 +135,8 @@
             OCUPATION = #{ocupation},
             REMARKS = #{remarks},
             UPDATE_DATE = SYSDATE,
-            UPDATED_BY = #{adminID},
-            UPDATED_IP = #{adminIP}
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+            UPDATED_IP = #{adminIP, jdbcType=VARCHAR}
         WHERE FAMILY_NO = #{familyNo}
     </update>
 
@@ -115,8 +144,8 @@
         UPDATE HR_FAMILY 
         SET ACTIVITY = 0,
             UPDATE_DATE = SYSDATE, 
-            UPDATED_BY = #{adminID}, 
-            UPDATED_IP = #{adminIP} 
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR}, 
+            UPDATED_IP = #{adminIP, jdbcType=VARCHAR} 
         WHERE FAMILY_NO = #{familyNo}
     </delete>
 

@@ -68,7 +68,7 @@
         ) VALUES (
             #{resumeNo}, #{deptNo}, #{parentDeptNo}, #{orgNameEng}, #{orgNameLocal},
             #{deptType}, #{deptLevel}, #{managerEmpId}, #{dateCreated, jdbcType=DATE}, #{isPartTime},
-            #{costCenter}, SYSDATE, #{adminID}
+            #{costCenter}, SYSDATE, #{adminID, jdbcType=VARCHAR}
         )
     </insert>
 
@@ -85,7 +85,7 @@
             IS_PART_TIME = #{isPartTime},
             COST_CENTER = #{costCenter},
             UPDATE_DATE = SYSDATE,
-            UPDATED_BY = #{adminID}
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR}
         WHERE RESUME_NO = #{resumeNo} AND DEPTNO = #{deptNo}
     </update>
 
@@ -97,8 +97,8 @@
     <select id="getDeptManagerCheckList" resultType="map">
         SELECT 
             T1.DEPTNO, T1.ORG_NAME_LOCAL, T1.MANAGER_EMP_ID, T1.IS_PART_TIME, T1.DEPT_LEVEL,
-            T2.POSITION_NO, GET_GLOBAL_NAME(T2.POSITION_NO, #{lang}) as POSITION_NAME,
-            T2.POST_GRADE_NO, GET_GLOBAL_NAME(T2.POST_GRADE_NO, #{lang}) as POST_GRADE_NAME,
+            T2.POSITION_NO, GET_GLOBAL_NAME(T2.POSITION_NO, #{lang, jdbcType=VARCHAR}) as POSITION_NAME,
+            T2.POST_GRADE_NO, GET_GLOBAL_NAME(T2.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}) as POST_GRADE_NAME,
             T2.LOCAL_NAME as MANAGER_NAME,
             CASE WHEN T1.MANAGER_EMP_ID IS NULL THEN 1 ELSE 0 END as VACANCY
         FROM ORG_INFO T1

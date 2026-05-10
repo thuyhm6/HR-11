@@ -248,8 +248,9 @@
                     if (defaultText !== undefined && defaultText !== null && defaultText !== '') {
                         select.append($('<option></option>').val('').text(defaultText));
                     }
+                    var textShow = select.data('text-show');
                     data.forEach(function (code) {
-                        var name = code.nameVi || code.description || code.codeId || code.codeNo;
+                        var name = textShow === 'description' ? code.description : (code.codeName || code.description || code.codeId || code.codeNo);
                         select.append($('<option></option>').val(code.codeNo).text(name));
                     });
                     window.applyCodeSelectDefaultValue(select);
@@ -267,6 +268,27 @@
 
             select.data('code-load-promise', request);
             return request;
+        };
+
+        /**
+         * Reload một select theo parent code mới (dùng khi parent code thay đổi động).
+         * @param {string|Element} selectSelector  - selector hoặc DOM element của select cần load
+         * @param {string}         parentCode      - parent code mới để lấy danh sách con
+         * @param {string}         defaultText     - text của option đầu tiên (trống), bỏ qua nếu falsy
+         * @param {string}         [selectedValue] - giá trị cần chọn sau khi load xong
+         */
+        window.reloadCodeSelect = function (selectSelector, parentCode, defaultText, selectedValue) {
+            var $sel = $(selectSelector);
+            if (!$sel.length) return;
+            $sel.removeData('code-initialized').removeData('code-load-promise').removeData('code-loaded');
+            if (!parentCode) {
+                $sel.empty();
+                if (defaultText) { $sel.append($('<option>').val('').text(defaultText)); }
+                return;
+            }
+            loadCodeList($sel[0], parentCode, defaultText, function () {
+                if (selectedValue != null && selectedValue !== '') { $sel.val(selectedValue); }
+            });
         };
 
         window.initCodeSelects = function (context) {

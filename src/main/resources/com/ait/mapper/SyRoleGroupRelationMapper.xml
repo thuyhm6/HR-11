@@ -84,7 +84,7 @@
         INSERT INTO SY_ROLE_GROUP_RELATION (
             ROLE_GROUP_NO, ROLE_NO, CREATE_DATE, CREATED_BY, UPDATE_DATE, UPDATED_BY, ORDERNO, ACTIVITY
         ) VALUES (
-            #{roleGroupNo}, #{roleNo}, SYSDATE, #{adminID}, SYSDATE, #{adminID}, #{orderNo}, #{activity}
+            #{roleGroupNo}, #{roleNo}, SYSDATE, #{adminID, jdbcType=VARCHAR}, SYSDATE, #{adminID, jdbcType=VARCHAR}, #{orderNo}, #{activity}
         )
     </insert>
 

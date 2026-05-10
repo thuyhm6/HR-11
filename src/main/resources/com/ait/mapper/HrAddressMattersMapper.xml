@@ -6,10 +6,12 @@
         <id property="addressNo" column="ADDRESS_NO"/>
         <result property="personId" column="PERSON_ID"/>
         <result property="addressType" column="ADDRESS_TYPE"/>
+        <result property="addressTypeName" column="ADDRESS_TYPE_NAME"/>
         <result property="effectiveStartDate" column="EFFECTIVE_START_DATE"/>
         <result property="addressContent" column="ADDRESS_CONTENT"/>
         <result property="activity" column="ACTIVITY"/>
         <result property="nationality" column="NATIONALITY"/>
+        <result property="nationalityName" column="NATIONALITY_NAME"/>
         
         <result property="createDate" column="CREATE_DATE"/>
         <result property="createdBy" column="CREATED_BY"/>
@@ -26,7 +28,16 @@
 
     <select id="searchAddress" resultMap="HrAddressMattersResultMap">
         SELECT 
-            t1.*,
+            t1.ADDRESS_NO, t1.PERSON_ID,
+            t1.ADDRESS_TYPE,
+            GET_GLOBAL_NAME(t1.ADDRESS_TYPE, #{lang, jdbcType=VARCHAR}) AS ADDRESS_TYPE_NAME,
+            t1.EFFECTIVE_START_DATE,
+            t1.ADDRESS_CONTENT, t1.ACTIVITY, 
+            t1.NATIONALITY,
+            GET_GLOBAL_NAME(t1.NATIONALITY, #{lang, jdbcType=VARCHAR}) AS NATIONALITY_NAME,
+            t1.CREATE_DATE,
+            t1.UPDATE_DATE,
+            t1.CREATED_BY, t1.UPDATED_BY, t1.CREATED_IP, t1.UPDATED_IP,
             t2.EMPID,
             t2.LOCAL_NAME,
             t3.ORG_NAME_LOCAL AS DEPT_NAME
@@ -36,6 +47,9 @@
         WHERE 1=1
         <if test="empId != null and empId != ''">
             AND t2.EMPID LIKE '%' || #{empId} || '%'
+        </if>
+        <if test="personId != null and personId != ''">
+            AND t1.PERSON_ID = #{personId}
         </if>
         <if test="localName != null and localName != ''">
             AND t2.LOCAL_NAME LIKE '%' || #{localName} || '%'
@@ -49,7 +63,16 @@
 
     <select id="getById" resultMap="HrAddressMattersResultMap">
         SELECT 
-            t1.*,
+            t1.ADDRESS_NO, t1.PERSON_ID,
+            t1.ADDRESS_TYPE,
+            GET_GLOBAL_NAME(t1.ADDRESS_TYPE, #{lang, jdbcType=VARCHAR}) AS ADDRESS_TYPE_NAME,
+            t1.EFFECTIVE_START_DATE,
+            t1.ADDRESS_CONTENT, t1.ACTIVITY,
+            t1.NATIONALITY,
+            GET_GLOBAL_NAME(t1.NATIONALITY, #{lang, jdbcType=VARCHAR}) AS NATIONALITY_NAME,
+            t1.CREATE_DATE,
+            t1.UPDATE_DATE,
+            t1.CREATED_BY, t1.UPDATED_BY, t1.CREATED_IP, t1.UPDATED_IP,
             t2.EMPID,
             t2.LOCAL_NAME,
             t3.ORG_NAME_LOCAL AS DEPT_NAME
@@ -67,7 +90,7 @@
         ) VALUES (
             HR_ADDRESS_MATTERS_SEQ.NEXTVAL, #{personId}, #{addressType}, #{effectiveStartDate}, #{addressContent},
             1, #{nationality},
-            SYSDATE, #{adminID}, #{adminIP}, SYSDATE, #{adminID}, #{adminIP}
+            SYSDATE, #{adminID, jdbcType=VARCHAR}, #{adminIP, jdbcType=VARCHAR}, SYSDATE, #{adminID, jdbcType=VARCHAR}, #{adminIP, jdbcType=VARCHAR}
         )
     </insert>
 
@@ -81,8 +104,8 @@
             ACTIVITY = 1,
             NATIONALITY = #{nationality},
             UPDATE_DATE = SYSDATE,
-            UPDATED_BY = #{adminID},
-            UPDATED_IP = #{adminIP}
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+            UPDATED_IP = #{adminIP, jdbcType=VARCHAR}
         WHERE ADDRESS_NO = #{addressNo}
     </update>
 
@@ -90,8 +113,8 @@
         UPDATE HR_ADDRESS_MATTERS 
         SET ACTIVITY = '0',
             UPDATE_DATE = SYSDATE, 
-            UPDATED_BY = #{adminID}, 
-            UPDATED_IP = #{adminIP} 
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR}, 
+            UPDATED_IP = #{adminIP, jdbcType=VARCHAR} 
         WHERE ADDRESS_NO = #{addressNo}
     </delete>
 

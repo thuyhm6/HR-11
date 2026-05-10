@@ -286,8 +286,8 @@
             </if>
             <!-- Audit fields - luôn update -->
             UPDATE_DATE = #{updateDate},
-            UPDATED_BY = #{adminID},
-            UPDATED_IP = #{adminIP}
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+            UPDATED_IP = #{adminIP, jdbcType=VARCHAR}
         </set>
         WHERE PERSON_ID = #{personId}
     </update>
@@ -323,11 +323,11 @@
             #{endDate},
             #{otFlag},
             #{createDate},
-            #{adminID},
-            #{adminIP},
+            #{adminID, jdbcType=VARCHAR},
+            #{adminIP, jdbcType=VARCHAR},
             #{updateDate},
-            #{adminID},
-            #{adminIP}
+            #{adminID, jdbcType=VARCHAR},
+            #{adminIP, jdbcType=VARCHAR}
         )
     </insert>
 

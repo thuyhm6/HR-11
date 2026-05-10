@@ -33,7 +33,7 @@
     </select>
 
     <select id="getMaxCalOrder" resultType="Integer">
-        SELECT NVL(MAX(CAL_ORDER), 0) FROM AR_STA_ITEM_PARAM WHERE CPNY_ID = #{cpnyId}
+        SELECT NVL(MAX(CAL_ORDER), 0) FROM AR_STA_ITEM_PARAM WHERE CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
     </select>
 
     <select id="getAvailableItems" resultType="java.util.Map">
@@ -48,7 +48,7 @@
         LEFT JOIN SY_GLOBAL_NAME gzh ON a.ITEM_NO = gzh.NO AND gzh.LANGUAGE = 'zh'
         LEFT JOIN SY_GLOBAL_NAME gko ON a.ITEM_NO = gko.NO AND gko.LANGUAGE = 'ko'
         WHERE a.ITEM_NO NOT IN (
-            SELECT ITEM_NO FROM AR_STA_ITEM_PARAM WHERE CPNY_ID = #{cpnyId}
+            SELECT ITEM_NO FROM AR_STA_ITEM_PARAM WHERE CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
         )
         ORDER BY a.ORDERNO, a.ITEM_NO
     </select>
@@ -66,7 +66,7 @@
         LEFT JOIN SY_GLOBAL_NAME gen ON a.ITEM_NO = gen.NO AND gen.LANGUAGE = 'en'
         LEFT JOIN SY_GLOBAL_NAME gzh ON a.ITEM_NO = gzh.NO AND gzh.LANGUAGE = 'zh'
         LEFT JOIN SY_GLOBAL_NAME gko ON a.ITEM_NO = gko.NO AND gko.LANGUAGE = 'ko'
-        WHERE a.CPNY_ID = #{cpnyId}
+        WHERE a.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
         <if test="searchText != null and searchText != ''">
             AND (a.ITEM_NO LIKE '%' || #{searchText} || '%' OR 
                  gvi.CONTENT LIKE '%' || #{searchText} || '%')
@@ -85,8 +85,8 @@
             PARAM_NO, ITEM_NO, CPNY_ID, UNIT, MIN_UNIT, CAL_ORDER, 
             ACTIVITY, ORDERNO, MANAGE_FLAG, CREATE_DATE, CREATED_BY, CREATED_IP
         ) VALUES (
-            #{paramNo}, #{itemNo}, #{cpnyId}, #{unit}, #{minUnit}, #{calOrder}, 
-            #{activity}, #{orderno}, #{manageFlag}, SYSDATE, #{adminID}, #{adminIP}
+            #{paramNo}, #{itemNo}, #{cpnyId, jdbcType=VARCHAR}, #{unit}, #{minUnit}, #{calOrder}, 
+            #{activity}, #{orderno}, #{manageFlag}, SYSDATE, #{adminID, jdbcType=VARCHAR}, #{adminIP, jdbcType=VARCHAR}
         )
     </insert>
 
@@ -99,8 +99,8 @@
             ORDERNO = #{orderno},
             MANAGE_FLAG = #{manageFlag},
             UPDATE_DATE = SYSDATE,
-            UPDATED_BY = #{adminID},
-            UPDATED_IP = #{adminIP}
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+            UPDATED_IP = #{adminIP, jdbcType=VARCHAR}
         WHERE PARAM_NO = #{paramNo}
     </update>
 

@@ -31,6 +31,12 @@ public class HrQualificationServiceImpl implements HrQualificationService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<HrQualification> getByPersonId(String personId) {
+        return mapper.getByPersonId(personId);
+    }
+
+    @Override
     public boolean saveQualification(HrQualification info, boolean isNew) {
         // Lấy thông tin người thực hiện từ Session
         try {

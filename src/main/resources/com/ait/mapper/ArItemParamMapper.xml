@@ -61,7 +61,7 @@
         LEFT JOIN SY_GLOBAL_NAME gen ON a.ITEM_NO = gen.NO AND gen.LANGUAGE = 'en'
         LEFT JOIN SY_GLOBAL_NAME gzh ON a.ITEM_NO = gzh.NO AND gzh.LANGUAGE = 'zh'
         LEFT JOIN SY_GLOBAL_NAME gko ON a.ITEM_NO = gko.NO AND gko.LANGUAGE = 'ko'
-        WHERE a.CPNY_ID = #{cpnyId}
+        WHERE a.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
             <if test="itemNo != null and itemNo != ''">
                 AND a.ITEM_NO = #{itemNo}
             </if>

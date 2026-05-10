@@ -1,6 +1,5 @@
 package com.ait.sy.sys.dto;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.time.LocalDateTime;
@@ -17,7 +16,6 @@ public class ApiResponse<T> {
     private String errorCode;
     private String errorMessage;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime timestamp;
 
     private Object metadata;

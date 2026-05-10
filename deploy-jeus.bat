@@ -3,8 +3,8 @@ chcp 65001 >nul
 setlocal EnableDelayedExpansion
 
 echo ================================================
-echo    HR-11 Build - Tao goi deploy cho JEUS 8
-echo    Target: C:\tmaxsoft\jeus8\resource\HR-11
+echo    HR-11 Build - Tao goi deploy cho JEUS 7
+echo    Target: \\10.44.7.19\D$\JEUS7.0\resource\VHR9
 echo ================================================
 echo.
 
@@ -67,22 +67,30 @@ echo   WEB-INF\jeus-web-dd.xml
 echo   assets\           (css, js, images)
 echo.
 echo ================================================
-echo    CACH CHUYEN LEN SERVER JEUS
+echo    CACH CHUYEN LEN SERVER JEUS 7.0 (10.44.7.19)
 echo ================================================
 echo.
 echo 1. Copy TOAN BO NOI DUNG thu muc sau len JEUS server:
 echo      TU : %EXPLODED_WAR%\*
-echo      DEN: C:\tmaxsoft\jeus8\resource\HR-11\
+echo      DEN: \\10.44.7.19\D$\JEUS7.0\resource\VHR9\
+echo.
+echo    (Hoac dung lenh robocopy:)
+echo    robocopy "%EXPLODED_WAR%" "\\10.44.7.19\D$\JEUS7.0\resource\VHR9" /E /IS /IT
 echo.
 echo 2. Tren JEUS server, dam bao thu muc ton tai:
-echo      C:\tmaxsoft\jeus8\resource\HR-11\WEB-INF\
+echo      D:\JEUS7.0\resource\VHR9\WEB-INF\
 echo.
-echo 3. Dang ky ung dung tren JEUS (neu chua dang ky):
-echo      CMD: jeusadmin -host JEUS_HOST -port 9736
-echo           deploy -path "C:\tmaxsoft\jeus8\resource\HR-11" -context /HR-11
+echo 3. Dang ky ung dung tren JEUS WebAdmin (neu chua dang ky):
+echo      URL: http://10.44.7.19:9736/webadmin
+echo      - Id       : VHR9
+echo      - Path     : D:\JEUS7.0\resource\VHR9
+echo      - Context  : /VHR9
+echo      - Target   : server1
 echo.
-echo    hoac qua WebAdmin: http://JEUS_HOST:9736/webadmin
+echo    Hoac qua jeusadmin CLI:
+echo      deploy -id VHR9 -path "D:\JEUS7.0\resource\VHR9" -contextpath /VHR9 -target server1
 echo.
-echo 4. URL truy cap: http://JEUS_HOST:8080/HR-11
+echo 4. URL truy cap: http://10.44.7.19:PORT/VHR9
+echo    (Kiem tra port HTTP trong JEUS WebAdmin)
 echo.
 pause

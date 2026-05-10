@@ -158,7 +158,7 @@
             CREATE_DATE, CREATED_BY, UPDATE_DATE, UPDATED_BY, ORDERNO, ACTIVITY
         ) VALUES (
             #{roleNo}, #{menuNo}, #{selectr}, #{insertr}, #{updater}, #{deleter},
-            SYSDATE, #{adminID}, SYSDATE, #{adminID}, #{orderNo}, #{activity}
+            SYSDATE, #{adminID, jdbcType=VARCHAR}, SYSDATE, #{adminID, jdbcType=VARCHAR}, #{orderNo}, #{activity}
         )
     </insert>
 

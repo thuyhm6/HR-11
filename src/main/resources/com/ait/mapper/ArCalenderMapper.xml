@@ -43,15 +43,15 @@
         SELECT a.*,
                c.CPNY_LOCATION AS COMPANY_NAME,
                TO_CHAR(a.DDATE, 'YYYY-MM-DD') AS DDATE_FORMATTED,
-               GET_GLOBAL_NAME(a.SHIFT_NO, #{lang}) AS SHIFT_NAME,
-               GET_GLOBAL_NAME(a.TYPEID, #{lang}) AS TYPEID_NAME,
-               GET_GLOBAL_NAME(a.OVERTYPEID, #{lang}) AS OVERTYPEID_NAME,
-               GET_GLOBAL_NAME(a.TYPEID_DEFAULT, #{lang}) AS TYPEID_DEFAULT_NAME
+               GET_GLOBAL_NAME(a.SHIFT_NO, #{lang, jdbcType=VARCHAR}) AS SHIFT_NAME,
+               GET_GLOBAL_NAME(a.TYPEID, #{lang, jdbcType=VARCHAR}) AS TYPEID_NAME,
+               GET_GLOBAL_NAME(a.OVERTYPEID, #{lang, jdbcType=VARCHAR}) AS OVERTYPEID_NAME,
+               GET_GLOBAL_NAME(a.TYPEID_DEFAULT, #{lang, jdbcType=VARCHAR}) AS TYPEID_DEFAULT_NAME
         FROM AR_CALENDER a
         LEFT JOIN HR_COMPANY c ON a.CPNY_ID = c.CPNY_ID
         WHERE (a.TYPEID = '1442' OR a.STATUTORY_FLAG = 1)
         <if test="cpnyId != null and cpnyId != ''">
-            AND a.CPNY_ID = #{cpnyId}
+            AND a.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
         </if>
         <if test="iyear != null and iyear != ''">
             AND a.IYEAR = #{iyear}
@@ -69,27 +69,27 @@
         SELECT a.*,
                c.CPNY_LOCATION AS COMPANY_NAME,
                TO_CHAR(a.DDATE, 'YYYY-MM-DD') AS DDATE_FORMATTED,
-               GET_GLOBAL_NAME(a.SHIFT_NO, #{lang}) AS SHIFT_NAME,
-               GET_GLOBAL_NAME(a.TYPEID, #{lang}) AS TYPEID_NAME,
-               GET_GLOBAL_NAME(a.OVERTYPEID, #{lang}) AS OVERTYPEID_NAME,
-               GET_GLOBAL_NAME(a.TYPEID_DEFAULT, #{lang}) AS TYPEID_DEFAULT_NAME
+               GET_GLOBAL_NAME(a.SHIFT_NO, #{lang, jdbcType=VARCHAR}) AS SHIFT_NAME,
+               GET_GLOBAL_NAME(a.TYPEID, #{lang, jdbcType=VARCHAR}) AS TYPEID_NAME,
+               GET_GLOBAL_NAME(a.OVERTYPEID, #{lang, jdbcType=VARCHAR}) AS OVERTYPEID_NAME,
+               GET_GLOBAL_NAME(a.TYPEID_DEFAULT, #{lang, jdbcType=VARCHAR}) AS TYPEID_DEFAULT_NAME
         FROM AR_CALENDER a
         LEFT JOIN HR_COMPANY c ON a.CPNY_ID = c.CPNY_ID
         WHERE a.IYEAR = #{iyear} AND a.IMONTH = #{imonth}
         <if test="cpnyId != null and cpnyId != ''">
-            AND a.CPNY_ID = #{cpnyId}
+            AND a.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
         </if>
         ORDER BY a.IDAY
     </select>
 
     <select id="selectByPk" resultMap="BaseResultMap">
         SELECT * FROM AR_CALENDER
-        WHERE CPNY_ID = #{cpnyId} AND DDATE_STR = #{ddateStr}
+        WHERE CPNY_ID = #{cpnyId, jdbcType=VARCHAR} AND DDATE_STR = #{ddateStr}
     </select>
 
     <select id="countByPk" resultType="int">
         SELECT COUNT(*) FROM AR_CALENDER
-        WHERE CPNY_ID = #{cpnyId} AND DDATE_STR = #{ddateStr}
+        WHERE CPNY_ID = #{cpnyId, jdbcType=VARCHAR} AND DDATE_STR = #{ddateStr}
     </select>
 
     <insert id="insert" parameterType="com.ait.ar.attendanceSettings.model.ArCalender">
@@ -103,7 +103,7 @@
             #{iyear}, #{imonth}, #{iday}, #{iweek},
             #{workdayflag, jdbcType=NUMERIC},
             #{ddateStr},
-            #{cpnyId}, #{shiftNo, jdbcType=VARCHAR},
+            #{cpnyId, jdbcType=VARCHAR}, #{shiftNo, jdbcType=VARCHAR},
             #{typeid, jdbcType=VARCHAR}, #{overtypeid, jdbcType=VARCHAR},
             #{typeidDefault, jdbcType=VARCHAR}, #{operationId, jdbcType=VARCHAR},
             SYSDATE, #{adminID, jdbcType=VARCHAR},
@@ -127,13 +127,13 @@
             <if test="statutoryFlag != null">STATUTORY_FLAG = #{statutoryFlag},</if>
             <if test="remark != null">REMARK = #{remark},</if>
             UPDATE_DATE = SYSDATE,
-            UPDATED_BY = #{adminID}
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR}
         </set>
-        WHERE CPNY_ID = #{cpnyId} AND DDATE_STR = #{ddateStr}
+        WHERE CPNY_ID = #{cpnyId, jdbcType=VARCHAR} AND DDATE_STR = #{ddateStr}
     </update>
 
     <delete id="delete">
-        DELETE FROM AR_CALENDER WHERE CPNY_ID = #{cpnyId} AND DDATE_STR = #{ddateStr}
+        DELETE FROM AR_CALENDER WHERE CPNY_ID = #{cpnyId, jdbcType=VARCHAR} AND DDATE_STR = #{ddateStr}
     </delete>
 
     <!-- ===================== AR_CALENDER_GROUP ===================== -->
@@ -164,12 +164,12 @@
 
     <select id="findGroupByDate" resultMap="GroupResultMap">
         SELECT * FROM AR_CALENDER_GROUP
-        WHERE AR_DATE_STR = #{arDateStr} AND CPNY_ID = #{cpnyId}  AND GROUP_ID = #{groupId}
+        WHERE AR_DATE_STR = #{arDateStr} AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR}  AND GROUP_ID = #{groupId}
     </select>
 
     <select id="countGroup" resultType="int">
         SELECT COUNT(*) FROM AR_CALENDER_GROUP
-        WHERE AR_DATE_STR = #{arDateStr} AND CPNY_ID = #{cpnyId} AND GROUP_ID = #{groupId}
+        WHERE AR_DATE_STR = #{arDateStr} AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR} AND GROUP_ID = #{groupId}
     </select>
 
     <insert id="insertGroup" parameterType="com.ait.ar.attendanceSettings.model.ArCalenderGroup">
@@ -183,7 +183,7 @@
             #{iyear}, #{imonth}, #{iday}, #{iweek}, #{workdayflag, jdbcType=NUMERIC},
             #{typeid, jdbcType=NUMERIC}, #{overtypeid, jdbcType=NUMERIC},
             #{typeidDefault, jdbcType=NUMERIC}, #{groupId, jdbcType=VARCHAR},
-            #{shiftNo, jdbcType=NUMERIC}, #{arDateStr}, #{cpnyId},
+            #{shiftNo, jdbcType=NUMERIC}, #{arDateStr}, #{cpnyId, jdbcType=VARCHAR},
             SYSDATE, #{adminID, jdbcType=VARCHAR},
             SYSDATE, #{adminID, jdbcType=VARCHAR},
             #{activity, jdbcType=NUMERIC}, #{orderno, jdbcType=NUMERIC},
@@ -200,16 +200,16 @@
             <if test="typeidDefault != null">TYPEID_DEFAULT = #{typeidDefault},</if>
             <if test="shiftNo != null">SHIFT_NO = #{shiftNo},</if>
             <if test="activity != null">ACTIVITY = #{activity},</if>
-            UPDATED_BY = #{adminID},
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
             UPDATE_DATE = SYSDATE
         </set>
-        WHERE AR_DATE_STR = #{arDateStr} AND CPNY_ID = #{cpnyId} AND GROUP_ID = #{groupId}
+        WHERE AR_DATE_STR = #{arDateStr} AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR} AND GROUP_ID = #{groupId}
     </update>
 
     <!-- ===================== AR_CALENDER_GROUP_HISTORY ===================== -->
     <delete id="deleteHistory">
         DELETE FROM AR_CALENDER_GROUP_HISTORY
-        WHERE AR_DATE_STR = #{arDateStr} AND CPNY_ID = #{cpnyId}
+        WHERE AR_DATE_STR = #{arDateStr} AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
     </delete>
 
     <insert id="insertHistory" parameterType="com.ait.ar.attendanceSettings.model.ArCalenderGroupHistory">
@@ -223,7 +223,7 @@
             #{iyear}, #{imonth}, #{iday}, #{iweek}, #{workdayflag, jdbcType=NUMERIC},
             #{typeid, jdbcType=NUMERIC}, #{overtypeid, jdbcType=NUMERIC},
             #{typeidDefault, jdbcType=NUMERIC}, #{groupId, jdbcType=VARCHAR},
-            #{shiftNo, jdbcType=NUMERIC}, #{arDateStr}, #{cpnyId},
+            #{shiftNo, jdbcType=NUMERIC}, #{arDateStr}, #{cpnyId, jdbcType=VARCHAR},
             SYSDATE, #{adminID, jdbcType=VARCHAR},
             SYSDATE, #{adminID, jdbcType=VARCHAR},
             #{activity, jdbcType=NUMERIC}, #{orderno, jdbcType=NUMERIC},
@@ -246,16 +246,16 @@
         SELECT a.*,
                c.CPNY_LOCATION AS COMPANY_NAME,
                TO_CHAR(a.DDATE, 'YYYY-MM-DD') AS DDATE_FORMATTED,
-               GET_GLOBAL_NAME(a.SHIFT_NO, #{lang}) AS SHIFT_NAME,
-               GET_GLOBAL_NAME(a.TYPEID, #{lang}) AS TYPEID_NAME,
-               GET_GLOBAL_NAME(a.OVERTYPEID, #{lang}) AS OVERTYPEID_NAME,
-               GET_GLOBAL_NAME(a.TYPEID_DEFAULT, #{lang}) AS TYPEID_DEFAULT_NAME,
-               GET_GLOBAL_NAME(a.GROUP_ID, #{lang}) AS GROUP_NAME
+               GET_GLOBAL_NAME(a.SHIFT_NO, #{lang, jdbcType=VARCHAR}) AS SHIFT_NAME,
+               GET_GLOBAL_NAME(a.TYPEID, #{lang, jdbcType=VARCHAR}) AS TYPEID_NAME,
+               GET_GLOBAL_NAME(a.OVERTYPEID, #{lang, jdbcType=VARCHAR}) AS OVERTYPEID_NAME,
+               GET_GLOBAL_NAME(a.TYPEID_DEFAULT, #{lang, jdbcType=VARCHAR}) AS TYPEID_DEFAULT_NAME,
+               GET_GLOBAL_NAME(a.GROUP_ID, #{lang, jdbcType=VARCHAR}) AS GROUP_NAME
         FROM AR_CALENDER_GROUP a
         LEFT JOIN HR_COMPANY c ON a.CPNY_ID = c.CPNY_ID
         WHERE a.IYEAR = #{iyear} AND a.IMONTH = #{imonth}
         <if test="cpnyId != null and cpnyId != ''">
-            AND a.CPNY_ID = #{cpnyId}
+            AND a.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
         </if>
         <if test="groupId != null and groupId != ''">
             AND a.GROUP_ID = #{groupId}
@@ -267,17 +267,17 @@
         SELECT a.*,
                c.CPNY_LOCATION AS COMPANY_NAME,
                TO_CHAR(a.DDATE, 'YYYY-MM-DD') AS DDATE_FORMATTED,
-               GET_GLOBAL_NAME(a.SHIFT_NO, #{lang}) AS SHIFT_NAME,
-               GET_GLOBAL_NAME(a.TYPEID, #{lang}) AS TYPEID_NAME,
-               GET_GLOBAL_NAME(a.OVERTYPEID, #{lang}) AS OVERTYPEID_NAME,
-               GET_GLOBAL_NAME(a.TYPEID_DEFAULT, #{lang}) AS TYPEID_DEFAULT_NAME,
-               GET_GLOBAL_NAME(a.GROUP_ID, #{lang}) AS GROUP_NAME
+               GET_GLOBAL_NAME(a.SHIFT_NO, #{lang, jdbcType=VARCHAR}) AS SHIFT_NAME,
+               GET_GLOBAL_NAME(a.TYPEID, #{lang, jdbcType=VARCHAR}) AS TYPEID_NAME,
+               GET_GLOBAL_NAME(a.OVERTYPEID, #{lang, jdbcType=VARCHAR}) AS OVERTYPEID_NAME,
+               GET_GLOBAL_NAME(a.TYPEID_DEFAULT, #{lang, jdbcType=VARCHAR}) AS TYPEID_DEFAULT_NAME,
+               GET_GLOBAL_NAME(a.GROUP_ID, #{lang, jdbcType=VARCHAR}) AS GROUP_NAME
         FROM AR_CALENDER_GROUP a
         LEFT JOIN HR_COMPANY c ON a.CPNY_ID = c.CPNY_ID
         WHERE a.AR_DATE_STR = #{arDateStr} 
           AND a.GROUP_ID = #{groupId}
         <if test="cpnyId != null and cpnyId != ''">
-            AND a.CPNY_ID = #{cpnyId}
+            AND a.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
         </if>
     </select>
 
@@ -285,14 +285,14 @@
         { call AR_ADD_CALENDER_DATE_BANCI_P(
             TO_DATE(#{startDate}, 'DD-MM-YYYY'),
             TO_DATE(#{endDate}, 'DD-MM-YYYY'),
-            #{workShift}, #{restShift}, #{cpnyId}, #{groupId}, #{adminIP}, #{adminID}
+            #{workShift}, #{restShift}, #{cpnyId, jdbcType=VARCHAR}, #{groupId}, #{adminIP, jdbcType=VARCHAR}, #{adminID, jdbcType=VARCHAR}
         ) }
     </insert>
 
     <delete id="deleteHistoryByGroup">
         DELETE FROM AR_CALENDER_GROUP_HISTORY
         WHERE AR_DATE_STR = #{arDateStr} 
-          AND CPNY_ID = #{cpnyId} 
+          AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR} 
           AND GROUP_ID = #{groupId}
     </delete>
 
@@ -326,14 +326,14 @@
                GET_AR_DATETYPE_DETAIL(#{personId}, a.DDATE_STR, a.CPNY_ID) AS TYPEID,
                a.OVERTYPEID, a.TYPEID_DEFAULT, a.STATUTORY_FLAG, a.REMARK,
                TO_CHAR(a.DDATE, 'YYYY-MM-DD')                              AS DDATE_FORMATTED,
-               GET_GLOBAL_NAME(GET_AR_SHIFTNO(#{personId}, a.DDATE_STR, a.CPNY_ID), #{lang})         AS SHIFT_NAME,
-               GET_GLOBAL_NAME(GET_AR_DATETYPE_DETAIL(#{personId}, a.DDATE_STR, a.CPNY_ID), #{lang}) AS TYPEID_NAME,
-               GET_GLOBAL_NAME(a.OVERTYPEID, #{lang})                     AS OVERTYPEID_NAME,
-               GET_GLOBAL_NAME(a.TYPEID_DEFAULT, #{lang})                 AS TYPEID_DEFAULT_NAME
+               GET_GLOBAL_NAME(GET_AR_SHIFTNO(#{personId}, a.DDATE_STR, a.CPNY_ID), #{lang, jdbcType=VARCHAR})         AS SHIFT_NAME,
+               GET_GLOBAL_NAME(GET_AR_DATETYPE_DETAIL(#{personId}, a.DDATE_STR, a.CPNY_ID), #{lang, jdbcType=VARCHAR}) AS TYPEID_NAME,
+               GET_GLOBAL_NAME(a.OVERTYPEID, #{lang, jdbcType=VARCHAR})                     AS OVERTYPEID_NAME,
+               GET_GLOBAL_NAME(a.TYPEID_DEFAULT, #{lang, jdbcType=VARCHAR})                 AS TYPEID_DEFAULT_NAME
         FROM AR_CALENDER a
         WHERE a.DDATE BETWEEN GET_AR_START_DATE(#{iyear} || #{imonth}, a.CPNY_ID, '')
                           AND GET_AR_END_DATE(#{iyear} || #{imonth}, a.CPNY_ID, '')
-          AND a.CPNY_ID = #{cpnyId}
+          AND a.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
         ORDER BY a.DDATE
     </select>
 
@@ -359,7 +359,7 @@
                ON s.PERSON_ID   = #{personId}
               AND s.AR_DATE_STR = #{arDateStr}
         WHERE c.DDATE_STR = #{arDateStr}
-          AND c.CPNY_ID   = #{cpnyId}
+          AND c.CPNY_ID   = #{cpnyId, jdbcType=VARCHAR}
         AND ROWNUM = 1
     </select>
 

@@ -58,7 +58,7 @@
         LEFT JOIN SY_GLOBAL_NAME pvi ON m.MENU_PARENT_NO = pvi.NO AND pvi.LANGUAGE = 'vi'
         
         LEFT JOIN SY_MENU_PARAM p ON m.MENU_NO = p.MENU_NO 
-            AND p.CPNY_ID = #{cpnyId} 
+            AND p.CPNY_ID = #{cpnyId, jdbcType=VARCHAR} 
              
         WHERE m.ACTIVITY = 1
         <choose>
@@ -73,7 +73,7 @@
     </select>
     
     <select id="findByCpnyIdAndMenuNo" resultType="com.ait.sy.basicMaintenance.model.SyMenuParam">
-        SELECT * FROM SY_MENU_PARAM WHERE CPNY_ID = #{cpnyId} AND MENU_NO = #{menuNo}
+        SELECT * FROM SY_MENU_PARAM WHERE CPNY_ID = #{cpnyId, jdbcType=VARCHAR} AND MENU_NO = #{menuNo}
     </select>
 
     <insert id="insert">
@@ -81,8 +81,8 @@
             PARAM_NO, MENU_NO, CPNY_ID, IS_CAN_BE_BUILD,
             CREATE_DATE, CREATED_BY, UPDATE_DATE, UPDATED_BY, ORDERNO, ACTIVITY
         ) VALUES (
-            #{paramNo}, #{menuNo}, #{cpnyId}, #{isCanBeBuild},
-            sysdate, #{adminID}, sysdate, #{adminID}, #{orderNo}, #{activity}
+            #{paramNo}, #{menuNo}, #{cpnyId, jdbcType=VARCHAR}, #{isCanBeBuild},
+            sysdate, #{adminID, jdbcType=VARCHAR}, sysdate, #{adminID, jdbcType=VARCHAR}, #{orderNo}, #{activity}
         )
     </insert>
 
@@ -90,14 +90,14 @@
         UPDATE SY_MENU_PARAM SET
             IS_CAN_BE_BUILD = #{isCanBeBuild},
             UPDATE_DATE = sysdate,
-            UPDATED_BY = #{adminID},
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
             ORDERNO = #{orderNo},
             ACTIVITY = #{activity}
         WHERE PARAM_NO = #{paramNo}
     </update>
 
     <delete id="deleteByCpnyIdAndMenuNo">
-        DELETE FROM SY_MENU_PARAM WHERE CPNY_ID = #{cpnyId} AND MENU_NO = #{menuNo}
+        DELETE FROM SY_MENU_PARAM WHERE CPNY_ID = #{cpnyId, jdbcType=VARCHAR} AND MENU_NO = #{menuNo}
     </delete>
 
     <select id="getNextParamNoSeq" resultType="String">

@@ -26,4 +26,9 @@ public interface HrPersonalInfoMapper {
      * Lấy thông tin personal info kết hợp với user info
      */
     HrPersonalInfo findByUserNo(@Param("userNo") String userNo);
+
+    /**
+     * Cập nhật thông tin personal info (dynamic update)
+     */
+    int update(HrPersonalInfo info);
 }

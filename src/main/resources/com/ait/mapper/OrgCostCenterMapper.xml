@@ -64,9 +64,9 @@
             CREATE_DATE, CREATED_BY, CREATED_IP, UPDATE_DATE, UPDATED_BY, UPDATED_IP,
             BUSINESS_SCOPE, PROFIT_CENTER, CODE_KOREAN_NAME, CODE_VIETNAMESE_NAME
         ) VALUES (
-            ORG_COST_CENTER_SEQ.NEXTVAL, #{cpnyId}, #{codeNo}, #{codeName}, #{codeEngName}, #{remark}, 
+            ORG_COST_CENTER_SEQ.NEXTVAL, #{cpnyId, jdbcType=VARCHAR}, #{codeNo}, #{codeName}, #{codeEngName}, #{remark}, 
             #{startDate}, #{endDate}, #{country}, #{address}, #{activity}, #{orderNo}, 
-            SYSDATE, #{adminID}, #{createdIp}, SYSDATE, #{adminID}, #{updatedIp},
+            SYSDATE, #{adminID, jdbcType=VARCHAR}, #{createdIp}, SYSDATE, #{adminID, jdbcType=VARCHAR}, #{updatedIp},
             #{businessScope}, #{profitCenter}, #{codeKoreanName}, #{codeVietnameseName}
         )
     </insert>
@@ -85,7 +85,7 @@
             ACTIVITY = #{activity},
             ORDERNO = #{orderNo},
             UPDATE_DATE = SYSDATE,
-            UPDATED_BY = #{adminID},
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
             UPDATED_IP = #{updatedIp},
             BUSINESS_SCOPE = #{businessScope},
             PROFIT_CENTER = #{profitCenter},

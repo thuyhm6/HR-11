@@ -12,6 +12,9 @@ public interface ArShiftGroupManagementMapper {
     // Lấy danh sách lịch sử thay đổi ca (JOIN HR_EMPLOYEE)
     List<ArShiftGroupManagementDto> selectList(ArShiftGroupManagementDto dto);
 
+    // ESS: Lấy lịch sử nhóm ca của chính user (theo personId)
+    List<ArShiftGroupManagementDto> selectByPersonId(ArShiftGroupManagementDto dto);
+
     // Gọi Procedure AR_SHIFTGROUP_CHANGE_P
     void callChangeProcedure(Map<String, Object> params);
 }

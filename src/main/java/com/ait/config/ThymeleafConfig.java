@@ -1,10 +1,13 @@
 package com.ait.config;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.thymeleaf.spring6.SpringTemplateEngine;
+import org.thymeleaf.spring6.messageresolver.SpringMessageResolver;
 import org.thymeleaf.spring6.templateresolver.SpringResourceTemplateResolver;
 import org.thymeleaf.spring6.view.ThymeleafViewResolver;
 
@@ -14,6 +17,9 @@ import org.thymeleaf.spring6.view.ThymeleafViewResolver;
  */
 @Configuration
 public class ThymeleafConfig implements WebMvcConfigurer {
+
+    @Autowired
+    private MessageSource messageSource;
 
     /**
      * Template Resolver for Thymeleaf
@@ -35,9 +41,13 @@ public class ThymeleafConfig implements WebMvcConfigurer {
      */
     @Bean
     public SpringTemplateEngine templateEngine() {
+        SpringMessageResolver messageResolver = new SpringMessageResolver();
+        messageResolver.setMessageSource(messageSource);
+
         SpringTemplateEngine templateEngine = new SpringTemplateEngine();
         templateEngine.setTemplateResolver(templateResolver());
         templateEngine.setEnableSpringELCompiler(true);
+        templateEngine.addMessageResolver(messageResolver);
         return templateEngine;
     }
 

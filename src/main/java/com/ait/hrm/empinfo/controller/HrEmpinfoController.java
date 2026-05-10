@@ -399,10 +399,11 @@ public class HrEmpinfoController {
     @ResponseBody
     public ResponseEntity<List<HrEducation>> searchEducation(
             @RequestParam(required = false) String empId,
+            @RequestParam(required = false) String personId,
             @RequestParam(required = false) String localName,
             @RequestParam(required = false) String institutionName) {
         try {
-            return ResponseEntity.ok(hrEducationService.searchEducation(empId, localName, institutionName));
+            return ResponseEntity.ok(hrEducationService.searchEducation(empId, personId, localName, institutionName));
         } catch (Exception e) {
             
             return ResponseEntity.status(500).body(null);
@@ -488,10 +489,11 @@ public class HrEmpinfoController {
     @ResponseBody
     public ResponseEntity<List<HrAddressMatters>> searchAddress(
             @RequestParam(required = false) String empId,
+            @RequestParam(required = false) String personId,
             @RequestParam(required = false) String localName,
             @RequestParam(required = false) String addressContent) {
         try {
-            return ResponseEntity.ok(hrAddressMattersService.searchAddress(empId, localName, addressContent));
+            return ResponseEntity.ok(hrAddressMattersService.searchAddress(empId, personId, localName, addressContent));
         } catch (Exception e) {
             
             return ResponseEntity.status(500).body(null);
@@ -576,11 +578,12 @@ public class HrEmpinfoController {
     @GetMapping("/api/family")
     @ResponseBody
     public ResponseEntity<List<HrFamily>> searchFamily(
-            @RequestParam(required = false) String empId,
-            @RequestParam(required = false) String localName,
-            @RequestParam(required = false) String famName) {
+        @RequestParam(required = false) String empId,
+        @RequestParam(required = false) String personId,
+        @RequestParam(required = false) String localName,
+        @RequestParam(required = false) String famName) {
         try {
-            return ResponseEntity.ok(hrFamilyService.searchFamily(empId, localName, famName));
+            return ResponseEntity.ok(hrFamilyService.searchFamily(empId, personId, localName, famName));
         } catch (Exception e) {
             
             return ResponseEntity.status(500).body(null);
@@ -666,10 +669,11 @@ public class HrEmpinfoController {
     @ResponseBody
     public ResponseEntity<List<HrEmergencyAddress>> searchEmergencyAddress(
             @RequestParam(required = false) String empId,
+            @RequestParam(required = false) String personId,
             @RequestParam(required = false) String localName,
             @RequestParam(required = false) String emerName) {
         try {
-            return ResponseEntity.ok(hrEmergencyAddressService.searchEmergencyAddress(empId, localName, emerName));
+            return ResponseEntity.ok(hrEmergencyAddressService.searchEmergencyAddress(empId, personId, localName, emerName));
         } catch (Exception e) {
             
             return ResponseEntity.status(500).body(null);
@@ -997,6 +1001,64 @@ public class HrEmpinfoController {
             }
         } catch (Exception e) {
             
+            return ResponseEntity.status(500).body("Loi he thong. Vui long thu lai.");
+        }
+    }
+
+    /**
+     * Trang Thẻ nhân sự
+     */
+    @GetMapping("/viewHTSVCardInfoList")
+    public String viewHTSVCardInfoList(Model model, HttpSession session) {
+        HrUserInfo currentHrUser = (HrUserInfo) session.getAttribute("currentHrUser");
+        model.addAttribute("currentHrUser", currentHrUser);
+        model.addAttribute("title", "Thẻ nhân sự");
+        return "hrm/empinfo/viewHTSVCardInfoList";
+    }
+
+    /**
+     * API lấy chi tiết Thẻ nhân sự để in
+     */
+    @GetMapping("/api/hrCard/detail")
+    @ResponseBody
+    public ResponseEntity<?> getHrCardDetail(@RequestParam("empId") String empId) {
+        try {
+            com.ait.hrm.empinfo.model.HrEmployee employee = hrEmployeeService.getEmployeeByEmpId(empId);
+            if (employee == null) {
+                return ResponseEntity.status(404).body("Không tìm thấy nhân viên");
+            }
+            String personId = employee.getPersonId();
+            
+            java.util.Map<String, Object> result = new java.util.HashMap<>();
+            result.put("employee", employee);
+            
+            // Thông tin cá nhân
+            com.ait.hrm.empinfo.model.HrPersonalInfo personalInfo = hrPersonalInfoService.getPersonalInfoByPersonId(personId);
+            result.put("personalInfo", personalInfo);
+            
+            // Quá trình học tập
+            List<HrEducation> educations = hrEducationService.searchEducation(empId, personId, null, null);
+            result.put("educations", educations);
+            
+            // Gia đình
+            List<HrFamily> families = hrFamilyService.searchFamily(empId, personId, null, null);
+            result.put("families", families);
+            
+            // Kinh nghiệm làm việc
+            List<com.ait.hrm.empinfo.model.HrWorkExperience> experiences = hrWorkExperienceService.searchWorkExperience(personId, null, null);
+            result.put("experiences", experiences);
+            
+            // Chứng chỉ
+            List<com.ait.hrm.empinfo.model.HrQualification> qualifications = hrQualificationService.searchQualification(personId, null, null);
+            result.put("qualifications", qualifications);
+            
+            // Kỷ luật
+            List<HrPunishment> punishments = hrPunishmentService.searchPunishment(personId, null, null);
+            result.put("punishments", punishments);
+            
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            log.error("Lỗi khi lấy thông tin thẻ nhân sự: ", e);
             return ResponseEntity.status(500).body("Loi he thong. Vui long thu lai.");
         }
     }

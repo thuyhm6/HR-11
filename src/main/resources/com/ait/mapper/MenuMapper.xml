@@ -28,6 +28,7 @@
 
     <sql id="MenuPermissionJoin">
         FROM SY_MENU m
+        JOIN SY_MENU_PARAM mp ON m.MENU_NO = mp.MENU_NO AND mp.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
         INNER JOIN SY_ROLE_RELATION rr ON m.MENU_NO = rr.MENU_NO
         INNER JOIN SY_ROLE r ON rr.ROLE_NO = r.ROLE_NO
         INNER JOIN SY_ROLE_GROUP_RELATION rgr ON rr.ROLE_NO = rgr.ROLE_NO

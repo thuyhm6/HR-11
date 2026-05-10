@@ -59,6 +59,8 @@ public class HrEmergencyAddress {
      */
     private String emerTypeCode;
 
+    private String emerTypeName; // Tên quan hệ (từ get_global_name)
+
     /**
      * Hoạt động (ACTIVITY)
      */

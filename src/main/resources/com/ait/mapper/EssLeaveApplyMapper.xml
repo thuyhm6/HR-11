@@ -435,6 +435,119 @@
     <delete id="deleteArApplyResult">
         DELETE FROM AR_APPLY_RESULT WHERE APPLY_NO = #{applyNo, jdbcType=VARCHAR}
     </delete>
-    
+
+    <select id="selectLeaveLength" resultType="map">
+        SELECT
+            AR_GET_DAY_HOURS(#{adminID, jdbcType=VARCHAR},
+                TO_DATE(#{fromDateTime, jdbcType=VARCHAR}, 'YYYY-MM-DD HH24:MI')) AS DAY_HOUR,
+            GET_AR_LEAVE_LENGTH(
+                #{adminID, jdbcType=VARCHAR},
+                #{cpnyId, jdbcType=VARCHAR},
+                TO_DATE(#{fromDateTime, jdbcType=VARCHAR}, 'YYYY-MM-DD HH24:MI'),
+                TO_DATE(#{toDateTime, jdbcType=VARCHAR}, 'YYYY-MM-DD HH24:MI'),
+                GET_CODE_NO(#{leaveTypeCode, jdbcType=VARCHAR}, '21', #{cpnyId, jdbcType=VARCHAR}, 'CODE')
+            ) AS LEAVE_LENGTH
+        FROM DUAL
+    </select>
+
+    <resultMap id="EssLeaveApplyListResultMap" type="com.ait.ar.attendanceMintenance.dto.EssLeaveApplyDto">
+        <id property="applyNo" column="APPLY_NO" />
+        <result property="personId" column="PERSON_ID" />
+        <result property="itemNo" column="ITEM_NO" />
+        <result property="leaveTypeName" column="LEAVE_TYPE_NAME" />
+        <result property="applyDate" column="APPLY_DATE" />
+        <result property="leaveFromDate" column="LEAVE_FROM_DATE" />
+        <result property="leaveFromTimeOnly" column="LEAVE_FROM_TIME_ONLY" />
+        <result property="leaveToDate" column="LEAVE_TO_DATE" />
+        <result property="leaveToTimeOnly" column="LEAVE_TO_TIME_ONLY" />
+        <result property="applyLength" column="APPLY_LENGTH" />
+        <result property="dayHours" column="DAY_HOURS" />
+        <result property="leaveReason" column="LEAVE_REASON" />
+        <result property="affirmFlag" column="AFFIRM_FLAG" />
+        <result property="affirmFlagName" column="AFFIRM_FLAG_NAME" />
+        <result property="hrComment" column="HR_COMMENT" />
+        <result property="confirmFlag" column="CONFIRM_FLAG" />
+        <result property="confirmFlagName" column="CONFIRM_FLAG_NAME" />
+        <result property="createdBy" column="CREATED_BY" />
+        <result property="createdIp" column="CREATED_IP" />
+        <result property="leaveTypeCode" column="LEAVE_TYPE_CODE" />
+    </resultMap>
+
+    <select id="selectMyLeaveApplyList" resultMap="EssLeaveApplyListResultMap">
+        SELECT
+            A.APPLY_NO,
+            A.PERSON_ID,
+            A.LEAVE_TYPE_CODE AS ITEM_NO,
+            GET_GLOBAL_NAME(A.LEAVE_TYPE_CODE, #{lang, jdbcType=VARCHAR}) AS LEAVE_TYPE_NAME,
+            TO_CHAR(A.CREATE_DATE, 'DD/MM/YYYY') AS APPLY_DATE,
+            TO_CHAR(A.LEAVE_FROM_TIME, 'DD/MM/YYYY') AS LEAVE_FROM_DATE,
+            TO_CHAR(A.LEAVE_FROM_TIME, 'HH24:MI') AS LEAVE_FROM_TIME_ONLY,
+            TO_CHAR(A.LEAVE_TO_TIME, 'DD/MM/YYYY') AS LEAVE_TO_DATE,
+            TO_CHAR(A.LEAVE_TO_TIME, 'HH24:MI') AS LEAVE_TO_TIME_ONLY,
+            A.APPLY_LENGTH,
+            AR_GET_DAY_HOURS(A.PERSON_ID, A.LEAVE_FROM_TIME) AS DAY_HOURS,
+            A.LEAVE_REASON,
+            A.AFFIRM_FLAG,
+            GET_GLOBAL_NAME(A.AFFIRM_FLAG, #{lang, jdbcType=VARCHAR}) AS AFFIRM_FLAG_NAME,
+            A.HR_COMMENT,
+            A.CONFIRM_FLAG,
+            GET_GLOBAL_NAME(A.CONFIRM_FLAG, #{lang, jdbcType=VARCHAR}) AS CONFIRM_FLAG_NAME,
+            A.CREATED_BY,
+            A.CREATED_IP,
+            A.LEAVE_TYPE_CODE
+        FROM ESS_LEAVE_APPLY_TB A
+        WHERE A.PERSON_ID = #{adminID, jdbcType=VARCHAR}
+          AND A.ACTIVITY = 1
+        <if test="leaveTypeCode != null and leaveTypeCode != ''">
+            AND A.LEAVE_TYPE_CODE = #{leaveTypeCode, jdbcType=VARCHAR}
+        </if>
+        <if test="affirmFlag != null and affirmFlag != ''">
+            AND A.AFFIRM_FLAG = #{affirmFlag, jdbcType=VARCHAR}
+        </if>
+        <if test="fromDate != null and fromDate != ''">
+            AND A.LEAVE_FROM_TIME &gt;= TO_DATE(#{fromDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')
+        </if>
+        <if test="toDate != null and toDate != ''">
+            AND A.LEAVE_FROM_TIME &lt; TO_DATE(#{toDate, jdbcType=VARCHAR}, 'YYYY-MM-DD') + 1
+        </if>
+        ORDER BY A.CREATE_DATE DESC
+    </select>
+
+    <update id="cancelMyLeaveApplyList">
+        UPDATE ESS_LEAVE_APPLY_TB
+        SET ACTIVITY = 0,
+            UPDATE_DATE = SYSDATE,
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+            UPDATED_IP = #{adminIP, jdbcType=VARCHAR}
+        WHERE PERSON_ID = #{adminID, jdbcType=VARCHAR}
+          AND AFFIRM_FLAG = '14014306'
+          AND APPLY_NO IN
+        <foreach collection="applyNos" item="no" open="(" separator="," close=")">
+            #{no, jdbcType=VARCHAR}
+        </foreach>
+    </update>
+
+    <select id="selectMyVacationInfo" resultType="map">
+        SELECT
+            SUM(TOT_VAC_CNT + ADD_VAC + LAST_YEAR_VAC) AS TOT_VAC_CNT,
+            SUM(USE_VAC + AFFIRM_USE_VAC + USE_VAC_CNT) AS USE_VAC,
+            SUM(TOT_VAC_CNT + ADD_VAC + LAST_YEAR_VAC - USE_VAC - AFFIRM_USE_VAC - USE_VAC_CNT) AS REMAIN_VAC,
+            SUM(TOT_VAC_CNT) AS YEAR_VAC_CNT,
+            SUM(ADD_VAC) AS ADD_VAC,
+            SUM(LAST_YEAR_VAC) AS LAST_YEAR_VAC
+        FROM (
+            SELECT A.TOT_VAC_CNT,
+                   A.ADD_VAC,
+                   A.MENT_VAC,
+                   A.USE_VAC_CNT,
+                   A.LAST_YEAR_VAC,
+                   AR_USE_VACATION(TO_CHAR(A.STRT_DATE,'YYYY/MM/DD'), TO_CHAR(A.END_DATE,'YYYY/MM/DD'), A.CPNY_ID, A.PERSON_ID, 'CONFIRM') AS USE_VAC,
+                   AR_USE_VACATION(TO_CHAR(A.STRT_DATE,'YYYY/MM/DD'), TO_CHAR(A.END_DATE,'YYYY/MM/DD'), A.CPNY_ID, A.PERSON_ID, 'AFFIRM') AS AFFIRM_USE_VAC
+              FROM AR_VAC_EMP A
+             WHERE A.PERSON_ID = #{adminID, jdbcType=VARCHAR}
+               AND A.ACTIVITY = 1
+               AND SYSDATE BETWEEN A.STRT_DATE AND A.END_DATE
+        )
+    </select>
 
 </mapper>

@@ -6,37 +6,37 @@
                     <!-- Search Form -->
                     <form id="lv_searchForm" class="row g-3 mb-4">
                         <div class="col-md-2">
-                            <label for="lv_searchEmpId" class="form-label">Mã nhân viên</label>
-                            <input type="text" class="form-control" id="lv_searchEmpId" placeholder="Nhập mã nhân viên">
+                            <label for="lv_searchEmpId" class="form-label" th:text="#{common.empId}">Mã nhân viên</label>
+                            <input type="text" class="form-control" id="lv_searchEmpId" th:placeholder="#{common.placeholder.enterEmpId}" placeholder="Nhập mã nhân viên">
                         </div>
                         <div class="col-md-2">
-                            <label for="lv_searchEmpName" class="form-label">Tên nhân viên</label>
+                            <label for="lv_searchEmpName" class="form-label" th:text="#{common.empName}">Tên nhân viên</label>
                             <input type="text" class="form-control" id="lv_searchEmpName"
-                                placeholder="Nhập tên nhân viên">
+                                th:placeholder="#{common.placeholder.enterEmpName}" placeholder="Nhập tên nhân viên">
                         </div>
                         <div class="col-md-2">
-                            <label for="lv_searchFromDate" class="form-label">Từ ngày</label>
+                            <label for="lv_searchFromDate" class="form-label" th:text="#{common.fromDate}">Từ ngày</label>
                             <input type="date" class="form-control" id="lv_searchFromDate">
                         </div>
                         <div class="col-md-2">
-                            <label for="lv_searchToDate" class="form-label">Đến ngày</label>
+                            <label for="lv_searchToDate" class="form-label" th:text="#{common.toDate}">Đến ngày</label>
                             <input type="date" class="form-control" id="lv_searchToDate">
                         </div>
                         <div class="col-md-4 d-flex align-items-end flex-wrap gap-1">
                             <button type="button" class="btn btn-primary" onclick="lvSearchData()">
-                                <i class="bx bx-search"></i> Tìm kiếm
+                                <i class="bx bx-search"></i> <span th:text="#{common.search}">Tìm kiếm</span>
                             </button>
                             <button type="button" class="btn btn-secondary" onclick="lvClearSearch()">
-                                <i class="bx bx-x"></i> Xóa lọc
+                                <i class="bx bx-x"></i> <span th:text="#{common.clearFilter}">Xóa lọc</span>
                             </button>
                             <button type="button" class="btn btn-success" onclick="lvAddEmptyRow()">
-                                <i class="bx bx-plus"></i> Thêm mới
+                                <i class="bx bx-plus"></i> <span th:text="#{common.addNew}">Thêm mới</span>
                             </button>
                             <button type="button" class="btn btn-info text-white" onclick="attNewDownloadTemplate()">
-                                <i class="bx bx-download"></i> Tải File Mẫu
+                                <i class="bx bx-download"></i> <span th:text="#{common.downloadTemplate}">Tải File Mẫu</span>
                             </button>
                             <button type="button" class="btn btn-warning" onclick="attNewOpenImportModal()">
-                                <i class="bx bx-upload"></i> Import Excel
+                                <i class="bx bx-upload"></i> <span th:text="#{common.importExcel}">Import Excel</span>
                             </button>
                         </div>
                     </form>
@@ -48,19 +48,19 @@
                             <thead class="table-light text-center align-middle">
                                 <tr>
                                     <th>No</th>
-                                    <th>Nhân viên</th>
-                                    <th>Phòng ban</th>
-                                    <th>Phép còn</th>
-                                    <th>Loại nghỉ</th>
-                                    <th>Thời gian bắt đầu</th>
-                                    <th>Thời gian kết thúc</th>
-                                    <th>Số giờ</th>
-                                    <th>Lý do</th>
-                                    <th>Trạng thái</th>
-                                    <th>Người tạo</th>
-                                    <th>Người sửa</th>
-                                    <th>Người duyệt</th>
-                                    <th>Thao tác</th>
+                                    <th th:text="#{common.empName}">Nhân viên</th>
+                                    <th th:text="#{common.deptName}">Phòng ban</th>
+                                    <th th:text="#{applyAtt.remainLeave}">Phép còn</th>
+                                    <th th:text="#{applyAtt.leaveType}">Loại nghỉ</th>
+                                    <th th:text="#{common.startTime}">Thời gian bắt đầu</th>
+                                    <th th:text="#{common.endTime}">Thời gian kết thúc</th>
+                                    <th th:text="#{common.hours}">Số giờ</th>
+                                    <th th:text="#{common.reason}">Lý do</th>
+                                    <th th:text="#{common.status}">Trạng thái</th>
+                                    <th th:text="#{common.creator}">Người tạo</th>
+                                    <th th:text="#{common.updater}">Người sửa</th>
+                                    <th th:text="#{common.approver}">Người duyệt</th>
+                                    <th th:text="#{common.action}">Thao tác</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
@@ -396,7 +396,7 @@
                             var opts = '<option value="">-- Loại nghỉ --</option>';
                             _lv_typeList.forEach(function (s) {
                                 var selected = (s.codeNo === data) ? 'selected' : '';
-                                var dName = s.nameVi || s.description || s.codeNo;
+                                var dName = s.codeName || s.description || s.codeNo;
                                 opts += '<option value="' + s.codeNo + '" ' + selected + '>' + dName + '</option>';
                             });
                             return '<select class="form-select form-select-sm lv-in-type">' + opts + '</select>';
@@ -567,6 +567,18 @@
             $(selector).text(value || '');
         }
 
+        function lvFormatDuration(applyLength, dayHours) {
+            var len = parseFloat(applyLength);
+            var dh  = parseFloat(dayHours);
+            if (isNaN(len) || isNaN(dh) || dh === 0) return String(applyLength || '');
+            var days  = Math.floor(len / dh);
+            var hours = len - days * dh;
+            var text  = '';
+            if (days > 0)  text += days  + ' Ngày';
+            if (hours > 0) text += (text ? ' ' : '') + hours + ' Giờ';
+            return text || String(len);
+        }
+
         function lvBuildApplyTitle(info) {
             var leaveTypeName = info.leaveTypeName || '';
             var localName = info.localName || '';
@@ -635,7 +647,7 @@
             lvSetText('#lv_modalLeaveType', leaveInfo.leaveTypeName || '');
             lvSetText('#lv_modalLeaveFrom', leaveInfo.leaveFromTime || '');
             lvSetText('#lv_modalLeaveTo', leaveInfo.leaveToTime || '');
-            lvSetText('#lv_modalLeaveLength', leaveInfo.applyLength || '');
+            lvSetText('#lv_modalLeaveLength', lvFormatDuration(leaveInfo.applyLength, leaveInfo.dayHours));
             lvSetText('#lv_modalLeaveReason', leaveInfo.leaveReason || '');
 
             lvRenderApprovalRows(approvalList);

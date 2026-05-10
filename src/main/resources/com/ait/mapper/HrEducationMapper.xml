@@ -6,6 +6,7 @@
         <id property="educNo" column="EDUC_NO"/>
         <result property="personId" column="PERSON_ID"/>
         <result property="degreeCode" column="DEGREE_CODE"/>
+        <result property="degreeName" column="DEGREE_NAME"/>
         <result property="finalDegreeWhether" column="FINAL_DEGREE_WHETHER"/>
         <result property="degreesCode" column="DEGREES_CODE"/>
         <result property="institutionName" column="INSTITUTION_NAME"/>
@@ -18,6 +19,7 @@
         <result property="subjectSecond" column="SUBJECT_SECOND"/>
         <result property="eduDegNum" column="EDU_DEG_NUM"/>
         <result property="siteCountry" column="SITE_COUNTRY"/>
+        <result property="siteCountryName" column="SITE_COUNTRY_NAME"/>
         <result property="remark" column="REMARK"/>
         <result property="orderNo" column="ORDERNO"/>
         <result property="activity" column="ACTIVITY"/>
@@ -40,7 +42,13 @@
 
     <select id="searchEducation" resultMap="HrEducationResultMap">
         SELECT 
-            t1.*,
+            t1.EDUC_NO, t1.PERSON_ID,
+            t1.DEGREE_CODE,
+            GET_GLOBAL_NAME(t1.DEGREE_CODE, #{lang, jdbcType=VARCHAR}) AS DEGREE_NAME,
+            t1.FINAL_DEGREE_WHETHER, t1.DEGREES_CODE, t1.INSTITUTION_NAME, t1.SUBJECT, t1.START_DATE, t1.END_DATE, t1.SCHOOL_LENGTH, t1.THESIS_NAME_LOCAL, t1.THESIS_NAME_ENG, t1.SUBJECT_SECOND, t1.EDU_DEG_NUM,
+            t1.SITE_COUNTRY,
+            GET_GLOBAL_NAME(t1.SITE_COUNTRY, #{lang, jdbcType=VARCHAR}) AS SITE_COUNTRY_NAME,
+            t1.REMARK, t1.CREATE_DATE, t1.CREATED_BY, t1.CREATED_IP, t1.UPDATE_DATE, t1.UPDATED_BY, t1.UPDATED_IP, t1.ORDERNO, t1.ACTIVITY, t1.PLACE, t1.STUDY_EXPERIENCE, t1.FILE_NAME, t1.FILE_URL,
             t2.EMPID,
             t2.LOCAL_NAME,
             t3.ORG_NAME_LOCAL AS DEPT_NAME
@@ -50,6 +58,9 @@
         WHERE 1=1 AND t1.ACTIVITY = '1'
         <if test="empId != null and empId != ''">
             AND t2.EMPID LIKE '%' || #{empId} || '%'
+        </if>
+        <if test="personId != null and personId != ''">
+            AND t1.PERSON_ID = #{personId}
         </if>
         <if test="localName != null and localName != ''">
             AND t2.LOCAL_NAME LIKE '%' || #{localName} || '%'
@@ -62,7 +73,13 @@
 
     <select id="getById" resultMap="HrEducationResultMap">
         SELECT 
-            t1.*,
+            t1.EDUC_NO, t1.PERSON_ID,
+            t1.DEGREE_CODE,
+            GET_GLOBAL_NAME(t1.DEGREE_CODE, #{lang, jdbcType=VARCHAR}) AS DEGREE_NAME,
+            t1.FINAL_DEGREE_WHETHER, t1.DEGREES_CODE, t1.INSTITUTION_NAME, t1.SUBJECT, t1.START_DATE, t1.END_DATE, t1.SCHOOL_LENGTH, t1.THESIS_NAME_LOCAL, t1.THESIS_NAME_ENG, t1.SUBJECT_SECOND, t1.EDU_DEG_NUM,
+            t1.SITE_COUNTRY,
+            GET_GLOBAL_NAME(t1.SITE_COUNTRY, #{lang, jdbcType=VARCHAR}) AS SITE_COUNTRY_NAME,
+            t1.REMARK, t1.CREATE_DATE, t1.CREATED_BY, t1.CREATED_IP, t1.UPDATE_DATE, t1.UPDATED_BY, t1.UPDATED_IP, t1.ORDERNO, t1.ACTIVITY, t1.PLACE, t1.STUDY_EXPERIENCE, t1.FILE_NAME, t1.FILE_URL,
             t2.EMPID,
             t2.LOCAL_NAME,
             t3.ORG_NAME_LOCAL AS DEPT_NAME
@@ -84,7 +101,7 @@
             #{institutionName}, #{subject}, #{startDate}, #{endDate}, #{schoolLength},
             #{thesisNameLocal}, #{thesisNameEng}, #{subjectSecond}, #{eduDegNum}, #{siteCountry},
             #{remark}, #{orderNo}, #{activity}, #{place}, #{studyExperience}, #{fileName}, #{fileUrl},
-            SYSDATE, #{adminID}, #{adminIP}, SYSDATE, #{adminID}, #{adminIP}
+            SYSDATE, #{adminID, jdbcType=VARCHAR}, #{adminIP, jdbcType=VARCHAR}, SYSDATE, #{adminID, jdbcType=VARCHAR}, #{adminIP, jdbcType=VARCHAR}
         )
     </insert>
 
@@ -113,8 +130,8 @@
             FILE_NAME = #{fileName},
             FILE_URL = #{fileUrl},
             UPDATE_DATE = SYSDATE,
-            UPDATED_BY = #{adminID},
-            UPDATED_IP = #{adminIP}
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+            UPDATED_IP = #{adminIP, jdbcType=VARCHAR}
         WHERE EDUC_NO = #{educNo}
     </update>
 
@@ -122,8 +139,8 @@
         UPDATE HR_EDUCATION 
         SET ACTIVITY = '0',
             UPDATE_DATE = SYSDATE,
-            UPDATED_BY = #{adminID},
-            UPDATED_IP = #{adminIP}
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+            UPDATED_IP = #{adminIP, jdbcType=VARCHAR}
         WHERE EDUC_NO = #{educNo}
     </delete>
 

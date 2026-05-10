@@ -1,8 +1,8 @@
 package com.ait.org.orgManage.model;
 
 import lombok.Data;
-import java.util.Date;
-import com.fasterxml.jackson.annotation.JsonFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 public class OrgEmployee {
@@ -14,12 +14,9 @@ public class OrgEmployee {
     private String dutyNo;
     private String postNo;
     private String statusCode;
-    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "Asia/Ho_Chi_Minh")
-    private Date dateStarted;
-    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "Asia/Ho_Chi_Minh")
-    private Date dateLeft;
-    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "Asia/Ho_Chi_Minh")
-    private Date endProbationDate;
+    private LocalDate dateStarted;
+    private LocalDate dateLeft;
+    private LocalDate endProbationDate;
     private String empTypeCode;
     private String cpnyId;
     private String personId;
@@ -29,17 +26,14 @@ public class OrgEmployee {
     private String idCardNo;
     private String shiftNo;
     private String empOffice;
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Ho_Chi_Minh")
-    private Date createDate;
+    private LocalDateTime createDate;
     private String createdBy;
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Ho_Chi_Minh")
-    private Date updateDate;
+    private LocalDateTime updateDate;
     private String updatedBy;
     private Integer activity;
     private String mainBusiness;
     private String experience;
     private String incumbency;
-    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "Asia/Ho_Chi_Minh")
     private String promotionDay; // Defined as VARCHAR2 in schema? "PROMOTION_DAY VARCHAR2(30)" - wait, schema
                                  // says VARCHAR2(30) but name implies Date. I'll stick to String as per schema
                                  // or Date? Schema says VARCHAR2(30). I'll use String.

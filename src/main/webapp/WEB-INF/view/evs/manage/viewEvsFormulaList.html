@@ -1,0 +1,403 @@
+<div th:fragment="content">
+    <div class="row">
+        <div class="col-12" id="vefl_pageWrapper">
+
+            <!-- Điều kiện tìm kiếm -->
+            <div class="card mb-3">
+                <div class="card-body">
+                    <form id="vefl_searchForm" class="row gy-2 align-items-end">
+                        <div class="col-md-3 d-flex align-items-center gap-2">
+                            <label class="form-label small text-muted mb-0 text-nowrap">Mã</label>
+                            <input type="text" class="form-control form-control-sm" id="vefl_codeNoSearch"
+                                maxlength="20" style="max-width:160px;">
+                        </div>
+                        <div class="col-md-3 d-flex align-items-center gap-2">
+                            <label class="form-label small text-muted mb-0 text-nowrap">Tên</label>
+                            <input type="text" class="form-control form-control-sm" id="vefl_codeNameSearch"
+                                maxlength="200" style="max-width:200px;">
+                        </div>
+                        <div class="col-md-3 d-flex align-items-center gap-2">
+                            <label class="form-label small text-muted mb-0 text-nowrap">Trạng thái</label>
+                            <select class="form-select form-select-sm" id="vefl_activitySearch" style="max-width:160px;">
+                                <option value="">-- Tất cả --</option>
+                                <option value="1">Sử dụng</option>
+                                <option value="0">Không sử dụng</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 d-flex gap-2">
+                            <button type="button" class="btn btn-primary btn-sm" onclick="veflSearch()">
+                                <i class="bi bi-search"></i> Tra cứu
+                            </button>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="veflClearSearch()">
+                                <i class="bi bi-x-circle"></i> Xóa lọc
+                            </button>
+                            <button type="button" class="btn btn-success btn-sm" onclick="veflOpenAddModal()">
+                                <i class="bi bi-plus-circle"></i> Thêm mới
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Bảng danh sách -->
+            <div class="card">
+                <div class="card-body p-2">
+                    <div class="table-responsive">
+                        <table id="vefl_table" class="table table-striped table-bordered table-hover table-sm"
+                            style="width:100%">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="text-center" style="width:44px;">No.</th>
+                                    <th class="text-center" style="width:120px;">Mã</th>
+                                    <th style="width:200px;">Tên</th>
+                                    <th>Công thức</th>
+                                    <th style="width:200px;">Ghi chú</th>
+                                    <th class="text-center" style="width:100px;">Trạng thái</th>
+                                    <th class="text-center" style="width:70px;">Thứ tự</th>
+                                    <th class="text-center" style="width:70px;">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- /#vefl_pageWrapper -->
+    </div><!-- /.row -->
+
+    <!-- ── Modal thêm / sửa ───────────────────────────────────────────── -->
+    <div class="modal fade" id="vefl_detailModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="vefl_modalTitle">Thêm mới công thức</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="vefl_seq">
+                    <table class="table table-bordered table-sm align-middle mb-0" style="table-layout:fixed;">
+                        <colgroup>
+                            <col style="width:25%;">
+                            <col style="width:75%;">
+                        </colgroup>
+                        <tbody>
+                            <tr>
+                                <th class="table-light text-end pe-3">
+                                    Mã <span class="text-danger">*</span>
+                                </th>
+                                <td>
+                                    <input type="text" class="form-control form-control-sm" id="vefl_codeNo"
+                                        maxlength="20" style="max-width:200px;">
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="table-light text-end pe-3">
+                                    Tên <span class="text-danger">*</span>
+                                </th>
+                                <td>
+                                    <input type="text" class="form-control form-control-sm" id="vefl_codeName"
+                                        maxlength="200">
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="table-light text-end pe-3">Công thức</th>
+                                <td>
+                                    <textarea class="form-control form-control-sm" id="vefl_formula" rows="5"
+                                        maxlength="4000" style="font-family:monospace; font-size:0.8rem;"></textarea>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="table-light text-end pe-3">Ghi chú</th>
+                                <td>
+                                    <textarea class="form-control form-control-sm" id="vefl_remark" rows="3"
+                                        maxlength="4000"></textarea>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="table-light text-end pe-3">Thứ tự</th>
+                                <td>
+                                    <input type="number" class="form-control form-control-sm" id="vefl_orderNo"
+                                        min="0" max="9999" style="max-width:100px;">
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="table-light text-end pe-3">Trạng thái</th>
+                                <td>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="vefl_activity" value="1">
+                                        <label class="form-check-label small" for="vefl_activity">Sử dụng</label>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr id="vefl_auditRow" style="display:none;">
+                                <th class="table-light text-end pe-3">Thông tin cập nhật</th>
+                                <td>
+                                    <span id="vefl_auditDisplay" class="small text-muted"></span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="veflSave()">
+                        <i class="bi bi-save"></i> Lưu
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Modal xác nhận xóa ─────────────────────────────────────────── -->
+    <div class="modal fade" id="vefl_deleteModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Xác nhận xóa</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Bạn có chắc muốn xóa công thức "<strong id="vefl_deleteCodeName"></strong>"?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="veflConfirmDelete()">
+                        <i class="bi bi-trash"></i> Xóa
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div><!-- th:fragment="content" -->
+
+<template id="fragmentScripts">
+    <script th:inline="javascript">
+        var _vefl_deleteSeq = null;
+        var _vefl_detailModal = null;
+        var _vefl_deleteModal = null;
+        var _vefl_table = null;
+
+        // ── Tiện ích ─────────────────────────────────────────────────────────
+        function veflEsc(s) {
+            if (s == null) return '';
+            return String(s)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        }
+
+        function veflActivityBadge(val) {
+            return (val === '1' || val === 1)
+                ? '<span class="badge bg-success">Sử dụng</span>'
+                : '<span class="badge bg-secondary">Không sử dụng</span>';
+        }
+
+        // ── Search ───────────────────────────────────────────────────────────
+        window.veflSearch = function () {
+            if (_vefl_table) _vefl_table.ajax.reload();
+        };
+
+        window.veflClearSearch = function () {
+            $('#vefl_codeNoSearch').val('');
+            $('#vefl_codeNameSearch').val('');
+            $('#vefl_activitySearch').val('');
+            if (_vefl_table) _vefl_table.ajax.reload();
+        };
+
+        // ── Modal thêm mới ───────────────────────────────────────────────────
+        window.veflOpenAddModal = function () {
+            $('#vefl_modalTitle').text('Thêm mới công thức');
+            $('#vefl_seq').val('');
+            $('#vefl_codeNo').val('').prop('readonly', false);
+            $('#vefl_codeName').val('');
+            $('#vefl_formula').val('');
+            $('#vefl_remark').val('');
+            $('#vefl_orderNo').val('');
+            $('#vefl_activity').prop('checked', true);
+            $('#vefl_auditRow').hide();
+            _vefl_detailModal.show();
+        };
+
+        // ── Modal sửa (click dòng) ───────────────────────────────────────────
+        window.veflOpenEditModal = function (seq) {
+            $.ajax({
+                url: '/evs/manage/api/evsFormula/' + encodeURIComponent(seq),
+                type: 'GET',
+                success: function (r) {
+                    if (!r) return;
+                    $('#vefl_modalTitle').text('Chỉnh sửa công thức');
+                    $('#vefl_seq').val(r.seq || '');
+                    $('#vefl_codeNo').val(r.codeNo || '').prop('readonly', true);
+                    $('#vefl_codeName').val(r.codeName || '');
+                    $('#vefl_formula').val(r.formula || '');
+                    $('#vefl_remark').val(r.remark || '');
+                    $('#vefl_orderNo').val(r.orderNo != null ? r.orderNo : '');
+                    $('#vefl_activity').prop('checked', r.activity === '1' || r.activity === 1);
+                    if (r.updatedBy) {
+                        $('#vefl_auditDisplay').text((r.updatedBy || '') + ' — ' + (r.updateDate || ''));
+                        $('#vefl_auditRow').show();
+                    } else {
+                        $('#vefl_auditRow').hide();
+                    }
+                    _vefl_detailModal.show();
+                },
+                error: function () {
+                    alert('Lỗi khi tải thông tin công thức.');
+                }
+            });
+        };
+
+        // ── Lưu ─────────────────────────────────────────────────────────────
+        window.veflSave = function () {
+            var codeNo = $('#vefl_codeNo').val().trim();
+            if (!codeNo) {
+                alert('Vui lòng nhập Mã.');
+                $('#vefl_codeNo').focus();
+                return;
+            }
+            var codeName = $('#vefl_codeName').val().trim();
+            if (!codeName) {
+                alert('Vui lòng nhập Tên.');
+                $('#vefl_codeName').focus();
+                return;
+            }
+            var payload = {
+                seq: $('#vefl_seq').val() || null,
+                codeNo: codeNo,
+                codeName: codeName,
+                formula: $('#vefl_formula').val(),
+                remark: $('#vefl_remark').val(),
+                orderNo: $('#vefl_orderNo').val() || null,
+                activity: $('#vefl_activity').prop('checked') ? '1' : '0'
+            };
+            $.ajax({
+                url: '/evs/manage/api/evsFormula/save',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(payload),
+                success: function () {
+                    _vefl_detailModal.hide();
+                    if (_vefl_table) _vefl_table.ajax.reload();
+                },
+                error: function () {
+                    alert('Lỗi khi lưu dữ liệu. Vui lòng thử lại.');
+                }
+            });
+        };
+
+        // ── Xóa ─────────────────────────────────────────────────────────────
+        window.veflOpenDeleteModal = function (seq, codeName) {
+            _vefl_deleteSeq = seq;
+            $('#vefl_deleteCodeName').text(codeName || seq);
+            _vefl_deleteModal.show();
+        };
+
+        window.veflConfirmDelete = function () {
+            if (!_vefl_deleteSeq) return;
+            $.ajax({
+                url: '/evs/manage/api/evsFormula/delete',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ seq: _vefl_deleteSeq }),
+                success: function () {
+                    _vefl_deleteModal.hide();
+                    _vefl_deleteSeq = null;
+                    if (_vefl_table) _vefl_table.ajax.reload();
+                },
+                error: function () {
+                    alert('Lỗi khi xóa dữ liệu. Vui lòng thử lại.');
+                }
+            });
+        };
+
+        // ── Boot ─────────────────────────────────────────────────────────────
+        $(document).ready(function () {
+            _vefl_detailModal = new bootstrap.Modal(document.getElementById('vefl_detailModal'));
+            _vefl_deleteModal = new bootstrap.Modal(document.getElementById('vefl_deleteModal'));
+
+            _vefl_table = $('#vefl_table').DataTable({
+                destroy: true,
+                scrollY: 'calc(100vh - 300px)',
+                scrollCollapse: true,
+                paging: true,
+                searching: true,
+                lengthChange: true,
+                pageLength: 25,
+                processing: true,
+                dom: 'Blfrtip',
+                buttons: ['copy', 'csv', 'excel', 'pdf', 'print'],
+                ajax: {
+                    url: '/evs/manage/api/evsFormula/list',
+                    dataSrc: '',
+                    data: function (d) {
+                        d.codeNo = $('#vefl_codeNoSearch').val() || '';
+                        d.codeName = $('#vefl_codeNameSearch').val() || '';
+                        d.activity = $('#vefl_activitySearch').val() || '';
+                    }
+                },
+                columns: [
+                    {
+                        data: null,
+                        className: 'text-center',
+                        orderable: false,
+                        render: function (data, type, row, meta) {
+                            return meta.row + 1;
+                        }
+                    },
+                    {
+                        data: 'codeNo',
+                        className: 'text-center'
+                    },
+                    { data: 'codeName' },
+                    {
+                        data: 'formula',
+                        render: function (data) {
+                            if (!data) return '';
+                            var s = String(data);
+                            return '<span title="' + veflEsc(s) + '">'
+                                + veflEsc(s.length > 80 ? s.substring(0, 80) + '…' : s)
+                                + '</span>';
+                        }
+                    },
+                    {
+                        data: 'remark',
+                        render: function (data) {
+                            if (!data) return '';
+                            var s = String(data);
+                            return veflEsc(s.length > 50 ? s.substring(0, 50) + '…' : s);
+                        }
+                    },
+                    {
+                        data: 'activity',
+                        className: 'text-center',
+                        render: function (data) {
+                            return veflActivityBadge(data);
+                        }
+                    },
+                    { data: 'orderNo', className: 'text-center' },
+                    {
+                        data: null,
+                        className: 'text-center',
+                        orderable: false,
+                        render: function (data, type, row) {
+                            return '<div class="btn-group btn-group-sm">'
+                                + '<button class="btn btn-outline-primary py-0 px-1"'
+                                + ' onclick="event.stopPropagation(); veflOpenEditModal(\'' + veflEsc(row.seq) + '\')"'
+                                + ' title="Sửa"><i class="bi bi-pencil"></i></button>'
+                                + '<button class="btn btn-outline-danger py-0 px-1"'
+                                + ' onclick="event.stopPropagation(); veflOpenDeleteModal(\'' + veflEsc(row.seq) + '\',\'' + veflEsc(row.codeName) + '\')"'
+                                + ' title="Xóa"><i class="bi bi-trash"></i></button>'
+                                + '</div>';
+                        }
+                    }
+                ],
+                createdRow: function (row, data) {
+                    $(row).css('cursor', 'pointer').on('click', function () {
+                        veflOpenEditModal(data.seq);
+                    });
+                }
+            });
+        });
+    </script>
+</template>

@@ -5,7 +5,7 @@ import java.util.List;
 import com.ait.hrm.empinfo.model.HrAddressMatters;
 
 public interface HrAddressMattersService {
-    List<HrAddressMatters> searchAddress(String empId, String localName, String addressContent);
+    List<HrAddressMatters> searchAddress(String empId, String personId, String localName, String addressContent);
 
     HrAddressMatters getById(Long addressNo);
 

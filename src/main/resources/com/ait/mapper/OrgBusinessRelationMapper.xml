@@ -31,7 +31,7 @@
             T1.SEQ, T1.RESUME_NO, T1.CPNY_ID, T1.DEPTNO, T1.CODE_NO, T1.IS_DEFAULT, 
             T1.ACTIVITY, T1.ORDERNO, T1.CREATE_DATE, T1.CREATED_BY, T1.CREATED_IP, 
             T1.UPDATE_DATE, T1.UPDATED_BY, T1.UPDATED_IP,
-            GET_GLOBAL_NAME(T1.CODE_NO, #{lang}) as BUSINESS_NAME,
+            GET_GLOBAL_NAME(T1.CODE_NO, #{lang, jdbcType=VARCHAR}) as BUSINESS_NAME,
             T2.ORG_NAME_LOCAL as DEPT_NAME
         FROM ORG_BUSINESS_RELATION T1
         LEFT JOIN ORG_INFO T2 
@@ -45,7 +45,7 @@
     <select id="selectBySeq" resultMap="BaseResultMap">
         SELECT 
             <include refid="Base_Column_List" />,
-            GET_GLOBAL_NAME(CODE_NO, #{lang}) as BUSINESS_NAME
+            GET_GLOBAL_NAME(CODE_NO, #{lang, jdbcType=VARCHAR}) as BUSINESS_NAME
         FROM ORG_BUSINESS_RELATION
         WHERE SEQ = #{seq}
     </select>
@@ -56,9 +56,9 @@
             ACTIVITY, ORDERNO, CREATE_DATE, CREATED_BY, CREATED_IP, 
             UPDATE_DATE, UPDATED_BY, UPDATED_IP
         ) VALUES (
-            ORG_BUSINESS_RELATION_SEQ.NEXTVAL, #{resumeNo}, #{cpnyId}, #{deptNo}, #{codeNo}, #{isDefault}, 
-            '1', #{orderNo}, SYSDATE, #{adminID}, #{createdIp}, 
-            SYSDATE, #{adminID}, #{updatedIp}
+            ORG_BUSINESS_RELATION_SEQ.NEXTVAL, #{resumeNo}, #{cpnyId, jdbcType=VARCHAR}, #{deptNo}, #{codeNo}, #{isDefault}, 
+            '1', #{orderNo}, SYSDATE, #{adminID, jdbcType=VARCHAR}, #{createdIp}, 
+            SYSDATE, #{adminID, jdbcType=VARCHAR}, #{updatedIp}
         )
     </insert>
 
@@ -69,7 +69,7 @@
             IS_DEFAULT = #{isDefault},
             ORDERNO = #{orderNo},
             UPDATE_DATE = SYSDATE,
-            UPDATED_BY = #{adminID},
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
             UPDATED_IP = #{updatedIp}
         WHERE SEQ = #{seq}
     </update>

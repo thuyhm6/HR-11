@@ -1,0 +1,723 @@
+<div th:fragment="content">
+    <div class="row">
+        <div class="col-12" id="vesp_pageWrapper">
+
+            <!-- Điều kiện tìm kiếm -->
+            <div class="card mb-2">
+                <div class="card-body py-2">
+                    <div class="d-flex align-items-center gap-3 flex-wrap">
+                        <label class="form-label small text-muted mb-0 text-nowrap">Tên đánh giá</label>
+                        <select class="form-select form-select-sm" id="vesp_resumeSeq" style="max-width:320px;">
+                            <option value="">-- Chọn tên đánh giá --</option>
+                        </select>
+                        <button type="button" class="btn btn-primary btn-sm" onclick="vespSearch()">
+                            <i class="bi bi-search"></i> Tra cứu
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3 Tabs -->
+            <div class="card">
+                <div class="card-body p-2">
+                    <ul class="nav nav-tabs" id="vesp_tabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="vesp_tab_cpny" data-bs-toggle="tab"
+                                data-bs-target="#vesp_pane_cpny" type="button" role="tab"
+                                onclick="vespSwitchTab('CPNY')">Công ty</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="vesp_tab_dept" data-bs-toggle="tab"
+                                data-bs-target="#vesp_pane_dept" type="button" role="tab"
+                                onclick="vespSwitchTab('DEPT')">Phòng ban</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="vesp_tab_emp" data-bs-toggle="tab"
+                                data-bs-target="#vesp_pane_emp" type="button" role="tab"
+                                onclick="vespSwitchTab('EMP')">Cá nhân</button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content" id="vesp_tabContent">
+
+                        <!-- ── Tab Công ty ── -->
+                        <div class="tab-pane fade show active" id="vesp_pane_cpny" role="tabpanel">
+                            <div class="d-flex align-items-center justify-content-between mt-2 mb-1 px-1">
+                                <div class="d-flex align-items-center gap-3">
+                                    <span class="small fw-semibold text-muted" id="vesp_total_cpny">Total: 0</span>
+                                    <div class="d-flex align-items-center gap-1">
+                                        <label class="small text-muted mb-0 text-nowrap">Lọc nhanh</label>
+                                        <input type="text" class="form-control form-control-sm" id="vesp_filter_cpny"
+                                            style="width:160px;" oninput="vespFilterTable('CPNY')">
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center gap-1">
+                                    <button class="btn btn-success btn-sm" onclick="vespAddRow('CPNY')">
+                                        <i class="bi bi-plus-lg"></i> Thêm mới
+                                    </button>
+                                    <button class="btn btn-danger btn-sm" onclick="vespDeleteSelected('CPNY')">
+                                        <i class="bi bi-trash"></i> Xóa
+                                    </button>
+                                    <button class="btn btn-primary btn-sm" onclick="vespSave('CPNY')">
+                                        <i class="bi bi-save"></i> Lưu
+                                    </button>
+                                    <label class="small text-muted mb-0 ms-2 text-nowrap">Mỗi trang</label>
+                                    <select class="form-select form-select-sm" id="vesp_pageSize_cpny"
+                                        style="width:70px;" onchange="vespChangePage('CPNY')">
+                                        <option value="10">10</option>
+                                        <option value="25">25</option>
+                                        <option value="50">50</option>
+                                        <option value="100">100</option>
+                                    </select>
+                                    <label class="small text-muted mb-0 text-nowrap">dữ liệu</label>
+                                </div>
+                            </div>
+                            <div class="table-responsive" style="max-height:calc(100vh - 310px); overflow-y:auto;">
+                                <table id="vesp_table_cpny"
+                                    class="table table-bordered table-hover table-sm align-middle mb-0"
+                                    style="width:100%; min-width:900px;">
+                                    <thead class="table-light text-center align-middle">
+                                        <tr>
+                                            <th style="width:36px;">
+                                                <input type="checkbox" class="form-check-input" id="vesp_chkAll_cpny"
+                                                    onchange="vespToggleAll('CPNY')">
+                                            </th>
+                                            <th style="width:48px;">No.</th>
+                                            <th>Giai đoạn thực hiện</th>
+                                            <th style="width:120px;">Ngày bắt đầu</th>
+                                            <th style="width:120px;">Ngày kết thúc</th>
+                                            <th style="width:70px;">Sử dụng</th>
+                                            <th style="width:220px;">Người thay đổi</th>
+                                            <th style="width:140px;">Thời gian thay đổi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="vesp_tbody_cpny"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- ── Tab Phòng ban ── -->
+                        <div class="tab-pane fade" id="vesp_pane_dept" role="tabpanel">
+                            <div class="d-flex align-items-center justify-content-between mt-2 mb-1 px-1">
+                                <div class="d-flex align-items-center gap-3">
+                                    <span class="small fw-semibold text-muted" id="vesp_total_dept">Total: 0</span>
+                                    <div class="d-flex align-items-center gap-1">
+                                        <label class="small text-muted mb-0 text-nowrap">Lọc nhanh</label>
+                                        <input type="text" class="form-control form-control-sm" id="vesp_filter_dept"
+                                            style="width:160px;" oninput="vespFilterTable('DEPT')">
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center gap-1">
+                                    <button class="btn btn-success btn-sm" onclick="vespAddRow('DEPT')">
+                                        <i class="bi bi-plus-lg"></i> Thêm mới
+                                    </button>
+                                    <button class="btn btn-danger btn-sm" onclick="vespDeleteSelected('DEPT')">
+                                        <i class="bi bi-trash"></i> Xóa
+                                    </button>
+                                    <button class="btn btn-primary btn-sm" onclick="vespSave('DEPT')">
+                                        <i class="bi bi-save"></i> Lưu
+                                    </button>
+                                    <label class="small text-muted mb-0 ms-2 text-nowrap">Mỗi trang</label>
+                                    <select class="form-select form-select-sm" id="vesp_pageSize_dept"
+                                        style="width:70px;" onchange="vespChangePage('DEPT')">
+                                        <option value="10">10</option>
+                                        <option value="25">25</option>
+                                        <option value="50">50</option>
+                                        <option value="100">100</option>
+                                    </select>
+                                    <label class="small text-muted mb-0 text-nowrap">dữ liệu</label>
+                                </div>
+                            </div>
+                            <div class="table-responsive" style="max-height:calc(100vh - 310px); overflow-y:auto;">
+                                <table id="vesp_table_dept"
+                                    class="table table-bordered table-hover table-sm align-middle mb-0"
+                                    style="width:100%; min-width:1100px;">
+                                    <thead class="table-light text-center align-middle">
+                                        <tr>
+                                            <th style="width:36px;">
+                                                <input type="checkbox" class="form-check-input" id="vesp_chkAll_dept"
+                                                    onchange="vespToggleAll('DEPT')">
+                                            </th>
+                                            <th style="width:48px;">No.</th>
+                                            <th>Giai đoạn thực hiện</th>
+                                            <th style="width:100px;">Mã phòng ban</th>
+                                            <th style="width:160px;">Tên phòng ban</th>
+                                            <th style="width:120px;">Loại phòng ban</th>
+                                            <th style="width:120px;">Ngày bắt đầu</th>
+                                            <th style="width:120px;">Ngày kết thúc</th>
+                                            <th style="width:70px;">Sử dụng</th>
+                                            <th style="width:200px;">Người thay đổi</th>
+                                            <th style="width:140px;">Thời gian thay đổi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="vesp_tbody_dept"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- ── Tab Cá nhân ── -->
+                        <div class="tab-pane fade" id="vesp_pane_emp" role="tabpanel">
+                            <div class="d-flex align-items-center justify-content-between mt-2 mb-1 px-1">
+                                <div class="d-flex align-items-center gap-3">
+                                    <span class="small fw-semibold text-muted" id="vesp_total_emp">Total: 0</span>
+                                    <div class="d-flex align-items-center gap-1">
+                                        <label class="small text-muted mb-0 text-nowrap">Lọc nhanh</label>
+                                        <input type="text" class="form-control form-control-sm" id="vesp_filter_emp"
+                                            style="width:160px;" oninput="vespFilterTable('EMP')">
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center gap-1">
+                                    <button class="btn btn-success btn-sm" onclick="vespAddRow('EMP')">
+                                        <i class="bi bi-plus-lg"></i> Thêm mới
+                                    </button>
+                                    <button class="btn btn-danger btn-sm" onclick="vespDeleteSelected('EMP')">
+                                        <i class="bi bi-trash"></i> Xóa
+                                    </button>
+                                    <button class="btn btn-primary btn-sm" onclick="vespSave('EMP')">
+                                        <i class="bi bi-save"></i> Lưu
+                                    </button>
+                                    <label class="small text-muted mb-0 ms-2 text-nowrap">Mỗi trang</label>
+                                    <select class="form-select form-select-sm" id="vesp_pageSize_emp"
+                                        style="width:70px;" onchange="vespChangePage('EMP')">
+                                        <option value="10">10</option>
+                                        <option value="25">25</option>
+                                        <option value="50">50</option>
+                                        <option value="100">100</option>
+                                    </select>
+                                    <label class="small text-muted mb-0 text-nowrap">dữ liệu</label>
+                                </div>
+                            </div>
+                            <div class="table-responsive" style="max-height:calc(100vh - 310px); overflow-y:auto;">
+                                <table id="vesp_table_emp"
+                                    class="table table-bordered table-hover table-sm align-middle mb-0"
+                                    style="width:100%; min-width:1300px;">
+                                    <thead class="table-light text-center align-middle">
+                                        <tr>
+                                            <th style="width:36px;">
+                                                <input type="checkbox" class="form-check-input" id="vesp_chkAll_emp"
+                                                    onchange="vespToggleAll('EMP')">
+                                            </th>
+                                            <th style="width:48px;">No.</th>
+                                            <th>Giai đoạn thực hiện</th>
+                                            <th style="width:100px;">Mã phòng ban</th>
+                                            <th style="width:150px;">Tên phòng ban</th>
+                                            <th style="width:100px;">Mã chức danh</th>
+                                            <th style="width:140px;">Tên chức danh</th>
+                                            <th style="width:120px;">Mã cá nhân</th>
+                                            <th style="width:120px;">Ngày bắt đầu</th>
+                                            <th style="width:120px;">Ngày kết thúc</th>
+                                            <th style="width:70px;">Sử dụng</th>
+                                            <th style="width:200px;">Người thay đổi</th>
+                                            <th style="width:140px;">Thời gian thay đổi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="vesp_tbody_emp"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div><!-- /.tab-content -->
+                </div><!-- /.card-body -->
+            </div><!-- /.card -->
+
+        </div><!-- /#vesp_pageWrapper -->
+    </div><!-- /.row -->
+
+    <!-- ── Modal xác nhận xóa ── -->
+    <div class="modal fade" id="vesp_deleteModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Xác nhận xóa</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-0">Bạn có chắc muốn xóa <strong id="vesp_deleteCount">0</strong> dòng đã chọn?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="vespConfirmDelete()">
+                        <i class="bi bi-trash"></i> Xóa
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div><!-- th:fragment="content" -->
+
+<template id="fragmentScripts">
+    <style>
+        #vesp_pageWrapper .vesp-row-edit td input.form-control,
+        #vesp_pageWrapper .vesp-row-edit td select.form-select {
+            height: 26px;
+            padding: 1px 4px;
+            font-size: 0.8rem;
+        }
+
+        #vesp_pageWrapper .vesp-row-edit {
+            background-color: #fffde7 !important;
+        }
+
+        #vesp_pageWrapper tbody tr {
+            cursor: pointer;
+        }
+
+        #vesp_pageWrapper tbody tr td {
+            white-space: nowrap;
+            vertical-align: middle;
+        }
+
+        #vesp_pageWrapper tbody tr td input[type="checkbox"] {
+            cursor: pointer;
+        }
+    </style>
+    <script th:inline="javascript">
+        /* ── State ─────────────────────────────────────────────────────────── */
+        var _vesp_evsType = new URLSearchParams((window._currentTabUrl || window.location.href).split('?')[1] || '').get('evsType') || '';
+        var _vesp_data = { CPNY: [], DEPT: [], EMP: [] };
+        var _vesp_page = { CPNY: 1, DEPT: 1, EMP: 1 };
+        var _vesp_filter = { CPNY: '', DEPT: '', EMP: '' };
+        var _vesp_currentTab = 'CPNY';
+        var _vesp_deleteModal = null;
+        var _vesp_pendingDeleteType = null;
+        var _vesp_rowIdCounter = 0;
+
+        /* ── Tiện ích ──────────────────────────────────────────────────────── */
+        function vespEsc(s) {
+            if (s == null) return '';
+            return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        }
+
+        function vespFmtDate(val) {
+            if (!val) return '';
+            var s = String(val);
+            if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.substring(0, 10);
+            return s;
+        }
+
+        function vespNewRowId() {
+            return 'NEW_' + (++_vesp_rowIdCounter);
+        }
+
+        function vespPageSize(type) {
+            return parseInt($('#vesp_pageSize_' + type.toLowerCase()).val()) || 10;
+        }
+
+        /* ── Load resume dropdown ─────────────────────────────────────────── */
+        function vespLoadResumeList() {
+            $.ajax({
+                url: '/evs/manage/api/resume/evsResumeList',
+                type: 'GET',
+                data: { evsType: _vesp_evsType },
+                success: function (rows) {
+                    var html = '';
+                    (rows || []).forEach(function (r) {
+                        html += '<option value="' + vespEsc(r.seq) + '">' + vespEsc(r.resumeName) + '</option>';
+                    });
+                    $('#vesp_resumeSeq').html(html);
+                    // Tự động chọn phần tử đầu tiên và truy vấn
+                    var firstOption = $('#vesp_resumeSeq option[value!=""]').first();
+                    if (firstOption.length) {
+                        $('#vesp_resumeSeq').val(firstOption.val());
+                        vespSearch();
+                    }
+                }
+            });
+        }
+
+        /* ── Search / Load data ───────────────────────────────────────────── */
+        window.vespSearch = function () {
+            var resumeSeq = $('#vesp_resumeSeq').val();
+            ['CPNY', 'DEPT', 'EMP'].forEach(function (type) {
+                vespLoadTab(type, resumeSeq);
+            });
+        };
+
+        window.vespSwitchTab = function (type) {
+            _vesp_currentTab = type;
+        };
+
+        function vespLoadTab(type, resumeSeq) {
+            $.ajax({
+                url: '/evs/manage/api/schedule/list',
+                type: 'GET',
+                data: { resumeSeq: resumeSeq || '', scheduleType: type, evsType: _vesp_evsType },
+                success: function (rows) {
+                    _vesp_data[type] = (rows || []).map(function (r) {
+                        r._rowId = r.seq || vespNewRowId();
+                        r._isNew = false;
+                        r._modified = false;
+                        return r;
+                    });
+                    _vesp_page[type] = 1;
+                    _vesp_filter[type] = '';
+                    $('#vesp_filter_' + type.toLowerCase()).val('');
+                    vespRenderTable(type);
+                },
+                error: function () {
+                    console.error('Lỗi tải dữ liệu tab ' + type);
+                }
+            });
+        }
+
+        /* ── Lọc nhanh ────────────────────────────────────────────────────── */
+        window.vespFilterTable = function (type) {
+            _vesp_filter[type] = $('#vesp_filter_' + type.toLowerCase()).val().toLowerCase();
+            _vesp_page[type] = 1;
+            vespRenderTable(type);
+        };
+
+        window.vespChangePage = function (type) {
+            _vesp_page[type] = 1;
+            vespRenderTable(type);
+        };
+
+        function vespGetFilteredData(type) {
+            var kw = _vesp_filter[type] || '';
+            if (!kw) return _vesp_data[type];
+            return _vesp_data[type].filter(function (r) {
+                return (r.evsStepName || r.evsStep || '').toLowerCase().indexOf(kw) >= 0
+                    || (r.deptName || '').toLowerCase().indexOf(kw) >= 0
+                    || (r.deptNo || '').toLowerCase().indexOf(kw) >= 0
+                    || (r.personId || '').toLowerCase().indexOf(kw) >= 0;
+            });
+        }
+
+        /* ── Render table ─────────────────────────────────────────────────── */
+        function vespRenderTable(type) {
+            var filtered = vespGetFilteredData(type);
+            var ps = vespPageSize(type);
+            var pg = _vesp_page[type];
+            var start = (pg - 1) * ps;
+            var pageData = filtered.slice(start, start + ps);
+            var t = type.toLowerCase();
+
+            $('#vesp_total_' + t).text('Total: ' + filtered.length);
+            $('#vesp_chkAll_' + t).prop('checked', false);
+
+            var html = '';
+            pageData.forEach(function (r, idx) {
+                html += vespBuildRow(r, start + idx + 1, type);
+            });
+            $('#vesp_tbody_' + t).html(html);
+        }
+
+        function vespBuildRow(r, no, type) {
+            var isEdit = r._editing;
+            var rowCls = isEdit ? 'vesp-row-edit' : '';
+            var rowNew = r._isNew ? ' table-warning' : '';
+            var chk = '<input type="checkbox" class="form-check-input vesp-row-chk" data-rowid="'
+                + vespEsc(r._rowId) + '" data-type="' + type + '" onclick="event.stopPropagation()">';
+
+            if (isEdit) {
+                return vespBuildEditRow(r, no, type, chk, rowCls + rowNew);
+            }
+            return vespBuildViewRow(r, no, type, chk, rowNew);
+        }
+
+        function vespBuildViewRow(r, no, type, chk, rowCls) {
+            var actBadge = (r.activity === '1' || r.activity === 'Y')
+                ? '<input type="checkbox" class="form-check-input" disabled checked>'
+                : '<input type="checkbox" class="form-check-input" disabled>';
+            var onclick = 'vespClickRow(\'' + vespEsc(r._rowId) + '\',\'' + type + '\')';
+            var html = '<tr class="' + rowCls + '" onclick="' + onclick + '">';
+            html += '<td class="text-center" onclick="event.stopPropagation()">' + chk + '</td>';
+            html += '<td class="text-center">' + no + '</td>';
+            html += '<td>' + vespEsc(r.evsStepName || r.evsStep) + '</td>';
+            if (type === 'DEPT' || type === 'EMP') {
+                html += '<td class="text-center">' + vespEsc(r.deptNo) + '</td>';
+                html += '<td>' + vespEsc(r.deptName) + '</td>';
+            }
+            if (type === 'DEPT') {
+                html += '<td class="text-center">' + vespEsc(r.deptType) + '</td>';
+            }
+            if (type === 'EMP') {
+                html += '<td class="text-center">' + vespEsc(r.postGradeNo) + '</td>';
+                html += '<td>' + vespEsc(r.postGradeName) + '</td>';
+                html += '<td class="text-center">' + vespEsc(r.personId) + '</td>';
+            }
+            html += '<td class="text-center">' + vespEsc(vespFmtDate(r.startDate)) + '</td>';
+            html += '<td class="text-center">' + vespEsc(vespFmtDate(r.endDate)) + '</td>';
+            html += '<td class="text-center">' + actBadge + '</td>';
+            html += '<td class="text-center small">' + vespEsc(r.updatedBy) + '</td>';
+            html += '<td class="text-center small">' + vespEsc(r.updateDate ? vespFmtDate(r.updateDate) : '') + '</td>';
+            html += '</tr>';
+            return html;
+        }
+
+        function vespBuildEditRow(r, no, type, chk, rowCls) {
+            var actChk = (r.activity === '1' || r.activity === 'Y') ? ' checked' : '';
+            var html = '<tr class="' + rowCls + '">';
+            html += '<td class="text-center" onclick="event.stopPropagation()">' + chk + '</td>';
+            html += '<td class="text-center">' + no + '</td>';
+            html += '<td><select class="form-select form-select-sm" id="vesp_inp_evsStep_'
+                + vespEsc(r._rowId) + '" data-parent-code="14015065" data-default-text="-- Chọn --"></select></td>';
+
+            if (type === 'DEPT' || type === 'EMP') {
+                html += '<td><input type="text" class="form-control form-control-sm text-center" id="vesp_inp_deptNo_'
+                    + vespEsc(r._rowId) + '" value="' + vespEsc(r.deptNo) + '" maxlength="20"></td>';
+                html += '<td><input type="text" class="form-control form-control-sm" id="vesp_inp_deptName_'
+                    + vespEsc(r._rowId) + '" value="' + vespEsc(r.deptName) + '" maxlength="60"></td>';
+            }
+            if (type === 'DEPT') {
+                html += '<td><input type="text" class="form-control form-control-sm text-center" id="vesp_inp_deptType_'
+                    + vespEsc(r._rowId) + '" value="' + vespEsc(r.deptType) + '" maxlength="20"></td>';
+            }
+            if (type === 'EMP') {
+                html += '<td><input type="text" class="form-control form-control-sm text-center" id="vesp_inp_postGradeNo_'
+                    + vespEsc(r._rowId) + '" value="' + vespEsc(r.postGradeNo) + '" maxlength="20"></td>';
+                html += '<td><input type="text" class="form-control form-control-sm" id="vesp_inp_postGradeName_'
+                    + vespEsc(r._rowId) + '" value="' + vespEsc(r.postGradeName) + '" maxlength="60"></td>';
+                html += '<td><input type="text" class="form-control form-control-sm text-center" id="vesp_inp_personId_'
+                    + vespEsc(r._rowId) + '" value="' + vespEsc(r.personId) + '" maxlength="20"></td>';
+            }
+            html += '<td><input type="text" class="form-control form-control-sm text-center js-daterangepicker" '
+                + 'id="vesp_inp_startDate_' + vespEsc(r._rowId) + '" value="' + vespEsc(vespFmtDate(r.startDate))
+                + '" data-drp-format="YYYY-MM-DD" data-drp-auto-update-input="false" autocomplete="off"></td>';
+            html += '<td><input type="text" class="form-control form-control-sm text-center js-daterangepicker" '
+                + 'id="vesp_inp_endDate_' + vespEsc(r._rowId) + '" value="' + vespEsc(vespFmtDate(r.endDate))
+                + '" data-drp-format="YYYY-MM-DD" data-drp-auto-update-input="false" autocomplete="off"></td>';
+            html += '<td class="text-center"><input type="checkbox" class="form-check-input" id="vesp_inp_act_'
+                + vespEsc(r._rowId) + '"' + actChk + '></td>';
+            html += '<td class="text-center small">' + vespEsc(r.updatedBy) + '</td>';
+            html += '<td class="text-center small">' + vespEsc(r.updateDate ? vespFmtDate(r.updateDate) : '') + '</td>';
+            html += '</tr>';
+            return html;
+        }
+
+        /* ── Click dòng để chỉnh sửa inline ──────────────────────────────── */
+        window.vespClickRow = function (rowId, type) {
+            vespCommitCurrentEditing(type);
+            var row = vespFindRow(type, rowId);
+            if (!row) return;
+            row._editing = true;
+            vespRenderTable(type);
+            var tbodyId = '#vesp_tbody_' + type.toLowerCase();
+            if (typeof reloadCodeSelect === 'function') {
+                reloadCodeSelect('#vesp_inp_evsStep_' + rowId, '14015065', '-- Chọn --', row.evsStep || '');
+            } else if (typeof initCodeSelects === 'function') {
+                $.when(initCodeSelects(tbodyId)).always(function () {
+                    $('#vesp_inp_evsStep_' + rowId).val(row.evsStep || '');
+                });
+            }
+            if (typeof initDateRangePickers === 'function') {
+                initDateRangePickers('#vesp_table_' + type.toLowerCase());
+            }
+        };
+
+        function vespCommitCurrentEditing(type) {
+            var editing = _vesp_data[type].filter(function (r) { return r._editing; });
+            editing.forEach(function (r) {
+                vespReadInputsIntoRow(r, type);
+                r._editing = false;
+                r._modified = true;
+            });
+        }
+
+        function vespReadInputsIntoRow(r, type) {
+            var id = r._rowId;
+            var stepEl = document.getElementById('vesp_inp_evsStep_' + id);
+            if (stepEl) {
+                r.evsStep = stepEl.value;
+                r.evsStepName = stepEl.options[stepEl.selectedIndex] ? stepEl.options[stepEl.selectedIndex].text : '';
+                r.name = r.evsStepName || r.evsStep;
+            }
+            var startEl = document.getElementById('vesp_inp_startDate_' + id);
+            if (startEl) r.startDate = startEl.value;
+            var endEl = document.getElementById('vesp_inp_endDate_' + id);
+            if (endEl) r.endDate = endEl.value;
+            var actEl = document.getElementById('vesp_inp_act_' + id);
+            if (actEl) r.activity = actEl.checked ? '1' : '0';
+            if (type === 'DEPT' || type === 'EMP') {
+                var dNoEl = document.getElementById('vesp_inp_deptNo_' + id);
+                if (dNoEl) r.deptNo = dNoEl.value;
+                var dNmEl = document.getElementById('vesp_inp_deptName_' + id);
+                if (dNmEl) r.deptName = dNmEl.value;
+            }
+            if (type === 'DEPT') {
+                var dtEl = document.getElementById('vesp_inp_deptType_' + id);
+                if (dtEl) r.deptType = dtEl.value;
+            }
+            if (type === 'EMP') {
+                var pgNoEl = document.getElementById('vesp_inp_postGradeNo_' + id);
+                if (pgNoEl) r.postGradeNo = pgNoEl.value;
+                var pgNmEl = document.getElementById('vesp_inp_postGradeName_' + id);
+                if (pgNmEl) r.postGradeName = pgNmEl.value;
+                var pidEl = document.getElementById('vesp_inp_personId_' + id);
+                if (pidEl) r.personId = pidEl.value;
+            }
+        }
+
+        function vespFindRow(type, rowId) {
+            return _vesp_data[type].find(function (r) { return r._rowId === rowId; });
+        }
+
+        /* ── Thêm mới dòng ────────────────────────────────────────────────── */
+        window.vespAddRow = function (type) {
+            vespCommitCurrentEditing(type);
+            var newRow = {
+                _rowId: vespNewRowId(),
+                _isNew: true,
+                _modified: true,
+                _editing: true,
+                seq: '',
+                resumeSeq: $('#vesp_resumeSeq').val(),
+                scheduleType: type,
+                no: '',
+                name: '',
+                deptNo: '',
+                deptName: '',
+                postGradeNo: '',
+                postGradeName: '',
+                evsObject: '',
+                evsStep: '',
+                evsStepName: '',
+                activity: '1',
+                deptType: '',
+                orderNo: '',
+                personId: '',
+                startDate: '',
+                endDate: '',
+                updatedBy: '',
+                updateDate: ''
+            };
+            _vesp_data[type].push(newRow);
+            var filtered = vespGetFilteredData(type);
+            var ps = vespPageSize(type);
+            _vesp_page[type] = Math.ceil(filtered.length / ps) || 1;
+            vespRenderTable(type);
+            var newRowId = newRow._rowId;
+            var tbodyId = '#vesp_tbody_' + type.toLowerCase();
+            if (typeof reloadCodeSelect === 'function') {
+                reloadCodeSelect('#vesp_inp_evsStep_' + newRowId, '14015065', '-- Chọn --', '');
+            } else if (typeof initCodeSelects === 'function') {
+                initCodeSelects(tbodyId);
+            }
+            if (typeof initDateRangePickers === 'function') {
+                initDateRangePickers('#vesp_table_' + type.toLowerCase());
+            }
+        };
+
+        /* ── Lưu ─────────────────────────────────────────────────────────── */
+        window.vespSave = function (type) {
+            vespCommitCurrentEditing(type);
+            var resumeSeq = $('#vesp_resumeSeq').val();
+            if (!resumeSeq) {
+                alert('Vui lòng chọn Tên đánh giá trước khi lưu.');
+                return;
+            }
+            var toSave = _vesp_data[type].filter(function (r) { return r._modified || r._isNew; });
+            if (!toSave.length) {
+                alert('Không có dữ liệu nào thay đổi để lưu.');
+                return;
+            }
+            var invalid = toSave.filter(function (r) { return !r.evsStep || !r.evsStep.trim(); });
+            if (invalid.length) {
+                alert('Vui lòng chọn Giai đoạn thực hiện cho tất cả các dòng.');
+                return;
+            }
+            var payload = toSave.map(function (r) {
+                return {
+                    seq: r._isNew ? null : r.seq,
+                    resumeSeq: resumeSeq,
+                    scheduleType: type,
+                    no: r.no || '',
+                    name: r.name || '',
+                    deptNo: r.deptNo || '',
+                    deptName: r.deptName || '',
+                    postGradeNo: r.postGradeNo || '',
+                    postGradeName: r.postGradeName || '',
+                    evsObject: r.evsObject || '',
+                    evsStep: r.evsStep || '',
+                    activity: r.activity || '1',
+                    deptType: r.deptType || '',
+                    orderNo: r.orderNo || '',
+                    personId: r.personId || '',
+                    startDate: r.startDate || '',
+                    endDate: r.endDate || '',
+                    evsType: _vesp_evsType
+                };
+            });
+            $.ajax({
+                url: '/evs/manage/api/schedule/save',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(payload),
+                success: function () {
+                    vespLoadTab(type, resumeSeq);
+                },
+                error: function () {
+                    alert('Lỗi khi lưu dữ liệu. Vui lòng thử lại.');
+                }
+            });
+        };
+
+        /* ── Xóa ─────────────────────────────────────────────────────────── */
+        window.vespDeleteSelected = function (type) {
+            var checkedIds = [];
+            $('#vesp_tbody_' + type.toLowerCase() + ' .vesp-row-chk:checked').each(function () {
+                checkedIds.push($(this).data('rowid'));
+            });
+            if (!checkedIds.length) {
+                alert('Vui lòng chọn ít nhất một dòng để xóa.');
+                return;
+            }
+            _vesp_pendingDeleteType = type;
+            window._vesp_pendingDeleteIds = checkedIds;
+            $('#vesp_deleteCount').text(checkedIds.length);
+            _vesp_deleteModal.show();
+        };
+
+        window.vespConfirmDelete = function () {
+            var type = _vesp_pendingDeleteType;
+            var ids = window._vesp_pendingDeleteIds || [];
+            var resumeSeq = $('#vesp_resumeSeq').val();
+            var existingSeqs = ids
+                .map(function (id) { return vespFindRow(type, id); })
+                .filter(function (r) { return r && !r._isNew; })
+                .map(function (r) { return r.seq; });
+
+            _vesp_data[type] = _vesp_data[type].filter(function (r) {
+                return ids.indexOf(r._rowId) < 0;
+            });
+
+            _vesp_deleteModal.hide();
+
+            if (!existingSeqs.length) {
+                vespRenderTable(type);
+                return;
+            }
+            $.ajax({
+                url: '/evs/manage/api/schedule/delete',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ seqs: existingSeqs }),
+                success: function () {
+                    vespRenderTable(type);
+                },
+                error: function () {
+                    alert('Lỗi khi xóa dữ liệu. Vui lòng thử lại.');
+                    vespLoadTab(type, resumeSeq);
+                }
+            });
+        };
+
+        /* ── Checkbox chọn tất cả ────────────────────────────────────────── */
+        window.vespToggleAll = function (type) {
+            var t = type.toLowerCase();
+            var checked = $('#vesp_chkAll_' + t).prop('checked');
+            $('#vesp_tbody_' + t + ' .vesp-row-chk').prop('checked', checked);
+        };
+
+        /* ── Boot ────────────────────────────────────────────────────────── */
+        $(document).ready(function () {
+            _vesp_deleteModal = new bootstrap.Modal(document.getElementById('vesp_deleteModal'));
+            vespLoadResumeList();
+            if (typeof initDateRangePickers === 'function') {
+                initDateRangePickers('#vesp_pageWrapper');
+            }
+        });
+    </script>
+</template>

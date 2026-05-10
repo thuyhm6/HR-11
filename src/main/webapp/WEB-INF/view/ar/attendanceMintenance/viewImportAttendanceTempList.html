@@ -5,25 +5,25 @@
                 <div class="card-body">
                     <form id="imp_searchForm" class="row g-3 mb-3">
                         <div class="col-md-2 d-flex align-items-end">
-                            <div class="form-text fw-bold mb-2">Tổng số hàng: <span id="imp_totalRows">0</span></div>
+                            <div class="form-text fw-bold mb-2"><span th:text="#{impAtt.totalRows}">Tổng số hàng:</span> <span id="imp_totalRows">0</span></div>
                         </div>
                         <div class="col-md-2 d-flex align-items-end">
-                            <div class="form-text fw-bold mb-2">Số hàng lỗi: <span id="imp_errorRows">0</span></div>
+                            <div class="form-text fw-bold mb-2"><span th:text="#{impAtt.errorRows}">Số hàng lỗi:</span> <span id="imp_errorRows">0</span></div>
                         </div>
                         <div class="col-md-3">
-                            <label for="imp_errorOnly" class="form-label">Gặp lỗi hay không</label>
+                            <label for="imp_errorOnly" class="form-label" th:text="#{impAtt.errorFilter}">Gặp lỗi hay không</label>
                             <select id="imp_errorOnly" class="form-select">
-                                <option value="">Tất cả</option>
-                                <option value="Y">Chỉ hiển thị dòng lỗi</option>
-                                <option value="N">Chỉ hiển thị dòng hợp lệ</option>
+                                <option value="" th:text="#{impAtt.all}">Tất cả</option>
+                                <option value="Y" th:text="#{impAtt.onlyError}">Chỉ hiển thị dòng lỗi</option>
+                                <option value="N" th:text="#{impAtt.onlyValid}">Chỉ hiển thị dòng hợp lệ</option>
                             </select>
                         </div>
                         <div class="col-md-3 d-flex align-items-end gap-2">
                             <button type="button" class="btn btn-primary" onclick="impSearch()">
-                                <i class="bx bx-search"></i> Tra cứu
+                                <i class="bx bx-search"></i> <span th:text="#{common.search}">Tra cứu</span>
                             </button>
                             <button type="button" class="btn btn-success" id="imp_saveBtn" onclick="impSave(this)">
-                                <i class="bx bx-save"></i> Lưu
+                                <i class="bx bx-save"></i> <span th:text="#{common.save}">Lưu</span>
                             </button>
                         </div>
                     </form>
@@ -33,21 +33,21 @@
                             style="min-width: 1800px;">
                             <thead class="table-light text-center align-middle">
                                 <tr>
-                                    <th>Line</th>
-                                    <th>Họ tên</th>
-                                    <th>Mã nhân viên</th>
-                                    <th>Phòng ban</th>
-                                    <th>Phân loại</th>
-                                    <th>Ngày bắt đầu</th>
-                                    <th>Thời gian bắt đầu</th>
-                                    <th>Ngày kết thúc</th>
-                                    <th>Thời gian kết thúc</th>
-                                    <th>Thời lượng</th>
-                                    <th>Lý do</th>
-                                    <th>Trạng thái duyệt</th>
-                                    <th>Kết quả kiểm chứng</th>
-                                    <th>Người tải</th>
-                                    <th>Thời gian</th>
+                                    <th th:text="#{impAtt.line}">Line</th>
+                                    <th th:text="#{impAtt.fullName}">Họ tên</th>
+                                    <th th:text="#{common.empId}">Mã nhân viên</th>
+                                    <th th:text="#{common.deptName}">Phòng ban</th>
+                                    <th th:text="#{impAtt.leaveType}">Phân loại</th>
+                                    <th th:text="#{impAtt.startDate}">Ngày bắt đầu</th>
+                                    <th th:text="#{impAtt.startTime}">Thời gian bắt đầu</th>
+                                    <th th:text="#{impAtt.endDate}">Ngày kết thúc</th>
+                                    <th th:text="#{impAtt.endTime}">Thời gian kết thúc</th>
+                                    <th th:text="#{impAtt.duration}">Thời lượng</th>
+                                    <th th:text="#{common.reason}">Lý do</th>
+                                    <th th:text="#{impAtt.approvalStatus}">Trạng thái duyệt</th>
+                                    <th th:text="#{impAtt.validationResult}">Kết quả kiểm chứng</th>
+                                    <th th:text="#{impAtt.uploadBy}">Người tải</th>
+                                    <th th:text="#{impAtt.uploadTime}">Thời gian</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
@@ -61,6 +61,9 @@
 
 <template id="fragmentScripts">
     <script th:inline="javascript">
+        var _imp_i18n = {
+            saving: /*[[#{impAtt.saving}]]*/ 'Đang lưu'
+        };
         var _imp_table = null;
         var _imp_pageBooted = false;
 
@@ -164,7 +167,7 @@
             }
 
             var originalHtml = $btn.html();
-            $btn.prop('disabled', true).html('<i class="bx bx-loader bx-spin"></i> Đang lưu');
+            $btn.prop('disabled', true).html('<i class="bx bx-loader bx-spin"></i> ' + _imp_i18n.saving);
 
             $.ajax({
                 url: '/ar/attendanceMintenance/api/leaveApply/importTemp/save',

@@ -67,7 +67,7 @@
             <if test="activity != null">ACTIVITY = #{activity},</if>
             <if test="orderno != null">ORDERNO = #{orderno},</if>
             UPDATE_DATE = SYSDATE,
-            UPDATED_BY = #{adminID}
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR}
         </set>
         WHERE PK_NO = #{pkNo}
     </update>

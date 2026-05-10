@@ -1,7 +1,6 @@
 package com.ait.sy.sys.dto;
 
 import com.ait.validation.ValidUsername;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -40,7 +39,6 @@ public class UserDto extends BaseDto {
     private String cpnyId;
     private String userType;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime lastLogin;
 
     // Employee information

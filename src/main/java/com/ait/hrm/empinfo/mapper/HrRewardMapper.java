@@ -13,6 +13,8 @@ public interface HrRewardMapper {
             @Param("localName") String localName,
             @Param("rewardType") String rewardType);
 
+    List<HrReward> getByPersonId(@Param("personId") String personId);
+
     HrReward getById(@Param("rewardNo") Long rewardNo);
 
     int insert(HrReward info);

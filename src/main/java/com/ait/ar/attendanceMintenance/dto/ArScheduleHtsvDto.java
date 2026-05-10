@@ -1,7 +1,7 @@
 package com.ait.ar.attendanceMintenance.dto;
 
 import lombok.Data;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Data
 public class ArScheduleHtsvDto {
@@ -10,9 +10,9 @@ public class ArScheduleHtsvDto {
     private String shiftNo;
     private String arDateStr;
     private String lockYn;
-    private Date createDate;
+    private LocalDateTime createDate;
     private String createdBy;
-    private Date updateDate;
+    private LocalDateTime updateDate;
     private String updatedBy;
     private Integer activity;
     private Integer orderno;
@@ -25,7 +25,7 @@ public class ArScheduleHtsvDto {
     // Join fields from HR_EMPLOYEE
     private String empId;
     private String localName;
-    
+
     // Additional Join fields
     private String shiftName;
     private String typeName;

@@ -294,7 +294,7 @@
         SELECT * FROM (
             SELECT 
                 <include refid="baseColumns"/>,
-                get_global_name(hc.CONTRACT_TYPE_CODE, #{lang}) as CONTRACT_TYPE_NAME,
+                get_global_name(hc.CONTRACT_TYPE_CODE, #{lang, jdbcType=VARCHAR}) as CONTRACT_TYPE_NAME,
                 <include refid="employeeColumns"/>,
                 ROW_NUMBER() OVER (ORDER BY <include refid="dynamicOrderBy"/>) as rn
             <include refid="baseFromClause"/>
@@ -381,7 +381,7 @@
             </if>
             <!-- Audit fields - luôn update -->
             UPDATE_DATE = #{updateDate},
-            UPDATED_BY = #{adminID},
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
             UPDATED_IP = #{updatedIp}
         </set>
         WHERE CONTRACT_NO = #{contractNo}
@@ -439,10 +439,10 @@
             #{totalPeriod08},
             #{activity},
             #{createDate},
-            #{adminID},
+            #{adminID, jdbcType=VARCHAR},
             #{createdIp},
             #{updateDate},
-            #{adminID},
+            #{adminID, jdbcType=VARCHAR},
             #{updatedIp},
             #{orderno}
         )

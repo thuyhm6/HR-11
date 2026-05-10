@@ -10,12 +10,11 @@ import java.util.List;
 @Mapper
 public interface HrQualificationMapper {
 
-    /**
-     * Tìm kiếm chứng chỉ
-     */
     List<HrQualification> searchQualification(@Param("empId") String empId,
             @Param("localName") String localName,
             @Param("qualName") String qualName);
+
+    List<HrQualification> getByPersonId(@Param("personId") String personId);
 
     /**
      * Lấy chi tiết

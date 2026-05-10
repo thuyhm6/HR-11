@@ -54,6 +54,15 @@
         ORDER BY t1.REWARD_DATE DESC
     </select>
 
+    <select id="getByPersonId" resultMap="HrRewardResultMap">
+        SELECT t1.*, t2.EMPID, t2.LOCAL_NAME, t3.ORG_NAME_LOCAL AS DEPT_NAME
+        FROM HR_REWARD t1
+        LEFT JOIN HR_EMPLOYEE t2 ON t1.PERSON_ID = t2.PERSON_ID
+        LEFT JOIN HR_DEPARTMENT t3 ON t2.DEPTNO = t3.DEPTNO
+        WHERE t1.PERSON_ID = #{personId} AND (t1.ACTIVITY = 1 OR t1.ACTIVITY IS NULL)
+        ORDER BY t1.REWARD_DATE DESC
+    </select>
+
     <select id="getById" resultMap="HrRewardResultMap">
         SELECT 
             t1.*,
@@ -78,7 +87,7 @@
             #{reward}, #{rewardTypeCode}, #{rewardPayDate}, #{personnelCardInquiry},
             #{payAppearIsnot}, #{lineId}, #{otherType}, #{remarks},
             1,
-            SYSDATE, #{adminID}, #{adminIP}, SYSDATE, #{adminID}, #{adminIP}
+            SYSDATE, #{adminID, jdbcType=VARCHAR}, #{adminIP, jdbcType=VARCHAR}, SYSDATE, #{adminID, jdbcType=VARCHAR}, #{adminIP, jdbcType=VARCHAR}
         )
     </insert>
 
@@ -98,8 +107,8 @@
             OTHER_TYPE = #{otherType},
             REMARKS = #{remarks},
             UPDATED_DATE = SYSDATE,
-            UPDATED_BY = #{adminID},
-            UPDATED_IP = #{adminIP}
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+            UPDATED_IP = #{adminIP, jdbcType=VARCHAR}
         WHERE REWARD_NO = #{rewardNo}
     </update>
 
@@ -107,8 +116,8 @@
         UPDATE HR_REWARD 
         SET ACTIVITY = 0,
             UPDATED_DATE = SYSDATE, 
-            UPDATED_BY = #{adminID}, 
-            UPDATED_IP = #{adminIP} 
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR}, 
+            UPDATED_IP = #{adminIP, jdbcType=VARCHAR} 
         WHERE REWARD_NO = #{rewardNo}
     </delete>
 

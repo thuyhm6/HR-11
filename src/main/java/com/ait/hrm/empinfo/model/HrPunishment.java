@@ -3,7 +3,8 @@ package com.ait.hrm.empinfo.model;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /**
  * HrPunishment Model - Tra cứu kỷ luật (bảng HR_PUNISHMENT)
@@ -26,7 +27,7 @@ public class HrPunishment {
     /**
      * Ngày kỷ luật (PUNISH_DATE)
      */
-    private Date punishDate;
+    private LocalDate punishDate;
 
     /**
      * Mã loại kỷ luật (PUNISH_CODE) - Loại kỷ luật
@@ -41,7 +42,7 @@ public class HrPunishment {
     /**
      * Ngày gỡ bỏ/Ngày hết hạn (RELEASE_DATE)
      */
-    private Date releaseDate;
+    private LocalDate releaseDate;
 
     /**
      * Cơ quan/Bộ phận kỷ luật (PUNISH_DEPARTMENT)
@@ -56,12 +57,12 @@ public class HrPunishment {
     /**
      * Ngày bắt đầu giảm lương (PAYCUT_START_DATE)
      */
-    private Date paycutStartDate;
+    private LocalDate paycutStartDate;
 
     /**
      * Ngày kết thúc giảm lương (PAYCUT_END_DATE)
      */
-    private Date paycutEndDate;
+    private LocalDate paycutEndDate;
 
     /**
      * Hiển thị thẻ nhân sự (PERSONNEL_CARD_INQUIRY) - Y/N
@@ -84,10 +85,10 @@ public class HrPunishment {
     private Integer activity;
 
     // Audit fields
-    private Date createDate;
+    private LocalDateTime createDate;
     private String createdBy;
     private String createdIp;
-    private Date updateDate; // NOTE: Column name is UPDATE_DATE in image
+    private LocalDateTime updateDate; // NOTE: Column name is UPDATE_DATE in image
     private String updatedBy;
     private String updatedIp;
 

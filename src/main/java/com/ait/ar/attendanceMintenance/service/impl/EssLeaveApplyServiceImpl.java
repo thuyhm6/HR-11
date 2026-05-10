@@ -166,6 +166,36 @@ public class EssLeaveApplyServiceImpl implements EssLeaveApplyService {
         }
     }
 
+    @Override
+    public Map<String, Object> calculateLeaveLength(String fromDateTime, String toDateTime, String leaveTypeCode) {
+        Map<String, Object> result = essLeaveApplymapper.selectLeaveLength(
+                toTrimmedString(fromDateTime),
+                toTrimmedString(toDateTime),
+                toTrimmedString(leaveTypeCode));
+        return result != null ? result : new HashMap<>();
+    }
+
+    @Override
+    public List<EssLeaveApplyDto> getMyLeaveApplyList(EssLeaveApplyDto dto) {
+        return essLeaveApplymapper.selectMyLeaveApplyList(dto);
+    }
+
+    @Override
+    @Transactional
+    public int cancelMyLeaveApplyList(List<String> applyNos) {
+        if (applyNos == null || applyNos.isEmpty()) return 0;
+        return essLeaveApplymapper.cancelMyLeaveApplyList(applyNos);
+    }
+
+    @Override
+    public Map<String, Object> getMyVacationInfo(String personId) {
+        if (personId == null || personId.trim().isEmpty()) {
+            return new HashMap<>();
+        }
+        Map<String, Object> result = essLeaveApplymapper.selectMyVacationInfo(personId.trim());
+        return result != null ? result : new HashMap<>();
+    }
+
     private String toTrimmedString(Object value) {
         return value == null ? "" : value.toString().trim();
     }

@@ -9,6 +9,7 @@ columnDefs: [
 <select class="form-select" id="arItemItemGroupCode" name="itemGroupCode"
 	data-parent-code="1429" data-default-text="-- Chọn mã nhóm --">
 </select>
+Nhóm nhân viên - POST_FAMILY (dữ liệu lấy lấy thông qua data-parent-code="14015812")
 
 <input type="text" class="form-control js-daterangepicker" data-drp-format="YYYY-MM-DD">
 
@@ -235,3 +236,160 @@ Năm đánh giá - EVS_YEAR,
 Nhóm nhân viên - POST_FAMILY (dữ liệu lấy lấy thông qua data-parent-code="14015812"), 
 Loại nhân viên - EMP_TYPE_CODE (dữ liệu lấy lấy thông qua data-parent-code="13864"), 
 Trạng thái - EMP_OFFICE (dữ liệu lấy lấy thông qua data-parent-code="15118"), Có chức năng xuất excel.
+
+Tham khảo theo file viewDeptPersonalInfoManageList.html. Tạo cho tôi một file viewHTSVCardInfoList.html - Thẻ nhân sự nằm trong module hrm/empinfo. giao diện tham khảo từ hình ảnh. Dữ liệu lấy từ bảng HR_EMPLOYEE và bảng HR_PERSONAL_INFO, 2 bảng này có quan hệ 1-1. Điều kiện tìm kiếm có những điều kiện gồm: Mã nhân viên/Họ tên, 
+Phòng ban (tham khảo viewDepartManagerList.html để lấy ra list phòng ban), 
+Thời gian vòa làm - DATE_STARTED (Ngày bắt đầu, Ngày kết thúc), 
+Nhóm nhân viên - POST_FAMILY (dữ liệu lấy lấy thông qua data-parent-code="14015812"), 
+Loại nhân viên - EMP_TYPE_CODE (dữ liệu lấy lấy thông qua data-parent-code="13864"), 
+Trạng thái - EMP_OFFICE (dữ liệu lấy lấy thông qua data-parent-code="15118"), Có chức năng in ra thẻ nhân sự.
+
+dự án này của tôi sử dụng lại database của hệ thống cũ, vì vậy nên khi đăng nhập thì giá trị trường PASSWORD của bảng sy_user chưa được mã hóa, hãy thiết lập để ban đầu người dùng vẫn có thể đăng nhập được vào hệ thống, nhưng sau đó sẽ hiện lên popup yêu cầu người dùng phải thay đổi mật khẩu để mã hóa, nếu không đổi mật khẩu thì sẽ bị out khỏi hệ thống
+
+Dựa tho cấu trức hệ thống, hãy tạo cho tôi một file viewPersonalInfoForEss.html - Thông tin cá nhân nằm trong module /ess/empinfo. giao diện tham khảo từ hình ảnh. Dữ liệu lấy từ bảng HR_EMPLOYEE và bảng HR_PERSONAL_INFO. Chỉ hiển thị thông tin của chính người dùng đó. Ngoài ra phần "Loại địa chỉ" lấy từ bảng HR_ADDRESS_MATTERS. "Thông tin gia đình" lấy từ bảng HR_FAMILY. "Người liên hệ khẩn cấp" lấy từ bảng HR_EMERGENCY_ADDRESS. 
+
+Tương tự như viewPersonalInfoForEss.html. hãy tạo cho tôi một file viewEssPersonalInfo.html - Thông tin Công việc nằm trong module /ess/empinfo. giao diện tham khảo từ hình ảnh. Dữ liệu lấy từ bảng HR_EMPLOYEE và bảng HR_PERSONAL_INFO. Chỉ hiển thị thông tin của chính người dùng đó. Ngoài ra phần "Quyết định nhân sự" lấy từ bảng HR_EXPERIENCE_INSIDE. "Kinh nghiệm" lấy từ bảng HR_WORK_EXPERIENCE.
+
+Tương tự như viewPersonalInfoForEss.html. hãy tạo cho tôi một file viewQualificationInfo.html - Thông tin chứng chỉ nằm trong module /ess/empinfo. giao diện tham khảo từ hình ảnh. Dữ liệu lấy từ bảng HR_EMPLOYEE và bảng HR_PERSONAL_INFO. Chỉ hiển thị thông tin của chính người dùng đó. Ngoài ra phần "Trình độ học vấn" lấy từ bảng HR_EDUCATION. "Thông tin chứng chỉ" lấy từ bảng HR_QUALIFICATION. "Thông tin khen thưởng" lấy từ bảng HR_REWARD.
+
+Tham khảo theo file viewEssPersonalInfo.html. Tạo cho tôi một file viewWorkGroupExperList.html - Tra cứu nhóm ca làm nằm trong module /ess/workgroup. giao diện tham khảo từ hình ảnh. Dữ liệu lấy từ bảng AR_SHIFTGROUP_MANAGEMENT và bảng HR_EMPLOYEE. Chỉ hiển thị thông tin của chính người dùng đó. Ca làm - GROUP_ID (dữ liệu lấy lấy thông qua data-parent-code="400223").
+
+Tham khảo theo file viewWorkGroupExperList.html. Tạo cho tôi một file viewPersonShiftList.html - Ca làm cá nhân nằm trong module /ess/workgroup. giao diện tham khảo từ hình ảnh. Dữ liệu lấy từ câu lệnh SQL: SELECT TO_CHAR(TO_DATE(DDATE_STR,'YYYY/MM/DD'),'DD/MM/YYYY') DDATE_STR,
+               GET_GLOBAL_NAME(get_ar_shiftno(#{adminID},to_char(AC.DDATE, 'yyyy/mm/dd'),AC.CPNY_ID),#{lang}) OVERTYPEID_NAME,
+             GET_GLOBAL_NAME(SHIFT.SHIFT_NO,#interLanguage:VARCHAR#) SHIFT_NAME,
+             GET_AR_ALL_DATETYPE(#{adminID},DDATE_STR,AC.CPNY_ID) DATE_TYPE,
+             GET_GLOBAL_NAME(GET_AR_ALL_DATETYPE(#{adminID},DDATE_STR,AC.CPNY_ID),#interLanguage:VARCHAR#) DATE_NAME,
+             TO_CHAR(TO_DATE(GET_AR_SHIFT_START_TIME(#{adminID},DDATE_STR,AC.CPNY_ID),'YYYY-MM-DD HH24:MI'),'DD/MM/YYYY HH24:MI') SHIFT_START_TIME,
+             TO_CHAR(TO_DATE(GET_AR_SHIFT_END_TIME(#{adminID},DDATE_STR,AC.CPNY_ID),'YYYY-MM-DD HH24:MI'),'DD/MM/YYYY HH24:MI') SHIFT_END_TIME
+        FROM AR_CALENDER AC,AR_SHIFT020 SHIFT
+       WHERE GET_AR_SHIFTNO(#{adminID},DDATE_STR,CPNY_ID) = SHIFT.SHIFT_NO
+         AND AC.CPNY_ID = #{cpnyId}
+   AND DDATE_STR >= TO_CHAR(TO_DATE(#{startDate}, 'DD/MM/YYYY'), 'YYYY/MM/DD')
+   AND DDATE_STR <= TO_CHAR(TO_DATE(#{endDate}, 'DD/MM/YYYY'), 'YYYY/MM/DD')
+ GROUP BY DDATE_STR, SHIFT.SHIFT_NO, AC.CPNY_ID, AC.OVERTYPEID, AC.DDATE
+ ORDER BY DDATE_STR.
+
+ Tham khảo theo file viewWorkGroupExperList.html. Tạo cho tôi một file viewSSTApplyAttendance.html - Xin nghir pheps nằm trong module /ess/infoApplyAttendance. giao diện tham khảo từ hình ảnh. Loại nghỉ phép - APPLY_TYPE_CODE (dữ liệu lấy lấy thông qua data-parent-code="21"). Khi chọn loại nghỉ phép thì sẽ hiển thị ra tình trạng phép năm của nhân viên đó, gồm: Tổng phép năm:  Tạo phép năm:  Còn lại năm ngoái:  Số ngày đã sử dụng:  Số ngày còn lại. thogon tin được lấy thông qua câu lệnh: SELECT SUM(TOT_VAC_CNT + ADD_VAC + LAST_YEAR_VAC) AS TOT_VAC_CNT, --Tổng phép năm
+       SUM(USE_VAC　+　AFFIRM_USE_VAC　+　USE_VAC_CNT) AS USE_VAC, --Số ngày đã sử dụng
+       SUM(TOT_VAC_CNT + ADD_VAC + LAST_YEAR_VAC - USE_VAC　-　AFFIRM_USE_VAC　-　USE_VAC_CNT) AS REMAIN_VAC, --Số ngày còn lại
+       SUM(TOT_VAC_CNT) AS YEAR_VAC_CNT, --Tạo phép năm
+       SUM(ADD_VAC) AS ADD_VAC,
+       SUM(LAST_YEAR_VAC) AS LAST_YEAR_VAC --Còn lại năm ngoái
+  FROM (SELECT A.END_DATE,
+           A.TOT_VAC_CNT,
+           A.ADD_VAC,
+           A.MENT_VAC,
+           A.USE_VAC_CNT,
+           A.LAST_YEAR_VAC,
+               AR_USE_VACATION(TO_CHAR(A.STRT_DATE,'YYYY/MM/DD'),TO_CHAR(A.END_DATE,'YYYY/MM/DD'),A.CPNY_ID, A.PERSON_ID, 'CONFIRM') USE_VAC,
+               AR_USE_VACATION(TO_CHAR(A.STRT_DATE,'YYYY/MM/DD'),TO_CHAR(A.END_DATE,'YYYY/MM/DD'),A.CPNY_ID, A.PERSON_ID, 'AFFIRM') AFFIRM_USE_VAC
+          FROM AR_VAC_EMP A
+         WHERE A.PERSON_ID = #{adminID}
+           AND A.ACTIVITY = 1
+           AND (SYSDATE BETWEEN STRT_DATE AND END_DATE)).
+Đồng thời hiển thị danh sách line phê duyệt của người dùng đó (Thông tin người phê duyệt tham khảo hình ảnh). việc lấy ra người phê duyệt cũng như logic tạo đơn xin nghỉ phép tương tự như viewApplyAttenanceManagentInfoList_new.html. 
+
+Khi lựa chọn thời gian bắt đầu hoặc thời gian kết thúc, hệ thống sẽ gọi đến câu lệnh: select ar_get_day_hours(#{adminID},#{fromDateTime}) AS DAY_HOUR, GET_AR_LEAVE_LENGTH(#{adminID},#{cpnyId},to_date(#{fromDateTime},'YYYY.MM.DD HH24:MI:SS'),to_date(#{toDateTime},'YYYY.MM.DD HH24:MI:SS'),#{leaveType}) AS LEAVE_LENGTH from dual để lấy ra thời lượng và điền vào phần Thời lượng. lấy LEAVE_LENGTH chia cho DAY_HOUR ra phần nguyên thì là ngày, phần thập phân nhân với 24 ra phần giờ.
+
+
+Tham khảo theo file viewSSTApplyAttendance.html. Tạo cho tôi một file viewApplyAttendanceInfoList.html - Chi tiết xin nghỉ phép nằm trong module /ess/infoApplyAttendance. giao diện tham khảo từ hình ảnh. Loại nghỉ phép - ITEM_NO (dữ liệu lấy lấy thông qua data-parent-code="21"),  Trạng thái duyệt - AFFIRM_FLAG (dữ liệu lấy lấy thông qua data-parent-code="14014304"). với dữ liệu được lấy từ bảng ESS_LEAVE_APPLY_TB.
+
+
+tương tự như file viewSSTApplyAttendance.html. Tạo cho tôi một file viewSSTOtApplyInfo.html - Xin tăng ca nằm trong module /ess/infoApply. giao diện tham khảo từ hình ảnh. Khi chọn ngày tăng ca thì sẽ hiển thị ra thông tin của ngày đó, thông tin được lấy thông qua câu lệnh: SELECT  GET_AR_DATETYPE(#{adminID},#{applyDate},#{cpnyId}) DATETYPE,
+          get_global_name(get_ar_shiftno(#{adminID},#{applyDate},#{cpnyId}),#interLanguage#) SHIFTNAME, --Ca làm việc
+          TO_CHAR(TO_DATE(GET_AR_SHIFT_END_TIME(#{adminID},#{applyDate},#{cpnyId}),'YYYY.MM.DD HH24:MI'),'HH24:MI') SHIFT_END_TIME,
+          TO_CHAR(TO_DATE(GET_AR_SHIFT_END_TIME(#{adminID},#{applyDate},#{cpnyId}),'YYYY.MM.DD HH24:MI')+1/12,'HH24:MI') SHIFT_END_TIME_2,
+          TO_CHAR(TO_DATE(GET_AR_SHIFT_START_TIME(#{adminID},#{applyDate},#{cpnyId}),'YYYY.MM.DD HH24:MI'),'HH24:MI') SHIFT_START_TIME,
+          GET_AR_TIME_BY_CPNYID(#{adminID},#{applyDate},'IN',#{cpnyId}) INDOOR_TIME,
+          GET_AR_TIME_BY_CPNYID(#{adminID},#{applyDate},'OUT',#{cpnyId}) OUTDOOR_TIME,
+          GET_AR_OT_TOTAIL(#{applyDate},#{cpnyId},#{adminID},'30') OT_TOTAIL_MONTH, --Tổng tăng ca tháng này
+          GET_AR_OT_TOTAIL(#{applyDate},#{cpnyId},#{adminID},'200') OT_TOTAIL, --Tổng tăng ca năm này
+          GET_AR_OT_TOTAIL(#{applyDate},#{cpnyId},#{adminID},'141444') WEEKDAY_OT_TOTAIL, --Tăng ca ngày thường
+                    GET_AR_OT_TOTAIL(#{applyDate},#{cpnyId},#{adminID},'141445')  WEEKEND_OT_TOTAIL, --Tăng ca ngày cuối tuần
+                    GET_AR_OT_TOTAIL(#{applyDate},#{cpnyId},#{adminID},'141446') HOILDAY_OT_TOTAIL, --Tăng ca ngày lễ
+          (SELECT OT_LIMIT FROM HR_EMPLOYEE WHERE PERSON_ID = #{adminID}) OT_LIMIT,
+          (SELECT OT_LIMIT_100 FROM HR_EMPLOYEE WHERE PERSON_ID = #{adminID}) OT_LIMIT_100 FROM DUAL.
+Đồng thời hiển thị danh sách line phê duyệt của người dùng đó (Thông tin người phê duyệt tham khảo hình ảnh). việc lấy ra người phê duyệt cũng như logic tạo đơn xin nghỉ phép tương tự như viewArOvertimeManagent_fast.html. 
+
+Tham khảo theo file viewApplyAttendanceInfoList.html. Tạo cho tôi một file viewPOtApplyInfoList.html - Chi tiết xin tăng ca nằm trong module /ess/infoApply. giao diện tham khảo từ hình ảnh. Loại tăng ca - OT_TYPE_CODE (dữ liệu lấy lấy thông qua data-parent-code="31"),  Trạng thái duyệt - AFFIRM_FLAG (dữ liệu lấy lấy thông qua data-parent-code="14014304"). với dữ liệu được lấy từ bảng ESS_APPLY_OT. Khi bấm vào 1 dòng dữ liệu thì sẽ hiện ra thông tin phê duyệt của dòng đó. modal hiển thị thông tin phê duyệt tham khảo từ dòng 75 đến dòng 164 ở file viewArOvertimeManagent_fast.html
+
+
+tương tự như file viewSSTApplyAttendance.html. Tạo cho tôi một file viewShowCwaAbnormalApply.html - Nghỉ bất thường nằm trong module /ess/infoApply. giao diện tham khảo từ hình ảnh. Dữ liệu được lấy thông qua câu lệnh: SELECT 
+              AR_DETAIL.PK_NO,
+              AR_DETAIL.PERSON_ID,
+              GET_EMPID(AR_DETAIL.PERSON_ID) EMPID,
+              AR_DETAIL.ITEM_NO,
+              get_global_name(AR_DETAIL.ITEM_NO,#{lang}) ITEM_NAME,
+              TO_CHAR(AR_DETAIL.FROM_TIME,'DD/MM/YYYY HH24:mi:SS') FROM_TIME,
+              TO_CHAR(AR_DETAIL.TO_TIME,'DD/MM/YYYY HH24:mi:SS') TO_TIME,
+          TO_CHAR(TO_DATE(AR_DETAIL.AR_DATE_STR,'YYYY/MM/DD'),'DD/MM/YYYY') AR_DATE_STR,
+          REPLACE(TO_CHAR(TO_DATE(AR_DETAIL.AR_DATE_STR,'YYYY/MM/DD'),'DD/MM/YYYY'),'/','.') DATE_STR,
+          GET_AR_MAC_TIME(AR_DETAIL.PERSON_ID,AR_DATE_STR,'IN') INDOOR_TIME,
+          GET_AR_MAC_TIME(AR_DETAIL.PERSON_ID,AR_DATE_STR,'OUT') OUTDOOR_TIME,
+          TO_CHAR(TO_DATE(get_ar_shift_start_time(AR_DETAIL.PERSON_ID,AR_DATE_STR,#{cpnyId}),'YYYY/MM/DD HH24:MI'),'DD/MM/YYYY')shift_start_yyyy,
+          TO_CHAR(TO_DATE(get_ar_shift_start_time(AR_DETAIL.PERSON_ID,AR_DATE_STR,#{cpnyId}),'YYYY/MM/DD HH24:MI'),'HH24')shift_start_hh,
+          TO_CHAR(TO_DATE(get_ar_shift_start_time(AR_DETAIL.PERSON_ID,AR_DATE_STR,#{cpnyId}),'YYYY/MM/DD HH24:MI'),'MI')shift_start_mi,
+          TO_CHAR(TO_DATE(get_ar_shift_end_time(AR_DETAIL.PERSON_ID,AR_DATE_STR,#{cpnyId}),'YYYY/MM/DD HH24:MI'),'DD/MM/YYYY')shift_end_yyyy,
+          TO_CHAR(TO_DATE(get_ar_shift_end_time(AR_DETAIL.PERSON_ID,AR_DATE_STR,#{cpnyId}),'YYYY/MM/DD HH24:MI'),'HH24')shift_end_hh,
+          TO_CHAR(TO_DATE(get_ar_shift_end_time(AR_DETAIL.PERSON_ID,AR_DATE_STR,#{cpnyId}),'YYYY/MM/DD HH24:MI'),'MI')shift_end_mi,
+          LOCK_YN
+        FROM AR_DETAIL_HTSV AR_DETAIL 
+        WHERE AR_DETAIL.PERSON_ID=#{adminID}  
+          AND AR_DETAIL.ITEM_NO IN ('141443','141441','141442','14015448')
+          AND AR_DETAIL.AR_DATE_STR < TO_CHAR(SYSDATE,'YYYY/MM/DD')
+          AND AR_DETAIL.AR_DATE_STR NOT IN
+       (SELECT AR_DATE_STR
+          FROM ESS_CARD_APPLY_TB CARD
+         WHERE AFFIRM_FLAG IN ('14014306','14014307','14014308') AND CONFIRM_FLAG <> 2 AND PERSON_ID = #{adminID})
+           AND AR_DETAIL.AR_DATE_STR >= TO_CHAR(TO_DATE(#{startDate},'DD/MM/YYYY'),'YYYY/MM/DD')
+           AND AR_DETAIL.AR_DATE_STR <= TO_CHAR(TO_DATE(#{endDate},'DD/MM/YYYY'),'YYYY/MM/DD')
+        ORDER BY AR_DETAIL.AR_DATE_STR DESC.
+Đồng thời hiển thị danh sách line phê duyệt của người dùng đó trên mỗi dòng dữ liệu (Thông tin người phê duyệt tham khảo hình ảnh).
+
+Tham khảo theo file viewPOtApplyInfoList.html. Tạo cho tôi một file viewApplyLeaveInfoList.html - Chi tiết nghỉ bất thường nằm trong module /ess/infoApplyLeave. giao diện tham khảo từ hình ảnh. Trạng thái duyệt - AFFIRM_FLAG (dữ liệu lấy lấy thông qua data-parent-code="14014304"). với dữ liệu được lấy từ bảng ESS_CARD_APPLY_TB. Khi bấm vào 1 dòng dữ liệu thì sẽ hiện ra thông tin phê duyệt của dòng đó. modal hiển thị thông tin phê duyệt tham khảo từ dòng 90 đến dòng 179 ở file viewCheckAttencetanceExForBatchList.html
+
+Tham khảo theo file viewApplyAttendanceInfoList.html. Tạo cho tôi một file viewAttendancePersonalInfoList.html - Tra cứu chấm công nằm trong module /ess/infoApplyAttendance. giao diện tham khảo từ hình ảnh. Phân loại - ITEM_NO (dữ liệu lấy lấy thông qua câu lệnh: select AIP.ITEM_NO, get_global_name(AIP.ITEM_NO, #{lang}) as ITEM_NAME from AR_ITEM_PARAM AIP, AR_ITEM AI WHERE AIP.ITEM_NO = AI.ITEM_NO AND AIP.CPNY_ID = #{cpnyId} and AI.ITEM_GROUP_CODE != '1433' --Không lấy tăng ca;). với dữ liệu được lấy từ bảng AR_DETAIL_HTSV kết hợp với bảng HR_EMPLOYEE thông qua trường PERSON_ID để lấy ra EMPID - Mã nhân viên, LOCAL_NAME - Tên nhân viên. Dữ liệu được truy xuất ra theo tháng hiện tại, với điều kiện AR_DETAIL_HTSV.ITEM_NO NOT IN (select AIP.ITEM_NO from AR_ITEM_PARAM AIP, AR_ITEM AI WHERE AIP.ITEM_NO = AI.ITEM_NO AND AIP.CPNY_ID = #{cpnyId} and AI.ITEM_GROUP_CODE = '1433')
+
+Dựa vào file viewEmpCalendar.html ở module /ar/attendanceSettings. Tạo cho tôi một file viewEmpCalendar.html - Lịch làm việc nằm trong module /ess/viewDept. Dữ liệu được truy xuất ra theo tháng hiện tại. Nếu có thể tái sử dụng luôn được file viewEmpCalendar.html ở module /ar/attendanceSettings để hiển thị thì càng tốt.
+
+
+hãy xem lại cách lấy dữ liệu từ giao diện ManageEmpPositionInfoList.html. hãy thêm cho tôi điều kiện tìm kiếm để chọn ngày cụ thể, sau đó chọn mep_empOffice là đang làm, thì sẽ lấy ra những nhân viên đang làm việc vào ngày đó. tức là nếu nhân viên mà nghỉ việc sau ngày hôm đó hoặc nghỉ việc mà không có ngày nghỉ việc thì sẽ được hiển thị ra, còn những nhân viên nghỉ việc trước ngày đó thì sẽ không được hiển thị ra. hoặc nhân viên có ngày vào làm sau ngày hôm đó cũng không hiện ra. 
+
+Căn cứ và file viewAttendancePersonalInfoList.html. hãy tạo cho tôi một file viewArPersonalSelfList.html - Tình hình chấm công nằm trong module /ess/viewDept. giao diện tham khảo từ hình ảnh. dữ liệu được lấy ra khác với viewAttendancePersonalInfoList là ở giao diện này lại hiển thị theo chiều ngang (tính tổng các loại chấm công), với các loại chấm công được lấy từ câu lệnh : select get_global_name(AIP.ITEM_NO, #{lang}) as ITEM_NAME from AR_ITEM_PARAM AIP, AR_ITEM AI WHERE AIP.ITEM_NO = AI.ITEM_NO AND AIP.CPNY_ID = #{cpnyId} and AI.ITEM_GROUP_CODE != '1433' --Không lấy tăng ca;). với dữ liệu được lấy từ bảng AR_DETAIL_HTSV kết hợp với bảng HR_EMPLOYEE thông qua trường PERSON_ID để lấy ra EMPID - Mã nhân viên, LOCAL_NAME - Tên nhân viên. Dữ liệu được truy xuất ra theo tháng hiện tại, với điều kiện AR_DETAIL_HTSV.ITEM_NO NOT IN (select AIP.ITEM_NO from AR_ITEM_PARAM AIP, AR_ITEM AI WHERE AIP.ITEM_NO = AI.ITEM_NO AND AIP.CPNY_ID = #{cpnyId} and AI.ITEM_GROUP_CODE = '1433'. Khi bấm vào từng con số sẽ hiển thị ra chi tiết của loại chấm công đó trong Khoảng thời gian ngày bắt đầu và ngày kết thúc, phần chi tiết này tham khảo giao diện hình ảnh.
+
+
+Căn cứ và file viewArPersonalSelfList.html. hãy tạo cho tôi một file viewOtApplyPersonalSelfList.html - Tình hình tăng ca nằm trong module /ess/viewDept. giao diện tham khảo từ hình ảnh. dữ liệu giao diện này lại hiển thị theo chiều ngang (tính tổng các loại tăng ca), với các loại tăng ca được lấy từ câu lệnh : select get_global_name(AIP.ITEM_NO, #{lang}) as ITEM_NAME from AR_ITEM_PARAM AIP, AR_ITEM AI WHERE AIP.ITEM_NO = AI.ITEM_NO AND AIP.CPNY_ID = #{cpnyId} and AI.ITEM_GROUP_CODE = '1433';). với dữ liệu được lấy từ bảng AR_DETAIL_HTSV kết hợp với bảng HR_EMPLOYEE thông qua trường PERSON_ID để lấy ra EMPID - Mã nhân viên, LOCAL_NAME - Tên nhân viên. Dữ liệu được truy xuất ra theo tháng hiện tại, với điều kiện AR_DETAIL_HTSV.ITEM_NO IN (select AIP.ITEM_NO from AR_ITEM_PARAM AIP, AR_ITEM AI WHERE AIP.ITEM_NO = AI.ITEM_NO AND AIP.CPNY_ID = #{cpnyId} and AI.ITEM_GROUP_CODE = '1433'). Khi bấm vào từng con số sẽ hiển thị ra chi tiết của loại tăng ca đó trong Khoảng thời gian ngày bắt đầu và ngày kết thúc, phần chi tiết này tham khảo giao diện hình ảnh.
+
+
+Căn cứ và file viewPersonOtApplyInfoList.html. hãy tạo cho tôi một file yearUseInfo.html - Nghỉ phép năm nằm trong module /ess/viewDept. giao diện tham khảo từ hình ảnh. Thông tin nghỉ phép năm được lấy theo năm hiện tại, với dữ liệu được lấy từ essLeaveApplymapper.selectMyVacationInfo
+Tình trạng sử dụng phép năm được lấy từ bảng ESS_LEAVE_APPLY_TB với điều kiện LEAVE_TYPE_CODE = 26
+
+
+Căn cứ và file viewSearchApplyOtInfoList.html. hãy tạo cho tôi một file viewResumeList.html - Tổng hợp đánh giá nằm trong module /evs/manage/. dữ liệu lấy từ bảng EVS_RESUME_INFO với các trường tham khảo từ hình ảnh. có đầy đủ chức năng thêm mới, sửa, xóa. Khi bấm vào từng dòng dữ liệu sẽ hiển thị thông tin chi tiết của đánh giá đó để chỉnh sửa, phần chi tiết này tham khảo giao diện hình ảnh.
+
+Khi bấm vào nút lưu, nếu ở phần Sao chép đối tượng có chọn giá trị thì  sẽ thực hiện procedure PKG_EVS_PROCESS.PR_INIT_EVS_PARAM(
+            #{seq, mode=IN, jdbcType=VARCHAR},
+            #{adminID, mode=IN, jdbcType=VARCHAR},
+            #{adminIP, mode=IN, jdbcType=VARCHAR},
+            #{cpnyId, mode=IN, jdbcType=VARCHAR},
+            #{message, mode=OUT, jdbcType=VARCHAR}
+            ).
+
+Căn cú vào file viewResumeList.html. hãy tạo cho tôi một file viewEvsSchedulePanel.html - Quy trình đánh giá nằm trong module /evs/manage/. Giao diện thao khảo hình ảnh. Danh sách Tên đánh giá được lấy từ /api/resume/evsResumeList. dữ liệu lấy từ bảng EVS_SCHEDULE với các trường tham khảo từ hình ảnh. có đầy đủ chức năng thêm mới, sửa, xóa. Khi bấm vào từng dòng dữ liệu có thể trực tiếp chỉnh sửa. trong giao diện chia làm 3 tab: Tab Công ty - SCHEDULE_TYPE = CPNY, Tab Phòng ban - SCHEDULE_TYPE = DEPT, Tab Cá nhân - SCHEDULE_TYPE = EMP.
+
+
+Căn cứ vào file viewEvsSchedulePanel.html. hãy tạo cho tôi một file viewEvsParamPanel.html - Tiêu chuẩn đánh giá nằm trong module /evs/manage/. Giao diện thao khảo hình ảnh. Danh sách Tên đánh giá được lấy từ /api/resume/evsResumeList. có đầy đủ chức năng thêm mới, sửa, xóa. Khi bấm vào từng dòng dữ liệu có thể trực tiếp chỉnh sửa. trong giao diện chia làm 7 tab: 
+Tab Cấp đánh giá - Dữ liệu lấy từ bảng EVS_GRADE với các trường tham khảo hình ảnh.
+Tab Cấp hạng mục đánh giá - Dữ liệu lấy từ bảng EVS_PARAM với các trường tham khảo hình ảnh với PARAM_TYPE = 'ITEM'.
+Tab Đối tượng đánh giá - Dữ liệu lấy từ bảng EVS_PARAM_OBJECT với các trường tham khảo hình ảnh.
+Tab Bảng đánh giá - Dữ liệu lấy từ bảng EVS_PARAM với các trường tham khảo hình ảnh với PARAM_TYPE = 'LIST'.
+Tab Nhóm nhân viên - Dữ liệu lấy từ bảng EVS_PARAM với các trường tham khảo hình ảnh với PARAM_TYPE = 'GROUP'.
+Tab Nhóm chức vụ - Dữ liệu lấy từ bảng EVS_PARAM với các trường tham khảo hình ảnh với PARAM_TYPE = 'FAMILY'.
+Tab Người đánh giá - Dữ liệu lấy từ bảng EVS_AFFIRM_RULE với các trường tham khảo hình ảnh.
+
+
+Căn cứ và file viewResumeList.html. hãy tạo cho tôi một file viewEvsFormulaList.html - Nhóm đánh giá nằm trong module /evs/manage/. dữ liệu lấy từ bảng EVS_FORMULA với các trường tham khảo từ hình ảnh. có đầy đủ chức năng thêm mới, sửa, xóa. Khi bấm vào từng dòng dữ liệu sẽ hiển thị thông tin chi tiết để chỉnh sửa.
+
+Căn cứ và file viewEvsFormulaList.html. hãy tạo cho tôi một file viewEvsDistributionRatePanel.html - Thiết lập tỷ lệ nằm trong module /evs/manage/. dữ liệu lấy từ bảng EVS_SCORE với các trường tham khảo từ hình ảnh. có đầy đủ chức năng thêm mới, sửa, xóa. Khi bấm vào từng dòng dữ liệu sẽ hiển thị thông tin chi tiết để chỉnh sửa. Giá trị cột SUM được tính bằng cách lấy giá trị của cột A + B + C + D + E + N + O + S, GIÁ TRỊ PHẢI BẰNG 100. Nếu giá trị cột SUM không bằng 100 thì sẽ hiển thị cảnh báo và không cho phép lưu dữ liệu.
+
+danh sách vedr_resumeSeq lấy ra thì dùng luôn giá trị đầu tiên để làm điều kiện tìm kiếm mặc định khi click vào giao diện. khi vedr_scoreType được chọn giá trị CPNY thì vedr_no và vedr_name đồng thời điền giá trị là 'CPNY'. Hiện tại chỉ hiển thị 5 giá trị của A, B, C, D và E. ngoài ra khi hiển thị thì hãy chuyển đổi A thành EX, B thành VG, C thành GD, D thành NI, E thành UN. Khi lưu dữ liệu thì sẽ lưu ngược lại giá trị gốc A, B, C, D và E vào database.

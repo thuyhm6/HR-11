@@ -65,7 +65,7 @@
     </select>
 
     <select id="findByCpnyId" resultMap="BaseResultMap">
-        SELECT * FROM HR_COMPANY WHERE CPNY_ID = #{cpnyId}
+        SELECT * FROM HR_COMPANY WHERE CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
     </select>
     
     <select id="findByCpnyNo" resultMap="BaseResultMap">
@@ -73,7 +73,7 @@
     </select>
 
     <select id="existsByCpnyId" resultType="boolean">
-        SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END FROM HR_COMPANY WHERE CPNY_ID = #{cpnyId}
+        SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END FROM HR_COMPANY WHERE CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
     </select>
 
     <insert id="insert">
@@ -84,10 +84,10 @@
             CREATE_DATE, CREATED_BY, UPDATE_DATE, UPDATED_BY,
             ACTIVITY, ORDERNO
         ) VALUES (
-            #{cpnyId}, #{cpnyLocation}, #{cpnyAddr}, #{cpnyPostalcode},
+            #{cpnyId, jdbcType=VARCHAR}, #{cpnyLocation}, #{cpnyAddr}, #{cpnyPostalcode},
             #{cpnyIntro}, #{cpnyHistory}, #{cpnyWebAddr}, #{cpnyTelNo},
             #{cpnyFaxNo}, #{cpnyNo}, #{operationId}, #{ggsYn},
-            sysdate, #{adminID}, sysdate, #{adminID},
+            sysdate, #{adminID, jdbcType=VARCHAR}, sysdate, #{adminID, jdbcType=VARCHAR},
             #{activity}, #{orderNo}
         )
     </insert>
@@ -105,18 +105,18 @@
             OPERATION_ID = #{operationId},
             GGS_YN = #{ggsYn},
             UPDATE_DATE = sysdate,
-            UPDATED_BY = #{adminID},
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
             ACTIVITY = #{activity},
             ORDERNO = #{orderNo}
-        WHERE CPNY_ID = #{cpnyId}
+        WHERE CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
     </update>
 
     <delete id="deleteByCpnyId">
-        UPDATE HR_COMPANY SET ACTIVITY = 0, UPDATE_DATE = sysdate, UPDATED_BY = #{adminID} WHERE CPNY_ID = #{cpnyId}
+        UPDATE HR_COMPANY SET ACTIVITY = 0, UPDATE_DATE = sysdate, UPDATED_BY = #{adminID, jdbcType=VARCHAR} WHERE CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
     </delete>
     
     <delete id="deleteByCpnyNo">
-        UPDATE HR_COMPANY SET ACTIVITY = 0, UPDATE_DATE = sysdate, UPDATED_BY = #{adminID} WHERE CPNY_NO = #{cpnyNo}
+        UPDATE HR_COMPANY SET ACTIVITY = 0, UPDATE_DATE = sysdate, UPDATED_BY = #{adminID, jdbcType=VARCHAR} WHERE CPNY_NO = #{cpnyNo}
     </delete>
 
     <select id="getNextGlobalNoSeq" resultType="String">

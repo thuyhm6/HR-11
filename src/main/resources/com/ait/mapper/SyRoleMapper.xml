@@ -49,7 +49,7 @@
             ACTIVITY,
             SYS_TYPE
         FROM sy_role 
-        WHERE CPNY_ID = #{cpnyId}
+        WHERE CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
           AND ACTIVITY = 1
         ORDER BY ORDERNO
     </select>
@@ -112,8 +112,8 @@
             ROLE_NO, ROLE_ID, CPNY_ID, ORDERNO, ACTIVITY, SYS_TYPE,
             CREATE_DATE, CREATED_BY, UPDATE_DATE, UPDATED_BY
         ) VALUES (
-            #{roleNo}, #{roleId}, #{cpnyId}, #{orderNo}, #{activity}, #{sysType},
-            SYSDATE, #{adminID}, SYSDATE, #{adminID}
+            #{roleNo}, #{roleId}, #{cpnyId, jdbcType=VARCHAR}, #{orderNo}, #{activity}, #{sysType},
+            SYSDATE, #{adminID, jdbcType=VARCHAR}, SYSDATE, #{adminID, jdbcType=VARCHAR}
         )
     </insert>
 
@@ -124,7 +124,7 @@
             ACTIVITY = #{activity},
             SYS_TYPE = #{sysType},
             UPDATE_DATE = SYSDATE,
-            UPDATED_BY = #{adminID}
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR}
         WHERE ROLE_NO = #{roleNo}
     </update>
 
@@ -149,7 +149,7 @@
             (SELECT CONTENT FROM SY_GLOBAL_NAME WHERE NO = r.ROLE_NO AND LANGUAGE = 'zh') AS NAME_ZH,
             (SELECT CONTENT FROM SY_GLOBAL_NAME WHERE NO = r.ROLE_NO AND LANGUAGE = 'ko') AS NAME_KO
         FROM SY_ROLE r
-        WHERE r.CPNY_ID = #{cpnyId}
+        WHERE r.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
             <if test="keyword != null and keyword != ''">
                 AND (
                     LOWER(r.ROLE_ID) LIKE LOWER('%' || #{keyword} || '%') OR

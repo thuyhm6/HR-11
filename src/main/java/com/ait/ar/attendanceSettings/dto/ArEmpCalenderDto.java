@@ -5,7 +5,8 @@ import lombok.Data;
 @Data
 public class ArEmpCalenderDto {
     // AR_CALENDER base fields
-    private String arDateStr;        // DDATE_STR
+    private String arDateStr;
+    private String ddateStr;
     private String ddateFormatted;  // TO_CHAR(DDATE,'YYYY-MM-DD')
     private Integer iyear;
     private Integer imonth;

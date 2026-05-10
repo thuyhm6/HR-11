@@ -29,6 +29,11 @@ public class HrEducation {
     private String degreeCode;
 
     /**
+     * Tên bằng cấp (DEGREE_NAME) - Lấy từ bảng HR_CODE_DETAIL dựa vào DEGREE_CODE
+     */
+    private String degreeName;
+
+    /**
      * Là bằng cấp cao nhất (FINAL_DEGREE_WHETHER) - Y/N
      */
     private String finalDegreeWhether;
@@ -92,6 +97,11 @@ public class HrEducation {
      * Ghi chú (REMARK)
      */
     private String remark;
+
+    /**
+     * Tên quốc gia (SITE_COUNTRY_NAME)
+     */
+    private String siteCountryName;
 
     /**
      * Thứ tự hiển thị (ORDERNO)

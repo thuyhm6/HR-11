@@ -14,7 +14,7 @@
                 <div class="modal-header">
                     <h5 class="modal-title" id="employeeSearchModalTitle">
                         <i class="bx bx-search me-2"></i>
-                        Tìm kiếm nhân viên
+                        <span th:text="#{empSearch.title}">Tìm kiếm nhân viên</span>
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
@@ -22,39 +22,44 @@
                     <!-- Search Form -->
                     <div class="row mb-3">
                         <div class="col-md-4">
-                            <label for="popupSearchEmpId" class="form-label">Mã nhân viên</label>
-                            <input type="text" class="form-control" id="popupSearchEmpId" placeholder="Nhập mã nhân viên">
+                            <label for="popupSearchEmpId" class="form-label" th:text="#{empSearch.field.empId}">Mã nhân viên</label>
+                            <input type="text" class="form-control" id="popupSearchEmpId"
+                                th:placeholder="#{empSearch.placeholder.empId}">
                         </div>
                         <div class="col-md-4">
-                            <label for="popupSearchLocalName" class="form-label">Họ tên</label>
-                            <input type="text" class="form-control" id="popupSearchLocalName" placeholder="Nhập họ tên">
+                            <label for="popupSearchLocalName" class="form-label" th:text="#{empSearch.field.fullName}">Họ tên</label>
+                            <input type="text" class="form-control" id="popupSearchLocalName"
+                                th:placeholder="#{empSearch.placeholder.fullName}">
                         </div>
                         <div class="col-md-4">
-                            <label for="popupSearchDeptNo" class="form-label">Mã phòng ban</label>
-                            <input type="text" class="form-control" id="popupSearchDeptNo" placeholder="Nhập mã phòng ban">
+                            <label for="popupSearchDeptNo" class="form-label" th:text="#{empSearch.field.deptCode}">Mã phòng ban</label>
+                            <input type="text" class="form-control" id="popupSearchDeptNo"
+                                th:placeholder="#{empSearch.placeholder.deptCode}">
                         </div>
                     </div>
                     <div class="row mb-3">
                         <div class="col-12">
                             <button type="button" class="btn btn-primary" onclick="EmployeeSearchModal.search()">
-                                <i class="bx bx-search me-1"></i> Tìm kiếm
+                                <i class="bx bx-search me-1"></i>
+                                <span th:text="#{common.search}">Tìm kiếm</span>
                             </button>
                             <button type="button" class="btn btn-secondary ms-2" onclick="EmployeeSearchModal.clear()">
-                                <i class="bx bx-x me-1"></i> Xóa bộ lọc
+                                <i class="bx bx-x me-1"></i>
+                                <span th:text="#{empSearch.btn.clearFilter}">Xóa bộ lọc</span>
                             </button>
                         </div>
                     </div>
-                    
+
                     <!-- Employee List Table -->
                     <div class="table-responsive">
                         <table id="employeeSearchTable" class="table table-striped table-hover">
                             <thead class="table-dark">
                                 <tr>
-                                    <th>STT</th>
-                                    <th>Mã nhân viên</th>
-                                    <th>Họ tên</th>
-                                    <th>Phòng ban</th>
-                                    <th>Chức vụ</th>
+                                    <th th:text="#{empSearch.col.no}">STT</th>
+                                    <th th:text="#{empSearch.field.empId}">Mã nhân viên</th>
+                                    <th th:text="#{empSearch.field.fullName}">Họ tên</th>
+                                    <th th:text="#{empSearch.col.dept}">Phòng ban</th>
+                                    <th th:text="#{epi.field.position}">Chức vụ</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -65,7 +70,8 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <i class="bx bx-x me-1"></i> Đóng
+                        <i class="bx bx-x me-1"></i>
+                        <span th:text="#{common.close}">Đóng</span>
                     </button>
                 </div>
             </div>

@@ -1,0 +1,462 @@
+<div th:fragment="content">
+    <div class="row">
+        <div class="col-12" id="sa_pageWrapper">
+
+            <!-- Thông tin nhân viên -->
+            <div th:replace="~{fragments/essEmpInfoCard :: card}"></div>
+
+            <!-- Form xin nghỉ phép -->
+            <div class="card mb-3">
+                <div class="card-body p-0">
+                    <table class="table table-bordered table-sm align-middle mb-0" style="table-layout:fixed;">
+                        <colgroup>
+                            <col style="width:15%;">
+                            <col style="width:85%;">
+                        </colgroup>
+                        <tbody>
+                            <tr>
+                                <th class="table-light text-center">Loại nghỉ phép</th>
+                                <td>
+                                    <div class="d-flex align-items-center flex-wrap gap-2">
+                                        <select class="form-select form-select-sm" id="sa_leaveType"
+                                            style="max-width:220px;"
+                                            data-parent-code="21"
+                                            data-default-text="-- Chọn loại nghỉ --">
+                                        </select>
+                                        <span id="sa_vacInfo" class="text-muted small"></span>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="table-light text-center">Thời gian bắt đầu</th>
+                                <td>
+                                    <div class="d-flex align-items-center gap-1">
+                                        <input type="text" class="form-control form-control-sm js-daterangepicker"
+                                            id="sa_fromDate"
+                                            data-drp-format="DD/MM/YYYY"
+                                            data-drp-auto-update-input="false"
+                                            data-drp-on-apply="saOnDateApply"
+                                            autocomplete="off"
+                                            style="width:130px;"
+                                            onchange="saCalcDuration()">
+                                        <select class="form-select form-select-sm" id="sa_fromHour"
+                                            style="width:75px;" onchange="saCalcDuration()"></select>
+                                        <span>:</span>
+                                        <select class="form-select form-select-sm" id="sa_fromMin"
+                                            style="width:75px;" onchange="saCalcDuration()"></select>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="table-light text-center">Thời gian kết thúc</th>
+                                <td>
+                                    <div class="d-flex align-items-center gap-1">
+                                        <input type="text" class="form-control form-control-sm js-daterangepicker"
+                                            id="sa_toDate"
+                                            data-drp-format="DD/MM/YYYY"
+                                            data-drp-auto-update-input="false"
+                                            data-drp-on-apply="saOnDateApply"
+                                            autocomplete="off"
+                                            style="width:130px;"
+                                            onchange="saCalcDuration()">
+                                        <select class="form-select form-select-sm" id="sa_toHour"
+                                            style="width:75px;" onchange="saCalcDuration()"></select>
+                                        <span>:</span>
+                                        <select class="form-select form-select-sm" id="sa_toMin"
+                                            style="width:75px;" onchange="saCalcDuration()"></select>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="table-light text-center">Thời lượng</th>
+                                <td><span id="sa_duration">-</span></td>
+                            </tr>
+                            <tr>
+                                <th class="table-light text-center">Lý do</th>
+                                <td>
+                                    <textarea class="form-control form-control-sm" id="sa_reason"
+                                        rows="4" style="resize:vertical;"></textarea>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Đính kèm file -->
+            <div class="mb-3">
+                <div class="mb-2">
+                    <button type="button" class="btn btn-sm btn-secondary me-1" onclick="saInsertFile()">Chèn file</button>
+                    <button type="button" class="btn btn-sm btn-secondary" onclick="saDeleteSelectedFiles()">Xóa</button>
+                    <input type="file" id="sa_fileInput" style="display:none;" multiple onchange="saOnFileSelected(this)">
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm mb-0">
+                        <thead class="table-light text-center">
+                            <tr>
+                                <th style="width:40px;">V</th>
+                                <th>File</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sa_fileListBody">
+                            <tr id="sa_fileListEmpty">
+                                <td colspan="2" class="text-center text-muted">Chưa có file đính kèm</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Danh sách người phê duyệt -->
+            <div class="table-responsive mb-3">
+                <table class="table table-bordered table-sm align-middle mb-0">
+                    <thead class="table-light text-center">
+                        <tr>
+                            <th style="width:50px;">STT</th>
+                            <th>Người duyệt</th>
+                            <th style="width:130px;">Mã nhân viên</th>
+                            <th>Phòng ban</th>
+                            <th>Chức danh</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sa_approvalBody">
+                        <tr>
+                            <td colspan="5" class="text-center text-muted">Chọn loại nghỉ phép để xem người phê duyệt</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Nút xin phép -->
+            <div class="text-end mb-3">
+                <button type="button" class="btn btn-primary" id="sa_submitBtn" onclick="saSubmit()">Xin phép</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<template id="fragmentScripts">
+    <th:block th:replace="~{fragments/essEmpInfoCard :: script}"></th:block>
+    <script th:inline="javascript">
+        var _sa_personId = '';
+        var _sa_localName = '';
+        var _sa_fileList = [];
+        var _sa_pageBooted = false;
+
+        function saEscHtml(v) {
+            if (v == null || v === undefined) return '';
+            return String(v)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function saFormatVacInfo(d) {
+            if (!d) return '';
+            var f = function(v) { return (v != null && v !== '') ? v : '0'; };
+            return 'Tổng phép năm: ' + f(d.TOT_VAC_CNT) + '/  ' +
+                   'Tạo phép năm: ' + f(d.YEAR_VAC_CNT) + '/  ' +
+                   'Còn lại năm ngoái: ' + f(d.LAST_YEAR_VAC) + '/  ' +
+                   'Đặc biệt: ' + f(d.ADD_VAC) + '/  ' +
+                   'Số ngày đã sử dụng: ' + f(d.USE_VAC) + '/  ' +
+                   'Số ngày còn lại: ' + f(d.REMAIN_VAC);
+        }
+
+        function saInitHourSelects() {
+            var hourOpts = '';
+            for (var h = 0; h < 24; h++) {
+                var hh = (h < 10 ? '0' : '') + h;
+                hourOpts += '<option value="' + hh + '">' + hh + '</option>';
+            }
+            var minOpts = '';
+            [0, 15, 30, 45].forEach(function(m) {
+                var mm = (m < 10 ? '0' : '') + m;
+                minOpts += '<option value="' + mm + '">' + mm + '</option>';
+            });
+            $('#sa_fromHour, #sa_toHour').html(hourOpts);
+            $('#sa_fromMin, #sa_toMin').html(minOpts);
+            $('#sa_fromHour').val('08');
+            $('#sa_toHour').val('17');
+        }
+
+        function saInitDateDefaults() {
+            var today = new Date();
+            var dd = String(today.getDate()).padStart(2, '0');
+            var mm = String(today.getMonth() + 1).padStart(2, '0');
+            var yyyy = today.getFullYear();
+            var todayStr = dd + '/' + mm + '/' + yyyy;
+            $('#sa_fromDate').val(todayStr);
+            $('#sa_toDate').val(todayStr);
+            if ($('#sa_fromDate').data('daterangepicker')) {
+                $('#sa_fromDate').data('daterangepicker').setStartDate(todayStr);
+            }
+            if ($('#sa_toDate').data('daterangepicker')) {
+                $('#sa_toDate').data('daterangepicker').setStartDate(todayStr);
+            }
+        }
+
+        // Convert DD/MM/YYYY to YYYY-MM-DD HH:mm
+        function saConvertToApiDateTime(dateStr, hourVal, minVal) {
+            if (!dateStr) return '';
+            var p = dateStr.split('/');
+            if (p.length !== 3) return '';
+            return p[2] + '-' + p[1] + '-' + p[0] + ' ' + (hourVal || '00') + ':' + (minVal || '00');
+        }
+
+        var _sa_calcTimer = null;
+
+        window.saOnDateApply = function() {
+            saCalcDuration();
+        };
+
+        window.saCalcDuration = function() {
+            clearTimeout(_sa_calcTimer);
+            _sa_calcTimer = setTimeout(function() {
+                var leaveTypeCode = $('#sa_leaveType').val();
+                var fromDt = saConvertToApiDateTime($('#sa_fromDate').val(), $('#sa_fromHour').val(), $('#sa_fromMin').val());
+                var toDt   = saConvertToApiDateTime($('#sa_toDate').val(),   $('#sa_toHour').val(),   $('#sa_toMin').val());
+
+                if (!fromDt || !toDt || !leaveTypeCode) {
+                    $('#sa_duration').text('-');
+                    return;
+                }
+
+                $('#sa_duration').text('Đang tính...');
+                $.ajax({
+                    url: '/ess/infoApplyAttendance/api/leaveLength',
+                    type: 'GET',
+                    data: { fromDateTime: fromDt, toDateTime: toDt, leaveTypeCode: leaveTypeCode },
+                    success: function(res) {
+                        var leaveLen = parseFloat(res && res.LEAVE_LENGTH);
+                        var dayHour  = parseFloat(res && res.DAY_HOUR);
+                        if (isNaN(leaveLen) || isNaN(dayHour) || dayHour === 0) {
+                            $('#sa_duration').text('-');
+                            return;
+                        }
+                        var days  = Math.floor(leaveLen / dayHour);
+                        var hours = leaveLen - days * dayHour;
+                        var text  = '';
+                        if (days > 0)  text += days  + ' Ngày';
+                        if (hours > 0) text += (text ? ' ' : '') + hours + ' Giờ';
+                        $('#sa_duration').text(text || '0');
+                    },
+                    error: function() { $('#sa_duration').text('-'); }
+                });
+            }, 300);
+        };
+
+        function saLoadVacationInfo() {
+            $.ajax({
+                url: '/ess/infoApplyAttendance/api/vacationInfo',
+                type: 'GET',
+                success: function(data) {
+                    var info = saFormatVacInfo(data);
+                    $('#sa_vacInfo').text(info || '');
+                }
+            });
+        }
+
+        function saLoadApprovers() {
+            if (!_sa_personId) return;
+            var leaveTypeCode = $('#sa_leaveType').val() || '';
+            var $tbody = $('#sa_approvalBody');
+            $tbody.html('<tr><td colspan="5" class="text-center text-muted">Đang tải...</td></tr>');
+
+            $.post('/ar/attendanceMintenance/api/leaveApply/approvers', {
+                applyTypeNo: '21',
+                personId: _sa_personId,
+                applyTypeCode: leaveTypeCode,
+                applyLength: '0'
+            }, function(data) {
+                if (!data || !data.length) {
+                    $tbody.html('<tr><td colspan="5" class="text-center text-muted">Không có dữ liệu phê duyệt</td></tr>');
+                    return;
+                }
+                var html = '';
+                var counter = 0;
+                data.forEach(function(item) {
+                    var level = item.affirmLevel;
+                    if (String(level) === '0') return;
+                    counter++;
+                    html += '<tr>'
+                        + '<td class="text-center">' + saEscHtml(level || counter) + '</td>'
+                        + '<td>' + saEscHtml(item.localName || '') + '</td>'
+                        + '<td class="text-center">' + saEscHtml(item.empId || '') + '</td>'
+                        + '<td>' + saEscHtml(item.deptName || '') + '</td>'
+                        + '<td>' + saEscHtml(item.postionName || item.positionName || '') + '</td>'
+                        + '</tr>';
+                });
+                $tbody.html(html || '<tr><td colspan="5" class="text-center text-muted">Không có người phê duyệt</td></tr>');
+            }).fail(function() {
+                $tbody.html('<tr><td colspan="5" class="text-center text-danger">Lỗi tải người phê duyệt</td></tr>');
+            });
+        }
+
+        window.saOnLeaveTypeChange = function() {
+            saLoadVacationInfo();
+            saLoadApprovers();
+            saCalcDuration();
+        };
+
+        window.saInsertFile = function() {
+            document.getElementById('sa_fileInput').click();
+        };
+
+        window.saOnFileSelected = function(input) {
+            Array.from(input.files || []).forEach(function(f) {
+                _sa_fileList.push(f);
+            });
+            saRenderFileList();
+            input.value = '';
+        };
+
+        function saRenderFileList() {
+            var $body = $('#sa_fileListBody');
+            if (!_sa_fileList.length) {
+                $body.html('<tr id="sa_fileListEmpty"><td colspan="2" class="text-center text-muted">Chưa có file đính kèm</td></tr>');
+                return;
+            }
+            var html = '';
+            _sa_fileList.forEach(function(f, i) {
+                html += '<tr>'
+                    + '<td class="text-center"><input type="checkbox" class="form-check-input sa-file-check" data-idx="' + i + '"></td>'
+                    + '<td>' + saEscHtml(f.name) + '</td>'
+                    + '</tr>';
+            });
+            $body.html(html);
+        }
+
+        window.saDeleteSelectedFiles = function() {
+            var toRemove = [];
+            $('.sa-file-check:checked').each(function() {
+                toRemove.push(parseInt($(this).attr('data-idx'), 10));
+            });
+            if (!toRemove.length) {
+                toastr && toastr.warning('Vui lòng chọn file cần xóa');
+                return;
+            }
+            _sa_fileList = _sa_fileList.filter(function(_, i) { return toRemove.indexOf(i) === -1; });
+            saRenderFileList();
+        };
+
+        function saBuildDateTime(dateInputId, hourId, minId) {
+            var dateStr = $('#' + dateInputId).val();
+            var parts = dateStr ? dateStr.split('/') : [];
+            if (parts.length !== 3) return '';
+            return parts[2] + '-' + parts[1] + '-' + parts[0]
+                + ' ' + ($('#' + hourId).val() || '00')
+                + ':' + ($('#' + minId).val() || '00');
+        }
+
+        window.saSubmit = function() {
+            var leaveTypeCode = $('#sa_leaveType').val();
+            if (!leaveTypeCode) { toastr && toastr.warning('Vui lòng chọn loại nghỉ phép!'); return; }
+
+            var fromTime = saBuildDateTime('sa_fromDate', 'sa_fromHour', 'sa_fromMin');
+            var toTime   = saBuildDateTime('sa_toDate',   'sa_toHour',   'sa_toMin');
+            if (!fromTime) { toastr && toastr.warning('Vui lòng nhập thời gian bắt đầu!'); return; }
+            if (!toTime)   { toastr && toastr.warning('Vui lòng nhập thời gian kết thúc!'); return; }
+
+            var payload = {
+                applyNo:       '',
+                personId:      _sa_personId,
+                localName:     _sa_localName,
+                leaveTypeCode: leaveTypeCode,
+                leaveFromTime: fromTime,
+                leaveToTime:   toTime,
+                applyLength:   null,
+                leaveReason:   $('#sa_reason').val()
+            };
+
+            var $btn = $('#sa_submitBtn');
+            var oHtml = $btn.html();
+            $btn.html('<i class="bx bx-loader bx-spin"></i> Đang gửi...').prop('disabled', true);
+
+            $.ajax({
+                url: '/ar/attendanceMintenance/api/leaveApply/save',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(payload),
+                success: function(res) {
+                    $btn.html(oHtml).prop('disabled', false);
+                    if (res && res.success) {
+                        toastr && toastr.success(res.message || 'Xin phép thành công!');
+                        saResetForm();
+                    } else {
+                        toastr && toastr.error(res.error || 'Lỗi khi gửi đơn!');
+                    }
+                },
+                error: function() {
+                    $btn.html(oHtml).prop('disabled', false);
+                    toastr && toastr.error('Lỗi kết nối khi gửi đơn!');
+                }
+            });
+        };
+
+        function saResetForm() {
+            $('#sa_leaveType').val('');
+            $('#sa_vacInfo').text('');
+            saInitDateDefaults();
+            $('#sa_fromHour').val('08');
+            $('#sa_toHour').val('17');
+            $('#sa_fromMin, #sa_toMin').val('00');
+            $('#sa_reason').val('');
+            _sa_fileList = [];
+            saRenderFileList();
+            saCalcDuration();
+            $('#sa_approvalBody').html('<tr><td colspan="5" class="text-center text-muted">Chọn loại nghỉ phép để xem người phê duyệt</td></tr>');
+        }
+
+        function saBootPage() {
+            if (_sa_pageBooted) return;
+            if (!document.getElementById('sa_leaveType')) {
+                setTimeout(saBootPage, 30);
+                return;
+            }
+            _sa_pageBooted = true;
+
+            loadEssEmpInfoCard();
+            saInitHourSelects();
+
+            if (typeof initDateRangePickers === 'function') {
+                initDateRangePickers('#sa_pageWrapper');
+            }
+            saInitDateDefaults();
+            saCalcDuration();
+
+            $.ajax({
+                url: '/ess/empinfo/api/personalInfo/myInfo',
+                type: 'GET',
+                success: function(data) {
+                    if (!data) return;
+                    _sa_personId = data.personId || '';
+                    _sa_localName = data.localName || '';
+
+                    var onReady = function() {
+                        $('#sa_leaveType').on('change', window.saOnLeaveTypeChange);
+                        saLoadVacationInfo();
+                        saLoadApprovers();
+                    };
+
+                    if (typeof initCodeSelects === 'function') {
+                        $.when(initCodeSelects('#sa_pageWrapper')).always(onReady);
+                    } else {
+                        onReady();
+                    }
+                }
+            });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', saBootPage);
+        }
+        if (typeof $ !== 'undefined') {
+            $(document).ready(saBootPage);
+        } else {
+            saBootPage();
+        }
+    </script>
+</template>

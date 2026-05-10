@@ -33,4 +33,9 @@ public interface HrPersonalInfoService {
      */
     boolean hasPersonalInfo(String userNo);
 
+    /**
+     * Cập nhật thông tin personal info
+     */
+    boolean updatePersonalInfo(HrPersonalInfo info);
+
 }

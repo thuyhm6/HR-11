@@ -45,9 +45,9 @@
         LEFT JOIN AR_DEPARTMENT_MANAGE m
             ON d.DEPTNO = m.DEPT_NO
            AND m.LOCK_DATE = #{lockDate}
-           AND m.CPNY_ID = #{cpnyId}
+           AND m.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
         WHERE d.ACTIVITY = 1 
-          AND d.CPNY_ID = #{cpnyId}
+          AND d.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
         <if test="deptNos != null and deptNos.size() > 0">
             AND d.DEPTNO IN 
             <foreach collection="deptNos" item="deptId" open="(" separator="," close=")">
@@ -60,7 +60,7 @@
     <select id="checkExists" resultType="int">
         SELECT COUNT(1)
         FROM AR_DEPARTMENT_MANAGE
-        WHERE CPNY_ID = #{cpnyId}
+        WHERE CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
           AND DEPT_NO = #{deptNo}
           AND LOCK_DATE = #{lockDate}
     </select>
@@ -87,7 +87,7 @@
             AFFIRM_FLAG
         ) VALUES (
             AR_DEPARTMENT_MANAGE_SEQ.NEXTVAL,
-            #{cpnyId},
+            #{cpnyId, jdbcType=VARCHAR},
             #{deptNo},
             #{lockDate},
             #{lockAttenFlag, jdbcType=VARCHAR},
@@ -99,8 +99,8 @@
             #{lockAttenAnnualFlag, jdbcType=VARCHAR},
             #{lockAttenAnnualNightFlag, jdbcType=VARCHAR},
             SYSDATE,
-            #{adminID},
-            #{adminIP},
+            #{adminID, jdbcType=VARCHAR},
+            #{adminIP, jdbcType=VARCHAR},
             1,
             0,
             '0'
@@ -119,9 +119,9 @@
             LOCK_ATTEN_ANNUAL_FLAG = #{lockAttenAnnualFlag, jdbcType=VARCHAR},
             LOCK_ATTEN_ANNUAL_NIGHT_FLAG = #{lockAttenAnnualNightFlag, jdbcType=VARCHAR},
             UPDATE_DATE = SYSDATE,
-            UPDATED_BY = #{adminID},
-            UPDATED_IP = #{adminIP}
-        WHERE CPNY_ID = #{cpnyId}
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+            UPDATED_IP = #{adminIP, jdbcType=VARCHAR}
+        WHERE CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
           AND DEPT_NO = #{deptNo}
           AND LOCK_DATE = #{lockDate}
     </update>

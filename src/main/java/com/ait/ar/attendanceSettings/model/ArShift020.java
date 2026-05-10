@@ -3,7 +3,7 @@ package com.ait.ar.attendanceSettings.model;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
@@ -11,14 +11,14 @@ import java.util.Date;
 public class ArShift020 {
     private Long pkNo;
     private Integer beginDayOffset;
-    private Date fromTime;
+    private LocalDateTime fromTime;
     private Integer endDayOffset;
-    private Date toTime;
+    private LocalDateTime toTime;
     private String shiftNo;
     private String itemNo;
-    private Date createDate;
+    private LocalDateTime createDate;
     private String createdBy;
-    private Date updateDate;
+    private LocalDateTime updateDate;
     private String updatedBy;
     private Integer activity;
     private Integer orderno;

@@ -10,6 +10,7 @@ import java.util.List;
 @Mapper
 public interface HrFamilyMapper {
     List<HrFamily> searchFamily(@Param("empId") String empId,
+            @Param("personId") String personId,
             @Param("localName") String localName,
             @Param("famName") String famName);
 

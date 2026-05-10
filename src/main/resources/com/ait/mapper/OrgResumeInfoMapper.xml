@@ -96,7 +96,7 @@
             CREATED_IP, EXPERIENCE_TYPE
         ) VALUES (
             ORG_RESUME_INFO_SEQ.NEXTVAL, #{no}, #{changeDate, jdbcType=DATE}, #{resumeName}, #{isCurrentOrg}, #{changeReason},
-            SYSDATE, #{adminID}, #{activity}, #{cpnyId}, #{fromNo}, #{remark},
+            SYSDATE, #{adminID, jdbcType=VARCHAR}, #{activity}, #{cpnyId, jdbcType=VARCHAR}, #{fromNo}, #{remark},
             #{createdIp}, #{experienceType}
         )
     </insert>
@@ -109,7 +109,7 @@
             IS_CURRENT_ORG = #{isCurrentOrg},
             CHANGE_REASON = #{changeReason},
             UPDATE_DATE = SYSDATE,
-            UPDATED_BY = #{adminID},
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
             ACTIVITY = #{activity},
             UPDATED_IP = #{updatedIp},
             REMARK = #{remark},
@@ -144,9 +144,9 @@
     <select id="callProcessExecute" statementType="CALLABLE">
         {call PKG_RESUME_PROCESS.PR_PROCESS_EXECUTE(
             #{resumeNo, mode=IN, jdbcType=VARCHAR},
-            #{adminId, mode=IN, jdbcType=VARCHAR},
-            #{adminIp, mode=IN, jdbcType=VARCHAR},
-            #{interCpnyId, mode=IN, jdbcType=VARCHAR},
+            #{adminID, mode=IN, jdbcType=VARCHAR},
+            #{adminIP, mode=IN, jdbcType=VARCHAR},
+            #{cpnyId, mode=IN, jdbcType=VARCHAR},
             #{type, mode=IN, jdbcType=VARCHAR},
             #{message, mode=OUT, jdbcType=VARCHAR}
         )}

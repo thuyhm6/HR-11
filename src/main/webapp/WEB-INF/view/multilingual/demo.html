@@ -235,19 +235,19 @@
                             <div class="col-12">
                                 <div class="card">
                                     <div class="card-header">
-                        <h5 class="card-title mb-0">Thông tin ngôn ngữ hiện tại</h5>
+                        <h5 class="card-title mb-0" th:text="#{langDemo.currentLangInfo}">Thông tin ngôn ngữ hiện tại</h5>
                                     </div>
                                     <div class="card-body">
                                         <div class="row">
                             <div class="col-md-4">
                                 <div class="alert alert-info">
-                                    <h6>Mã ngôn ngữ:</h6>
+                                    <h6 th:text="#{langDemo.codeLabel}">Mã ngôn ngữ:</h6>
                                     <p id="currentLanguageCode" class="mb-0">-</p>
                                             </div>
                                         </div>
                             <div class="col-md-4">
                                 <div class="alert alert-success">
-                                    <h6>Tên ngôn ngữ:</h6>
+                                    <h6 th:text="#{langDemo.nameLabel}">Tên ngôn ngữ:</h6>
                                     <p id="currentLanguageName" class="mb-0">-</p>
                                         </div>
                                     </div>

@@ -59,6 +59,14 @@
         ORDER BY q.DATE_OBTAINED DESC
     </select>
 
+    <select id="getByPersonId" resultMap="BaseResultMap">
+        SELECT q.*, e.EMPID, e.LOCAL_NAME
+        FROM HR_QUALIFICATION q
+        LEFT JOIN HR_EMPLOYEE e ON q.PERSON_ID = e.PERSON_ID
+        WHERE q.PERSON_ID = #{personId} AND q.ACTIVITY = 1
+        ORDER BY q.DATE_OBTAINED DESC
+    </select>
+
     <select id="getById" resultMap="BaseResultMap">
         SELECT 
             q.*,
@@ -81,7 +89,7 @@
             #{qualInstitute}, #{validityDate}, #{acquisitionModes}, #{qualLevel},
             #{paymentAllowanceYN}, #{qualRemark}, #{qualGrade}, #{qualSubmitDate},
             #{qualNameCode}, #{qualGradeCode}, #{fileName}, #{fileUrl}, #{orderNo},
-            SYSDATE, #{adminID}, #{createdIp}, 1
+            SYSDATE, #{adminID, jdbcType=VARCHAR}, #{createdIp}, 1
         )
     </insert>
 
@@ -105,7 +113,7 @@
             FILE_URL = #{fileUrl},
             ORDERNO = #{orderNo},
             UPDATE_DATE = SYSDATE,
-            UPDATED_BY = #{adminID},
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
             UPDATED_IP = #{updatedIp}
         WHERE QUAL_NO = #{qualNo}
     </update>
@@ -114,7 +122,7 @@
         UPDATE HR_QUALIFICATION
         SET ACTIVITY = 0,
             UPDATE_DATE = SYSDATE,
-            UPDATED_BY = #{adminID},
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
             UPDATED_IP = #{updatedIp}
         WHERE QUAL_NO = #{qualNo}
     </update>

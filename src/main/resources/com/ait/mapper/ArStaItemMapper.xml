@@ -55,7 +55,7 @@
         INSERT INTO AR_STA_ITEM (
             ITEM_NO, UNIT, DATATYPE, STA_ITEM_ID, ACTIVITY, ORDERNO, SHOW_YN, SHOW_ORDER, CREATE_DATE, CREATED_BY, CREATED_IP
         ) VALUES (
-            #{itemNo}, #{unit}, #{datatype}, #{staItemId}, #{activity}, #{orderno}, #{showYn}, #{showOrder}, SYSDATE, #{adminID}, #{adminIP}
+            #{itemNo}, #{unit}, #{datatype}, #{staItemId}, #{activity}, #{orderno}, #{showYn}, #{showOrder}, SYSDATE, #{adminID, jdbcType=VARCHAR}, #{adminIP, jdbcType=VARCHAR}
         )
     </insert>
 
@@ -69,8 +69,8 @@
             SHOW_YN = #{showYn},
             SHOW_ORDER = #{showOrder},
             UPDATE_DATE = SYSDATE,
-            UPDATED_BY = #{adminID},
-            UPDATED_IP = #{adminIP}
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+            UPDATED_IP = #{adminIP, jdbcType=VARCHAR}
         WHERE ITEM_NO = #{itemNo}
     </update>
 

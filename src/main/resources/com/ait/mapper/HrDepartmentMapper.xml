@@ -182,7 +182,7 @@
             AND hd.DEPTID LIKE '%' || #{deptId} || '%'
         </if>
         <if test="cpnyId != null and cpnyId != ''">
-            AND hd.CPNY_ID = #{cpnyId}
+            AND hd.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
         </if>
         <if test="parentDeptNo != null and parentDeptNo != ''">
             AND hd.PARENT_DEPT_NO = #{parentDeptNo}
@@ -308,7 +308,7 @@
             <include refid="baseColumns"/>
         <include refid="baseFromClause"/>
         <include refid="baseWhereClause"/>
-        AND hd.CPNY_ID = #{cpnyId}
+        AND hd.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
         <include refid="activeDepartmentsFilter"/>
         ORDER BY hd.DEPT_LEVEL ASC, hd.ORDERNO ASC
     </select>
@@ -420,10 +420,10 @@
             CREATED_IP, UPDATED_IP, RESUME_NO, REMARK, FEE_STANDARD,
             DEPT_DISTINGUISH_STANDARD, PREP_MANAGER_EMP_ID, ORDER_NO, ORG_NAME_KO, ORG_NAME_VI
         ) VALUES (
-            #{deptId}, #{cpnyId}, #{dateCreated}, #{dateEnded}, #{deptLevel}, #{managerEmpId},
+            #{deptId}, #{cpnyId, jdbcType=VARCHAR}, #{dateCreated}, #{dateEnded}, #{deptLevel}, #{managerEmpId},
             #{deptNo}, #{parentDeptNo}, #{workArea}, #{deptType}, #{orgNameEng}, #{orgNameLocal},
-            #{orgLevel}, #{costCenter}, #{useYn}, #{createDate}, #{adminID}, #{updateDate},
-            #{adminID}, #{orderNo}, #{activity}, #{isDept}, #{isPartTime}, #{productType},
+            #{orgLevel}, #{costCenter}, #{useYn}, #{createDate}, #{adminID, jdbcType=VARCHAR}, #{updateDate},
+            #{adminID, jdbcType=VARCHAR}, #{orderNo}, #{activity}, #{isDept}, #{isPartTime}, #{productType},
             #{createdIp}, #{updatedIp}, #{resumeNo}, #{remark}, #{feeStandard},
             #{deptDistinguishStandard}, #{prepManagerEmpId}, #{orderNo}, #{orgNameKo}, #{orgNameVi}
         )
@@ -434,7 +434,7 @@
         UPDATE hr_department 
         <set>
             <if test="cpnyId != null">
-                CPNY_ID = #{cpnyId},
+                CPNY_ID = #{cpnyId, jdbcType=VARCHAR},
             </if>
             <if test="dateCreated != null">
                 DATE_CREATED = #{dateCreated},
@@ -510,7 +510,7 @@
             </if>
             <!-- Audit fields - luôn update -->
             UPDATE_DATE = #{updateDate},
-            UPDATED_BY = #{adminID},
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
             UPDATED_IP = #{updatedIp}
         </set>
         WHERE DEPTNO = #{deptNo}

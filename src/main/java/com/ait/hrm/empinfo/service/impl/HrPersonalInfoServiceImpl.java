@@ -55,4 +55,10 @@ public class HrPersonalInfoServiceImpl implements HrPersonalInfoService {
         return personalInfo != null;
     }
 
+    @Override
+    public boolean updatePersonalInfo(HrPersonalInfo info) {
+        if (info == null || info.getPersonId() == null) return false;
+        return hrPersonalInfoMapper.update(info) > 0;
+    }
+
 }

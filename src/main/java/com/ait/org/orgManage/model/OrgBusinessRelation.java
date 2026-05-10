@@ -1,8 +1,8 @@
 package com.ait.org.orgManage.model;
 
 import lombok.Data;
-import java.util.Date;
-import com.fasterxml.jackson.annotation.JsonFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 public class OrgBusinessRelation {
@@ -15,13 +15,11 @@ public class OrgBusinessRelation {
     private String activity;
     private Integer orderNo;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Ho_Chi_Minh")
-    private Date createDate;
+    private LocalDateTime createDate;
     private String createdBy;
     private String createdIp;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Ho_Chi_Minh")
-    private Date updateDate;
+    private LocalDateTime updateDate;
     private String updatedBy;
     private String updatedIp;
 

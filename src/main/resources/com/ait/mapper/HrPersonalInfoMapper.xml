@@ -6,11 +6,15 @@
     <resultMap id="HrPersonalInfoResultMap" type="com.ait.hrm.empinfo.model.HrPersonalInfo">
         <id property="personId" column="PERSON_ID"/>
         <result property="finalDegreeCode" column="FINAL_DEGREE_CODE"/>
+        <result property="finalDegreeName" column="FINAL_DEGREE_NAME"/>
         <result property="sexCode" column="SEXCODE"/>
         <result property="dob" column="DOB"/>
         <result property="nationCode" column="NATION_CODE"/>
+        <result property="nationName" column="NATION_NAME"/>
         <result property="nationalityCode" column="NATIONALITY_CODE"/>
+        <result property="nationalityName" column="NATIONALITY_NAME"/>
         <result property="maritalStatusCode" column="MARITAL_STATUS_CODE"/>
+        <result property="maritalStatusName" column="MARITAL_STATUS_NAME"/>
         <result property="weddingDate" column="WEDDING_DATE"/>
         <result property="idcardNo" column="IDCARD_NO"/>
         <result property="homeAddress" column="HOME_ADDRESS"/>
@@ -81,11 +85,16 @@
     <sql id="baseColumns">
         hp.PERSON_ID,
         hp.FINAL_DEGREE_CODE,
+        GET_GLOBAL_NAME(hp.FINAL_DEGREE_CODE, #{lang, jdbcType=VARCHAR}) as FINAL_DEGREE_NAME,
         hp.SEXCODE,
+        GET_GLOBAL_NAME(hp.SEXCODE, #{lang, jdbcType=VARCHAR}) as SEX_NAME,
         hp.DOB,
         hp.NATION_CODE,
+        GET_GLOBAL_NAME(hp.NATION_CODE, #{lang, jdbcType=VARCHAR}) as NATION_NAME,
         hp.NATIONALITY_CODE,
+        GET_GLOBAL_NAME(hp.NATIONALITY_CODE, #{lang, jdbcType=VARCHAR}) as NATIONALITY_NAME,
         hp.MARITAL_STATUS_CODE,
+        GET_GLOBAL_NAME(hp.MARITAL_STATUS_CODE, #{lang, jdbcType=VARCHAR}) as MARITAL_STATUS_NAME,
         hp.WEDDING_DATE,
         hp.IDCARD_NO,
         hp.HOME_ADDRESS,
@@ -478,7 +487,7 @@
             #{personId}, #{finalDegreeCode}, #{sexCode}, #{dob}, #{nationCode}, #{nationalityCode},
             #{maritalStatusCode}, #{weddingDate}, #{idcardNo}, #{homeAddress}, #{email},
             #{regTypeCode}, #{regPlace}, #{officePhone}, #{homePhone}, #{cellphone}, #{photoPath},
-            #{houseTp}, #{weddDate}, #{createDate}, #{adminID}, #{updateDate}, #{adminID},
+            #{houseTp}, #{weddDate}, #{createDate}, #{adminID, jdbcType=VARCHAR}, #{updateDate}, #{adminID, jdbcType=VARCHAR},
             #{orderNo}, #{activity}, #{residentialDistinction}, #{existSingle}, #{singId},
             #{companyPhone}, #{emailSecond}, #{fileLocation}, #{fileEnter}, #{fileOut},
             #{createdIp}, #{updatedIp}, #{contactPhone}, #{ext}, #{interested}, #{oldDepartment},
@@ -674,9 +683,9 @@
                 ACTIVITY = #{activity},
             </if>
             <!-- Audit fields - luôn update -->
-            UPDATE_DATE = #{updateDate},
-            UPDATED_BY = #{adminID},
-            UPDATED_IP = #{updatedIp}
+            UPDATE_DATE = SYSDATE,
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+            UPDATED_IP = #{adminIP, jdbcType=VARCHAR}
         </set>
         WHERE PERSON_ID = #{personId}
     </update>

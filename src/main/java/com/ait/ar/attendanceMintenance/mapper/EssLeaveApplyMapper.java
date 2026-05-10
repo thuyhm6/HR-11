@@ -37,4 +37,14 @@ public interface EssLeaveApplyMapper {
 
     void callImportAttendanceTemp(Map<String, Object> params);
 
+    Map<String, Object> selectMyVacationInfo(@Param("adminID") String personId);
+
+    Map<String, Object> selectLeaveLength(@Param("fromDateTime") String fromDateTime,
+                                          @Param("toDateTime") String toDateTime,
+                                          @Param("leaveTypeCode") String leaveTypeCode);
+
+    List<EssLeaveApplyDto> selectMyLeaveApplyList(EssLeaveApplyDto dto);
+
+    int cancelMyLeaveApplyList(@Param("applyNos") List<String> applyNos);
+
 }

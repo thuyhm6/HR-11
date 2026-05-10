@@ -5,38 +5,38 @@
                 <div class="card-body">
                     <form id="otf_searchForm" class="row g-3 mb-4">
                         <div class="col-md-2">
-                            <label for="otf_searchEmpId" class="form-label">Mã nhân viên</label>
+                            <label for="otf_searchEmpId" class="form-label" th:text="#{common.empId}">Mã nhân viên</label>
                             <input type="text" class="form-control" id="otf_searchEmpId"
-                                placeholder="Nhập mã nhân viên">
+                                th:placeholder="#{common.placeholder.enterEmpId}" placeholder="Nhập mã nhân viên">
                         </div>
                         <div class="col-md-2">
-                            <label for="otf_searchEmpName" class="form-label">Tên nhân viên</label>
+                            <label for="otf_searchEmpName" class="form-label" th:text="#{common.empName}">Tên nhân viên</label>
                             <input type="text" class="form-control" id="otf_searchEmpName"
-                                placeholder="Nhập tên nhân viên">
+                                th:placeholder="#{common.placeholder.enterEmpName}" placeholder="Nhập tên nhân viên">
                         </div>
                         <div class="col-md-2">
-                            <label for="otf_searchFromDate" class="form-label">Từ ngày</label>
+                            <label for="otf_searchFromDate" class="form-label" th:text="#{common.fromDate}">Từ ngày</label>
                             <input type="date" class="form-control" id="otf_searchFromDate">
                         </div>
                         <div class="col-md-2">
-                            <label for="otf_searchToDate" class="form-label">Đến ngày</label>
+                            <label for="otf_searchToDate" class="form-label" th:text="#{common.toDate}">Đến ngày</label>
                             <input type="date" class="form-control" id="otf_searchToDate">
                         </div>
                         <div class="col-md-4 d-flex align-items-end flex-wrap gap-1">
                             <button type="button" class="btn btn-primary" onclick="otfSearchData()">
-                                <i class="bx bx-search"></i> Tìm kiếm
+                                <i class="bx bx-search"></i> <span th:text="#{common.search}">Tìm kiếm</span>
                             </button>
                             <button type="button" class="btn btn-secondary" onclick="otfClearSearch()">
-                                <i class="bx bx-x"></i> Xóa lọc
+                                <i class="bx bx-x"></i> <span th:text="#{common.clearFilter}">Xóa lọc</span>
                             </button>
                             <button type="button" class="btn btn-success" onclick="otfAddEmptyRow()">
-                                <i class="bx bx-plus"></i> Thêm mới
+                                <i class="bx bx-plus"></i> <span th:text="#{common.addNew}">Thêm mới</span>
                             </button>
                             <button type="button" class="btn btn-info text-white" onclick="otfDownloadTemplate()">
-                                <i class="bx bx-download"></i> Tải File Mẫu
+                                <i class="bx bx-download"></i> <span th:text="#{common.downloadTemplate}">Tải File Mẫu</span>
                             </button>
                             <button type="button" class="btn btn-warning" onclick="otfOpenImportModal()">
-                                <i class="bx bx-upload"></i> Import Excel
+                                <i class="bx bx-upload"></i> <span th:text="#{common.importExcel}">Import Excel</span>
                             </button>
                         </div>
                     </form>
@@ -47,19 +47,19 @@
                             <thead class="table-light text-center align-middle">
                                 <tr>
                                     <th>No</th>
-                                    <th>Nhân viên</th>
-                                    <th>Phòng ban</th>
-                                    <th>Loại tăng ca</th>
-                                    <th>Ngày tăng ca</th>
-                                    <th>Từ giờ</th>
-                                    <th>Đến giờ</th>
-                                    <th>Số giờ</th>
-                                    <th>Lý do</th>
-                                    <th>Trạng thái</th>
-                                    <th>Người tạo</th>
-                                    <th>Người sửa</th>
-                                    <th>Người duyệt</th>
-                                    <th>Thao tác</th>
+                                    <th th:text="#{common.empName}">Nhân viên</th>
+                                    <th th:text="#{common.deptName}">Phòng ban</th>
+                                    <th th:text="#{arOtf.otType}">Loại tăng ca</th>
+                                    <th th:text="#{arOtf.otDate}">Ngày tăng ca</th>
+                                    <th th:text="#{arOtf.fromHour}">Từ giờ</th>
+                                    <th th:text="#{arOtf.toHour}">Đến giờ</th>
+                                    <th th:text="#{common.hours}">Số giờ</th>
+                                    <th th:text="#{common.reason}">Lý do</th>
+                                    <th th:text="#{common.status}">Trạng thái</th>
+                                    <th th:text="#{common.creator}">Người tạo</th>
+                                    <th th:text="#{common.updater}">Người sửa</th>
+                                    <th th:text="#{common.approver}">Người duyệt</th>
+                                    <th th:text="#{common.action}">Thao tác</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
@@ -75,7 +75,7 @@
     <div class="modal-dialog modal-xl modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="otf_applyDetailTitle">[Xin tăng ca]</h5>
+                <h5 class="modal-title" id="otf_applyDetailTitle" th:text="#{arOtf.applyOt}">[Xin tăng ca]</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -83,11 +83,11 @@
                     <table class="table table-bordered table-sm align-middle mb-0">
                         <tbody>
                             <tr>
-                                <th class="table-light text-center" style="width: 160px;">Tiêu đề</th>
+                                <th class="table-light text-center" style="width: 160px;" th:text="#{arOtf.applyTitle}">Tiêu đề</th>
                                 <td id="otf_modalApplyTitle"></td>
                             </tr>
                             <tr>
-                                <th class="table-light text-center">Người đăng ký</th>
+                                <th class="table-light text-center" th:text="#{arOtf.applicant}">Người đăng ký</th>
                                 <td id="otf_modalApplicant"></td>
                             </tr>
                         </tbody>
@@ -98,50 +98,50 @@
                     <table class="table table-bordered table-sm align-middle mb-0">
                         <thead class="table-light text-center">
                             <tr>
-                                <th style="width: 50px;">STT</th>
-                                <th style="width: 90px;">Trình tự duyệt</th>
-                                <th style="width: 110px;">Trạng thái duyệt</th>
-                                <th>Họ tên</th>
-                                <th>Ý kiến</th>
-                                <th style="width: 170px;">Thời gian thực hiện</th>
-                                <th style="width: 120px;">Phòng ban</th>
+                                <th style="width: 50px;" th:text="#{common.stt}">STT</th>
+                                <th style="width: 90px;" th:text="#{arOtf.approvalSeq}">Trình tự duyệt</th>
+                                <th style="width: 110px;" th:text="#{arOtf.approvalStatus}">Trạng thái duyệt</th>
+                                <th th:text="#{common.empName}">Họ tên</th>
+                                <th th:text="#{arOtf.opinion}">Ý kiến</th>
+                                <th style="width: 170px;" th:text="#{arOtf.actionTime}">Thời gian thực hiện</th>
+                                <th style="width: 120px;" th:text="#{common.deptName}">Phòng ban</th>
                             </tr>
                         </thead>
                         <tbody id="otf_modalApprovalBody"></tbody>
                     </table>
                 </div>
 
-                <h6 class="fw-bold mb-2">Thông tin nhân viên</h6>
+                <h6 class="fw-bold mb-2" th:text="#{arOtf.empInfo}">Thông tin nhân viên</h6>
                 <div class="table-responsive mb-4">
                     <table class="table table-bordered table-sm align-middle mb-0">
                         <tbody>
                             <tr>
-                                <th class="table-light text-center" style="width: 100px;">Họ tên</th>
+                                <th class="table-light text-center" style="width: 100px;" th:text="#{common.empName}">Họ tên</th>
                                 <td id="otf_modalEmpName"></td>
-                                <th class="table-light text-center" style="width: 100px;">Mã nhân viên</th>
+                                <th class="table-light text-center" style="width: 100px;" th:text="#{common.empId}">Mã nhân viên</th>
                                 <td id="otf_modalEmpId"></td>
                             </tr>
                             <tr>
-                                <th class="table-light text-center">Phòng ban</th>
+                                <th class="table-light text-center" th:text="#{common.deptName}">Phòng ban</th>
                                 <td id="otf_modalEmpDept"></td>
-                                <th class="table-light text-center">Chức vụ</th>
+                                <th class="table-light text-center" th:text="#{attSearch.position}">Chức vụ</th>
                                 <td id="otf_modalEmpPost"></td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
 
-                <h6 class="fw-bold mb-2">Thông tin tăng ca</h6>
+                <h6 class="fw-bold mb-2" th:text="#{arOtf.otInfo}">Thông tin tăng ca</h6>
                 <div class="table-responsive">
                     <table class="table table-bordered table-sm align-middle mb-0">
                         <thead class="table-light text-center">
                             <tr>
-                                <th>Loại tăng ca</th>
-                                <th style="width: 140px;">Ngày tăng ca</th>
-                                <th style="width: 170px;">Bắt đầu</th>
-                                <th style="width: 170px;">Kết thúc</th>
-                                <th style="width: 140px;">Số giờ</th>
-                                <th>Lý do</th>
+                                <th th:text="#{arOtf.otType}">Loại tăng ca</th>
+                                <th style="width: 140px;" th:text="#{arOtf.otDate}">Ngày tăng ca</th>
+                                <th style="width: 170px;" th:text="#{arOtf.otBegin}">Bắt đầu</th>
+                                <th style="width: 170px;" th:text="#{arOtf.otEnd}">Kết thúc</th>
+                                <th style="width: 140px;" th:text="#{common.hours}">Số giờ</th>
+                                <th th:text="#{common.reason}">Lý do</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -158,7 +158,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" th:text="#{common.close}">Đóng</button>
             </div>
         </div>
     </div>
@@ -166,6 +166,21 @@
 
 <template id="fragmentScripts">
     <script th:inline="javascript">
+        var _otf_i18n = {
+            selectEmp: /*[[#{arOtf.selectEmp}]]*/ 'Chọn NV...',
+            loadingData: /*[[#{arOtf.loadingData}]]*/ 'Đang tải dữ liệu...',
+            loadingApproval: /*[[#{arOtf.loadingApproval}]]*/ 'Đang tải dữ liệu phê duyệt...',
+            noApprovalData: /*[[#{arOtf.noApprovalData}]]*/ 'Không có dữ liệu phê duyệt',
+            loadFailed: /*[[#{arOtf.loadFailed}]]*/ 'Tải dữ liệu thất bại',
+            msgNotSelectEmp: /*[[#{arOtf.msg.notSelectEmp}]]*/ 'Chưa chọn nhân viên',
+            msgNotSelectDate: /*[[#{arOtf.msg.notSelectDate}]]*/ 'Chưa chọn ngày tăng ca',
+            msgNotEnterTime: /*[[#{arOtf.msg.notEnterTime}]]*/ 'Chưa nhập giờ tăng ca',
+            msgNoHour: /*[[#{arOtf.msg.noHour}]]*/ 'Không tính được số giờ tăng ca',
+            msgNoApplyNo: /*[[#{arOtf.msg.noApplyNo}]]*/ 'Không tìm thấy số đơn để xem chi tiết',
+            noEmpComp: /*[[#{arOtf.noEmpComp}]]*/ 'Chưa có component tìm nhân viên.',
+            importResult: /*[[#{arOtf.importResult}]]*/ 'Kết quả nhập',
+            applyOt: /*[[#{arOtf.applyOt}]]*/ 'Xin tăng ca'
+        };
         var _otf_table;
         var _otf_addedRows = [];
         var _otf_pageBooted = false;
@@ -365,7 +380,7 @@
                     _otf_table.ajax.reload(null, false);
                 }
                 if (typeof tabSystem !== 'undefined' && tabSystem && typeof tabSystem.openTab === 'function') {
-                    tabSystem.openTab('/ar/attendanceMintenance/viewImportOtTempList', 'Kết quả nhập');
+                    tabSystem.openTab('/ar/attendanceMintenance/viewImportOtTempList', _otf_i18n.importResult);
                 } else {
                     window.open('/ar/attendanceMintenance/viewImportOtTempList', '_blank');
                 }
@@ -640,7 +655,7 @@
                         render: function (data, type, row) {
                             if (row.isNew) {
                                 return '<div class="input-group input-group-sm">'
-                                    + '<input type="text" class="form-control otf-in-empname" readonly placeholder="Chọn NV...">'
+                                    + '<input type="text" class="form-control otf-in-empname" readonly placeholder="' + _otf_i18n.selectEmp + '">'
                                     + '<input type="hidden" class="otf-in-personid">'
                                     + '<button class="btn btn-outline-secondary" type="button" onclick="otfPickEmp(this)"><i class="bx bx-search"></i></button>'
                                     + '</div>';
@@ -777,12 +792,12 @@
             otfSetText('#otf_modalTo', '');
             otfSetText('#otf_modalHour', '');
             otfSetText('#otf_modalRemark', '');
-            $('#otf_modalApprovalBody').html('<tr><td colspan="7" class="text-center text-muted">Đang tải dữ liệu...</td></tr>');
+            $('#otf_modalApprovalBody').html('<tr><td colspan="7" class="text-center text-muted">' + _otf_i18n.loadingData + '</td></tr>');
         }
 
         function otfRenderApprovalRows(approvalList) {
             if (!approvalList || !approvalList.length) {
-                $('#otf_modalApprovalBody').html('<tr><td colspan="7" class="text-center text-muted">Không có dữ liệu phê duyệt</td></tr>');
+                $('#otf_modalApprovalBody').html('<tr><td colspan="7" class="text-center text-muted">' + _otf_i18n.noApprovalData + '</td></tr>');
                 return;
             }
             var html = '';
@@ -808,7 +823,7 @@
             var otInfo = data && data.otInfo ? data.otInfo : {};
             var employeeInfo = data && data.employeeInfo ? data.employeeInfo : otInfo;
             var approvalList = data && data.approvalList ? data.approvalList : [];
-            $('#otf_applyDetailTitle').text('[' + (otInfo.otTypeName || 'Xin tăng ca') + ']');
+            $('#otf_applyDetailTitle').text('[' + (otInfo.otTypeName || _otf_i18n.applyOt) + ']');
             otfSetText('#otf_modalApplyTitle', otfBuildApplyTitle(otInfo));
             otfSetText('#otf_modalApplicant', (employeeInfo.localName || '') + '/' + (employeeInfo.postGradeName || '') + '/' + (employeeInfo.deptName || ''));
             otfSetText('#otf_modalEmpName', employeeInfo.localName || '');
@@ -830,7 +845,7 @@
 
             if (previewData) {
                 otfRenderApplyDetail(previewData);
-                $('#otf_modalApprovalBody').html('<tr><td colspan="7" class="text-center text-muted">Đang tải dữ liệu phê duyệt...</td></tr>');
+                $('#otf_modalApprovalBody').html('<tr><td colspan="7" class="text-center text-muted">' + _otf_i18n.loadingApproval + '</td></tr>');
             }
             if (_otf_detailCache[cacheKey]) {
                 otfRenderApplyDetail(_otf_detailCache[cacheKey]);
@@ -858,8 +873,8 @@
                     otfRenderApplyDetail(responseData);
                 },
                 error: function () {
-                    $('#otf_modalApprovalBody').html('<tr><td colspan="7" class="text-center text-danger">Tải dữ liệu thất bại</td></tr>');
-                    toastr && toastr.error('Không tải được thông tin phê duyệt');
+                    $('#otf_modalApprovalBody').html('<tr><td colspan="7" class="text-center text-danger">' + _otf_i18n.loadFailed + '</td></tr>');
+                    toastr && toastr.error(_otf_i18n.loadFailed);
                 },
                 complete: function () {
                     delete _otf_detailPending[cacheKey];
@@ -909,10 +924,10 @@
         }
 
         function otfValidateSaveContext(saveContext) {
-            if (!saveContext.personId) { toastr && toastr.warning('Chưa chọn nhân viên'); return false; }
-            if (!saveContext.applyOtDate) { toastr && toastr.warning('Chưa chọn ngày tăng ca'); return false; }
-            if (!saveContext.otFromTime || !saveContext.otToTime) { toastr && toastr.warning('Chưa nhập giờ tăng ca'); return false; }
-            if (!saveContext.otApplyHour) { toastr && toastr.warning('Không tính được số giờ tăng ca'); return false; }
+            if (!saveContext.personId) { toastr && toastr.warning(_otf_i18n.msgNotSelectEmp); return false; }
+            if (!saveContext.applyOtDate) { toastr && toastr.warning(_otf_i18n.msgNotSelectDate); return false; }
+            if (!saveContext.otFromTime || !saveContext.otToTime) { toastr && toastr.warning(_otf_i18n.msgNotEnterTime); return false; }
+            if (!saveContext.otApplyHour) { toastr && toastr.warning(_otf_i18n.msgNoHour); return false; }
             return true;
         }
 
@@ -971,13 +986,13 @@
                     otfResolveDefaultOtInfo($tr);
                 });
             } else {
-                alert('Chưa có component tìm nhân viên.');
+                alert(_otf_i18n.noEmpComp);
             }
         };
 
         window.otfOpenApplyDetail = function (applyNo, applyType) {
             if (!applyNo) {
-                toastr && toastr.warning('Không tìm thấy số đơn để xem chi tiết');
+                toastr && toastr.warning(_otf_i18n.msgNoApplyNo);
                 return;
             }
             otfEnsureDetailModal();

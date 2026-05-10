@@ -3,43 +3,43 @@
         <div class="col-xl-8 col-lg-10">
             <div class="card">
                 <div class="card-header">
-                    <h5 class="mb-0">Tính toán chi tiết</h5>
+                    <h5 class="mb-0" th:text="#{arCalc.title}">Tính toán chi tiết</h5>
                 </div>
                 <div class="card-body">
                     <form id="adc_form" class="row g-3">
                         <div class="col-12">
-                            <label class="form-label d-block">Phân loại tính toán</label>
+                            <label class="form-label d-block" th:text="#{arCalc.calType}">Phân loại tính toán</label>
                             <div class="d-flex gap-4 flex-wrap">
                                 <div class="form-check">
                                     <input class="form-check-input adc-caltype" type="checkbox" id="adc_caltype_person"
                                         value="EMP" checked>
-                                    <label class="form-check-label" for="adc_caltype_person">Nhân viên</label>
+                                    <label class="form-check-label" for="adc_caltype_person" th:text="#{arCalc.byEmployee}">Nhân viên</label>
                                 </div>
                                 <div class="form-check">
                                     <input class="form-check-input adc-caltype" type="checkbox" id="adc_caltype_dept"
                                         value="DEPT">
-                                    <label class="form-check-label" for="adc_caltype_dept">Phòng ban</label>
+                                    <label class="form-check-label" for="adc_caltype_dept" th:text="#{arCalc.byDept}">Phòng ban</label>
                                 </div>
                             </div>
                         </div>
 
                         <div class="col-6">
-                            <label for="adc_fromDate" class="form-label">Từ ngày</label>
+                            <label for="adc_fromDate" class="form-label" th:text="#{common.fromDate}">Từ ngày</label>
                             <input type="text" class="form-control js-daterangepicker" id="adc_fromDate"
                                 data-drp-format="YYYY/MM/DD" autocomplete="off">
                         </div>
 
                         <div class="col-6">
-                            <label for="adc_toDate" class="form-label">Đến ngày</label>
+                            <label for="adc_toDate" class="form-label" th:text="#{common.toDate}">Đến ngày</label>
                             <input type="text" class="form-control js-daterangepicker" id="adc_toDate"
                                 data-drp-format="YYYY/MM/DD" autocomplete="off">
                         </div>
 
                         <div class="col-12" id="adc_personBlock">
-                            <label for="adc_personDisplay" class="form-label">Nhân viên</label>
+                            <label for="adc_personDisplay" class="form-label" th:text="#{arCalc.byEmployee}">Nhân viên</label>
                             <div class="input-group">
                                 <input type="text" class="form-control" id="adc_personDisplay"
-                                    placeholder="Chọn nhân viên..." readonly>
+                                    th:placeholder="#{arCalc.selectEmployee}" placeholder="Chọn nhân viên..." readonly>
                                 <input type="hidden" id="adc_personId">
                                 <button class="btn btn-outline-primary" type="button"
                                     onclick="openEmployeeSearchPopup()">
@@ -49,12 +49,12 @@
                         </div>
 
                         <div class="col-12 d-none" id="adc_deptBlock">
-                            <label for="adc_deptDisplay" class="form-label">Phòng ban</label>
+                            <label for="adc_deptDisplay" class="form-label" th:text="#{arCalc.byDept}">Phòng ban</label>
                             <input type="text" class="form-control mb-2" id="adc_deptDisplay"
-                                placeholder="Chọn phòng ban" readonly>
+                                th:placeholder="#{arCalc.selectDept}" placeholder="Chọn phòng ban" readonly>
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" id="adc_sonDeptFlag">
-                                <label class="form-check-label" for="adc_sonDeptFlag">
+                                <label class="form-check-label" for="adc_sonDeptFlag" th:text="#{arCalc.includeSubDept}">
                                     Bao gồm phòng ban con
                                 </label>
                             </div>
@@ -63,7 +63,7 @@
                         <div class="col-12 d-flex justify-content-end">
                             <button type="button" class="btn btn-primary" id="adc_calculateBtn"
                                 onclick="adcRunCalculate()">
-                                <i class="bx bx-calculator"></i> Tính toán
+                                <i class="bx bx-calculator"></i> <span th:text="#{arCalc.btnCalculate}">Tính toán</span>
                             </button>
                         </div>
                     </form>
@@ -75,6 +75,15 @@
 
 <template id="fragmentScripts">
     <script th:inline="javascript">
+        var _adc_i18n = {
+            msgSelectDateRange: /*[[#{arCalc.msg.selectDateRange}]]*/ 'Vui lòng chọn khoảng thời gian tính toán',
+            msgSelectEmployee: /*[[#{arCalc.msg.selectEmployee}]]*/ 'Vui lòng chọn nhân viên',
+            msgSelectDept: /*[[#{arCalc.msg.selectDept}]]*/ 'Vui lòng chọn phòng ban',
+            msgSelectOneDept: /*[[#{arCalc.msg.selectOneDept}]]*/ 'Chỉ được chọn một phòng ban',
+            msgCalcFail: /*[[#{arCalc.msg.calcFail}]]*/ 'Tính toán thất bại',
+            msgCalcError: /*[[#{arCalc.msg.calcError}]]*/ 'Không thể thực hiện tính toán',
+            calculating: /*[[#{arCalc.calculating}]]*/ 'Đang tính toán'
+        };
         var _adc_pageBooted = false;
         var _adc_selectedDeptCodes = [];
 
@@ -139,7 +148,7 @@
                     $('#adc_personDisplay').val(employee.empId + ' - ' + employee.localName);
                 });
             } else {
-                alert('Component tìm kiếm nhân viên chưa được tải!');
+                alert(_adc_i18n.msgSelectEmployee);
             }
         };
 
@@ -151,23 +160,23 @@
             var personId = '';
 
             if (!fromDate || !toDate) {
-                toastr && toastr.warning('Vui lòng chọn khoảng thời gian tính toán');
+                toastr && toastr.warning(_adc_i18n.msgSelectDateRange);
                 return;
             }
 
             if (caltype === 'EMP') {
                 personId = ($('#adc_personId').val() || '').trim();
                 if (!personId) {
-                    toastr && toastr.warning('Vui lòng chọn nhân viên');
+                    toastr && toastr.warning(_adc_i18n.msgSelectEmployee);
                     return;
                 }
             } else {
                 if (!_adc_selectedDeptCodes || _adc_selectedDeptCodes.length === 0) {
-                    toastr && toastr.warning('Vui lòng chọn phòng ban');
+                    toastr && toastr.warning(_adc_i18n.msgSelectDept);
                     return;
                 }
                 if (_adc_selectedDeptCodes.length > 1) {
-                    toastr && toastr.warning('Chỉ được chọn một phòng ban');
+                    toastr && toastr.warning(_adc_i18n.msgSelectOneDept);
                     return;
                 }
                 deptId = _adc_selectedDeptCodes[0];
@@ -184,7 +193,7 @@
 
             var $btn = $('#adc_calculateBtn');
             var originalHtml = $btn.html();
-            $btn.prop('disabled', true).html('<i class="bx bx-loader bx-spin"></i> Đang tính toán');
+            $btn.prop('disabled', true).html('<i class="bx bx-loader bx-spin"></i> ' + _adc_i18n.calculating);
 
             $.ajax({
                 url: '/ar/attendanceMintenance/api/detailCalculate/run',
@@ -193,13 +202,13 @@
                 data: JSON.stringify(payload),
                 success: function (res) {
                     if (res && res.success) {
-                        toastr && toastr.success(res.message || 'Tính toán thành công');
+                        toastr && toastr.success(res.message || _adc_i18n.btnCalculate);
                     } else {
-                        toastr && toastr.error((res && res.error) || 'Tính toán thất bại');
+                        toastr && toastr.error((res && res.error) || _adc_i18n.msgCalcFail);
                     }
                 },
                 error: function () {
-                    toastr && toastr.error('Không thể thực hiện tính toán');
+                    toastr && toastr.error(_adc_i18n.msgCalcError);
                 },
                 complete: function () {
                     $btn.prop('disabled', false).html(originalHtml);

@@ -19,27 +19,29 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <p class="text-muted mb-2">
+                    <p class="text-muted mb-2" th:text="#{excelImport.guide}">
                         Chỉ hỗ trợ file <strong>.xlsx</strong>. Đảm bảo dùng đúng file mẫu trước khi upload.
                     </p>
                     <div id="excelImportErrors" class="alert alert-danger d-none"></div>
                     <div class="mb-3">
                         <label for="excelImportFile" class="form-label">
-                            Chọn file Excel <span class="text-danger">*</span>
+                            <span th:text="#{excelImport.fileLabel}">Chọn file Excel</span>
+                            <span class="text-danger">*</span>
                         </label>
                         <input type="file" class="form-control" id="excelImportFile" accept=".xlsx,.xls">
                     </div>
                     <div id="excelImportProgress" class="d-none">
                         <div class="d-flex align-items-center gap-2">
                             <div class="spinner-border spinner-border-sm text-primary"></div>
-                            <span>Đang xử lý...</span>
+                            <span th:text="#{excelImport.processing}">Đang xử lý...</span>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" th:text="#{common.close}">Đóng</button>
                     <button type="button" class="btn btn-primary" id="excelImportBtn">
-                        <i class="bx bx-upload me-1"></i> Upload &amp; Import
+                        <i class="bx bx-upload me-1"></i>
+                        <span th:text="#{excelImport.upload}">Upload &amp; Import</span>
                     </button>
                 </div>
             </div>

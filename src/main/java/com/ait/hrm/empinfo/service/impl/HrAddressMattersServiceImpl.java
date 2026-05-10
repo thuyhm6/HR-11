@@ -17,8 +17,8 @@ public class HrAddressMattersServiceImpl implements HrAddressMattersService {
     private HrAddressMattersMapper hrAddressMattersMapper;
 
     @Override
-    public List<HrAddressMatters> searchAddress(String empId, String localName, String addressContent) {
-        return hrAddressMattersMapper.searchAddress(empId, localName, addressContent);
+    public List<HrAddressMatters> searchAddress(String empId, String personId, String localName, String addressContent) {
+        return hrAddressMattersMapper.searchAddress(empId, personId, localName, addressContent);
     }
 
     @Override

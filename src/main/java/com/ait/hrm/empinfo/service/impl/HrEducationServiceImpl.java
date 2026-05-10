@@ -17,8 +17,8 @@ public class HrEducationServiceImpl implements HrEducationService {
     private HrEducationMapper hrEducationMapper;
 
     @Override
-    public List<HrEducation> searchEducation(String empId, String localName, String institutionName) {
-        return hrEducationMapper.searchEducation(empId, localName, institutionName);
+    public List<HrEducation> searchEducation(String empId, String personId, String localName, String institutionName) {
+        return hrEducationMapper.searchEducation(empId, personId, localName, institutionName);
     }
 
     @Override

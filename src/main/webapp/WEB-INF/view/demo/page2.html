@@ -9,11 +9,11 @@
     <div class="row">
         <div class="col-12">
             <div class="page-title-box d-sm-flex align-items-center justify-content-between">
-                <h4 class="mb-sm-0">Báo cáo thống kê</h4>
+                <h4 class="mb-sm-0" th:text="#{demo2.title}">Báo cáo thống kê</h4>
                 <div class="page-title-right">
                     <ol class="breadcrumb m-0">
                         <li class="breadcrumb-item"><a href="javascript: void(0);">Demo</a></li>
-                        <li class="breadcrumb-item active">Báo cáo thống kê</li>
+                        <li class="breadcrumb-item active" th:text="#{demo2.title}">Báo cáo thống kê</li>
                     </ol>
                 </div>
             </div>
@@ -27,17 +27,17 @@
                 <div class="card-body">
                     <div class="row align-items-center">
                         <div class="col-md-3">
-                            <label class="form-label">Từ ngày</label>
+                            <label class="form-label" th:text="#{common.fromDate}">Từ ngày</label>
                             <input type="date" class="form-control" value="2024-01-01">
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label">Đến ngày</label>
+                            <label class="form-label" th:text="#{common.toDate}">Đến ngày</label>
                             <input type="date" class="form-control" value="2024-12-31">
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label">Phòng ban</label>
+                            <label class="form-label" th:text="#{common.deptName}">Phòng ban</label>
                             <select class="form-select">
-                                <option>Tất cả phòng ban</option>
+                                <option th:text="#{demo2.filter.allDepts}">Tất cả phòng ban</option>
                                 <option>IT</option>
                                 <option>HR</option>
                                 <option>Finance</option>
@@ -48,10 +48,10 @@
                             <label class="form-label">&nbsp;</label>
                             <div>
                                 <button class="btn btn-primary me-2">
-                                    <i class="bx bx-search me-1"></i>Tìm kiếm
+                                    <i class="bx bx-search me-1"></i><span th:text="#{common.search}">Tìm kiếm</span>
                                 </button>
                                 <button class="btn btn-success">
-                                    <i class="bx bx-download me-1"></i>Xuất Excel
+                                    <i class="bx bx-download me-1"></i><span th:text="#{common.exportExcel}">Xuất Excel</span>
                                 </button>
                             </div>
                         </div>

@@ -181,8 +181,7 @@ public class OrgResumeInfoServiceImpl implements OrgResumeInfoService {
 
     @Override
     @Transactional
-    public String executeResumeProcess(String resumeNo, List<String> types, String adminId, String adminIp,
-            String interCpnyId) {
+    public String executeResumeProcess(String resumeNo, List<String> types) {
         if (types == null || types.isEmpty()) {
             return "Vui lòng chọn ít nhất một bước thực hiện";
         }
@@ -207,9 +206,6 @@ public class OrgResumeInfoServiceImpl implements OrgResumeInfoService {
         for (String type : sortedTypes) {
             java.util.Map<String, Object> params = new java.util.HashMap<>();
             params.put("resumeNo", resumeNo);
-            params.put("adminId", adminId);
-            params.put("adminIp", adminIp);
-            params.put("interCpnyId", interCpnyId);
             params.put("type", type);
             params.put("message", null); // OUT param
 

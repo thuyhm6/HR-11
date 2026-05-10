@@ -75,7 +75,7 @@
         UPDATE ORG_EMPLOYEE
         SET DEPTNO = #{targetDeptNo},
             UPDATE_DATE = SYSDATE,
-            UPDATED_BY = #{adminID}
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR}
         WHERE RESUME_NO = #{resumeNo}
           AND EMPID IN
           <foreach collection="empIds" item="empId" open="(" separator="," close=")">

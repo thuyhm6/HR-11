@@ -100,7 +100,7 @@
             #{ageLimit}, #{workAddress}, #{seniorityResponse}, #{remark},
             #{cpnyEnglishName}, #{proCpnyPhone}, #{overseas}, #{nationality},
             #{startMonth}, #{endMonth}, #{startDate}, #{endDate}, #{orderNo},
-            SYSDATE, #{adminID}, #{adminIP}, #{adminID}, #{adminIP}, 1
+            SYSDATE, #{adminID, jdbcType=VARCHAR}, #{adminIP, jdbcType=VARCHAR}, #{adminID, jdbcType=VARCHAR}, #{adminIP, jdbcType=VARCHAR}, 1
         )
     </insert>
 
@@ -129,8 +129,8 @@
             END_DATE = #{endDate},
             ORDERNO = #{orderNo},
             UPDATE_DATE = SYSDATE,
-            UPDATED_BY = #{adminID},
-            UPDATED_IP = #{adminIP}
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+            UPDATED_IP = #{adminIP, jdbcType=VARCHAR}
         WHERE WORK_EXPER_NO = #{workExpNo}
     </update>
 
@@ -138,8 +138,8 @@
         UPDATE hr_work_experience
         SET ACTIVITY = 0,
             UPDATE_DATE = SYSDATE,
-            UPDATED_BY = #{adminID},
-            UPDATED_IP = #{adminIP}
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+            UPDATED_IP = #{adminIP, jdbcType=VARCHAR}
         WHERE WORK_EXPER_NO = #{workExpNo}
     </update>
 

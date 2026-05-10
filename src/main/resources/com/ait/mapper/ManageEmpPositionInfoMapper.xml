@@ -126,8 +126,15 @@
         <if test="empTypeCode != null and empTypeCode != ''">
             AND H.EMP_TYPE_CODE = #{empTypeCode, jdbcType=VARCHAR}
         </if>
-        <if test="empOffice != null and empOffice != ''">
+        <!-- Khi asOfDate có giá trị + empOffice='15119': bỏ qua filter EMP_OFFICE hiện tại,
+             thay bằng filter theo ngày (nhân viên có thể đã bị cập nhật thành 15120 rồi) -->
+        <if test="empOffice != null and empOffice != '' and not ('15119'.equals(empOffice) and asOfDate != null and asOfDate != '')">
             AND H.EMP_OFFICE = #{empOffice, jdbcType=VARCHAR}
+        </if>
+        <if test="asOfDate != null and asOfDate != '' and '15119'.equals(empOffice)">
+            AND TRUNC(H.DATE_STARTED) &lt;= TO_DATE(#{asOfDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')
+            AND (H.DATE_LEFT IS NULL
+                 OR TRUNC(H.DATE_LEFT) &gt;= TO_DATE(#{asOfDate, jdbcType=VARCHAR}, 'YYYY-MM-DD'))
         </if>
         <if test="nationalityCode != null and nationalityCode != ''">
             AND HP.NATIONALITY_CODE = #{nationalityCode, jdbcType=VARCHAR}

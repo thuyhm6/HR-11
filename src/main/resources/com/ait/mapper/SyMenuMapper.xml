@@ -118,7 +118,7 @@
             CREATE_DATE, CREATED_BY, UPDATE_DATE, UPDATED_BY, ORDERNO, ACTIVITY
         ) VALUES (
             #{menuNo}, #{menuParentNo}, #{menuCode}, #{menuImg}, #{depth}, #{menuUrl},
-            sysdate, #{adminID}, sysdate, #{adminID}, #{orderNo}, #{activity}
+            sysdate, #{adminID, jdbcType=VARCHAR}, sysdate, #{adminID, jdbcType=VARCHAR}, #{orderNo}, #{activity}
         )
     </insert>
 
@@ -132,12 +132,12 @@
             ORDERNO = #{orderNo},
             ACTIVITY = #{activity},
             UPDATE_DATE = sysdate,
-            UPDATED_BY = #{adminID}
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR}
         WHERE MENU_NO = #{menuNo}
     </update>
 
     <delete id="deleteByMenuNo">
-        UPDATE SY_MENU SET ACTIVITY = 0, UPDATE_DATE = sysdate, UPDATED_BY = #{adminID} 
+        UPDATE SY_MENU SET ACTIVITY = 0, UPDATE_DATE = sysdate, UPDATED_BY = #{adminID, jdbcType=VARCHAR} 
         WHERE MENU_NO = #{menuNo}
     </delete>
 

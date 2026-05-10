@@ -4,7 +4,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import java.time.LocalDateTime;
-import java.util.Date;
+import java.time.LocalDate;
 
 /**
  * HrAddressMatters Model - Tra cứu địa chỉ (bảng HR_ADDRESS_MATTERS)
@@ -29,10 +29,12 @@ public class HrAddressMatters {
      */
     private String addressType;
 
+    private String addressTypeName; // Tên loại địa chỉ (từ get_global_name)
+
     /**
      * Ngày bắt đầu hiệu lực (EFFECTIVE_START_DATE)
      */
-    private Date effectiveStartDate;
+    private LocalDate effectiveStartDate;
 
     /**
      * Nội dung địa chỉ (ADDRESS_CONTENT)
@@ -48,6 +50,8 @@ public class HrAddressMatters {
      * Quốc gia (NATIONALITY)
      */
     private String nationality;
+
+    private String nationalityName; // Tên quốc gia (từ get_global_name)
 
     // Audit fields
     private LocalDateTime createDate;
