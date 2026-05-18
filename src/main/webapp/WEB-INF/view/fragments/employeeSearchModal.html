@@ -20,30 +20,30 @@
                 </div>
                 <div class="modal-body">
                     <!-- Search Form -->
-                    <div class="row mb-3">
+                    <div class="row mb-2 align-items-end g-2">
                         <div class="col-md-4">
-                            <label for="popupSearchEmpId" class="form-label" th:text="#{empSearch.field.empId}">Mã nhân viên</label>
-                            <input type="text" class="form-control" id="popupSearchEmpId"
-                                th:placeholder="#{empSearch.placeholder.empId}">
+                            <label for="popupSearchKeyword" class="form-label" th:text="#{empSearch.field.keyword}">Mã nhân viên / Họ tên</label>
+                            <input type="text" class="form-control" id="popupSearchKeyword"
+                                th:placeholder="#{empSearch.placeholder.keyword}"
+                                onkeydown="if(event.key==='Enter') EmployeeSearchModal.search()">
                         </div>
                         <div class="col-md-4">
-                            <label for="popupSearchLocalName" class="form-label" th:text="#{empSearch.field.fullName}">Họ tên</label>
-                            <input type="text" class="form-control" id="popupSearchLocalName"
-                                th:placeholder="#{empSearch.placeholder.fullName}">
+                            <label for="esm_deptSearch" class="form-label" th:text="#{empSearch.field.dept}">Phòng ban</label>
+                            <input type="text" class="form-control" id="esm_deptSearch" readonly
+                                th:placeholder="#{empSearch.field.dept}">
                         </div>
                         <div class="col-md-4">
-                            <label for="popupSearchDeptNo" class="form-label" th:text="#{empSearch.field.deptCode}">Mã phòng ban</label>
-                            <input type="text" class="form-control" id="popupSearchDeptNo"
-                                th:placeholder="#{empSearch.placeholder.deptCode}">
+                            <label for="esm_empOffice" class="form-label" th:text="#{empSearch.field.empOffice}">Trạng thái làm việc</label>
+                            <select class="form-select" id="esm_empOffice" data-parent-code="15118"></select>
                         </div>
                     </div>
                     <div class="row mb-3">
-                        <div class="col-12">
+                        <div class="col-md-12 d-flex gap-2">
                             <button type="button" class="btn btn-primary" onclick="EmployeeSearchModal.search()">
                                 <i class="bx bx-search me-1"></i>
                                 <span th:text="#{common.search}">Tìm kiếm</span>
                             </button>
-                            <button type="button" class="btn btn-secondary ms-2" onclick="EmployeeSearchModal.clear()">
+                            <button type="button" class="btn btn-secondary" onclick="EmployeeSearchModal.clear()">
                                 <i class="bx bx-x me-1"></i>
                                 <span th:text="#{empSearch.btn.clearFilter}">Xóa bộ lọc</span>
                             </button>

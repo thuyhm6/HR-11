@@ -245,13 +245,15 @@ public class HrEmpinfoController {
     @ResponseBody
     public ResponseEntity<?> searchEmployees(@RequestParam(required = false) String empId,
             @RequestParam(required = false) String localName,
-            @RequestParam(required = false) String deptNo) {
+            @RequestParam(required = false) String deptNo,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) List<String> deptCodes,
+            @RequestParam(required = false) String empOffice) {
         try {
-            List<EmployeeSearchResponse> employees = hrEmployeeService.searchEmployees(empId, localName, deptNo);
+            List<EmployeeSearchResponse> employees = hrEmployeeService.searchEmployees(empId, localName, deptNo, keyword, deptCodes, empOffice);
             return ResponseEntity.ok(employees);
         } catch (Exception e) {
             log.error("Error searching employees: ", e);
-            
             return ResponseEntity.status(500).body("Loi he thong. Vui long thu lai.");
         }
     }

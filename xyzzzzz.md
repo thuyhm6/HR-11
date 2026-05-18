@@ -10,6 +10,7 @@ columnDefs: [
 	data-parent-code="1429" data-default-text="-- Chọn mã nhóm --">
 </select>
 Nhóm nhân viên - POST_FAMILY (dữ liệu lấy lấy thông qua data-parent-code="14015812")
+Trạng thái làm việc - EMP_OFFICE (dữ liệu lấy lấy thông qua data-parent-code="15118" không có data-default-text)
 
 <input type="text" class="form-control js-daterangepicker" data-drp-format="YYYY-MM-DD">
 
@@ -19,7 +20,12 @@ url: '/sys/api/code/list?parentCodeNo=400223',
 
 sử dụng onclick="openEmployeeSearchPopup()"> như của educationSearch.html để tìm nhân viên.
 
-Lưu ý, không cần truyền tham số cpnyID, createBy, updateBy, lang, vì đã đã có sẵn ở LanguageParameterInterceptor, và có thể sử dụng ở mọi mapper.xml
+sử dụng veas_deptSearch như của viewEvsAffirmorSetup.html để lấy ra cây phòng ban để làm điều kiện tìm kiếm phòng ban.
+
+
+sử dụng vppoOpenEmpSearch như của viewPaPayObj.html để tìm 1 nhân viên.
+
+sử dụng veas_deptSearch như của viewEvsAffirmorSetup.html để lấy ra cây phòng ban để làm điều kiện tìm kiếm phòng ban.
 
 bạn là người hiểu rất rõ về dự án này. căn cứ vào file viewNOContractInfo.html - ký kết hợp đồng,  hãy tạo cho tôi một file viewContractInfoForSearch.html - Tra cứu hợp đồng, dữ liệu lấy ra là tất cả các hợp đồng trong bảng HR_CONTRACT
 
@@ -31,7 +37,7 @@ Tạo cho tôi một file viewResumeProcess.html - Quy trình thay đổi nằm 
 						#RESUME_NO:VARCHAR#,
 						#adminID:VARCHAR#,
 						#adminIP:VARCHAR#,
-						#interCpnyID:VARCHAR#,
+						#cpnyId:VARCHAR#,
 						#type:VARCHAR#,
 						#message,jdbcType=VARCHAR,mode=OUT#). việc tick vào và bấm nút "Thực hiện" thì sẽ gọi đến procedure trên phải thực hiện theo thứ tự: Sao chép tổ chức cũ -> Tự động tạo ra quyết định -> Tạo ra nội dung thay đổi -> Hình thành tổ chức mới. giá trị tham số type tương ứng như sau: Sao chép tổ chức cũ - copyOrg, Tự động tạo ra quyết định - scfl, Tạo ra nội dung thay đổi - sczz, Hình thành tổ chức mới - qdzz
 
@@ -393,3 +399,322 @@ Căn cứ và file viewResumeList.html. hãy tạo cho tôi một file viewEvsFo
 Căn cứ và file viewEvsFormulaList.html. hãy tạo cho tôi một file viewEvsDistributionRatePanel.html - Thiết lập tỷ lệ nằm trong module /evs/manage/. dữ liệu lấy từ bảng EVS_SCORE với các trường tham khảo từ hình ảnh. có đầy đủ chức năng thêm mới, sửa, xóa. Khi bấm vào từng dòng dữ liệu sẽ hiển thị thông tin chi tiết để chỉnh sửa. Giá trị cột SUM được tính bằng cách lấy giá trị của cột A + B + C + D + E + N + O + S, GIÁ TRỊ PHẢI BẰNG 100. Nếu giá trị cột SUM không bằng 100 thì sẽ hiển thị cảnh báo và không cho phép lưu dữ liệu.
 
 danh sách vedr_resumeSeq lấy ra thì dùng luôn giá trị đầu tiên để làm điều kiện tìm kiếm mặc định khi click vào giao diện. khi vedr_scoreType được chọn giá trị CPNY thì vedr_no và vedr_name đồng thời điền giá trị là 'CPNY'. Hiện tại chỉ hiển thị 5 giá trị của A, B, C, D và E. ngoài ra khi hiển thị thì hãy chuyển đổi A thành EX, B thành VG, C thành GD, D thành NI, E thành UN. Khi lưu dữ liệu thì sẽ lưu ngược lại giá trị gốc A, B, C, D và E vào database.
+
+Căn cứ và file viewEvsDistributionRatePanel.html. hãy tạo cho tôi một file viewEvsAffirmorSetup.html - Đối tượng đánh giá và người đánh giá nằm trong module /evs/manage/. Dữ liệu lấy từ câu lệnh sql sau: SELECT SEQ,
+       RESUME_SEQ,
+       PERSON_ID,
+       EMPID,
+       LOCAL_NAME,
+       DEPTNO,
+       GET_DEPT_NAME(DEPTNO, #{lang, jdbcType=VARCHAR}) DEPTNAME,
+       POST_GRADE_NO,
+       POST_GRADE_NAME,
+       MAIN_BUSINESS,
+       GET_GLOBAL_NAME(MAIN_BUSINESS, #{lang, jdbcType=VARCHAR}) MAIN_BUSINESS_NAME,
+       OBJECT_TYPE,
+       OBJECT_TYPE_NAME,
+       TO_CHAR(DATE_STARTED, 'DD/MM/YYYY') DATE_STARTED,
+       LIST_TYPE_NAME,
+       EVS_GROUP_NAME,
+       EVS_OCC_GROUP,
+       EVS_OCC_GROUP_NAME,
+       TO_CHAR(UPDATE_DATE, 'DD/MM/YYYY HH24:MI') UPDATE_DATE,
+       GET_UPDATED_INFO(UPDATED_BY) || ' ' || UPDATED_IP UPDATED_BY,
+       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 0, 'LOCAL_NAME') LOCAL_NAME0,
+       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 1, 'LOCAL_NAME') LOCAL_NAME1,
+       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 2, 'LOCAL_NAME') LOCAL_NAME2,
+       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 3, 'LOCAL_NAME') LOCAL_NAME3,
+       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 4, 'LOCAL_NAME') LOCAL_NAME4,
+       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 0, 'POST_GRADE_NAME') POST_GRADE_NAME0,
+       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 1, 'POST_GRADE_NAME') POST_GRADE_NAME1,
+       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 2, 'POST_GRADE_NAME') POST_GRADE_NAME2,
+       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 3, 'POST_GRADE_NAME') POST_GRADE_NAME3,
+       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 4, 'POST_GRADE_NAME') POST_GRADE_NAME4,
+       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 1, 'AFFIRMOR_ID') PERSON_ID1,
+       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 2, 'AFFIRMOR_ID') PERSON_ID2,
+       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 3, 'AFFIRMOR_ID') PERSON_ID3,
+       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 4, 'AFFIRMOR_ID') PERSON_ID4
+  FROM EVS_OBJECT A
+ WHERE A.RESUME_SEQ = #{resumeSeq, jdbcType=VARCHAR}
+ ORDER BY A.PERSON_ID ASC. Giao diện tham khảo hình ảnh
+
+
+ Thêm  cho tôi nút thêm mới. Khi bấm sẽ hiện ra popup để nhập Đối tượng đánh giá, Người đánh giá lần 1 và người đánh giá lần 2. Khi nhập thì sử dụng sử dụng onclick="openEmployeeSearchPopup()"> như của educationSearch.html để tìm nhân viên. khi lưu thì sẽ gọi pakage PKG_EVS_PROCESS.PR_ADD_EVS_OBJECT(
+						#RESUME_SEQ:VARCHAR#,
+						#PERSON_ID:VARCHAR#,
+						#adminID:VARCHAR#,
+						#adminIP:VARCHAR#,
+						#cpnyId:VARCHAR#,
+						#message,jdbcType=VARCHAR,mode=OUT#) để lưu thông tin Đối tượng đánh giá. 
+            
+            gọi palkage PKG_EVS_PROCESS.PR_MODIFY_AFFIRM_INFO(
+						#RESUME_SEQ:VARCHAR#,
+						#EVS_OBJECT_SEQ:VARCHAR#,
+						#PERSON_ID_AFFIRM_ID:VARCHAR#,
+						#AFFIRM_LEVEL:VARCHAR#,
+						#adminID:VARCHAR#,
+						#adminIP:VARCHAR#,
+						#message,jdbcType=VARCHAR,mode=OUT#) để lưu thông tin Người đánh giá. AFFIRM_LEVEL sẽ có giá trị lần lượt là 1, 2, 3, 4 tương ứng với Người đánh giá lần 1, Người đánh giá lần 2, Người đánh giá lần 3 và Người đánh giá lần 4.
+
+Thêm  cho tôi nút Tạo mục tiêu. khi bấm vào sẽ gọi pakage PKG_EVS_PROCESS.PR_CREATE_EVS_TARGET(
+						#RESUME_SEQ:VARCHAR#,
+						#adminID:VARCHAR#,
+						#adminIP:VARCHAR#,
+						#CpnyID:VARCHAR#,
+						#message,jdbcType=VARCHAR,mode=OUT#), 
+
+Tương tự thêm  cho tôi nút Bắt đầu đánh giá. khi bấm vào sẽ gọi pakagePKG_EVS_PROCESS.PR_EVS_START(
+						#RESUME_SEQ:VARCHAR#,
+						#adminID:VARCHAR#,
+						#adminIP:VARCHAR#,
+						#cpnyId:VARCHAR#,
+						#message,jdbcType=VARCHAR,mode=OUT#)
+
+hãy sửa lại logic Lưu tất cả này. đầu tiên sẽ cập nhật người đánh gái cấp 1 và 2 thông qua việc gọi pakage KG_EVS_PROCESS.PR_MODIFY_AFFIRM_INFO(
+            #{resumeSeq,      jdbcType=VARCHAR, mode=IN},
+            #{seq,            jdbcType=VARCHAR, mode=IN},
+            #{personIdAffirm, jdbcType=VARCHAR, mode=IN},
+            #{affirmLevel,    jdbcType=VARCHAR, mode=IN},
+            #{adminID,        jdbcType=VARCHAR, mode=IN},
+            #{adminIP,        jdbcType=VARCHAR, mode=IN},
+            #{message,        jdbcType=VARCHAR, mode=OUT}
+        ) với affirmLevel sẽ có giá trị lần lượt là 1, 2 tương ứng với Người đánh giá lần 1 và Người đánh giá lần 2. sau đó mới gọi hàm cạp nhật bảng EVS_OBJECT với câu SQL: UPDATE EVS_OBJECT
+		   SET LIST_TYPE = GET_CODE_NO(#LIST_TYPE_NAME:VARCHAR#,#RESUME_SEQ:VARCHAR#,'LIST','EVS_PARAM'),
+		       LIST_TYPE_NAME = #LIST_TYPE_NAME:VARCHAR#,
+		       EVS_GROUP = GET_CODE_NO(#EVS_GROUP_NAME:VARCHAR#,#RESUME_SEQ:VARCHAR#,'GROUP','EVS_PARAM'),
+		       EVS_GROUP_NAME = #EVS_GROUP_NAME:VARCHAR#,
+		       EVS_OCC_GROUP = GET_CODE_NO(#EVS_OCC_GROUP_NAME:VARCHAR#,#RESUME_SEQ:VARCHAR#,'FAMILY','EVS_PARAM'),
+		       EVS_OCC_GROUP_NAME = #EVS_OCC_GROUP_NAME:VARCHAR#,
+		       UPDATE_DATE = SYSDATE,
+		       UPDATED_BY = #adminID:VARCHAR#,
+		       UPDATED_IP = #adminIP:VARCHAR#
+		 WHERE SEQ = #seq:VARCHAR# để lưu thông tin Đối tượng đánh giá. Nếu lưu người đánh giá thành công nhưng lưu đối tượng đánh giá thất bại thì sẽ hiển thị cảnh báo và không cho phép lưu dữ liệu.
+
+Căn cứ và file viewEvsAffirmorSetup.html. hãy tạo cho tôi một file viewEvsResult.html - Kết quả đánh giá nằm trong module /evs/manage/. Dữ liệu lấy từ câu lệnh sql sau: SELECT SEQ,
+             RESUME_SEQ,
+             PERSON_ID,
+             EMPID,
+             LOCAL_NAME,
+             DEPTNO,
+             GET_DEPT_NAME(DEPTNO, #{lang, jdbcType=VARCHAR}) DEPTNAME,
+             POST_GRADE_NO,
+             POST_GRADE_NAME,
+             MAIN_BUSINESS,
+             GET_GLOBAL_NAME(MAIN_BUSINESS, #{lang, jdbcType=VARCHAR}) MAIN_BUSINESS_NAME,
+             OBJECT_TYPE,
+             OBJECT_TYPE_NAME,
+             DATE_STARTED,
+             ACTIVITY,
+             GET_CODE_NAME(ACTIVITY, #{lang, jdbcType=VARCHAR}) ACTIVITY_NAME,
+             DECODE(FINAL_GRADE,'A','EX','B','VG','C','GD','D','NI','E','UN') FINAL_GRADE,
+             FINAL_GRADE  FINAL_GRADE_OR,
+             FINAL_AFFIRM_CONTENT,
+             
+             TO_CHAR(UPDATE_DATE,'DD/MM/YYYY HH24:MI') UPDATE_DATE,
+             GET_UPDATED_INFO(UPDATED_BY) || ' ' || UPDATED_IP UPDATED_BY,
+             ORDERNO,
+             
+             DECODE(PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 0, 'AFFIRM_FLAG'),1,'Evaluated',0,'Not_Evaluated') AFFIRM_FLAG_NAME0,
+             DECODE(PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 1, 'AFFIRM_FLAG'),1,'Evaluated',0,'Not_Evaluated') AFFIRM_FLAG_NAME1,
+             DECODE(PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 2, 'AFFIRM_FLAG'),1,'Evaluated',0,'Not_Evaluated') AFFIRM_FLAG_NAME2,
+             DECODE(PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 3, 'AFFIRM_FLAG'),1,'Evaluated',0,'Not_Evaluated') AFFIRM_FLAG_NAME3,
+             DECODE(PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 4, 'AFFIRM_FLAG'),1,'Evaluated',0,'Not_Evaluated') AFFIRM_FLAG_NAME4,
+             
+             PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 0, 'LOCAL_NAME') LOCAL_NAME0,
+             PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 1, 'LOCAL_NAME') LOCAL_NAME1,
+             PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 2, 'LOCAL_NAME') LOCAL_NAME2,
+             PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 3, 'LOCAL_NAME') LOCAL_NAME3,
+             PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 4, 'LOCAL_NAME') LOCAL_NAME4,
+             
+             PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 0, 'POST_GRADE_NAME') POST_GRADE_NAME0,
+             PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 1, 'POST_GRADE_NAME') POST_GRADE_NAME1,
+             PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 2, 'POST_GRADE_NAME') POST_GRADE_NAME2,
+             PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 3, 'POST_GRADE_NAME') POST_GRADE_NAME3,
+             PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 4, 'POST_GRADE_NAME') POST_GRADE_NAME4,
+             
+             PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 0, 'SEQ') SEQ0,
+             PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 1, 'SEQ') SEQ1,
+             PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 2, 'SEQ') SEQ2,
+             PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 3, 'SEQ') SEQ3,
+             PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 4, 'SEQ') SEQ4,
+             
+             PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 0, 'EVS_POINT') EVS_POINT0,
+             PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 1, 'EVS_POINT') EVS_POINT1,
+             PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 2, 'EVS_POINT') EVS_POINT2,
+             PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 3, 'EVS_POINT') EVS_POINT3,
+             PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 4, 'EVS_POINT') EVS_POINT4,
+             
+             PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 0, 'EVS_GRADE') EVS_GRADE0,
+             PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 1, 'EVS_GRADE') EVS_GRADE1,
+             PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 2, 'EVS_GRADE') EVS_GRADE2,
+             PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 3, 'EVS_GRADE') EVS_GRADE3,
+             PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 4, 'EVS_GRADE') EVS_GRADE4,
+             
+             PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 0, 'AFFIRM_CONTENT') || '<br>' ||
+             PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 0, 'AFFIRM_CONTENT2') AFFIRM_CONTENT0,
+             PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 1, 'AFFIRM_CONTENT') AFFIRM_CONTENT1,
+             PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 2, 'AFFIRM_CONTENT') AFFIRM_CONTENT2,
+             PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 3, 'AFFIRM_CONTENT') AFFIRM_CONTENT3,
+             PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 4, 'AFFIRM_CONTENT') AFFIRM_CONTENT4
+        FROM EVS_OBJECT A
+       WHERE A.RESUME_SEQ = #RESUME_SEQ:VARCHAR#. Giao diện tham khảo hình ảnh
+
+       gọi đến một procedure PKG_EVS_PROCESS.PR_CONFIRM_FINAL_GRADE(
+            #{resumeSeq, jdbcType=VARCHAR, mode=IN},
+            #{adminID,   jdbcType=VARCHAR, mode=IN},
+            #{adminIP,   jdbcType=VARCHAR, mode=IN},
+            #{cpnyId,    jdbcType=VARCHAR, mode=IN},
+            #{message,   jdbcType=VARCHAR, mode=OUT})
+
+Căn cứ vào file viewEvsParamPanel.html. hãy tạo cho tôi một file viewEvsItemPanel.html - Chỉ tiêu đánh giá nằm trong module /evs/manage/. giao diện gồm 2 tab Chỉ tiêu đánh giá và Hạng mục chỉ tiêu chỉ định. Giao diện tham khảo hình ảnh. Tab Chỉ tiêu đánh giá lấy dữ liệu từ câu lệnh SQL: SELECT SEQ,
+       RESUME_SEQ,
+       GROUP_NO,
+       GET_CODE_NAME(GROUP_NO, #{lang, jdbcType=VARCHAR}) GROUP_NAME,
+       ITEM_CODE,
+       ITEM_NAME,
+       ITEM_NAME_KO,
+       REMARK,
+       REMARK_KO,
+       ACTIVITY,
+       TO_CHAR(UPDATE_DATE, 'DD/MM/YYYY HH24:MI') UPDATE_DATE,
+       GET_UPDATED_INFO(UPDATED_BY) || ' ' || UPDATED_IP UPDATED_BY
+  FROM EVS_ITEM A
+ WHERE ACTIVITY <> 2
+   AND RESUME_SEQ = #{resumeSeq, jdbcType=VARCHAR}
+ ORDER BY TO_NUMBER(SEQ)
+Tab Hạng mục chỉ tiêu chỉ định lấy dữ liệu từ câu lệnh SQL: SELECT PARAM.SEQ,
+       PARAM.RESUME_SEQ,
+       ITEM.ITEM_NAME,
+       ITEM.ITEM_CODE ITEM_CODE_ITEM,
+       ITEM.REMARK ITEM_REMARK,
+       get_code_name(ITEM.GROUP_NO, #{lang, jdbcType=VARCHAR}) GROUP_NAME,
+       PKG_EVS_PROCESS.GET_EVS_PARAM_NAME(PARAM.RESUME_SEQ,
+                                          'GROUP',
+                                          PARAM.EVS_GROUP) EVS_GROUP_NAME,
+       PKG_EVS_PROCESS.GET_EVS_PARAM_NAME(PARAM.RESUME_SEQ,
+                                          'FAMILY',
+                                          PARAM.EVS_OCC_GROUP) EVS_OCC_GROUP_NAME,
+       PARAM.ITEM_CODE,
+       PARAM.EVS_GROUP,
+       PARAM.EVS_OCC_GROUP,
+       PARAM.REMARK,
+       PARAM.ITEM_SCORE,
+       PARAM.ACTIVITY,
+       TO_CHAR(PARAM.UPDATE_DATE, 'DD/MM/YYYY HH24:MI') UPDATE_DATE,
+       GET_UPDATED_INFO(PARAM.UPDATED_BY) || ' ' || PARAM.UPDATED_IP UPDATED_BY
+  FROM EVS_ITEM_PARAM PARAM, EVS_ITEM ITEM
+ WHERE PARAM.RESUME_SEQ = ITEM.RESUME_SEQ(+)
+   AND PARAM.ITEM_CODE = ITEM.ITEM_CODE(+)
+   AND PARAM.ACTIVITY <> 2
+   AND PARAM.RESUME_SEQ = #{resumeSeq, jdbcType=VARCHAR}
+ ORDER BY TO_NUMBER(PARAM.SEQ)
+với 2 bảng EVS_ITEM và EVS_ITEM_PARAM có liên kết với nhau thông qua trường ITEM_CODE và RESUME_SEQ. với các trường tham khảo hình ảnh
+
+
+Dựa vào file educationSearch.html. Hãy tạo cho tôi một file viewPaPaySchedule.html - Kế hoạch trả lương nằm trong module /pa/workManagement. Giao diện tham khảo hình ảnh. Dữ liệu lấy từ bảng PA_PAY_SCHEDULE với các trường tham khảo hình ảnh. có đầy đủ chức năng thêm mới, sửa, xóa. Khi bấm vào từng dòng dữ liệu sẽ hiển thị thông tin chi tiết của kế hoạch trả lương đó để chỉnh sửa, Khi thêm mới thì PAY_SCHEDULE_NO sẽ được sinh ra theo PA_PAY_SCHEDULE_SEQ.NEXTVAL. Phân loại lương SALARY_DISTIN_NO (dữ liệu lấy lấy thông qua data-parent-code="14013797")
+
+Dựa vào file viewPaPaySchedule.html. Hãy tạo cho tôi một file viewPaPayObj.html - Đối tượng nhận lương nằm trong module /pa/workManagement. Giao diện tham khảo hình ảnh. Dữ liệu lấy từ bảng PA_PAY_OBJECT với các trường tham khảo hình ảnh, kết hợp cùng bảng HR_EMPLOYEE. có đầy đủ chức năng thêm mới, sửa, xóa. Có thể sửa trực tiếp  giá trị Phân biệt - INCLUDE_TYPE đối với từng dòng dữ liệu, khi sửa thì dòng dữ liệu sẽ tự động được tính, để phục vụ cho việc bấm Lưu, Phân loại lương SALARY_DISTIN_NO (dữ liệu lấy lấy thông qua data-parent-code="14013797"), danh sách Kế hoạch trả lương PAY_SCHEDULE_NO (dữ liệu lấy từ bảng PA_PAY_SCHEDULE). Phân biệt - INCLUDE_TYPE dữ liệu lấy với giá trị 1 là Tham gia, giá trị 0 là Không tham gia. Trạng thái - EMP_OFFICE (dữ liệu lấy lấy thông qua data-parent-code="15118") 
+
+Tạo cho tôi một giao diện Quy trình tình lương - viewPaWorkFlow.html nằm trong module /pa/workManagement. Giao diện tham khảo hình ảnh. Dữ liệu lấy từ bảng PA_WORK_FLOW với các trường tham khảo hình ảnh. Thông tin lấy ra gia diện sử dụng câu lệnh SQL sau: SELECT PWF.PA_WORK_FLOW_NO,
+       PPS.PAY_SCHEDULE_NO,
+       TO_CHAR(PPS.HR_START_DATE, 'DD-MM-YYYY') HR_START_DATE,
+       TO_CHAR(PPS.HR_END_DATE, 'DD-MM-YYYY') HR_END_DATE,
+       TO_CHAR(PPS.AR_START_DATE, 'DD-MM-YYYY') AR_START_DATE,
+       TO_CHAR(PPS.AR_END_DATE, 'DD-MM-YYYY') AR_END_DATE,
+       OBJ_CREATE_FLAG,
+       AR_MONTH_CAL_FLAG,
+       PA_CAL_FLAG,
+       PA_CONFIRM_FLAG,
+       PA_OPEN_FLAG,
+       PPS.AR_LOCK_FLAG
+  FROM PA_PAY_SCHEDULE PPS, PA_WORK_FLOW PWF
+ WHERE PPS.PAY_SCHEDULE_NO = PWF.PAY_SCHEDULE_NO
+   AND PPS.CPNY_ID = #{cpnyId,  jdbcType=VARCHAR}
+   AND PPS.ACTIVITY = 1
+   AND PPS.PAY_SCHEDULE_NO = #{payScheduleNo, jdbcType=VARCHAR}
+
+
+  Khi tick chọn vào Tạo đối tượng sau đó bấm thực hiện thì sẽ chạy pakage PKG_PA_WORK_FLOW.PA_WORKFLOW_EXECUTE(
+            #{payScheduleNo, jdbcType=VARCHAR, mode=IN},
+            #{adminID, jdbcType=VARCHAR, mode=IN},
+            #{adminIP, jdbcType=VARCHAR, mode=IN},
+            #{cpnyId, jdbcType=VARCHAR, mode=IN},
+            #{type, jdbcType=VARCHAR, mode=IN},
+            #{message, jdbcType=VARCHAR, mode=OUT}
+        ) với type = 'createPaObj' để tạo mới đối tượng nhận lương.
+
+hãy sửa lại chõ này, khi bấm vào sẽ hiện ra popup chứ thông tin lịch sử những lần thao tác, dữ liệu trong popup sẽ lấy từ bảng PA_WORK_FLOW_RECORDS với các trường tham khảo hình ảnh, với giao diện tham khảo hình ảnh. Dữ liệu lấy ở bảng PA_WORK_FLOW_RECORDS kết hợp với bảng PA_WORK_FLOW
+
+Dựa vào file viewPaPayObj.html. Hãy tạo cho tôi một file viewSalaryCodeList.html - Hạng mục lương lương nằm trong module /pa/salarycode. Giao diện tham khảo hình ảnh. Dữ liệu lấy từ bảng PA_PARAM_ITEM và PA_ITEM với các trường tham khảo hình ảnh. có đầy đủ chức năng thêm mới, sửa, xóa. Dữ liệu được lấy ra thông qua câu lệnh SQL: SELECT P.ITEM_TYPE,
+                               .
+Loại hạng mục - ITEM_TYPE (lấy ra danh sách ITEM_TYPE gồm 
+	<option value="">Tất cả</option>
+	<option value="1">Hạng mục tiêu chuẩn</option>
+	<option value="2">Điều chỉnh trả lương</option>
+	<option value="3">Trả lương ngoại lệ</option>
+	<option value="4">Điều chỉnh khoản trừ</option>
+	<option value="5">Khoản trừ ngoại lệ</option>
+	<option value="6">Hạng mục tính toán</option>)
+
+
+  lưu ý trường ROLE_GROUP_NO và ROLE_GROUP_ID khi tạo mới là tự động tăng với giá trị trường SEQ của bảng sy_global_name. Tức là khi nhập tên của nhóm quyền sẽ 4 tên tiếng việt, tiếng anh, tiếng trung, tiếng hàn. và sinh ra tương ứng trong bảng sy_global_name.
+
+  - DATA_TYPE (lấy ra danh sách DATA_TYPE gồm <option value="NUMBER(14,4)" selected="">Dạng số</option>
+						<option value="VARCHAR(100)">Dạng ký tự</option>)
+
+Dựa vào file viewSalaryCodeList.html. Hãy tạo cho tôi một file viewPaInputItemParam.html - Thông số mục nhập nằm trong module /pa/salary. Giao diện tham khảo hình ảnh.  Dữ liệu được lấy ra thông qua câu lệnh SQL: SELECT .
+Loại hạng mục - ITEM_TYPE (lấy ra danh sách ITEM_TYPE gồm 
+	<option value="">Tất cả</option>
+	<option value="1">Hạng mục tiêu chuẩn</option>
+	<option value="2">Điều chỉnh trả lương</option>
+	<option value="3">Trả lương ngoại lệ</option>
+	<option value="4">Điều chỉnh khoản trừ</option>
+	<option value="5">Khoản trừ ngoại lệ</option>
+	<option value="6">Hạng mục tính toán</option>)
+bảng PA_PARAM_ITEM và PA_ITEM với các trường tham khảo hình ảnh. chỉ cần chức năng sửa và xóa.
+
+Dựa vào file viewPaInputItemParam.html. Hãy tạo cho tôi một file viewPaComputeItemParamList.html - Thông số mục nhập nằm trong module /pa/salary. Giao diện tham khảo hình ảnh.  Dữ liệu được lấy ra thông qua câu lệnh SQL: SELECT T.PARAM_NO,
+       T.ITEM_NO,
+       PI.ITEM_ID,
+       SY.CONTENT ALIAS_NAME,
+       T.CALCU_ORDER,
+       T.PRICISION,
+       T.CARRY_BIT,
+       T.CPNY_ID,
+       SY0.CONTENT CPNY_NAME,
+       T.APPLY_TYPE,
+       SY1.CONTENT APPLY_TYPE_NAME,
+       PI.SHOW_YN,
+       PI.SHOW_ORDER,
+       GET_ITEM_GLAG(PI.ITEM_ID, T.CPNY_ID) ITEM_FLAG,
+       GET_ITEM_NUMBER(PI.ITEM_ID, T.CPNY_ID) ITEM_NUMBER
+  FROM PA_ITEM_PARAM  T,
+       PA_ITEM        PI,
+       SY_GLOBAL_NAME SY,
+       HR_COMPANY     HR,
+       SY_GLOBAL_NAME SY0,
+       SY_GLOBAL_NAME SY1
+ WHERE T.ITEM_NO = PI.ITEM_NO
+   AND T.ITEM_NO = SY.NO(+)
+   AND SY.LANGUAGE(+) = #{lang, jdbcType=VARCHAR}
+   AND T.CPNY_ID = HR.CPNY_ID
+   AND HR.CPNY_NO = SY0.NO(+)
+   AND SY0.LANGUAGE = #{lang, jdbcType=VARCHAR}
+   AND T.APPLY_TYPE = SY1.NO(+)
+   AND SY1.LANGUAGE(+) = #{lang, jdbcType=VARCHAR}
+   AND PI.ACTIVITY = 1
+   AND T.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+ ORDER BY CALCU_ORDER. Có đầy đủ chức năng thêm mới, sửa, xóa. Khi thêm mới thì phần Tên hạng mục chỉ lấy những item trong danh sách lấy từ câu lệnh SQL: SELECT T.ITEM_NO, SY.CONTENT ITEM_NAME, T.DESCR, T.DATATYPE, T.ITEM_ID
+  FROM PA_ITEM T, SY_GLOBAL_NAME SY
+ WHERE T.ITEM_NO = SY.NO(+)
+   AND SY.LANGUAGE(+) = #{lang, jdbcType=VARCHAR}
+   AND T.ACTIVITY IN (1, 11)
+   AND T.ITEM_NO NOT IN (SELECT P.ITEM_NO
+                           FROM PA_ITEM_PARAM P
+                          WHERE P.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+                            AND P.ITEM_NO IS NOT NULL)
+ ORDER BY ITEM_NO. Khi thêm mới và sửa chỉ cần nhập các trường sau: Tên hạng mục - ITEM_NO, Độ chính xác - PRICISION, Số chữ số sau dấu phẩy - CARRY_BIT, Loại áp dụng. Khi Sửa thì không cho phép sửa trường Tên hạng mục - ITEM_NO.
+
+
+ Dựa vào file viewSalaryCodeList.html. Hãy tạo cho tôi một file viewPaSupervisor.html - Người phụ trách lương lương nằm trong module /pa/wagebase. Giao diện tham khảo hình ảnh. Dữ liệu lấy từ bảng PA_SUPERVISOR với các trường tham khảo hình ảnh kết hợp cùng bảng HR_EMPLOYEE để lấy ra dữ liệu. có đầy đủ chức năng thêm mới, sửa, xóa. Khi thêm mới thì phần Tên người phụ trách sẽ sử dụng onclick="openEmployeeSearchPopup()"> như của educationSearch.html để tìm nhân viên.
+sử dụng veas_deptSearch như của viewEvsAffirmorSetup.html để lấy ra cây phòng ban để làm điều kiện tìm kiếm phòng ban, Trạng thái làm việc - EMP_OFFICE (dữ liệu lấy lấy thông qua data-parent-code="15118" không có data-default-text) . Khi sửa thì không cho phép sửa trường Tên người phụ trách.

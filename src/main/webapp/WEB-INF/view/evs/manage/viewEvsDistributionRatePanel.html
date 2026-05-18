@@ -248,309 +248,322 @@
         }
     </style>
     <script th:inline="javascript">
-        var _vedr_evsType = new URLSearchParams((window._currentTabUrl || window.location.href).split('?')[1] || '').get('evsType') || '';
-        var _vedr_deleteSeq = null;
-        var _vedr_detailModal = null;
-        var _vedr_deleteModal = null;
-        var _vedr_table = null;
-
-        // ── Tiện ích ─────────────────────────────────────────────────────────
-        function vedrEsc(s) {
-            if (s == null) return '';
-            return String(s)
-                .replace(/&/g, '&amp;').replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-        }
-
-        function vedrActivityBadge(val) {
-            return (val === '1' || val === 1)
-                ? '<span class="badge bg-success">Sử dụng</span>'
-                : '<span class="badge bg-secondary">Không sử dụng</span>';
-        }
-
-        function vedrNum(val) { return (val != null && val !== '') ? val : 0; }
-
-        // ── Tính SUM và cập nhật UI (chỉ EX+VG+GD+NI+UN = A+B+C+D+E) ──────
-        function vedrCalcSum() {
-            var fields = ['a', 'b', 'c', 'd', 'e'];
-            var sum = 0;
-            fields.forEach(function (f) {
-                sum += parseFloat($('#vedr_' + f).val()) || 0;
-            });
-            sum = Math.round(sum * 100) / 100;
-            var ok = Math.abs(sum - 100) < 0.001;
-            $('#vedr_sumDisplay')
-                .text('SUM = ' + sum)
-                .removeClass('sum-ok sum-error bg-secondary')
-                .addClass(ok ? 'sum-ok' : 'sum-error');
-            if (ok) {
-                $('#vedr_sumWarningRow').hide();
-            } else {
-                $('#vedr_sumWarningVal').text(sum);
-                $('#vedr_sumWarningRow').show();
+        (function () {
+            var _vedr_tabId = window._currentTabId || 'default-content';
+            window._vedr_inst = window._vedr_inst || {};
+            if (!window._vedr_inst[_vedr_tabId]) {
+                window._vedr_inst[_vedr_tabId] = {
+                    evsType: new URLSearchParams((window._currentTabUrl || window.location.href).split('?')[1] || '').get('evsType') || '',
+                    deleteSeq: null,
+                    detailModal: null,
+                    deleteModal: null,
+                    table: null
+                };
             }
-            return sum;
-        }
+            var inst = window._vedr_inst[_vedr_tabId];
+            function vedr$(sel) { return $('#' + _vedr_tabId).find(sel); }
 
-        // ── Load resume dropdown, tự chọn phần tử đầu tiên ──────────────────
-        function vedrLoadResumeList() {
-            $.ajax({
-                url: '/evs/manage/api/resume/evsResumeList',
-                type: 'GET',
-                data: { evsType: _vedr_evsType },
-                success: function (rows) {
-                    var html = '';
-                    (rows || []).forEach(function (r) {
-                        html += '<option value="' + vedrEsc(r.seq) + '">' + vedrEsc(r.resumeName) + '</option>';
-                    });
-                    $('#vedr_resumeSeq').html(html);
-                    if (rows && rows.length > 0) {
-                        $('#vedr_resumeSeq').val(rows[0].seq);
-                        if (_vedr_table) _vedr_table.ajax.reload();
-                    }
+            // ── Tiện ích ─────────────────────────────────────────────────────────
+            function vedrEsc(s) {
+                if (s == null) return '';
+                return String(s)
+                    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+            }
+
+            function vedrActivityBadge(val) {
+                return (val === '1' || val === 1)
+                    ? '<span class="badge bg-success">Sử dụng</span>'
+                    : '<span class="badge bg-secondary">Không sử dụng</span>';
+            }
+
+            function vedrNum(val) { return (val != null && val !== '') ? val : 0; }
+
+            // ── Tính SUM và cập nhật UI (chỉ EX+VG+GD+NI+UN = A+B+C+D+E) ──────
+            function vedrCalcSum() {
+                var fields = ['a', 'b', 'c', 'd', 'e'];
+                var sum = 0;
+                fields.forEach(function (f) {
+                    sum += parseFloat(vedr$('#vedr_' + f).val()) || 0;
+                });
+                sum = Math.round(sum * 100) / 100;
+                var ok = Math.abs(sum - 100) < 0.001;
+                vedr$('#vedr_sumDisplay')
+                    .text('SUM = ' + sum)
+                    .removeClass('sum-ok sum-error bg-secondary')
+                    .addClass(ok ? 'sum-ok' : 'sum-error');
+                if (ok) {
+                    vedr$('#vedr_sumWarningRow').hide();
+                } else {
+                    vedr$('#vedr_sumWarningVal').text(sum);
+                    vedr$('#vedr_sumWarningRow').show();
                 }
-            });
-        }
+                return sum;
+            }
 
-        // ── Search ───────────────────────────────────────────────────────────
-        window.vedrSearch = function () {
-            if (_vedr_table) _vedr_table.ajax.reload();
-        };
-
-        window.vedrClearSearch = function () {
-            $('#vedr_resumeSeq').prop('selectedIndex', 0);
-            $('#vedr_scoreTypeSearch').val('');
-            $('#vedr_activitySearch').val('');
-            if (_vedr_table) _vedr_table.ajax.reload();
-        };
-
-        // ── Khởi tạo form về trạng thái trống ────────────────────────────
-        function vedrResetForm() {
-            $('#vedr_seq').val('');
-            $('#vedr_resumeSeqHidden').val($('#vedr_resumeSeq').val() || '');
-            $('#vedr_scoreType').val('');
-            $('#vedr_no').val('');
-            $('#vedr_name').val('');
-            $('#vedr_deptNo').val('');
-            $('#vedr_deptName').val('');
-            $('#vedr_postGradeNo').val('');
-            $('#vedr_postGradeName').val('');
-            ['a', 'b', 'c', 'd', 'e'].forEach(function (f) {
-                $('#vedr_' + f).val(0);
-            });
-            $('#vedr_activity').prop('checked', true);
-            $('#vedr_sumWarningRow').hide();
-            $('#vedr_auditRow').hide();
-            vedrCalcSum();
-        }
-
-        // ── Modal thêm mới ───────────────────────────────────────────────────
-        window.vedrOpenAddModal = function () {
-            $('#vedr_modalTitle').text('Thêm mới tỷ lệ phân bổ');
-            vedrResetForm();
-            _vedr_detailModal.show();
-        };
-
-        // ── Modal sửa (click dòng) ───────────────────────────────────────────
-        window.vedrOpenEditModal = function (seq) {
-            $.ajax({
-                url: '/evs/manage/api/evsScore/' + encodeURIComponent(seq),
-                type: 'GET',
-                success: function (r) {
-                    if (!r) return;
-                    $('#vedr_modalTitle').text('Chỉnh sửa tỷ lệ phân bổ');
-                    $('#vedr_seq').val(r.seq || '');
-                    $('#vedr_resumeSeqHidden').val(r.resumeSeq || '');
-                    $('#vedr_scoreType').val(r.scoreType || '');
-                    $('#vedr_no').val(r.no || '');
-                    $('#vedr_name').val(r.name || '');
-                    $('#vedr_deptNo').val(r.deptNo || '');
-                    $('#vedr_deptName').val(r.deptName || '');
-                    $('#vedr_postGradeNo').val(r.postGradeNo || '');
-                    $('#vedr_postGradeName').val(r.postGradeName || '');
-                    $('#vedr_a').val(vedrNum(r.a));
-                    $('#vedr_b').val(vedrNum(r.b));
-                    $('#vedr_c').val(vedrNum(r.c));
-                    $('#vedr_d').val(vedrNum(r.d));
-                    $('#vedr_e').val(vedrNum(r.e));
-                    $('#vedr_activity').prop('checked', r.activity === '1' || r.activity === 1);
-                    if (r.updatedBy) {
-                        $('#vedr_auditDisplay').text((r.updatedBy || '') + ' — ' + (r.updateDate || ''));
-                        $('#vedr_auditRow').show();
-                    } else {
-                        $('#vedr_auditRow').hide();
+            // ── Load resume dropdown, tự chọn phần tử đầu tiên ──────────────────
+            function vedrLoadResumeList() {
+                $.ajax({
+                    url: '/evs/manage/api/resume/evsResumeList',
+                    type: 'GET',
+                    data: { evsType: inst.evsType },
+                    success: function (rows) {
+                        var html = '';
+                        (rows || []).forEach(function (r) {
+                            html += '<option value="' + vedrEsc(r.seq) + '">' + vedrEsc(r.resumeName) + '</option>';
+                        });
+                        vedr$('#vedr_resumeSeq').html(html);
+                        if (rows && rows.length > 0) {
+                            vedr$('#vedr_resumeSeq').val(rows[0].seq);
+                            if (inst.table) inst.table.ajax.reload();
+                        }
                     }
-                    vedrCalcSum();
-                    _vedr_detailModal.show();
-                },
-                error: function () {
-                    alert('Lỗi khi tải thông tin tỷ lệ phân bổ.');
-                }
-            });
-        };
+                });
+            }
 
-        // ── Lưu ─────────────────────────────────────────────────────────────
-        window.vedrSave = function () {
-            var scoreType = $('#vedr_scoreType').val();
-            if (!scoreType) {
-                alert('Vui lòng chọn Loại.');
-                $('#vedr_scoreType').focus();
-                return;
-            }
-            var name = $('#vedr_name').val().trim();
-            if (!name) {
-                alert('Vui lòng nhập Tên.');
-                $('#vedr_name').focus();
-                return;
-            }
-            var sum = vedrCalcSum();
-            if (Math.abs(sum - 100) >= 0.001) {
-                alert('Tổng tỷ lệ phân bổ (EX+VG+GD+NI+UN) phải bằng 100. Giá trị hiện tại: ' + sum);
-                return;
-            }
-            var resumeSeq = $('#vedr_resumeSeqHidden').val() || $('#vedr_resumeSeq').val() || '';
-            var payload = {
-                seq: $('#vedr_seq').val() || null,
-                resumeSeq: resumeSeq,
-                scoreType: scoreType,
-                no: $('#vedr_no').val(),
-                name: name,
-                deptNo: $('#vedr_deptNo').val(),
-                deptName: $('#vedr_deptName').val(),
-                postGradeNo: $('#vedr_postGradeNo').val(),
-                postGradeName: $('#vedr_postGradeName').val(),
-                a: parseFloat($('#vedr_a').val()) || 0,
-                b: parseFloat($('#vedr_b').val()) || 0,
-                c: parseFloat($('#vedr_c').val()) || 0,
-                d: parseFloat($('#vedr_d').val()) || 0,
-                e: parseFloat($('#vedr_e').val()) || 0,
-                sum: sum,
-                activity: $('#vedr_activity').prop('checked') ? '1' : '0'
+            // ── Search ───────────────────────────────────────────────────────────
+            window.vedrSearch = function () {
+                if (inst.table) inst.table.ajax.reload();
             };
-            $.ajax({
-                url: '/evs/manage/api/evsScore/save',
-                type: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify(payload),
-                success: function () {
-                    _vedr_detailModal.hide();
-                    if (_vedr_table) _vedr_table.ajax.reload();
-                },
-                error: function () {
-                    alert('Lỗi khi lưu dữ liệu. Vui lòng thử lại.');
-                }
-            });
-        };
 
-        // ── Xóa ─────────────────────────────────────────────────────────────
-        window.vedrOpenDeleteModal = function (seq, name) {
-            _vedr_deleteSeq = seq;
-            $('#vedr_deleteName').text(name || seq);
-            _vedr_deleteModal.show();
-        };
+            window.vedrClearSearch = function () {
+                vedr$('#vedr_resumeSeq').prop('selectedIndex', 0);
+                vedr$('#vedr_scoreTypeSearch').val('');
+                vedr$('#vedr_activitySearch').val('');
+                if (inst.table) inst.table.ajax.reload();
+            };
 
-        window.vedrConfirmDelete = function () {
-            if (!_vedr_deleteSeq) return;
-            $.ajax({
-                url: '/evs/manage/api/evsScore/delete',
-                type: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({ seq: _vedr_deleteSeq }),
-                success: function () {
-                    _vedr_deleteModal.hide();
-                    _vedr_deleteSeq = null;
-                    if (_vedr_table) _vedr_table.ajax.reload();
-                },
-                error: function () {
-                    alert('Lỗi khi xóa dữ liệu. Vui lòng thử lại.');
-                }
-            });
-        };
+            // ── Khởi tạo form về trạng thái trống ────────────────────────────
+            function vedrResetForm() {
+                vedr$('#vedr_seq').val('');
+                vedr$('#vedr_resumeSeqHidden').val(vedr$('#vedr_resumeSeq').val() || '');
+                vedr$('#vedr_scoreType').val('');
+                vedr$('#vedr_no').val('');
+                vedr$('#vedr_name').val('');
+                vedr$('#vedr_deptNo').val('');
+                vedr$('#vedr_deptName').val('');
+                vedr$('#vedr_postGradeNo').val('');
+                vedr$('#vedr_postGradeName').val('');
+                ['a', 'b', 'c', 'd', 'e'].forEach(function (f) {
+                    vedr$('#vedr_' + f).val(0);
+                });
+                vedr$('#vedr_activity').prop('checked', true);
+                vedr$('#vedr_sumWarningRow').hide();
+                vedr$('#vedr_auditRow').hide();
+                vedrCalcSum();
+            }
 
-        // ── Boot ─────────────────────────────────────────────────────────────
-        $(document).ready(function () {
-            _vedr_detailModal = new bootstrap.Modal(document.getElementById('vedr_detailModal'));
-            _vedr_deleteModal = new bootstrap.Modal(document.getElementById('vedr_deleteModal'));
+            // ── Modal thêm mới ───────────────────────────────────────────────────
+            window.vedrOpenAddModal = function () {
+                vedr$('#vedr_modalTitle').text('Thêm mới tỷ lệ phân bổ');
+                vedrResetForm();
+                inst.detailModal.show();
+            };
 
-            vedrLoadResumeList();
-
-            // Tự động tính SUM khi thay đổi bất kỳ ô điểm nào
-            $(document).on('input', '.vedr-score-inp', vedrCalcSum);
-
-            // Khi chọn loại CPNY, tự điền NO và Tên = 'CPNY'
-            $('#vedr_scoreType').on('change', function () {
-                if ($(this).val() === 'CPNY') {
-                    $('#vedr_no').val('CPNY');
-                    $('#vedr_name').val('CPNY');
-                }
-            });
-
-            _vedr_table = $('#vedr_table').DataTable({
-                destroy: true,
-                scrollY: 'calc(100vh - 300px)',
-                scrollCollapse: true,
-                paging: true,
-                searching: true,
-                lengthChange: true,
-                pageLength: 25,
-                processing: true,
-                dom: 'Blfrtip',
-                buttons: ['copy', 'csv', 'excel', 'pdf', 'print'],
-                ajax: {
-                    url: '/evs/manage/api/evsScore/list',
-                    dataSrc: '',
-                    data: function (d) {
-                        d.resumeSeq = $('#vedr_resumeSeq').val() || '';
-                        d.scoreType = $('#vedr_scoreTypeSearch').val() || '';
-                        d.activity  = $('#vedr_activitySearch').val() || '';
-                        d.evsType   = _vedr_evsType;
-                    }
-                },
-                columns: [
-                    {
-                        data: null, className: 'text-center', orderable: false,
-                        render: function (data, type, row, meta) { return meta.row + 1; }
-                    },
-                    { data: 'scoreType', className: 'text-center' },
-                    { data: 'no', className: 'text-center' },
-                    { data: 'name' },
-                    { data: 'a', className: 'text-center', defaultContent: '0' },
-                    { data: 'b', className: 'text-center', defaultContent: '0' },
-                    { data: 'c', className: 'text-center', defaultContent: '0' },
-                    { data: 'd', className: 'text-center', defaultContent: '0' },
-                    { data: 'e', className: 'text-center', defaultContent: '0' },
-                    {
-                        data: 'sum', className: 'text-center fw-semibold',
-                        render: function (data) {
-                            var v = parseFloat(data) || 0;
-                            var cls = Math.abs(v - 100) < 0.001 ? 'text-success' : 'text-danger';
-                            return '<span class="' + cls + '">' + v + '</span>';
+            // ── Modal sửa (click dòng) ───────────────────────────────────────────
+            window.vedrOpenEditModal = function (seq) {
+                $.ajax({
+                    url: '/evs/manage/api/evsScore/' + encodeURIComponent(seq),
+                    type: 'GET',
+                    success: function (r) {
+                        if (!r) return;
+                        vedr$('#vedr_modalTitle').text('Chỉnh sửa tỷ lệ phân bổ');
+                        vedr$('#vedr_seq').val(r.seq || '');
+                        vedr$('#vedr_resumeSeqHidden').val(r.resumeSeq || '');
+                        vedr$('#vedr_scoreType').val(r.scoreType || '');
+                        vedr$('#vedr_no').val(r.no || '');
+                        vedr$('#vedr_name').val(r.name || '');
+                        vedr$('#vedr_deptNo').val(r.deptNo || '');
+                        vedr$('#vedr_deptName').val(r.deptName || '');
+                        vedr$('#vedr_postGradeNo').val(r.postGradeNo || '');
+                        vedr$('#vedr_postGradeName').val(r.postGradeName || '');
+                        vedr$('#vedr_a').val(vedrNum(r.a));
+                        vedr$('#vedr_b').val(vedrNum(r.b));
+                        vedr$('#vedr_c').val(vedrNum(r.c));
+                        vedr$('#vedr_d').val(vedrNum(r.d));
+                        vedr$('#vedr_e').val(vedrNum(r.e));
+                        vedr$('#vedr_activity').prop('checked', r.activity === '1' || r.activity === 1);
+                        if (r.updatedBy) {
+                            vedr$('#vedr_auditDisplay').text((r.updatedBy || '') + ' — ' + (r.updateDate || ''));
+                            vedr$('#vedr_auditRow').show();
+                        } else {
+                            vedr$('#vedr_auditRow').hide();
                         }
+                        vedrCalcSum();
+                        inst.detailModal.show();
                     },
-                    {
-                        data: 'activity', className: 'text-center',
-                        render: function (data) { return vedrActivityBadge(data); }
-                    },
-                    {
-                        data: null, className: 'text-center', orderable: false,
-                        render: function (data, type, row) {
-                            return '<div class="btn-group btn-group-sm">'
-                                + '<button class="btn btn-outline-primary py-0 px-1"'
-                                + ' onclick="event.stopPropagation(); vedrOpenEditModal(\'' + vedrEsc(row.seq) + '\')"'
-                                + ' title="Sửa"><i class="bi bi-pencil"></i></button>'
-                                + '<button class="btn btn-outline-danger py-0 px-1"'
-                                + ' onclick="event.stopPropagation(); vedrOpenDeleteModal(\'' + vedrEsc(row.seq) + '\',\'' + vedrEsc(row.name) + '\')"'
-                                + ' title="Xóa"><i class="bi bi-trash"></i></button>'
-                                + '</div>';
-                        }
+                    error: function () {
+                        alert('Lỗi khi tải thông tin tỷ lệ phân bổ.');
                     }
-                ],
-                createdRow: function (row, data) {
-                    $(row).css('cursor', 'pointer').on('click', function () {
-                        vedrOpenEditModal(data.seq);
+                });
+            };
+
+            // ── Lưu ─────────────────────────────────────────────────────────────
+            window.vedrSave = function () {
+                var scoreType = vedr$('#vedr_scoreType').val();
+                if (!scoreType) {
+                    alert('Vui lòng chọn Loại.');
+                    vedr$('#vedr_scoreType').focus();
+                    return;
+                }
+                var name = vedr$('#vedr_name').val().trim();
+                if (!name) {
+                    alert('Vui lòng nhập Tên.');
+                    vedr$('#vedr_name').focus();
+                    return;
+                }
+                var sum = vedrCalcSum();
+                if (Math.abs(sum - 100) >= 0.001) {
+                    alert('Tổng tỷ lệ phân bổ (EX+VG+GD+NI+UN) phải bằng 100. Giá trị hiện tại: ' + sum);
+                    return;
+                }
+                var resumeSeq = vedr$('#vedr_resumeSeqHidden').val() || vedr$('#vedr_resumeSeq').val() || '';
+                var payload = {
+                    seq: vedr$('#vedr_seq').val() || null,
+                    resumeSeq: resumeSeq,
+                    scoreType: scoreType,
+                    no: vedr$('#vedr_no').val(),
+                    name: name,
+                    deptNo: vedr$('#vedr_deptNo').val(),
+                    deptName: vedr$('#vedr_deptName').val(),
+                    postGradeNo: vedr$('#vedr_postGradeNo').val(),
+                    postGradeName: vedr$('#vedr_postGradeName').val(),
+                    a: parseFloat(vedr$('#vedr_a').val()) || 0,
+                    b: parseFloat(vedr$('#vedr_b').val()) || 0,
+                    c: parseFloat(vedr$('#vedr_c').val()) || 0,
+                    d: parseFloat(vedr$('#vedr_d').val()) || 0,
+                    e: parseFloat(vedr$('#vedr_e').val()) || 0,
+                    sum: sum,
+                    activity: vedr$('#vedr_activity').prop('checked') ? '1' : '0'
+                };
+                $.ajax({
+                    url: '/evs/manage/api/evsScore/save',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(payload),
+                    success: function () {
+                        inst.detailModal.hide();
+                        if (inst.table) inst.table.ajax.reload();
+                    },
+                    error: function () {
+                        alert('Lỗi khi lưu dữ liệu. Vui lòng thử lại.');
+                    }
+                });
+            };
+
+            // ── Xóa ─────────────────────────────────────────────────────────────
+            window.vedrOpenDeleteModal = function (seq, name) {
+                inst.deleteSeq = seq;
+                vedr$('#vedr_deleteName').text(name || seq);
+                inst.deleteModal.show();
+            };
+
+            window.vedrConfirmDelete = function () {
+                if (!inst.deleteSeq) return;
+                $.ajax({
+                    url: '/evs/manage/api/evsScore/delete',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ seq: inst.deleteSeq }),
+                    success: function () {
+                        inst.deleteModal.hide();
+                        inst.deleteSeq = null;
+                        if (inst.table) inst.table.ajax.reload();
+                    },
+                    error: function () {
+                        alert('Lỗi khi xóa dữ liệu. Vui lòng thử lại.');
+                    }
+                });
+            };
+
+            // ── Boot ─────────────────────────────────────────────────────────────
+            $(document).ready(function () {
+                if (inst.table) return;
+
+                inst.detailModal = new bootstrap.Modal(vedr$('#vedr_detailModal')[0]);
+                inst.deleteModal = new bootstrap.Modal(vedr$('#vedr_deleteModal')[0]);
+
+                vedrLoadResumeList();
+
+                // Tự động tính SUM khi thay đổi bất kỳ ô điểm nào — scoped + namespaced
+                $(document).off('input.vedr_' + _vedr_tabId)
+                    .on('input.vedr_' + _vedr_tabId, '#' + _vedr_tabId + ' .vedr-score-inp', vedrCalcSum);
+
+                // Khi chọn loại CPNY — scoped + namespaced
+                $(document).off('change.vedr_' + _vedr_tabId)
+                    .on('change.vedr_' + _vedr_tabId, '#' + _vedr_tabId + ' #vedr_scoreType', function () {
+                        if ($(this).val() === 'CPNY') {
+                            vedr$('#vedr_no').val('CPNY');
+                            vedr$('#vedr_name').val('CPNY');
+                        }
                     });
-                }
+
+                inst.table = vedr$('#vedr_table').DataTable({
+                    scrollY: 'calc(100vh - 300px)',
+                    scrollCollapse: true,
+                    paging: true,
+                    searching: true,
+                    lengthChange: true,
+                    pageLength: 25,
+                    processing: true,
+                    dom: 'Blfrtip',
+                    buttons: ['copy', 'csv', 'excel', 'pdf', 'print'],
+                    ajax: {
+                        url: '/evs/manage/api/evsScore/list',
+                        dataSrc: '',
+                        data: function (d) {
+                            d.resumeSeq = vedr$('#vedr_resumeSeq').val() || '';
+                            d.scoreType = vedr$('#vedr_scoreTypeSearch').val() || '';
+                            d.activity  = vedr$('#vedr_activitySearch').val() || '';
+                            d.evsType   = inst.evsType;
+                        }
+                    },
+                    columns: [
+                        {
+                            data: null, className: 'text-center', orderable: false,
+                            render: function (data, type, row, meta) { return meta.row + 1; }
+                        },
+                        { data: 'scoreType', className: 'text-center' },
+                        { data: 'no', className: 'text-center' },
+                        { data: 'name' },
+                        { data: 'a', className: 'text-center', defaultContent: '0' },
+                        { data: 'b', className: 'text-center', defaultContent: '0' },
+                        { data: 'c', className: 'text-center', defaultContent: '0' },
+                        { data: 'd', className: 'text-center', defaultContent: '0' },
+                        { data: 'e', className: 'text-center', defaultContent: '0' },
+                        {
+                            data: 'sum', className: 'text-center fw-semibold',
+                            render: function (data) {
+                                var v = parseFloat(data) || 0;
+                                var cls = Math.abs(v - 100) < 0.001 ? 'text-success' : 'text-danger';
+                                return '<span class="' + cls + '">' + v + '</span>';
+                            }
+                        },
+                        {
+                            data: 'activity', className: 'text-center',
+                            render: function (data) { return vedrActivityBadge(data); }
+                        },
+                        {
+                            data: null, className: 'text-center', orderable: false,
+                            render: function (data, type, row) {
+                                return '<div class="btn-group btn-group-sm">'
+                                    + '<button class="btn btn-outline-primary py-0 px-1"'
+                                    + ' onclick="event.stopPropagation(); vedrOpenEditModal(\'' + vedrEsc(row.seq) + '\')"'
+                                    + ' title="Sửa"><i class="bi bi-pencil"></i></button>'
+                                    + '<button class="btn btn-outline-danger py-0 px-1"'
+                                    + ' onclick="event.stopPropagation(); vedrOpenDeleteModal(\'' + vedrEsc(row.seq) + '\',\'' + vedrEsc(row.name) + '\')"'
+                                    + ' title="Xóa"><i class="bi bi-trash"></i></button>'
+                                    + '</div>';
+                            }
+                        }
+                    ],
+                    createdRow: function (row, data) {
+                        $(row).css('cursor', 'pointer').on('click', function () {
+                            vedrOpenEditModal(data.seq);
+                        });
+                    }
+                });
             });
-        });
+        })();
     </script>
 </template>

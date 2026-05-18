@@ -32,25 +32,25 @@
                 <li>
                     <a class="dropdown-item" href="#" onclick="changeLanguage('vi')">
                         <span class="me-2">🇻🇳</span>
-                        <span th:text="#{language.vietnamese}">Tiếng Việt</span>
+                        <span>Tiếng Việt</span>
                     </a>
                 </li>
                 <li>
                     <a class="dropdown-item" href="#" onclick="changeLanguage('en')">
                         <span class="me-2">🇺🇸</span>
-                        <span th:text="#{language.english}">English</span>
+                        <span>English</span>
                     </a>
                 </li>
                 <li>
                     <a class="dropdown-item" href="#" onclick="changeLanguage('zh')">
                         <span class="me-2">🇨🇳</span>
-                        <span th:text="#{language.chinese}">中文</span>
+                        <span>中文</span>
                     </a>
                 </li>
                 <li>
                     <a class="dropdown-item" href="#" onclick="changeLanguage('ko')">
                         <span class="me-2">🇰🇷</span>
-                        <span th:text="#{language.korean}">한국어</span>
+                        <span>한국어</span>
                     </a>
                 </li>
             </ul>
@@ -83,10 +83,10 @@
     <div th:fragment="languageSelectorCompact">
         <div class="language-selector-compact">
             <select id="languageSelect" class="form-select form-select-sm" onchange="changeLanguage(this.value)">
-                <option value="vi" th:selected="${#locale.language == 'vi'}" th:text="#{language.vietnamese}">Tiếng Việt</option>
-                <option value="en" th:selected="${#locale.language == 'en'}" th:text="#{language.english}">English</option>
-                <option value="zh" th:selected="${#locale.language == 'zh'}" th:text="#{language.chinese}">中文</option>
-                <option value="ko" th:selected="${#locale.language == 'ko'}" th:text="#{language.korean}">한국어</option>
+                <option value="vi">Tiếng Việt</option>
+                <option value="en">English</option>
+                <option value="zh">中文</option>
+                <option value="ko">한국어</option>
             </select>
         </div>
     </div>

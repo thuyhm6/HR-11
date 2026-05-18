@@ -6,7 +6,8 @@
 - Sau khi sửa phải:
   - tóm tắt thay đổi
   - giải thích lý do
-4. với java không cần truyền tham số cpnyId, createBy, updateBy, createIp, updateIp, language ở các file java vì các tham số này đã được interceptor tự động inject. mapper.xml có thể trực tiếp sử dụng #{cpnyId}, #{adminID}, #{adminIP}, #{lang}
+4. Khi tạo file .html thì lạo luôn các file backend liên quan (controller, service, mapper). với java không cần truyền tham số cpnyId, createBy, updateBy, createIp, updateIp, language ở các file java vì các tham số này đã được interceptor tự động inject. mapper.xml có thể trực tiếp sử dụng #{cpnyId}, #{adminID}, #{adminIP}, #{lang}
+5. Áp dụng phân trang với quy tắc: (1) thêm draw/start/length vào DTO, (2) thêm countList+selectListPage vào mapper/XML dùng pattern ROWNUM trên, (3) controller trả về DataTablesResponse<T>, (4) HTML dùng serverSide: true để kích hoạt phân trang phía server, (5) đảm bảo rằng tất cả các truy vấn SQL trong mapper.xml đều được tối ưu hóa để hỗ trợ phân trang hiệu quả, tránh việc tải toàn bộ dữ liệu vào bộ nhớ khi thực hiện phân trang.
 5. luôn luôn để để jdbcType cho tất cả các tham số ở mapper.xml
 6. các file mapper.xml luôn sử dụng ResultMap để chỉ cho MyBatis biết cách map dữ liệu từ kết quả truy vấn SQL vào đối tượng Java (DTO/POJO)
 7. Đối với các file Java, hãy tuân thủ quy tắc đặt tên theo chuẩn CamelCase và sử dụng các annotation như @Service, @Repository, @Autowired để quản lý bean và dependency injection.

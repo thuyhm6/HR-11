@@ -392,7 +392,7 @@
 
     <!-- Search employees by multiple criteria -->
     <select id="searchEmployees" resultType="com.ait.hrm.empinfo.dto.EmployeeSearchResponse">
-        SELECT 
+        SELECT
             he.PERSON_ID as personId,
             he.EMPID as empId,
             he.LOCAL_NAME as localName,
@@ -400,15 +400,32 @@
             he.POSITION as position
         <include refid="baseFromClause"/>
         <include refid="baseWhereClause"/>
-        <include refid="activeEmployeesFilter"/>
+        <choose>
+            <when test="empOffice != null and empOffice != ''">
+                AND he.EMP_OFFICE = #{empOffice, jdbcType=VARCHAR}
+            </when>
+            <otherwise>
+                <include refid="activeEmployeesFilter"/>
+            </otherwise>
+        </choose>
         <if test="empId != null and empId != ''">
-            AND he.EMPID LIKE '%' || #{empId} || '%'
+            AND he.EMPID LIKE '%' || #{empId, jdbcType=VARCHAR} || '%'
         </if>
         <if test="localName != null and localName != ''">
-            AND he.LOCAL_NAME LIKE '%' || #{localName} || '%'
+            AND he.LOCAL_NAME LIKE '%' || #{localName, jdbcType=VARCHAR} || '%'
         </if>
         <if test="deptNo != null and deptNo != ''">
-            AND he.DEPTNO LIKE '%' || #{deptNo} || '%'
+            AND he.DEPTNO LIKE '%' || #{deptNo, jdbcType=VARCHAR} || '%'
+        </if>
+        <if test="deptCodes != null and deptCodes.size() > 0">
+            AND he.DEPTNO IN
+            <foreach collection="deptCodes" item="code" open="(" separator="," close=")">
+                #{code, jdbcType=VARCHAR}
+            </foreach>
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND (he.EMPID LIKE '%' || #{keyword, jdbcType=VARCHAR} || '%'
+                OR he.LOCAL_NAME LIKE '%' || #{keyword, jdbcType=VARCHAR} || '%')
         </if>
         ORDER BY he.EMPID ASC
     </select>

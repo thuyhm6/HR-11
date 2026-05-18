@@ -73,7 +73,8 @@ public interface HrEmployeeService {
      * @param deptNo      Mã phòng ban
      * @return List<EmployeeSearchResponse>
      */
-    List<EmployeeSearchResponse> searchEmployees(String empId, String localName, String deptNo);
+    List<EmployeeSearchResponse> searchEmployees(String empId, String localName, String deptNo, String keyword,
+            List<String> deptCodes, String empOffice);
     
 
     /**

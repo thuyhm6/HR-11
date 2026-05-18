@@ -8,6 +8,7 @@ import com.ait.sy.sys.service.HrAuthenticationService.HrUserInfo;
 import com.ait.sy.sys.service.PermissionService.UserPermissionInfo;
 import com.ait.sy.sys.service.impl.HrAuthenticationServiceImpl;
 import com.ait.util.CsrfUtil;
+import com.ait.util.I18nUtil;
 import com.ait.util.IpUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,10 +17,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.servlet.support.RequestContextUtils;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+
+import java.util.Locale;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -110,6 +116,7 @@ public class AuthController {
             @RequestParam(name = "lang", required = false) String lang,
             @RequestParam(required = false) String csrfToken,
             HttpServletRequest request,
+            HttpServletResponse response,
             HttpSession session,
             Model model,
             RedirectAttributes redirectAttributes) {
@@ -151,6 +158,14 @@ public class AuthController {
                 // Lưu ngôn ngữ đã chọn vào session (nếu có)
                 if (lang != null && !lang.trim().isEmpty()) {
                     session.setAttribute("language", lang.trim());
+                    // Đồng bộ Spring LocaleResolver để Thymeleaf dùng đúng locale (vi_VN, en_US...)
+                    // LocaleChangeInterceptor chỉ tạo Locale("vi") không có country code,
+                    // nên messages_vi_VN.properties sẽ không được tìm thấy nếu không override ở đây.
+                    Locale locale = I18nUtil.createLocale(lang.trim());
+                    LocaleResolver localeResolver = RequestContextUtils.getLocaleResolver(request);
+                    if (localeResolver != null) {
+                        localeResolver.setLocale(request, response, locale);
+                    }
                 }
 
                 // Lưu địa chỉ IP của client vào session

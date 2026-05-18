@@ -4,10 +4,10 @@
 
 Hệ thống đa ngôn ngữ đã được triển khai thành công với hỗ trợ 4 ngôn ngữ:
 
-- 🇻🇳 Tiếng Việt (vi_VN) - Ngôn ngữ mặc định
-- 🇺🇸 English (en_US)
-- 🇨🇳 中文 (zh_CN)
-- 🇰🇷 한국어 (ko_KR)
+- 🇻🇳 Tiếng Việt (vi) - Ngôn ngữ mặc định
+- 🇺🇸 English (en)
+- 🇨🇳 中文 (zh)
+- 🇰🇷 한국어 (ko)
 
 ## Cấu trúc files đã tạo
 

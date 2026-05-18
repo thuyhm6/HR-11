@@ -91,5 +91,8 @@ public interface HrEmployeeMapper {
      */
     List<EmployeeSearchResponse> searchEmployees(@Param("empId") String empId,
             @Param("localName") String localName,
-            @Param("deptNo") String deptNo);
+            @Param("deptNo") String deptNo,
+            @Param("keyword") String keyword,
+            @Param("deptCodes") List<String> deptCodes,
+            @Param("empOffice") String empOffice);
 }

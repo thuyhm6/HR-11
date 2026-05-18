@@ -202,273 +202,244 @@
 
 <template id="fragmentScripts">
     <script th:inline="javascript">
-        var _vrl_evsType = new URLSearchParams((window._currentTabUrl || window.location.href).split('?')[1] || '').get('evsType') || '';
-        var _vrl_deleteSeq = null;
-        var _vrl_detailModal = null;
-        var _vrl_deleteModal = null;
-        var _vrl_table = null;
-
-        // ── Tiện ích ─────────────────────────────────────────────────────────
-        function vrlEscHtml(s) {
-            if (s == null) return '';
-            return String(s)
-                .replace(/&/g, '&amp;').replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-        }
-
-        function vrlActivityBadge(activity, name) {
-            var cls = { '2': 'warning', '3': 'primary', '4': 'success', '1': 'info' }[activity] || 'secondary';
-            return '<span class="badge bg-' + cls + '">' + vrlEscHtml(name || activity) + '</span>';
-        }
-
-        // ── Load dropdown Tháng đánh giá theo Chu kỳ ───────────────────────
-        function vrlLoadMonthOptions(parentCode, selectedValue) {
-            reloadCodeSelect('#vrl_evsMonth', parentCode, '-- Chọn --', selectedValue);
-        }
-
-        function vrlLoadCopyOptions() {
-            $.ajax({
-                url: '/evs/manage/api/resume/copyOptions',
-                type: 'GET',
-                data: { evsType: _vrl_evsType },
-                success: function (rows) {
-                    var html = '<option value="">-- Không sao chép --</option>';
-                    (rows || []).forEach(function (r) {
-                        html += '<option value="' + vrlEscHtml(r.seq) + '">'
-                            + vrlEscHtml(r.resumeName)
-                            + (r.evsYear ? ' (' + r.evsYear + ')' : '')
-                            + '</option>';
-                    });
-                    $('#vrl_copyObject').html(html);
-                }
-            });
-        }
-
-        // ── Search ───────────────────────────────────────────────────────────
-        window.vrlSearch = function () {
-            if (_vrl_table) _vrl_table.ajax.reload();
-        };
-
-        window.vrlClearSearch = function () {
-            $('#vrl_yearSearch').val(new Date().getFullYear());
-            $('#vrl_cycleSearch').val('');
-            if (_vrl_table) _vrl_table.ajax.reload();
-        };
-
-        // ── Modal thêm mới ───────────────────────────────────────────────────
-        window.vrlOpenAddModal = function () {
-            $('#vrl_modalTitle').text('Thêm mới đánh giá');
-            $('#vrl_seq').val('');
-            $('#vrl_resumeName').val('');
-            $('#vrl_remark').val('');
-            $('#vrl_evsCycle').val('');
-            $('#vrl_evsYear').val(new Date().getFullYear());
-            vrlLoadMonthOptions('', '');
-            $('#vrl_standardDate').val('');
-            $('#vrl_evsStartDate').val('');
-            $('#vrl_evsEndDate').val('');
-            $('#vrl_evsLevel').val('');
-            $('#vrl_copyObject').val('');
-            $('#vrl_activityRow').hide();
-            vrlLoadCopyOptions();
-            if (typeof initDateRangePickers === 'function') {
-                initDateRangePickers('#vrl_detailModal');
+        (function () {
+            var _vrl_tabId = window._currentTabId || 'default-content';
+            window._vrl_inst = window._vrl_inst || {};
+            if (!window._vrl_inst[_vrl_tabId]) {
+                window._vrl_inst[_vrl_tabId] = {
+                    evsType: new URLSearchParams((window._currentTabUrl || window.location.href).split('?')[1] || '').get('evsType') || '',
+                    deleteSeq: null,
+                    detailModal: null,
+                    deleteModal: null,
+                    table: null
+                };
             }
-            _vrl_detailModal.show();
-        };
+            var inst = window._vrl_inst[_vrl_tabId];
 
-        // ── Modal sửa ───────────────────────────────────────────────────────
-        window.vrlOpenEditModal = function (seq) {
-            $.ajax({
-                url: '/evs/manage/api/resume/' + encodeURIComponent(seq),
-                type: 'GET',
-                data: { evsType: _vrl_evsType },
-                success: function (r) {
-                    if (!r) return;
-                    $('#vrl_modalTitle').text('Chỉnh sửa đánh giá');
-                    $('#vrl_seq').val(r.seq || '');
-                    $('#vrl_resumeName').val(r.resumeName || '');
-                    $('#vrl_remark').val(r.remark || '');
-                    $('#vrl_evsCycle').val(r.evsCycle || '');
-                    $('#vrl_evsYear').val(r.evsYear || '');
-                    vrlLoadMonthOptions(r.evsCycle || '', r.evsMonth || '');
-                    $('#vrl_standardDate').val(r.standardDate || '');
-                    $('#vrl_evsStartDate').val(r.evsStartDate || '');
-                    $('#vrl_evsEndDate').val(r.evsEndDate || '');
-                    $('#vrl_evsLevel').val(r.evsLevel || '');
-                    $('#vrl_copyObject').val(r.copyObject || '');
-                    if (r.activityName) {
-                        $('#vrl_activityDisplay').text(r.activityName);
-                        $('#vrl_activityRow').show();
-                    } else {
-                        $('#vrl_activityRow').hide();
+            function vrl$(sel) { return $('#' + _vrl_tabId).find(sel); }
+
+            function vrlEscHtml(s) {
+                if (s == null) return '';
+                return String(s)
+                    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+            }
+
+            function vrlActivityBadge(activity, name) {
+                var cls = { '2': 'warning', '3': 'primary', '4': 'success', '1': 'info' }[activity] || 'secondary';
+                return '<span class="badge bg-' + cls + '">' + vrlEscHtml(name || activity) + '</span>';
+            }
+
+            function vrlLoadMonthOptions(parentCode, selectedValue) {
+                reloadCodeSelect('#' + _vrl_tabId + ' #vrl_evsMonth', parentCode, '-- Chọn --', selectedValue);
+            }
+
+            function vrlLoadCopyOptions() {
+                $.ajax({
+                    url: '/evs/manage/api/resume/copyOptions',
+                    type: 'GET',
+                    data: { evsType: inst.evsType },
+                    success: function (rows) {
+                        var html = '<option value="">-- Không sao chép --</option>';
+                        (rows || []).forEach(function (r) {
+                            html += '<option value="' + vrlEscHtml(r.seq) + '">'
+                                + vrlEscHtml(r.resumeName)
+                                + (r.evsYear ? ' (' + r.evsYear + ')' : '')
+                                + '</option>';
+                        });
+                        vrl$('#vrl_copyObject').html(html);
                     }
-                    vrlLoadCopyOptions();
-                    if (typeof initDateRangePickers === 'function') {
-                        initDateRangePickers('#vrl_detailModal');
-                    }
-                    _vrl_detailModal.show();
-                },
-                error: function () {
-                    alert('Lỗi khi tải thông tin đánh giá.');
-                }
-            });
-        };
+                });
+            }
 
-        // ── Lưu ─────────────────────────────────────────────────────────────
-        window.vrlSave = function () {
-            var resumeName = $('#vrl_resumeName').val().trim();
-            if (!resumeName) {
-                alert('Vui lòng nhập Tên đánh giá.');
-                $('#vrl_resumeName').focus();
-                return;
-            }
-            var standardDate = $('#vrl_standardDate').val().trim();
-            if (!standardDate) {
-                alert('Vui lòng nhập Ngày tiêu chuẩn.');
-                $('#vrl_standardDate').focus();
-                return;
-            }
-            var payload = {
-                seq: $('#vrl_seq').val(),
-                resumeName: resumeName,
-                remark: $('#vrl_remark').val(),
-                evsCycle: $('#vrl_evsCycle').val(),
-                evsYear: $('#vrl_evsYear').val(),
-                evsMonth: $('#vrl_evsMonth').val(),
-                standardDate: standardDate,
-                evsStartDate: $('#vrl_evsStartDate').val(),
-                evsEndDate: $('#vrl_evsEndDate').val(),
-                evsLevel: $('#vrl_evsLevel').val(),
-                copyObject: $('#vrl_copyObject').val(),
-                evsType: _vrl_evsType
+            window.vrlSearch = function () {
+                if (inst.table) inst.table.ajax.reload();
             };
-            $.ajax({
-                url: '/evs/manage/api/resume/save',
-                type: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify(payload),
-                success: function () {
-                    _vrl_detailModal.hide();
-                    if (_vrl_table) _vrl_table.ajax.reload();
-                },
-                error: function () {
-                    alert('Lỗi khi lưu dữ liệu. Vui lòng thử lại.');
+
+            window.vrlClearSearch = function () {
+                vrl$('#vrl_yearSearch').val(new Date().getFullYear());
+                vrl$('#vrl_cycleSearch').val('');
+                if (inst.table) inst.table.ajax.reload();
+            };
+
+            window.vrlOpenAddModal = function () {
+                vrl$('#vrl_modalTitle').text('Thêm mới đánh giá');
+                vrl$('#vrl_seq').val('');
+                vrl$('#vrl_resumeName').val('');
+                vrl$('#vrl_remark').val('');
+                vrl$('#vrl_evsCycle').val('');
+                vrl$('#vrl_evsYear').val(new Date().getFullYear());
+                vrlLoadMonthOptions('', '');
+                vrl$('#vrl_standardDate').val('');
+                vrl$('#vrl_evsStartDate').val('');
+                vrl$('#vrl_evsEndDate').val('');
+                vrl$('#vrl_evsLevel').val('');
+                vrl$('#vrl_copyObject').val('');
+                vrl$('#vrl_activityRow').hide();
+                vrlLoadCopyOptions();
+                if (typeof initDateRangePickers === 'function') {
+                    initDateRangePickers('#' + _vrl_tabId + ' #vrl_detailModal');
                 }
-            });
-        };
+                inst.detailModal.show();
+            };
 
-        // ── Xóa ─────────────────────────────────────────────────────────────
-        window.vrlOpenDeleteModal = function (seq, resumeName) {
-            _vrl_deleteSeq = seq;
-            $('#vrl_deleteResumeName').text(resumeName || seq);
-            _vrl_deleteModal.show();
-        };
+            window.vrlOpenEditModal = function (seq) {
+                $.ajax({
+                    url: '/evs/manage/api/resume/' + encodeURIComponent(seq),
+                    type: 'GET',
+                    data: { evsType: inst.evsType },
+                    success: function (r) {
+                        if (!r) return;
+                        vrl$('#vrl_modalTitle').text('Chỉnh sửa đánh giá');
+                        vrl$('#vrl_seq').val(r.seq || '');
+                        vrl$('#vrl_resumeName').val(r.resumeName || '');
+                        vrl$('#vrl_remark').val(r.remark || '');
+                        vrl$('#vrl_evsCycle').val(r.evsCycle || '');
+                        vrl$('#vrl_evsYear').val(r.evsYear || '');
+                        vrlLoadMonthOptions(r.evsCycle || '', r.evsMonth || '');
+                        vrl$('#vrl_standardDate').val(r.standardDate || '');
+                        vrl$('#vrl_evsStartDate').val(r.evsStartDate || '');
+                        vrl$('#vrl_evsEndDate').val(r.evsEndDate || '');
+                        vrl$('#vrl_evsLevel').val(r.evsLevel || '');
+                        vrl$('#vrl_copyObject').val(r.copyObject || '');
+                        if (r.activityName) {
+                            vrl$('#vrl_activityDisplay').text(r.activityName);
+                            vrl$('#vrl_activityRow').show();
+                        } else {
+                            vrl$('#vrl_activityRow').hide();
+                        }
+                        vrlLoadCopyOptions();
+                        if (typeof initDateRangePickers === 'function') {
+                            initDateRangePickers('#' + _vrl_tabId + ' #vrl_detailModal');
+                        }
+                        inst.detailModal.show();
+                    },
+                    error: function () { alert('Lỗi khi tải thông tin đánh giá.'); }
+                });
+            };
 
-        window.vrlConfirmDelete = function () {
-            if (!_vrl_deleteSeq) return;
-            $.ajax({
-                url: '/evs/manage/api/resume/delete',
-                type: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({ seq: _vrl_deleteSeq, evsType: _vrl_evsType }),
-                success: function () {
-                    _vrl_deleteModal.hide();
-                    _vrl_deleteSeq = null;
-                    if (_vrl_table) _vrl_table.ajax.reload();
-                },
-                error: function () {
-                    alert('Lỗi khi xóa dữ liệu. Vui lòng thử lại.');
-                }
-            });
-        };
+            window.vrlSave = function () {
+                var resumeName = vrl$('#vrl_resumeName').val().trim();
+                if (!resumeName) { alert('Vui lòng nhập Tên đánh giá.'); vrl$('#vrl_resumeName').focus(); return; }
+                var standardDate = vrl$('#vrl_standardDate').val().trim();
+                if (!standardDate) { alert('Vui lòng nhập Ngày tiêu chuẩn.'); vrl$('#vrl_standardDate').focus(); return; }
+                var payload = {
+                    seq: vrl$('#vrl_seq').val(),
+                    resumeName: resumeName,
+                    remark: vrl$('#vrl_remark').val(),
+                    evsCycle: vrl$('#vrl_evsCycle').val(),
+                    evsYear: vrl$('#vrl_evsYear').val(),
+                    evsMonth: vrl$('#vrl_evsMonth').val(),
+                    standardDate: standardDate,
+                    evsStartDate: vrl$('#vrl_evsStartDate').val(),
+                    evsEndDate: vrl$('#vrl_evsEndDate').val(),
+                    evsLevel: vrl$('#vrl_evsLevel').val(),
+                    copyObject: vrl$('#vrl_copyObject').val(),
+                    evsType: inst.evsType
+                };
+                $.ajax({
+                    url: '/evs/manage/api/resume/save',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(payload),
+                    success: function () { inst.detailModal.hide(); if (inst.table) inst.table.ajax.reload(); },
+                    error: function () { alert('Lỗi khi lưu dữ liệu. Vui lòng thử lại.'); }
+                });
+            };
 
-        // ── Boot ─────────────────────────────────────────────────────────────
-        $(document).ready(function () {
-            _vrl_detailModal = new bootstrap.Modal(document.getElementById('vrl_detailModal'));
-            _vrl_deleteModal = new bootstrap.Modal(document.getElementById('vrl_deleteModal'));
+            window.vrlOpenDeleteModal = function (seq, resumeName) {
+                inst.deleteSeq = seq;
+                vrl$('#vrl_deleteResumeName').text(resumeName || seq);
+                inst.deleteModal.show();
+            };
 
-            $('#vrl_evsCycle').on('change', function () {
-                vrlLoadMonthOptions($(this).val(), '');
-            });
+            window.vrlConfirmDelete = function () {
+                if (!inst.deleteSeq) return;
+                $.ajax({
+                    url: '/evs/manage/api/resume/delete',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ seq: inst.deleteSeq, evsType: inst.evsType }),
+                    success: function () {
+                        inst.deleteModal.hide();
+                        inst.deleteSeq = null;
+                        if (inst.table) inst.table.ajax.reload();
+                    },
+                    error: function () { alert('Lỗi khi xóa dữ liệu. Vui lòng thử lại.'); }
+                });
+            };
 
-            if (typeof initDateRangePickers === 'function') initDateRangePickers('#vrl_pageWrapper');
+            $(document).ready(function () {
+                if (inst.table) return;
 
-            $('#vrl_yearSearch').val(new Date().getFullYear());
+                inst.detailModal = new bootstrap.Modal(vrl$('#vrl_detailModal')[0]);
+                inst.deleteModal = new bootstrap.Modal(vrl$('#vrl_deleteModal')[0]);
 
-            _vrl_table = $('#vrl_table').DataTable({
-                destroy: true,
-                scrollY: 'calc(100vh - 320px)',
-                scrollCollapse: true,
-                paging: true,
-                searching: true,
-                lengthChange: true,
-                pageLength: 25,
-                processing: true,
-                dom: 'Blfrtip',
-                buttons: ['copy', 'csv', 'excel', 'pdf', 'print'],
-                ajax: {
-                    url: '/evs/manage/api/resume/list',
-                    dataSrc: '',
-                    data: function (d) {
-                        d.yearSearch = $('#vrl_yearSearch').val() || '';
-                        d.cycleSearch = $('#vrl_cycleSearch').val() || '';
-                        d.evsType = _vrl_evsType;
-                    }
-                },
-                columns: [
-                    {
-                        data: null,
-                        className: 'text-center',
-                        width: '3%',
-                        render: function (data, type, row, meta) {
-                            return meta.row + 1;
+                vrl$('#vrl_evsCycle').on('change', function () {
+                    vrlLoadMonthOptions($(this).val(), '');
+                });
+
+                if (typeof initDateRangePickers === 'function') initDateRangePickers('#' + _vrl_tabId + ' #vrl_pageWrapper');
+
+                vrl$('#vrl_yearSearch').val(new Date().getFullYear());
+
+                inst.table = vrl$('#vrl_table').DataTable({
+                    scrollY: 'calc(100vh - 320px)',
+                    scrollCollapse: true,
+                    paging: true,
+                    searching: true,
+                    lengthChange: true,
+                    pageLength: 25,
+                    processing: true,
+                    dom: 'Blfrtip',
+                    buttons: ['copy', 'csv', 'excel', 'pdf', 'print'],
+                    ajax: {
+                        url: '/evs/manage/api/resume/list',
+                        dataSrc: '',
+                        data: function (d) {
+                            d.yearSearch = vrl$('#vrl_yearSearch').val() || '';
+                            d.cycleSearch = vrl$('#vrl_cycleSearch').val() || '';
+                            d.evsType = inst.evsType;
                         }
                     },
-                    { data: 'resumeName' },
-                    {
-                        data: 'evsCycleName',
-                        className: 'text-center',
-                        render: function (data, type, row) {
-                            return data || row.evsCycle || '';
+                    columns: [
+                        {
+                            data: null, className: 'text-center', width: '3%',
+                            render: function (data, type, row, meta) { return meta.row + 1; }
+                        },
+                        { data: 'resumeName' },
+                        {
+                            data: 'evsCycleName', className: 'text-center',
+                            render: function (data, type, row) { return data || row.evsCycle || ''; }
+                        },
+                        { data: 'evsYear', className: 'text-center' },
+                        {
+                            data: 'evsMonthName', className: 'text-center',
+                            render: function (data, type, row) { return data || row.evsMonth || ''; }
+                        },
+                        { data: 'standardDate', className: 'text-center' },
+                        { data: 'evsStartDate', className: 'text-center' },
+                        { data: 'evsEndDate', className: 'text-center' },
+                        {
+                            data: null, className: 'text-center',
+                            render: function (data, type, row) { return vrlActivityBadge(row.activity, row.activityName); }
+                        },
+                        {
+                            data: null, className: 'text-center', width: '80px', orderable: false,
+                            render: function (data, type, row) {
+                                return '<div class="btn-group btn-group-sm">'
+                                    + '<button class="btn btn-outline-primary py-0 px-1"'
+                                    + ' onclick="vrlOpenEditModal(\'' + vrlEscHtml(row.seq) + '\')">'
+                                    + '<i class="bi bi-pencil"></i></button>'
+                                    + '<button class="btn btn-outline-danger py-0 px-1"'
+                                    + ' onclick="vrlOpenDeleteModal(\'' + vrlEscHtml(row.seq) + '\',\'' + vrlEscHtml(row.resumeName) + '\')">'
+                                    + '<i class="bi bi-trash"></i></button>'
+                                    + '</div>';
+                            }
                         }
-                    },
-                    { data: 'evsYear', className: 'text-center' },
-                    {
-                        data: 'evsMonthName',
-                        className: 'text-center',
-                        render: function (data, type, row) {
-                            return data || row.evsMonth || '';
-                        }
-                    },
-                    { data: 'standardDate', className: 'text-center' },
-                    { data: 'evsStartDate', className: 'text-center' },
-                    { data: 'evsEndDate', className: 'text-center' },
-                    {
-                        data: null,
-                        className: 'text-center',
-                        render: function (data, type, row) {
-                            return vrlActivityBadge(row.activity, row.activityName);
-                        }
-                    },
-                    {
-                        data: null,
-                        className: 'text-center',
-                        width: '80px',
-                        orderable: false,
-                        render: function (data, type, row) {
-                            return '<div class="btn-group btn-group-sm">'
-                                + '<button class="btn btn-outline-primary py-0 px-1"'
-                                + ' onclick="vrlOpenEditModal(\'' + vrlEscHtml(row.seq) + '\')">'
-                                + '<i class="bi bi-pencil"></i></button>'
-                                + '<button class="btn btn-outline-danger py-0 px-1"'
-                                + ' onclick="vrlOpenDeleteModal(\'' + vrlEscHtml(row.seq) + '\',\'' + vrlEscHtml(row.resumeName) + '\')">'
-                                + '<i class="bi bi-trash"></i></button>'
-                                + '</div>';
-                        }
-                    }
-                ]
+                    ]
+                });
             });
-        });
+        })();
     </script>
 </template>

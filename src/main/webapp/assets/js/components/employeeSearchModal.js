@@ -11,37 +11,48 @@ window.EmployeeSearchModal = {
         modalId: '#employeeSearchModal',
         tableId: '#employeeSearchTable',
         searchForm: {
-            empId: '#popupSearchEmpId',
-            localName: '#popupSearchLocalName',
-            deptNo: '#popupSearchDeptNo'
+            keyword: '#popupSearchKeyword',
+            deptSearch: '#esm_deptSearch',
+            empOffice: '#esm_empOffice'
         }
     },
 
     // Current callback function
     currentCallback: null,
     dataTable: null,
+    selectedDeptCodes: [],
+    deptTreeInitialized: false,
 
-    // Open modal with callback
-    open(callback) {
+    // Open modal with callback, optionally pre-fill keyword
+    open(callback, keyword) {
         this.currentCallback = callback;
         this.clear();
+        if (keyword) {
+            $(this.config.searchForm.keyword).val(keyword);
+        }
         $(this.config.modalId).modal('show');
 
         // Adjust DataTable columns when modal is shown (fix width issues)
         $(this.config.modalId).off('shown.bs.modal').on('shown.bs.modal', () => {
+            if (!this.deptTreeInitialized && typeof DeptTree !== 'undefined') {
+                DeptTree.init(this.config.searchForm.deptSearch, (selectedCodes) => {
+                    this.selectedDeptCodes = selectedCodes || [];
+                });
+                this.deptTreeInitialized = true;
+            }
             if (this.dataTable) {
                 this.dataTable.columns.adjust().draw();
             }
+            this.search();
         });
-
-        this.search();
     },
 
     // Clear search form
     clear() {
-        $(this.config.searchForm.empId).val('');
-        $(this.config.searchForm.localName).val('');
-        $(this.config.searchForm.deptNo).val('');
+        $(this.config.searchForm.keyword).val('');
+        $(this.config.searchForm.deptSearch).val('');
+        $(this.config.searchForm.empOffice).val('');
+        this.selectedDeptCodes = [];
         if (this.dataTable) {
             this.dataTable.clear().draw();
         }
@@ -96,14 +107,17 @@ window.EmployeeSearchModal = {
     // Search employees
     search() {
         const searchData = {
-            empId: $(this.config.searchForm.empId).val().trim(),
-            localName: $(this.config.searchForm.localName).val().trim(),
-            deptNo: $(this.config.searchForm.deptNo).val().trim()
+            keyword: $(this.config.searchForm.keyword).val().trim(),
+            empOffice: $(this.config.searchForm.empOffice).val() || ''
         };
+        if (this.selectedDeptCodes && this.selectedDeptCodes.length > 0) {
+            searchData.deptCodes = this.selectedDeptCodes;
+        }
 
         $.ajax({
             url: this.config.apiUrl,
             type: 'GET',
+            traditional: true,
             data: searchData,
             success: (response) => {
                 this.populateTable(response);

@@ -179,11 +179,12 @@ public class HrEmployeeServiceImpl implements HrEmployeeService {
     }
 
     @Override
-    public List<EmployeeSearchResponse> searchEmployees(String empId, String localName, String deptNo) {
+    public List<EmployeeSearchResponse> searchEmployees(String empId, String localName, String deptNo, String keyword,
+            List<String> deptCodes, String empOffice) {
         try {
-            return hrEmployeeMapper.searchEmployees(empId, localName, deptNo);
+            return hrEmployeeMapper.searchEmployees(empId, localName, deptNo, keyword, deptCodes, empOffice);
         } catch (Exception e) {
-            log.error("Error searching employees empId={} deptNo={}", empId, deptNo, e);
+            log.error("Error searching employees empId={} deptNo={} keyword={} empOffice={}", empId, deptNo, keyword, empOffice, e);
             return new ArrayList<>();
         }
     }

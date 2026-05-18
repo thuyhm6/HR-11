@@ -353,7 +353,7 @@
 
         // Inject tab URL so fragment scripts can read query params
         const urlVarScript = document.createElement('script');
-        urlVarScript.textContent = 'window._currentTabUrl = ' + JSON.stringify(tab.url) + ';';
+        urlVarScript.textContent = 'window._currentTabUrl = ' + JSON.stringify(tab.url) + '; window._currentTabId = ' + JSON.stringify(tab.id) + ';';
         if (dynamicScripts) {
         dynamicScripts.appendChild(urlVarScript);
     }
@@ -449,7 +449,7 @@
 
         // Inject tab URL so fragment scripts can read query params
         const urlVarScript = document.createElement('script');
-        urlVarScript.textContent = 'window._currentTabUrl = ' + JSON.stringify(tab.url) + ';';
+        urlVarScript.textContent = 'window._currentTabUrl = ' + JSON.stringify(tab.url) + '; window._currentTabId = ' + JSON.stringify(tabId) + ';';
         if (dynamicScripts) {
         dynamicScripts.appendChild(urlVarScript);
     }

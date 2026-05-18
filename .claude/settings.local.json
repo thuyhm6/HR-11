@@ -21,7 +21,14 @@
       "Bash(nexpiredContract.js.extendSuccess=Contract extended *)",
       "Bash(Add-Content -Path \"d:\\\\Java\\\\WorkSpace\\\\New_HR\\\\HR-11-codex\\\\src\\\\main\\\\resources\\\\messages.properties\" -Value \"`n# viewExpiredContract.html`nexpiredContract.action.extend=Extend`nexpiredContract.js.extendSuccess=Contract extended successfully!`nexpiredContract.js.extendPrefix=Extension - \" -Encoding UTF8)",
       "Bash(Get-ChildItem -Path \"d:\\\\Java\\\\WorkSpace\\\\New_HR\\\\HR-11-codex\\\\src\\\\main\\\\webapp\\\\WEB-INF\\\\view\" -Recurse -Filter \"*.html\")",
-      "Bash(Select-Object -ExpandProperty FullName)"
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(Select-String -Path \"d:\\\\Java\\\\WorkSpace\\\\New_HR\\\\HR-11-codex\\\\src\\\\main\\\\webapp\\\\assets\\\\css\\\\app.min.css\" -Pattern \"bootstrap-icons\" -Context 0,2)",
+      "Bash(Select-Object -First 3)",
+      "Bash(Format-List)",
+      "Bash(Get-Content \"d:\\\\Java\\\\WorkSpace\\\\New_HR\\\\HR-11-codex\\\\src\\\\main\\\\java\\\\com\\\\ait\\\\evs\\\\manage\\\\controller\\\\EvsManageController.java\")",
+      "Bash(Measure-Object -Line)",
+      "Bash(dir \"d:\\\\Java\\\\WorkSpace\\\\New_HR\\\\HR-11-codex\\\\src\\\\main\\\\webapp\\\\WEB-INF\\\\view\" /AD /B)",
+      "PowerShell(\\(Get-Content \"d:\\\\Java\\\\WorkSpace\\\\New_HR\\\\HR-11-codex\\\\src\\\\main\\\\resources\\\\messages_vi_VN.properties\"\\).Count)"
     ],
     "additionalDirectories": [
       "d:\\Java\\WorkSpace\\New_HR\\HR-11-codex\\src\\main\\resources"

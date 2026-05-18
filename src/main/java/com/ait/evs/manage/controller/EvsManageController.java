@@ -1,19 +1,27 @@
 package com.ait.evs.manage.controller;
 
 import com.ait.evs.manage.dto.EvsAffirmRuleDto;
+import com.ait.evs.manage.dto.EvsAffirmorSetupDto;
 import com.ait.evs.manage.dto.EvsFormulaDto;
 import com.ait.evs.manage.dto.EvsGradeDto;
+import com.ait.evs.manage.dto.EvsItemDto;
+import com.ait.evs.manage.dto.EvsItemParamDto;
 import com.ait.evs.manage.dto.EvsParamDto;
 import com.ait.evs.manage.dto.EvsParamObjectDto;
 import com.ait.evs.manage.dto.EvsResumeDto;
+import com.ait.evs.manage.dto.EvsResultDto;
 import com.ait.evs.manage.dto.EvsScheduleDto;
 import com.ait.evs.manage.dto.EvsScoreDto;
 import com.ait.evs.manage.service.EvsAffirmRuleService;
+import com.ait.evs.manage.service.EvsAffirmorSetupService;
 import com.ait.evs.manage.service.EvsFormulaService;
+import com.ait.evs.manage.service.EvsItemParamService;
+import com.ait.evs.manage.service.EvsItemService;
 import com.ait.evs.manage.service.EvsGradeService;
 import com.ait.evs.manage.service.EvsParamObjectService;
 import com.ait.evs.manage.service.EvsParamService;
 import com.ait.evs.manage.service.EvsResumeService;
+import com.ait.evs.manage.service.EvsResultService;
 import com.ait.evs.manage.service.EvsScheduleService;
 import com.ait.evs.manage.service.EvsScoreService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,6 +59,18 @@ public class EvsManageController {
 
     @Autowired
     private EvsScoreService evsScoreService;
+
+    @Autowired
+    private EvsAffirmorSetupService evsAffirmorSetupService;
+
+    @Autowired
+    private EvsResultService evsResultService;
+
+    @Autowired
+    private EvsItemService evsItemService;
+
+    @Autowired
+    private EvsItemParamService evsItemParamService;
 
     @GetMapping("/viewResumeList")
     public String viewResumeList() {
@@ -341,5 +361,250 @@ public class EvsManageController {
     public ResponseEntity<Map<String, Object>> deleteEvsScore(@RequestBody Map<String, String> body) {
         evsScoreService.delete(body.get("seq"));
         return ResponseEntity.ok(Map.of("success", true));
+    }
+
+    // ── Đối tượng đánh giá và người đánh giá (EVS_OBJECT + EVS_AFFIRM) ────────
+
+    @GetMapping("/viewEvsAffirmorSetup")
+    public String viewEvsAffirmorSetup() {
+        return "evs/manage/viewEvsAffirmorSetup";
+    }
+
+    @GetMapping("/api/affirmorSetup/list")
+    @ResponseBody
+    public ResponseEntity<List<EvsAffirmorSetupDto>> getAffirmorSetupList(
+            @RequestParam(required = false) String resumeSeq,
+            @RequestParam(required = false) String deptNos,
+            @RequestParam(required = false) String affirmorKeyword,
+            @RequestParam(required = false) String evsType) {
+        EvsAffirmorSetupDto params = new EvsAffirmorSetupDto();
+        params.setResumeSeq(resumeSeq);
+        params.setDeptNos(deptNos);
+        params.setAffirmorKeyword(affirmorKeyword);
+        params.setEvsType(evsType);
+        return ResponseEntity.ok(evsAffirmorSetupService.getList(params));
+    }
+
+    @GetMapping("/api/affirmorSetup/searchEmployee")
+    @ResponseBody
+    public ResponseEntity<List<EvsAffirmorSetupDto>> searchEmployee(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String resumeSeq) {
+        EvsAffirmorSetupDto params = new EvsAffirmorSetupDto();
+        params.setAffirmorKeyword(keyword);
+        params.setResumeSeq(resumeSeq);
+        return ResponseEntity.ok(evsAffirmorSetupService.searchEmployee(params));
+    }
+
+    @PostMapping("/api/affirmorSetup/save")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> saveAffirmorSetup(
+            @RequestBody List<EvsAffirmorSetupDto> list) {
+        try {
+            evsAffirmorSetupService.saveBatch(list);
+            return ResponseEntity.ok(Map.of("success", true));
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/api/affirmorSetup/addObject")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> addEvsObject(@RequestBody EvsAffirmorSetupDto dto) {
+        try {
+            evsAffirmorSetupService.addObject(dto);
+            return ResponseEntity.ok(Map.of("success", true));
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/api/affirmorSetup/createTarget")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> createEvsTarget(@RequestBody EvsAffirmorSetupDto dto) {
+        try {
+            evsAffirmorSetupService.createTarget(dto);
+            return ResponseEntity.ok(Map.of("success", true));
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/api/affirmorSetup/evsStart")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> evsStart(@RequestBody EvsAffirmorSetupDto dto) {
+        try {
+            evsAffirmorSetupService.evsStart(dto);
+            return ResponseEntity.ok(Map.of("success", true));
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
+    // ── Kết quả đánh giá (EVS_OBJECT - viewEvsResult) ────────────────────────
+
+    @GetMapping("/viewEvsResult")
+    public String viewEvsResult() {
+        return "evs/manage/viewEvsResult";
+    }
+
+    @GetMapping("/api/evsResult/list")
+    @ResponseBody
+    public ResponseEntity<List<EvsResultDto>> getEvsResultList(
+            @RequestParam(required = false) String resumeSeq,
+            @RequestParam(required = false) String deptNos,
+            @RequestParam(required = false) String personId,
+            @RequestParam(required = false) String statusFilter,
+            @RequestParam(required = false) String evsType) {
+        EvsResultDto params = new EvsResultDto();
+        params.setResumeSeq(resumeSeq);
+        params.setDeptNos(deptNos);
+        params.setPersonId(personId);
+        params.setStatusFilter(statusFilter);
+        params.setEvsType(evsType);
+        return ResponseEntity.ok(evsResultService.getList(params));
+    }
+
+    @GetMapping("/api/evsResult/summary")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> getEvsResultSummary(
+            @RequestParam(required = false) String resumeSeq,
+            @RequestParam(required = false) String evsType) {
+        EvsResultDto params = new EvsResultDto();
+        params.setResumeSeq(resumeSeq);
+        params.setEvsType(evsType);
+        return ResponseEntity.ok(evsResultService.getSummary(params));
+    }
+
+    @PostMapping("/api/evsResult/evaluateEnd")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> evaluateEnd(@RequestBody EvsResultDto dto) {
+        try {
+            evsResultService.evaluateEnd(dto);
+            return ResponseEntity.ok(Map.of("success", true));
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/api/evsResult/changeStatus")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> changeEvsResultStatus(@RequestBody EvsResultDto dto) {
+        try {
+            evsResultService.changeStatus(dto);
+            return ResponseEntity.ok(Map.of("success", true));
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/api/evsResult/copyGrade")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> copyEvsGrade(@RequestBody EvsResultDto dto) {
+        try {
+            evsResultService.copyGrade(dto);
+            return ResponseEntity.ok(Map.of("success", true));
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/api/evsResult/stdRate")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> getEvsStdRate(
+            @RequestParam("resumeSeq") String resumeSeq) {
+        EvsResultDto params = new EvsResultDto();
+        params.setResumeSeq(resumeSeq);
+        return ResponseEntity.ok(evsResultService.getStandardRate(params));
+    }
+
+    @PostMapping("/api/evsResult/save")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> saveEvsResult(@RequestBody List<EvsResultDto> list) {
+        try {
+            evsResultService.saveFinalResult(list);
+            return ResponseEntity.ok(Map.of("success", true));
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
+    // ── Chỉ tiêu đánh giá (EVS_ITEM) ─────────────────────────────────────────
+
+    @GetMapping("/viewEvsItemPanel")
+    public String viewEvsItemPanel() {
+        return "evs/manage/viewEvsItemPanel";
+    }
+
+    @GetMapping("/api/evsItem/list")
+    @ResponseBody
+    public ResponseEntity<List<EvsItemDto>> getEvsItemList(
+            @RequestParam(required = false) String resumeSeq,
+            @RequestParam(required = false) String groupNo) {
+        EvsItemDto params = new EvsItemDto();
+        params.setResumeSeq(resumeSeq);
+        params.setGroupNo(groupNo);
+        return ResponseEntity.ok(evsItemService.getList(params));
+    }
+
+    @PostMapping("/api/evsItem/save")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> saveEvsItem(@RequestBody List<EvsItemDto> list) {
+        try {
+            evsItemService.saveBatch(list);
+            return ResponseEntity.ok(Map.of("success", true));
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/api/evsItem/delete")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> deleteEvsItem(@RequestBody Map<String, List<String>> body) {
+        try {
+            evsItemService.deleteBatch(body.get("seqs"));
+            return ResponseEntity.ok(Map.of("success", true));
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
+    // ── Hạng mục chỉ tiêu chỉ định (EVS_ITEM_PARAM) ──────────────────────────
+
+    @GetMapping("/api/evsItemParam/list")
+    @ResponseBody
+    public ResponseEntity<List<EvsItemParamDto>> getEvsItemParamList(
+            @RequestParam(required = false) String resumeSeq,
+            @RequestParam(required = false) String groupNo,
+            @RequestParam(required = false) String evsGroup,
+            @RequestParam(required = false) String evsOccGroup) {
+        EvsItemParamDto params = new EvsItemParamDto();
+        params.setResumeSeq(resumeSeq);
+        params.setGroupNo(groupNo);
+        params.setEvsGroup(evsGroup);
+        params.setEvsOccGroup(evsOccGroup);
+        return ResponseEntity.ok(evsItemParamService.getList(params));
+    }
+
+    @PostMapping("/api/evsItemParam/save")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> saveEvsItemParam(@RequestBody List<EvsItemParamDto> list) {
+        try {
+            evsItemParamService.saveBatch(list);
+            return ResponseEntity.ok(Map.of("success", true));
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/api/evsItemParam/delete")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> deleteEvsItemParam(@RequestBody Map<String, List<String>> body) {
+        try {
+            evsItemParamService.deleteBatch(body.get("seqs"));
+            return ResponseEntity.ok(Map.of("success", true));
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+        }
     }
 }

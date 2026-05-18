@@ -469,503 +469,521 @@
         }
     </style>
     <script th:inline="javascript">
-        /* ── State ─────────────────────────────────────────────────────────── */
-        var _vepp_evsType = new URLSearchParams((window._currentTabUrl || window.location.href).split('?')[1] || '').get('evsType') || '';
-        var _vepp_allTabs = ['grade', 'item', 'object', 'list', 'group', 'family', 'affirm'];
-        var _vepp_data = { grade: [], item: [], object: [], list: [], group: [], family: [], affirm: [] };
-        var _vepp_page = { grade: 1, item: 1, object: 1, list: 1, group: 1, family: 1, affirm: 1 };
-        var _vepp_filter = { grade: '', item: '', object: '', list: '', group: '', family: '', affirm: '' };
-        var _vepp_currentTab = 'grade';
-        var _vepp_deleteModal = null;
-        var _vepp_pendingDeleteType = null;
-        var _vepp_rowIdCounter = 0;
-        var _vepp_formulaOptions = [];
-        var _vepp_groupOptions = [];
-
-        var _vepp_meta = {
-            grade: { api: 'evsGrade', paramType: null },
-            item: { api: 'evsParam', paramType: 'ITEM' },
-            object: { api: 'evsParamObject', paramType: null },
-            list: { api: 'evsParam', paramType: 'LIST' },
-            group: { api: 'evsParam', paramType: 'GROUP' },
-            family: { api: 'evsParam', paramType: 'FAMILY' },
-            affirm: { api: 'evsAffirmRule', paramType: null }
-        };
-
-        /* ── Tiện ích ──────────────────────────────────────────────────────── */
-        function veppEsc(s) {
-            if (s == null) return '';
-            return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-        }
-        function veppFmtDate(val) {
-            if (!val) return '';
-            var s = String(val);
-            return /^\d{4}-\d{2}-\d{2}/.test(s) ? s.substring(0, 10) : s;
-        }
-        function veppNewRowId() { return 'NEW_' + (++_vepp_rowIdCounter); }
-        function veppPageSize(tab) { return parseInt($('#vepp_pageSize_' + tab).val()) || 10; }
-        function veppChkView(val) {
-            return (val === '1' || val === 'Y')
-                ? '<input type="checkbox" class="form-check-input" disabled checked>'
-                : '<input type="checkbox" class="form-check-input" disabled>';
-        }
-        function veppInp(field, rowId, val, extra) {
-            return '<input type="text" class="form-control form-control-sm" id="vepp_inp_' + field + '_' + rowId
-                + '" value="' + veppEsc(val) + '"' + (extra || '') + '>';
-        }
-        function veppNum(field, rowId, val) {
-            return '<input type="number" class="form-control form-control-sm text-center" id="vepp_inp_' + field + '_' + rowId
-                + '" value="' + veppEsc(val) + '" step="any">';
-        }
-        function veppChkInp(field, rowId, val) {
-            var chk = (val === '1' || val === 'Y') ? ' checked' : '';
-            return '<input type="checkbox" class="form-check-input" id="vepp_inp_' + field + '_' + rowId + '"' + chk + '>';
-        }
-        function veppReadEl(id) { var el = document.getElementById(id); return el ? el.value : ''; }
-        function veppReadChk(id) { var el = document.getElementById(id); return el ? (el.checked ? '1' : '0') : '0'; }
-        function veppReadSelName(id) {
-            var el = document.getElementById(id);
-            if (!el || !el.value) return '';
-            return (el.selectedIndex >= 0 && el.options[el.selectedIndex]) ? el.options[el.selectedIndex].text : '';
-        }
-        function veppFormulaSel(field, rowId, val) {
-            var html = '<select class="form-select form-select-sm" id="vepp_inp_' + field + '_' + rowId + '">';
-            html += '';
-            _vepp_formulaOptions.forEach(function (opt) {
-                html += '<option value="' + veppEsc(opt.codeNo) + '"'
-                    + (opt.codeNo === val ? ' selected' : '') + '>'
-                    + veppEsc(opt.codeName) + '</option>';
-            });
-            html += '</select>';
-            return html;
-        }
-        function veppFormulaName(val) {
-            if (!val) return '';
-            var found = _vepp_formulaOptions.find(function (o) { return o.codeNo === val; });
-            return found ? veppEsc(found.codeName) : veppEsc(val);
-        }
-
-        function veppGroupSel(field, rowId, val) {
-            var html = '<select class="form-select form-select-sm" id="vepp_inp_' + field + '_' + rowId + '">';
-            html += '';
-            _vepp_groupOptions.forEach(function (opt) {
-                html += '<option value="' + veppEsc(opt.codeNo) + '"'
-                    + (opt.codeNo === val ? ' selected' : '') + '>'
-                    + veppEsc(opt.codeName) + '</option>';
-            });
-            html += '</select>';
-            return html;
-        }
-        function veppGroupName(val) {
-            if (!val) return '';
-            var found = _vepp_groupOptions.find(function (o) { return o.codeNo === val; });
-            return found ? veppEsc(found.codeName) : veppEsc(val);
-        }
-
-        function veppSel(field, rowId, parentCode) {
-            var textShow = parentCode === '14015161' ? ' data-text-show="description"' : '';
-            return '<select class="form-select form-select-sm" id="vepp_inp_' + field + '_' + rowId
-                + '" data-parent-code="' + parentCode + '"' + textShow + ' data-default-text="-- Chọn --"></select>';
-        }
-
-        /* ── Load group options (phụ thuộc resumeSeq) ───────────────────── */
-        function veppLoadGroupOptions(resumeSeq) {
-            if (!resumeSeq) { _vepp_groupOptions = []; return; }
-            $.ajax({
-                url: '/evs/manage/api/evsParam/groupOptions',
-                type: 'GET',
-                data: { resumeSeq: resumeSeq },
-                success: function (data) { _vepp_groupOptions = data || []; },
-                error: function () { console.error('Lỗi tải danh sách nhóm đánh giá'); }
-            });
-        }
-
-        /* ── Load formula options ────────────────────────────────────────── */
-        function veppLoadFormulaOptions() {
-            $.ajax({
-                url: '/evs/manage/api/evsFormula/formulaOptions',
-                type: 'GET',
-                success: function (data) { _vepp_formulaOptions = data || []; },
-                error: function () { console.error('Lỗi tải danh sách công thức'); }
-            });
-        }
-
-        /* ── Load resume dropdown ─────────────────────────────────────────── */
-        function veppLoadResumeList() {
-            $.ajax({
-                url: '/evs/manage/api/resume/evsResumeList',
-                type: 'GET',
-                data: { evsType: _vepp_evsType },
-                success: function (rows) {
-                    var html = '';
-                    (rows || []).forEach(function (r) {
-                        html += '<option value="' + veppEsc(r.seq) + '">' + veppEsc(r.resumeName) + '</option>';
-                    });
-                    $('#vepp_resumeSeq').html(html);
-                    var first = $('#vepp_resumeSeq option[value!=""]').first();
-                    if (first.length) {
-                        $('#vepp_resumeSeq').val(first.val());
-                        veppSearch();
-                    }
-                }
-            });
-        }
-
-        /* ── Search ─────────────────────────────────────────────────────────── */
-        window.veppSearch = function () {
-            var resumeSeq = $('#vepp_resumeSeq').val();
-            veppLoadGroupOptions(resumeSeq);
-            _vepp_allTabs.forEach(function (tab) { veppLoadTab(tab, resumeSeq); });
-        };
-
-        window.veppSwitchTab = function (tab) { _vepp_currentTab = tab; };
-
-        function veppLoadTab(tab, resumeSeq) {
-            var meta = _vepp_meta[tab];
-            var params = { resumeSeq: resumeSeq || '', evsType: _vepp_evsType };
-            if (meta.paramType) params.paramType = meta.paramType;
-            $.ajax({
-                url: '/evs/manage/api/' + meta.api + '/list',
-                type: 'GET',
-                data: params,
-                success: function (rows) {
-                    _vepp_data[tab] = (rows || []).map(function (r) {
-                        r._rowId = r.seq || veppNewRowId();
-                        r._isNew = false; r._modified = false;
-                        return r;
-                    });
-                    _vepp_page[tab] = 1;
-                    _vepp_filter[tab] = '';
-                    $('#vepp_filter_' + tab).val('');
-                    veppRenderTable(tab);
-                },
-                error: function () { console.error('Lỗi tải tab ' + tab); }
-            });
-        }
-
-        /* ── Filter / Phân trang ─────────────────────────────────────────── */
-        window.veppFilterTable = function (tab) {
-            _vepp_filter[tab] = $('#vepp_filter_' + tab).val().toLowerCase();
-            _vepp_page[tab] = 1;
-            veppRenderTable(tab);
-        };
-        window.veppChangePage = function (tab) { _vepp_page[tab] = 1; veppRenderTable(tab); };
-
-        function veppGetFiltered(tab) {
-            var kw = _vepp_filter[tab] || '';
-            if (!kw) return _vepp_data[tab];
-            return _vepp_data[tab].filter(function (r) {
-                return (r.codeName || r.evsGrade || r.evsGroup || '').toLowerCase().indexOf(kw) >= 0
-                    || (r.codeNo || r.evsStep || '').toLowerCase().indexOf(kw) >= 0
-                    || (r.remark || '').toLowerCase().indexOf(kw) >= 0;
-            });
-        }
-
-        /* ── Render ──────────────────────────────────────────────────────── */
-        function veppRenderTable(tab) {
-            var filtered = veppGetFiltered(tab);
-            var ps = veppPageSize(tab);
-            var start = (_vepp_page[tab] - 1) * ps;
-            var pageData = filtered.slice(start, start + ps);
-            $('#vepp_total_' + tab).text('Total: ' + filtered.length);
-            $('#vepp_chkAll_' + tab).prop('checked', false);
-            var html = '';
-            pageData.forEach(function (r, idx) { html += veppBuildRow(r, start + idx + 1, tab); });
-            $('#vepp_tbody_' + tab).html(html);
-        }
-
-        function veppBuildRow(r, no, tab) {
-            var chk = '<input type="checkbox" class="form-check-input vepp-row-chk" data-rowid="'
-                + veppEsc(r._rowId) + '" data-tab="' + tab + '" onclick="event.stopPropagation()">';
-            var rowCls = (r._editing ? 'vepp-row-edit' : '') + (r._isNew ? ' table-warning' : '');
-            return r._editing ? veppBuildEditRow(r, no, tab, chk, rowCls) : veppBuildViewRow(r, no, tab, chk, rowCls);
-        }
-
-        function veppBuildViewRow(r, no, tab, chk, rowCls) {
-            var onclick = 'veppClickRow(\'' + veppEsc(r._rowId) + '\',\'' + tab + '\')';
-            var h = '<tr class="' + rowCls + '" onclick="' + onclick + '">';
-            h += '<td class="text-center" onclick="event.stopPropagation()">' + chk + '</td>';
-            h += '<td class="text-center">' + no + '</td>';
-            if (tab === 'grade') {
-                h += '<td class="text-center">' + veppEsc(r.evsTypeName || r.evsType) + '</td>';
-                h += '<td class="text-center">' + veppEsc(r.evsGradeName || r.evsGrade) + '</td>';
-                h += '<td class="text-center">' + veppChkView(r.isInclude) + '</td>';
-                h += '<td class="text-center">' + veppEsc(r.startScore) + '</td>';
-                h += '<td class="text-center">' + veppEsc(r.endScore) + '</td>';
-                h += '<td class="text-center">' + veppEsc(r.score) + '</td>';
-                h += '<td>' + veppEsc(r.remark) + '</td>';
-            } else if (tab === 'item') {
-                h += '<td class="text-center">' + veppEsc(r.codeNo) + '</td>';
-                h += '<td>' + veppEsc(r.codeName) + '</td>';
-                h += '<td class="text-center">' + veppEsc(r.evsScore) + '</td>';
-            } else if (tab === 'object') {
-                h += '<td class="text-center">' + veppEsc(r.codeNo) + '</td>';
-                h += '<td>' + veppEsc(r.codeName) + '</td>';
-                h += '<td class="text-center">' + veppChkView(r.isInclude) + '</td>';
-                h += '<td class="text-center">' + veppEsc(r.evsGradeName || r.evsGrade) + '</td>';
-                h += '<td>' + veppFormulaName(r.formula) + '</td>';
-            } else if (tab === 'list') {
-                h += '<td class="text-center">' + veppEsc(r.codeNo) + '</td>';
-                h += '<td>' + veppEsc(r.codeName) + '</td>';
-                h += '<td>' + veppFormulaName(r.formula) + '</td>';
-                h += '<td class="text-center">' + veppEsc(r.startStepName || r.startStep) + '</td>';
-            } else if (tab === 'group' || tab === 'family') {
-                h += '<td class="text-center">' + veppEsc(r.codeNo) + '</td>';
-                h += '<td>' + veppEsc(r.codeName) + '</td>';
-                h += '<td>' + veppFormulaName(r.formula) + '</td>';
-            } else if (tab === 'affirm') {
-                h += '<td>' + veppEsc(r.evsStepName || r.evsStep) + '</td>';
-                h += '<td>' + veppEsc(r.evsGroupName || r.evsGroup) + '</td>';
-                h += '<td>' + veppEsc(r.ruleName || r.ruleId) + '</td>';
+        (function () {
+            var _vepp_tabId = window._currentTabId || 'default-content';
+            window._vepp_inst = window._vepp_inst || {};
+            if (!window._vepp_inst[_vepp_tabId]) {
+                window._vepp_inst[_vepp_tabId] = {
+                    evsType: new URLSearchParams((window._currentTabUrl || window.location.href).split('?')[1] || '').get('evsType') || '',
+                    allTabs: ['grade', 'item', 'object', 'list', 'group', 'family', 'affirm'],
+                    data: { grade: [], item: [], object: [], list: [], group: [], family: [], affirm: [] },
+                    page: { grade: 1, item: 1, object: 1, list: 1, group: 1, family: 1, affirm: 1 },
+                    filter: { grade: '', item: '', object: '', list: '', group: '', family: '', affirm: '' },
+                    currentTab: 'grade',
+                    deleteModal: null,
+                    pendingDeleteType: null,
+                    pendingDeleteIds: [],
+                    rowIdCounter: 0,
+                    formulaOptions: [],
+                    groupOptions: []
+                };
             }
-            h += '<td class="text-center small">' + veppEsc(r.updatedBy) + '</td>';
-            h += '<td class="text-center small">' + veppFmtDate(r.updateDate) + '</td>';
-            h += '</tr>';
-            return h;
-        }
+            var inst = window._vepp_inst[_vepp_tabId];
+            function vepp$(sel) { return $('#' + _vepp_tabId).find(sel); }
 
-        function veppBuildEditRow(r, no, tab, chk, rowCls) {
-            var id = r._rowId;
-            var h = '<tr class="' + rowCls + '">';
-            h += '<td class="text-center" onclick="event.stopPropagation()">' + chk + '</td>';
-            h += '<td class="text-center">' + no + '</td>';
-            if (tab === 'grade') {
-                h += '<td>' + veppSel('evsType', id, '14015137') + '</td>';
-                h += '<td>' + veppSel('evsGrade', id, '14015161') + '</td>';
-                h += '<td class="text-center">' + veppChkInp('isInclude', id, r.isInclude) + '</td>';
-                h += '<td>' + veppNum('startScore', id, r.startScore) + '</td>';
-                h += '<td>' + veppNum('endScore', id, r.endScore) + '</td>';
-                h += '<td>' + veppNum('score', id, r.score) + '</td>';
-                h += '<td>' + veppInp('remark', id, r.remark) + '</td>';
-            } else if (tab === 'item') {
-                h += '<td>' + veppInp('codeNo', id, r.codeNo, ' maxlength="20"') + '</td>';
-                h += '<td>' + veppInp('codeName', id, r.codeName, ' maxlength="200"') + '</td>';
-                h += '<td>' + veppNum('evsScore', id, r.evsScore) + '</td>';
-            } else if (tab === 'object') {
-                h += '<td>' + veppInp('codeNo', id, r.codeNo, ' maxlength="20"') + '</td>';
-                h += '<td>' + veppInp('codeName', id, r.codeName, ' maxlength="200"') + '</td>';
-                h += '<td class="text-center">' + veppChkInp('isInclude', id, r.isInclude) + '</td>';
-                h += '<td>' + veppSel('evsGrade', id, '14015161') + '</td>';
-                h += '<td>' + veppFormulaSel('formula', id, r.formula) + '</td>';
-            } else if (tab === 'list') {
-                h += '<td>' + veppInp('codeNo', id, r.codeNo, ' maxlength="20"') + '</td>';
-                h += '<td>' + veppInp('codeName', id, r.codeName, ' maxlength="200"') + '</td>';
-                h += '<td>' + veppFormulaSel('formula', id, r.formula) + '</td>';
-                h += '<td>' + veppSel('startStep', id, '14015351') + '</td>';
-            } else if (tab === 'group' || tab === 'family') {
-                h += '<td>' + veppInp('codeNo', id, r.codeNo, ' maxlength="20"') + '</td>';
-                h += '<td>' + veppInp('codeName', id, r.codeName, ' maxlength="200"') + '</td>';
-                h += '<td>' + veppFormulaSel('formula', id, r.formula) + '</td>';
-            } else if (tab === 'affirm') {
-                h += '<td>' + veppSel('evsStep', id, '14015060') + '</td>';
-                h += '<td>' + veppGroupSel('evsGroup', id, r.evsGroup) + '</td>';
-                h += '<td>' + veppSel('ruleId', id, '14015172') + '</td>';
-            }
-            h += '<td class="text-center small">' + veppEsc(r.updatedBy) + '</td>';
-            h += '<td class="text-center small">' + veppFmtDate(r.updateDate) + '</td>';
-            h += '</tr>';
-            return h;
-        }
-
-        /* ── Inline editing ──────────────────────────────────────────────── */
-        function veppInitSelectsForRow(tab, rowId, row) {
-            if (typeof reloadCodeSelect !== 'function') return;
-            if (tab === 'grade') {
-                reloadCodeSelect('#vepp_inp_evsType_' + rowId, '14015137', '', row.evsType || '');
-                reloadCodeSelect('#vepp_inp_evsGrade_' + rowId, '14015161', '', row.evsGrade || '');
-            } else if (tab === 'list') {
-                reloadCodeSelect('#vepp_inp_startStep_' + rowId, '14015351', '', row.startStep || '');
-            } else if (tab === 'object') {
-                reloadCodeSelect('#vepp_inp_evsGrade_' + rowId, '14015161', '', row.evsGrade || '');
-            } else if (tab === 'affirm') {
-                reloadCodeSelect('#vepp_inp_evsStep_' + rowId, '14015060', '', row.evsStep || '');
-                reloadCodeSelect('#vepp_inp_ruleId_' + rowId, '14015172', '', row.ruleId || '');
-            }
-        }
-
-        window.veppClickRow = function (rowId, tab) {
-            veppCommitEditing(tab);
-            var row = veppFindRow(tab, rowId);
-            if (!row) return;
-            row._editing = true;
-            veppRenderTable(tab);
-            veppInitSelectsForRow(tab, rowId, row);
-            var firstInp = document.querySelector('#vepp_tbody_' + tab + ' #vepp_inp_' + (
-                tab === 'grade' ? 'evsType' : tab === 'affirm' ? 'evsStep' : 'codeNo') + '_' + rowId);
-            if (firstInp) firstInp.focus();
-        };
-
-        function veppCommitEditing(tab) {
-            _vepp_data[tab].filter(function (r) { return r._editing; }).forEach(function (r) {
-                veppReadInputs(r, tab);
-                r._editing = false; r._modified = true;
-            });
-        }
-
-        function veppReadInputs(r, tab) {
-            var id = r._rowId;
-            if (tab === 'grade') {
-                r.evsType = veppReadEl('vepp_inp_evsType_' + id);
-                r.evsTypeName = veppReadSelName('vepp_inp_evsType_' + id);
-                r.evsGrade = veppReadEl('vepp_inp_evsGrade_' + id);
-                r.evsGradeName = veppReadSelName('vepp_inp_evsGrade_' + id);
-                r.isInclude = veppReadChk('vepp_inp_isInclude_' + id);
-                r.startScore = veppReadEl('vepp_inp_startScore_' + id);
-                r.endScore = veppReadEl('vepp_inp_endScore_' + id);
-                r.score = veppReadEl('vepp_inp_score_' + id);
-                r.remark = veppReadEl('vepp_inp_remark_' + id);
-            } else if (tab === 'item') {
-                r.codeNo = veppReadEl('vepp_inp_codeNo_' + id);
-                r.codeName = veppReadEl('vepp_inp_codeName_' + id);
-                r.evsScore = veppReadEl('vepp_inp_evsScore_' + id);
-            } else if (tab === 'object') {
-                r.codeNo = veppReadEl('vepp_inp_codeNo_' + id);
-                r.codeName = veppReadEl('vepp_inp_codeName_' + id);
-                r.isInclude = veppReadChk('vepp_inp_isInclude_' + id);
-                r.evsGrade = veppReadEl('vepp_inp_evsGrade_' + id);
-                r.evsGradeName = veppReadSelName('vepp_inp_evsGrade_' + id);
-                r.formula = veppReadEl('vepp_inp_formula_' + id);
-            } else if (tab === 'list') {
-                r.codeNo = veppReadEl('vepp_inp_codeNo_' + id);
-                r.codeName = veppReadEl('vepp_inp_codeName_' + id);
-                r.formula = veppReadEl('vepp_inp_formula_' + id);
-                r.startStep = veppReadEl('vepp_inp_startStep_' + id);
-                r.startStepName = veppReadSelName('vepp_inp_startStep_' + id);
-            } else if (tab === 'group' || tab === 'family') {
-                r.codeNo = veppReadEl('vepp_inp_codeNo_' + id);
-                r.codeName = veppReadEl('vepp_inp_codeName_' + id);
-                r.formula = veppReadEl('vepp_inp_formula_' + id);
-            } else if (tab === 'affirm') {
-                r.evsStep = veppReadEl('vepp_inp_evsStep_' + id);
-                r.evsStepName = veppReadSelName('vepp_inp_evsStep_' + id);
-                r.evsGroup = veppReadEl('vepp_inp_evsGroup_' + id);
-                r.ruleId = veppReadEl('vepp_inp_ruleId_' + id);
-                r.ruleName = veppReadSelName('vepp_inp_ruleId_' + id);
-            }
-        }
-
-        function veppFindRow(tab, rowId) {
-            return _vepp_data[tab].find(function (r) { return r._rowId === rowId; });
-        }
-
-        /* ── Thêm mới ────────────────────────────────────────────────────── */
-        window.veppAddRow = function (tab) {
-            veppCommitEditing(tab);
-            var resumeSeq = $('#vepp_resumeSeq').val();
-            var base = {
-                _rowId: veppNewRowId(), _isNew: true, _modified: true, _editing: true,
-                seq: '', resumeSeq: resumeSeq
+            var _vepp_meta = {
+                grade: { api: 'evsGrade', paramType: null },
+                item: { api: 'evsParam', paramType: 'ITEM' },
+                object: { api: 'evsParamObject', paramType: null },
+                list: { api: 'evsParam', paramType: 'LIST' },
+                group: { api: 'evsParam', paramType: 'GROUP' },
+                family: { api: 'evsParam', paramType: 'FAMILY' },
+                affirm: { api: 'evsAffirmRule', paramType: null }
             };
-            var meta = _vepp_meta[tab];
-            var newRow;
-            if (tab === 'grade') {
-                newRow = Object.assign(base, { evsType: '', evsGrade: '', isInclude: '0', startScore: '', endScore: '', score: '', remark: '' });
-            } else if (tab === 'item') {
-                newRow = Object.assign(base, { paramType: meta.paramType, codeNo: '', codeName: '', evsScore: '' });
-            } else if (tab === 'list') {
-                newRow = Object.assign(base, { paramType: meta.paramType, codeNo: '', codeName: '', formula: '', startStep: '' });
-            } else if (tab === 'group' || tab === 'family') {
-                newRow = Object.assign(base, { paramType: meta.paramType, codeNo: '', codeName: '', formula: '' });
-            } else if (tab === 'object') {
-                newRow = Object.assign(base, { codeNo: '', codeName: '', isInclude: '0', evsGrade: '', formula: '' });
-            } else {
-                newRow = Object.assign(base, { evsStep: '', evsGroup: '', ruleId: '' });
+
+            /* ── Tiện ích ──────────────────────────────────────────────────────── */
+            function veppEsc(s) {
+                if (s == null) return '';
+                return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
             }
-            _vepp_data[tab].push(newRow);
-            var filtered = veppGetFiltered(tab);
-            var ps = veppPageSize(tab);
-            _vepp_page[tab] = Math.ceil(filtered.length / ps) || 1;
-            veppRenderTable(tab);
-            veppInitSelectsForRow(tab, newRow._rowId, newRow);
-        };
+            function veppFmtDate(val) {
+                if (!val) return '';
+                var s = String(val);
+                return /^\d{4}-\d{2}-\d{2}/.test(s) ? s.substring(0, 10) : s;
+            }
+            function veppNewRowId() { return 'NEW_' + (++inst.rowIdCounter); }
+            function veppPageSize(tab) { return parseInt(vepp$('#vepp_pageSize_' + tab).val()) || 10; }
+            function veppChkView(val) {
+                return (val === '1' || val === 'Y')
+                    ? '<input type="checkbox" class="form-check-input" disabled checked>'
+                    : '<input type="checkbox" class="form-check-input" disabled>';
+            }
+            function veppInp(field, rowId, val, extra) {
+                return '<input type="text" class="form-control form-control-sm" id="vepp_inp_' + field + '_' + rowId
+                    + '" value="' + veppEsc(val) + '"' + (extra || '') + '>';
+            }
+            function veppNum(field, rowId, val) {
+                return '<input type="number" class="form-control form-control-sm text-center" id="vepp_inp_' + field + '_' + rowId
+                    + '" value="' + veppEsc(val) + '" step="any">';
+            }
+            function veppChkInp(field, rowId, val) {
+                var chk = (val === '1' || val === 'Y') ? ' checked' : '';
+                return '<input type="checkbox" class="form-check-input" id="vepp_inp_' + field + '_' + rowId + '"' + chk + '>';
+            }
+            // Scoped DOM reads — tìm trong pane của tab hiện tại để tránh xung đột ID
+            function veppReadEl(id) {
+                var el = document.querySelector('#' + _vepp_tabId + ' [id="' + id + '"]');
+                return el ? el.value : '';
+            }
+            function veppReadChk(id) {
+                var el = document.querySelector('#' + _vepp_tabId + ' [id="' + id + '"]');
+                return el ? (el.checked ? '1' : '0') : '0';
+            }
+            function veppReadSelName(id) {
+                var el = document.querySelector('#' + _vepp_tabId + ' [id="' + id + '"]');
+                if (!el || !el.value) return '';
+                return (el.selectedIndex >= 0 && el.options[el.selectedIndex]) ? el.options[el.selectedIndex].text : '';
+            }
+            function veppFormulaSel(field, rowId, val) {
+                var html = '<select class="form-select form-select-sm" id="vepp_inp_' + field + '_' + rowId + '">';
+                inst.formulaOptions.forEach(function (opt) {
+                    html += '<option value="' + veppEsc(opt.codeNo) + '"'
+                        + (opt.codeNo === val ? ' selected' : '') + '>'
+                        + veppEsc(opt.codeName) + '</option>';
+                });
+                html += '</select>';
+                return html;
+            }
+            function veppFormulaName(val) {
+                if (!val) return '';
+                var found = inst.formulaOptions.find(function (o) { return o.codeNo === val; });
+                return found ? veppEsc(found.codeName) : veppEsc(val);
+            }
+            function veppGroupSel(field, rowId, val) {
+                var html = '<select class="form-select form-select-sm" id="vepp_inp_' + field + '_' + rowId + '">';
+                inst.groupOptions.forEach(function (opt) {
+                    html += '<option value="' + veppEsc(opt.codeNo) + '"'
+                        + (opt.codeNo === val ? ' selected' : '') + '>'
+                        + veppEsc(opt.codeName) + '</option>';
+                });
+                html += '</select>';
+                return html;
+            }
+            function veppGroupName(val) {
+                if (!val) return '';
+                var found = inst.groupOptions.find(function (o) { return o.codeNo === val; });
+                return found ? veppEsc(found.codeName) : veppEsc(val);
+            }
+            function veppSel(field, rowId, parentCode) {
+                var textShow = parentCode === '14015161' ? ' data-text-show="description"' : '';
+                return '<select class="form-select form-select-sm" id="vepp_inp_' + field + '_' + rowId
+                    + '" data-parent-code="' + parentCode + '"' + textShow + ' data-default-text="-- Chọn --"></select>';
+            }
 
-        /* ── Lưu ─────────────────────────────────────────────────────────── */
-        window.veppSave = function (tab) {
-            veppCommitEditing(tab);
-            var resumeSeq = $('#vepp_resumeSeq').val();
-            if (!resumeSeq) { alert('Vui lòng chọn Tên đánh giá trước khi lưu.'); return; }
-            var toSave = _vepp_data[tab].filter(function (r) { return r._modified || r._isNew; });
-            if (!toSave.length) { alert('Không có dữ liệu nào thay đổi để lưu.'); return; }
-            var meta = _vepp_meta[tab];
-            var payload = toSave.map(function (r) {
-                var base = { seq: r._isNew ? null : r.seq, resumeSeq: resumeSeq, evsType: _vepp_evsType };
+            /* ── Load group options (phụ thuộc resumeSeq) ───────────────────── */
+            function veppLoadGroupOptions(resumeSeq) {
+                if (!resumeSeq) { inst.groupOptions = []; return; }
+                $.ajax({
+                    url: '/evs/manage/api/evsParam/groupOptions',
+                    type: 'GET',
+                    data: { resumeSeq: resumeSeq },
+                    success: function (data) { inst.groupOptions = data || []; },
+                    error: function () { console.error('Lỗi tải danh sách nhóm đánh giá'); }
+                });
+            }
+
+            /* ── Load formula options ────────────────────────────────────────── */
+            function veppLoadFormulaOptions() {
+                $.ajax({
+                    url: '/evs/manage/api/evsFormula/formulaOptions',
+                    type: 'GET',
+                    success: function (data) { inst.formulaOptions = data || []; },
+                    error: function () { console.error('Lỗi tải danh sách công thức'); }
+                });
+            }
+
+            /* ── Load resume dropdown ─────────────────────────────────────────── */
+            function veppLoadResumeList() {
+                $.ajax({
+                    url: '/evs/manage/api/resume/evsResumeList',
+                    type: 'GET',
+                    data: { evsType: inst.evsType },
+                    success: function (rows) {
+                        var html = '';
+                        (rows || []).forEach(function (r) {
+                            html += '<option value="' + veppEsc(r.seq) + '">' + veppEsc(r.resumeName) + '</option>';
+                        });
+                        vepp$('#vepp_resumeSeq').html(html);
+                        var first = vepp$('#vepp_resumeSeq option[value!=""]').first();
+                        if (first.length) {
+                            vepp$('#vepp_resumeSeq').val(first.val());
+                            veppSearch();
+                        }
+                    }
+                });
+            }
+
+            /* ── Search ─────────────────────────────────────────────────────────── */
+            window.veppSearch = function () {
+                var resumeSeq = vepp$('#vepp_resumeSeq').val();
+                veppLoadGroupOptions(resumeSeq);
+                inst.allTabs.forEach(function (tab) { veppLoadTab(tab, resumeSeq); });
+            };
+
+            window.veppSwitchTab = function (tab) { inst.currentTab = tab; };
+
+            function veppLoadTab(tab, resumeSeq) {
+                var meta = _vepp_meta[tab];
+                var params = { resumeSeq: resumeSeq || '', evsType: inst.evsType };
+                if (meta.paramType) params.paramType = meta.paramType;
+                $.ajax({
+                    url: '/evs/manage/api/' + meta.api + '/list',
+                    type: 'GET',
+                    data: params,
+                    success: function (rows) {
+                        inst.data[tab] = (rows || []).map(function (r) {
+                            r._rowId = r.seq || veppNewRowId();
+                            r._isNew = false; r._modified = false;
+                            return r;
+                        });
+                        inst.page[tab] = 1;
+                        inst.filter[tab] = '';
+                        vepp$('#vepp_filter_' + tab).val('');
+                        veppRenderTable(tab);
+                    },
+                    error: function () { console.error('Lỗi tải tab ' + tab); }
+                });
+            }
+
+            /* ── Filter / Phân trang ─────────────────────────────────────────── */
+            window.veppFilterTable = function (tab) {
+                inst.filter[tab] = vepp$('#vepp_filter_' + tab).val().toLowerCase();
+                inst.page[tab] = 1;
+                veppRenderTable(tab);
+            };
+            window.veppChangePage = function (tab) { inst.page[tab] = 1; veppRenderTable(tab); };
+
+            function veppGetFiltered(tab) {
+                var kw = inst.filter[tab] || '';
+                if (!kw) return inst.data[tab];
+                return inst.data[tab].filter(function (r) {
+                    return (r.codeName || r.evsGrade || r.evsGroup || '').toLowerCase().indexOf(kw) >= 0
+                        || (r.codeNo || r.evsStep || '').toLowerCase().indexOf(kw) >= 0
+                        || (r.remark || '').toLowerCase().indexOf(kw) >= 0;
+                });
+            }
+
+            /* ── Render ──────────────────────────────────────────────────────── */
+            function veppRenderTable(tab) {
+                var filtered = veppGetFiltered(tab);
+                var ps = veppPageSize(tab);
+                var start = (inst.page[tab] - 1) * ps;
+                var pageData = filtered.slice(start, start + ps);
+                vepp$('#vepp_total_' + tab).text('Total: ' + filtered.length);
+                vepp$('#vepp_chkAll_' + tab).prop('checked', false);
+                var html = '';
+                pageData.forEach(function (r, idx) { html += veppBuildRow(r, start + idx + 1, tab); });
+                vepp$('#vepp_tbody_' + tab).html(html);
+            }
+
+            function veppBuildRow(r, no, tab) {
+                var chk = '<input type="checkbox" class="form-check-input vepp-row-chk" data-rowid="'
+                    + veppEsc(r._rowId) + '" data-tab="' + tab + '" onclick="event.stopPropagation()">';
+                var rowCls = (r._editing ? 'vepp-row-edit' : '') + (r._isNew ? ' table-warning' : '');
+                return r._editing ? veppBuildEditRow(r, no, tab, chk, rowCls) : veppBuildViewRow(r, no, tab, chk, rowCls);
+            }
+
+            function veppBuildViewRow(r, no, tab, chk, rowCls) {
+                var onclick = 'veppClickRow(\'' + veppEsc(r._rowId) + '\',\'' + tab + '\')';
+                var h = '<tr class="' + rowCls + '" onclick="' + onclick + '">';
+                h += '<td class="text-center" onclick="event.stopPropagation()">' + chk + '</td>';
+                h += '<td class="text-center">' + no + '</td>';
                 if (tab === 'grade') {
-                    return Object.assign(base, {
-                        evsType: r.evsType || '', evsGrade: r.evsGrade || '', isInclude: r.isInclude || '0',
-                        startScore: r.startScore || '', endScore: r.endScore || '', score: r.score || '',
-                        remark: r.remark || ''
-                    });
+                    h += '<td class="text-center">' + veppEsc(r.evsTypeName || r.evsType) + '</td>';
+                    h += '<td class="text-center">' + veppEsc(r.evsGradeName || r.evsGrade) + '</td>';
+                    h += '<td class="text-center">' + veppChkView(r.isInclude) + '</td>';
+                    h += '<td class="text-center">' + veppEsc(r.startScore) + '</td>';
+                    h += '<td class="text-center">' + veppEsc(r.endScore) + '</td>';
+                    h += '<td class="text-center">' + veppEsc(r.score) + '</td>';
+                    h += '<td>' + veppEsc(r.remark) + '</td>';
                 } else if (tab === 'item') {
-                    return Object.assign(base, {
-                        paramType: meta.paramType, codeNo: r.codeNo || '', codeName: r.codeName || '',
-                        evsScore: r.evsScore || ''
-                    });
-                } else if (tab === 'list') {
-                    return Object.assign(base, {
-                        paramType: meta.paramType, codeNo: r.codeNo || '', codeName: r.codeName || '',
-                        formula: r.formula || '', startStep: r.startStep || ''
-                    });
-                } else if (tab === 'group' || tab === 'family') {
-                    return Object.assign(base, {
-                        paramType: meta.paramType, codeNo: r.codeNo || '', codeName: r.codeName || '',
-                        formula: r.formula || ''
-                    });
+                    h += '<td class="text-center">' + veppEsc(r.codeNo) + '</td>';
+                    h += '<td>' + veppEsc(r.codeName) + '</td>';
+                    h += '<td class="text-center">' + veppEsc(r.evsScore) + '</td>';
                 } else if (tab === 'object') {
-                    return Object.assign(base, {
-                        codeNo: r.codeNo || '', codeName: r.codeName || '', formula: r.formula || '',
-                        isInclude: r.isInclude || '0', evsGrade: r.evsGrade || ''
-                    });
-                } else {
-                    return Object.assign(base, { evsStep: r.evsStep || '', evsGroup: r.evsGroup || '', ruleId: r.ruleId || '' });
+                    h += '<td class="text-center">' + veppEsc(r.codeNo) + '</td>';
+                    h += '<td>' + veppEsc(r.codeName) + '</td>';
+                    h += '<td class="text-center">' + veppChkView(r.isInclude) + '</td>';
+                    h += '<td class="text-center">' + veppEsc(r.evsGradeName || r.evsGrade) + '</td>';
+                    h += '<td>' + veppFormulaName(r.formula) + '</td>';
+                } else if (tab === 'list') {
+                    h += '<td class="text-center">' + veppEsc(r.codeNo) + '</td>';
+                    h += '<td>' + veppEsc(r.codeName) + '</td>';
+                    h += '<td>' + veppFormulaName(r.formula) + '</td>';
+                    h += '<td class="text-center">' + veppEsc(r.startStepName || r.startStep) + '</td>';
+                } else if (tab === 'group' || tab === 'family') {
+                    h += '<td class="text-center">' + veppEsc(r.codeNo) + '</td>';
+                    h += '<td>' + veppEsc(r.codeName) + '</td>';
+                    h += '<td>' + veppFormulaName(r.formula) + '</td>';
+                } else if (tab === 'affirm') {
+                    h += '<td>' + veppEsc(r.evsStepName || r.evsStep) + '</td>';
+                    h += '<td>' + veppEsc(r.evsGroupName || r.evsGroup) + '</td>';
+                    h += '<td>' + veppEsc(r.ruleName || r.ruleId) + '</td>';
                 }
+                h += '<td class="text-center small">' + veppEsc(r.updatedBy) + '</td>';
+                h += '<td class="text-center small">' + veppFmtDate(r.updateDate) + '</td>';
+                h += '</tr>';
+                return h;
+            }
+
+            function veppBuildEditRow(r, no, tab, chk, rowCls) {
+                var id = r._rowId;
+                var h = '<tr class="' + rowCls + '">';
+                h += '<td class="text-center" onclick="event.stopPropagation()">' + chk + '</td>';
+                h += '<td class="text-center">' + no + '</td>';
+                if (tab === 'grade') {
+                    h += '<td>' + veppSel('evsType', id, '14015137') + '</td>';
+                    h += '<td>' + veppSel('evsGrade', id, '14015161') + '</td>';
+                    h += '<td class="text-center">' + veppChkInp('isInclude', id, r.isInclude) + '</td>';
+                    h += '<td>' + veppNum('startScore', id, r.startScore) + '</td>';
+                    h += '<td>' + veppNum('endScore', id, r.endScore) + '</td>';
+                    h += '<td>' + veppNum('score', id, r.score) + '</td>';
+                    h += '<td>' + veppInp('remark', id, r.remark) + '</td>';
+                } else if (tab === 'item') {
+                    h += '<td>' + veppInp('codeNo', id, r.codeNo, ' maxlength="20"') + '</td>';
+                    h += '<td>' + veppInp('codeName', id, r.codeName, ' maxlength="200"') + '</td>';
+                    h += '<td>' + veppNum('evsScore', id, r.evsScore) + '</td>';
+                } else if (tab === 'object') {
+                    h += '<td>' + veppInp('codeNo', id, r.codeNo, ' maxlength="20"') + '</td>';
+                    h += '<td>' + veppInp('codeName', id, r.codeName, ' maxlength="200"') + '</td>';
+                    h += '<td class="text-center">' + veppChkInp('isInclude', id, r.isInclude) + '</td>';
+                    h += '<td>' + veppSel('evsGrade', id, '14015161') + '</td>';
+                    h += '<td>' + veppFormulaSel('formula', id, r.formula) + '</td>';
+                } else if (tab === 'list') {
+                    h += '<td>' + veppInp('codeNo', id, r.codeNo, ' maxlength="20"') + '</td>';
+                    h += '<td>' + veppInp('codeName', id, r.codeName, ' maxlength="200"') + '</td>';
+                    h += '<td>' + veppFormulaSel('formula', id, r.formula) + '</td>';
+                    h += '<td>' + veppSel('startStep', id, '14015351') + '</td>';
+                } else if (tab === 'group' || tab === 'family') {
+                    h += '<td>' + veppInp('codeNo', id, r.codeNo, ' maxlength="20"') + '</td>';
+                    h += '<td>' + veppInp('codeName', id, r.codeName, ' maxlength="200"') + '</td>';
+                    h += '<td>' + veppFormulaSel('formula', id, r.formula) + '</td>';
+                } else if (tab === 'affirm') {
+                    h += '<td>' + veppSel('evsStep', id, '14015060') + '</td>';
+                    h += '<td>' + veppGroupSel('evsGroup', id, r.evsGroup) + '</td>';
+                    h += '<td>' + veppSel('ruleId', id, '14015172') + '</td>';
+                }
+                h += '<td class="text-center small">' + veppEsc(r.updatedBy) + '</td>';
+                h += '<td class="text-center small">' + veppFmtDate(r.updateDate) + '</td>';
+                h += '</tr>';
+                return h;
+            }
+
+            /* ── Inline editing ──────────────────────────────────────────────── */
+            function veppInitSelectsForRow(tab, rowId, row) {
+                if (typeof reloadCodeSelect !== 'function') return;
+                // Prefix với tabId để tránh xung đột giữa các tab cùng loại
+                var scope = '#' + _vepp_tabId + ' ';
+                if (tab === 'grade') {
+                    reloadCodeSelect(scope + '#vepp_inp_evsType_' + rowId, '14015137', '', row.evsType || '');
+                    reloadCodeSelect(scope + '#vepp_inp_evsGrade_' + rowId, '14015161', '', row.evsGrade || '');
+                } else if (tab === 'list') {
+                    reloadCodeSelect(scope + '#vepp_inp_startStep_' + rowId, '14015351', '', row.startStep || '');
+                } else if (tab === 'object') {
+                    reloadCodeSelect(scope + '#vepp_inp_evsGrade_' + rowId, '14015161', '', row.evsGrade || '');
+                } else if (tab === 'affirm') {
+                    reloadCodeSelect(scope + '#vepp_inp_evsStep_' + rowId, '14015060', '', row.evsStep || '');
+                    reloadCodeSelect(scope + '#vepp_inp_ruleId_' + rowId, '14015172', '', row.ruleId || '');
+                }
+            }
+
+            window.veppClickRow = function (rowId, tab) {
+                veppCommitEditing(tab);
+                var row = veppFindRow(tab, rowId);
+                if (!row) return;
+                row._editing = true;
+                veppRenderTable(tab);
+                veppInitSelectsForRow(tab, rowId, row);
+                var fieldName = tab === 'grade' ? 'evsType' : tab === 'affirm' ? 'evsStep' : 'codeNo';
+                var firstInp = document.querySelector('#' + _vepp_tabId + ' #vepp_tbody_' + tab
+                    + ' [id="vepp_inp_' + fieldName + '_' + rowId + '"]');
+                if (firstInp) firstInp.focus();
+            };
+
+            function veppCommitEditing(tab) {
+                inst.data[tab].filter(function (r) { return r._editing; }).forEach(function (r) {
+                    veppReadInputs(r, tab);
+                    r._editing = false; r._modified = true;
+                });
+            }
+
+            function veppReadInputs(r, tab) {
+                var id = r._rowId;
+                if (tab === 'grade') {
+                    r.evsType = veppReadEl('vepp_inp_evsType_' + id);
+                    r.evsTypeName = veppReadSelName('vepp_inp_evsType_' + id);
+                    r.evsGrade = veppReadEl('vepp_inp_evsGrade_' + id);
+                    r.evsGradeName = veppReadSelName('vepp_inp_evsGrade_' + id);
+                    r.isInclude = veppReadChk('vepp_inp_isInclude_' + id);
+                    r.startScore = veppReadEl('vepp_inp_startScore_' + id);
+                    r.endScore = veppReadEl('vepp_inp_endScore_' + id);
+                    r.score = veppReadEl('vepp_inp_score_' + id);
+                    r.remark = veppReadEl('vepp_inp_remark_' + id);
+                } else if (tab === 'item') {
+                    r.codeNo = veppReadEl('vepp_inp_codeNo_' + id);
+                    r.codeName = veppReadEl('vepp_inp_codeName_' + id);
+                    r.evsScore = veppReadEl('vepp_inp_evsScore_' + id);
+                } else if (tab === 'object') {
+                    r.codeNo = veppReadEl('vepp_inp_codeNo_' + id);
+                    r.codeName = veppReadEl('vepp_inp_codeName_' + id);
+                    r.isInclude = veppReadChk('vepp_inp_isInclude_' + id);
+                    r.evsGrade = veppReadEl('vepp_inp_evsGrade_' + id);
+                    r.evsGradeName = veppReadSelName('vepp_inp_evsGrade_' + id);
+                    r.formula = veppReadEl('vepp_inp_formula_' + id);
+                } else if (tab === 'list') {
+                    r.codeNo = veppReadEl('vepp_inp_codeNo_' + id);
+                    r.codeName = veppReadEl('vepp_inp_codeName_' + id);
+                    r.formula = veppReadEl('vepp_inp_formula_' + id);
+                    r.startStep = veppReadEl('vepp_inp_startStep_' + id);
+                    r.startStepName = veppReadSelName('vepp_inp_startStep_' + id);
+                } else if (tab === 'group' || tab === 'family') {
+                    r.codeNo = veppReadEl('vepp_inp_codeNo_' + id);
+                    r.codeName = veppReadEl('vepp_inp_codeName_' + id);
+                    r.formula = veppReadEl('vepp_inp_formula_' + id);
+                } else if (tab === 'affirm') {
+                    r.evsStep = veppReadEl('vepp_inp_evsStep_' + id);
+                    r.evsStepName = veppReadSelName('vepp_inp_evsStep_' + id);
+                    r.evsGroup = veppReadEl('vepp_inp_evsGroup_' + id);
+                    r.ruleId = veppReadEl('vepp_inp_ruleId_' + id);
+                    r.ruleName = veppReadSelName('vepp_inp_ruleId_' + id);
+                }
+            }
+
+            function veppFindRow(tab, rowId) {
+                return inst.data[tab].find(function (r) { return r._rowId === rowId; });
+            }
+
+            /* ── Thêm mới ────────────────────────────────────────────────────── */
+            window.veppAddRow = function (tab) {
+                veppCommitEditing(tab);
+                var resumeSeq = vepp$('#vepp_resumeSeq').val();
+                var base = {
+                    _rowId: veppNewRowId(), _isNew: true, _modified: true, _editing: true,
+                    seq: '', resumeSeq: resumeSeq
+                };
+                var meta = _vepp_meta[tab];
+                var newRow;
+                if (tab === 'grade') {
+                    newRow = Object.assign(base, { evsType: '', evsGrade: '', isInclude: '0', startScore: '', endScore: '', score: '', remark: '' });
+                } else if (tab === 'item') {
+                    newRow = Object.assign(base, { paramType: meta.paramType, codeNo: '', codeName: '', evsScore: '' });
+                } else if (tab === 'list') {
+                    newRow = Object.assign(base, { paramType: meta.paramType, codeNo: '', codeName: '', formula: '', startStep: '' });
+                } else if (tab === 'group' || tab === 'family') {
+                    newRow = Object.assign(base, { paramType: meta.paramType, codeNo: '', codeName: '', formula: '' });
+                } else if (tab === 'object') {
+                    newRow = Object.assign(base, { codeNo: '', codeName: '', isInclude: '0', evsGrade: '', formula: '' });
+                } else {
+                    newRow = Object.assign(base, { evsStep: '', evsGroup: '', ruleId: '' });
+                }
+                inst.data[tab].push(newRow);
+                var filtered = veppGetFiltered(tab);
+                var ps = veppPageSize(tab);
+                inst.page[tab] = Math.ceil(filtered.length / ps) || 1;
+                veppRenderTable(tab);
+                veppInitSelectsForRow(tab, newRow._rowId, newRow);
+            };
+
+            /* ── Lưu ─────────────────────────────────────────────────────────── */
+            window.veppSave = function (tab) {
+                veppCommitEditing(tab);
+                var resumeSeq = vepp$('#vepp_resumeSeq').val();
+                if (!resumeSeq) { alert('Vui lòng chọn Tên đánh giá trước khi lưu.'); return; }
+                var toSave = inst.data[tab].filter(function (r) { return r._modified || r._isNew; });
+                if (!toSave.length) { alert('Không có dữ liệu nào thay đổi để lưu.'); return; }
+                var meta = _vepp_meta[tab];
+                var payload = toSave.map(function (r) {
+                    var base = { seq: r._isNew ? null : r.seq, resumeSeq: resumeSeq, evsType: inst.evsType };
+                    if (tab === 'grade') {
+                        return Object.assign(base, {
+                            evsType: r.evsType || '', evsGrade: r.evsGrade || '', isInclude: r.isInclude || '0',
+                            startScore: r.startScore || '', endScore: r.endScore || '', score: r.score || '',
+                            remark: r.remark || ''
+                        });
+                    } else if (tab === 'item') {
+                        return Object.assign(base, {
+                            paramType: meta.paramType, codeNo: r.codeNo || '', codeName: r.codeName || '',
+                            evsScore: r.evsScore || ''
+                        });
+                    } else if (tab === 'list') {
+                        return Object.assign(base, {
+                            paramType: meta.paramType, codeNo: r.codeNo || '', codeName: r.codeName || '',
+                            formula: r.formula || '', startStep: r.startStep || ''
+                        });
+                    } else if (tab === 'group' || tab === 'family') {
+                        return Object.assign(base, {
+                            paramType: meta.paramType, codeNo: r.codeNo || '', codeName: r.codeName || '',
+                            formula: r.formula || ''
+                        });
+                    } else if (tab === 'object') {
+                        return Object.assign(base, {
+                            codeNo: r.codeNo || '', codeName: r.codeName || '', formula: r.formula || '',
+                            isInclude: r.isInclude || '0', evsGrade: r.evsGrade || ''
+                        });
+                    } else {
+                        return Object.assign(base, { evsStep: r.evsStep || '', evsGroup: r.evsGroup || '', ruleId: r.ruleId || '' });
+                    }
+                });
+                $.ajax({
+                    url: '/evs/manage/api/' + meta.api + '/save',
+                    type: 'POST', contentType: 'application/json', data: JSON.stringify(payload),
+                    success: function () { veppLoadTab(tab, resumeSeq); },
+                    error: function () { alert('Lỗi khi lưu dữ liệu. Vui lòng thử lại.'); }
+                });
+            };
+
+            /* ── Xóa ─────────────────────────────────────────────────────────── */
+            window.veppDeleteSelected = function (tab) {
+                var ids = [];
+                vepp$('#vepp_tbody_' + tab + ' .vepp-row-chk:checked').each(function () { ids.push($(this).data('rowid')); });
+                if (!ids.length) { alert('Vui lòng chọn ít nhất một dòng để xóa.'); return; }
+                inst.pendingDeleteType = tab;
+                inst.pendingDeleteIds = ids;
+                vepp$('#vepp_deleteCount').text(ids.length);
+                inst.deleteModal.show();
+            };
+
+            window.veppConfirmDelete = function () {
+                var tab = inst.pendingDeleteType;
+                var ids = inst.pendingDeleteIds || [];
+                var resumeSeq = vepp$('#vepp_resumeSeq').val();
+                var existingSeqs = ids.map(function (id) { return veppFindRow(tab, id); })
+                    .filter(function (r) { return r && !r._isNew; }).map(function (r) { return r.seq; });
+                inst.data[tab] = inst.data[tab].filter(function (r) { return ids.indexOf(r._rowId) < 0; });
+                inst.deleteModal.hide();
+                if (!existingSeqs.length) { veppRenderTable(tab); return; }
+                $.ajax({
+                    url: '/evs/manage/api/' + _vepp_meta[tab].api + '/delete',
+                    type: 'POST', contentType: 'application/json', data: JSON.stringify({ seqs: existingSeqs }),
+                    success: function () { veppRenderTable(tab); },
+                    error: function () { alert('Lỗi khi xóa dữ liệu.'); veppLoadTab(tab, resumeSeq); }
+                });
+            };
+
+            window.veppToggleAll = function (tab) {
+                var checked = vepp$('#vepp_chkAll_' + tab).prop('checked');
+                vepp$('#vepp_tbody_' + tab + ' .vepp-row-chk').prop('checked', checked);
+            };
+
+            /* ── Boot ────────────────────────────────────────────────────────── */
+            $(document).ready(function () {
+                if (inst.deleteModal) return;
+
+                inst.deleteModal = new bootstrap.Modal(vepp$('#vepp_deleteModal')[0]);
+                veppLoadFormulaOptions();
+                veppLoadResumeList();
+                if (typeof initDateRangePickers === 'function') initDateRangePickers('#' + _vepp_tabId + ' #vepp_pageWrapper');
             });
-            $.ajax({
-                url: '/evs/manage/api/' + meta.api + '/save',
-                type: 'POST', contentType: 'application/json', data: JSON.stringify(payload),
-                success: function () { veppLoadTab(tab, resumeSeq); },
-                error: function () { alert('Lỗi khi lưu dữ liệu. Vui lòng thử lại.'); }
-            });
-        };
-
-        /* ── Xóa ─────────────────────────────────────────────────────────── */
-        window.veppDeleteSelected = function (tab) {
-            var ids = [];
-            $('#vepp_tbody_' + tab + ' .vepp-row-chk:checked').each(function () { ids.push($(this).data('rowid')); });
-            if (!ids.length) { alert('Vui lòng chọn ít nhất một dòng để xóa.'); return; }
-            _vepp_pendingDeleteType = tab;
-            window._vepp_pendingDeleteIds = ids;
-            $('#vepp_deleteCount').text(ids.length);
-            _vepp_deleteModal.show();
-        };
-
-        window.veppConfirmDelete = function () {
-            var tab = _vepp_pendingDeleteType;
-            var ids = window._vepp_pendingDeleteIds || [];
-            var resumeSeq = $('#vepp_resumeSeq').val();
-            var existingSeqs = ids.map(function (id) { return veppFindRow(tab, id); })
-                .filter(function (r) { return r && !r._isNew; }).map(function (r) { return r.seq; });
-            _vepp_data[tab] = _vepp_data[tab].filter(function (r) { return ids.indexOf(r._rowId) < 0; });
-            _vepp_deleteModal.hide();
-            if (!existingSeqs.length) { veppRenderTable(tab); return; }
-            $.ajax({
-                url: '/evs/manage/api/' + _vepp_meta[tab].api + '/delete',
-                type: 'POST', contentType: 'application/json', data: JSON.stringify({ seqs: existingSeqs }),
-                success: function () { veppRenderTable(tab); },
-                error: function () { alert('Lỗi khi xóa dữ liệu.'); veppLoadTab(tab, resumeSeq); }
-            });
-        };
-
-        window.veppToggleAll = function (tab) {
-            var checked = $('#vepp_chkAll_' + tab).prop('checked');
-            $('#vepp_tbody_' + tab + ' .vepp-row-chk').prop('checked', checked);
-        };
-
-        /* ── Boot ────────────────────────────────────────────────────────── */
-        $(document).ready(function () {
-            _vepp_deleteModal = new bootstrap.Modal(document.getElementById('vepp_deleteModal'));
-            veppLoadFormulaOptions();
-            veppLoadResumeList();
-            if (typeof initDateRangePickers === 'function') initDateRangePickers('#vepp_pageWrapper');
-        });
+        })();
     </script>
 </template>
