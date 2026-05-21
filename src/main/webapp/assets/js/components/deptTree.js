@@ -21,6 +21,10 @@ var DeptTree = (function ($) {
         state.currentInput = $(inputSelector);
         state.onSelectCallback = callback;
         state.cascadeChildren = !(options && options.cascadeChildren === false);
+        if (options && options.api) {
+            config.api = options.api;
+            state.authDeptList = []; // reset cache khi đổi API
+        }
 
         if (!$('#' + config.containerId).length) {
             createContainer();

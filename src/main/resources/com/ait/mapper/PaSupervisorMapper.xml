@@ -19,7 +19,7 @@
         WHERE 1 = 1
         <if test="empSearch != null and empSearch != ''">
             AND (he.EMPID LIKE '%' || #{empSearch, jdbcType=VARCHAR} || '%'
-              OR he.LOCAL_NAME LIKE '%' || #{empSearch, jdbcType=VARCHAR} || '%')
+              OR CONVERTTOUNSIGN(UPPER(he.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{empSearch, jdbcType=VARCHAR})) || '%')
         </if>
         <if test="deptNoList != null and deptNoList.size() > 0">
             AND he.DEPTNO IN
@@ -56,7 +56,7 @@
                            hd.ORG_NAME_LOCAL                                         AS DEPT_NAME,
                            he.EMP_OFFICE,
                            TO_CHAR(ps.CREATE_DATE, 'YYYY-MM-DD')                     AS CREATE_DATE,
-                           ps.CREATED_BY,
+                           get_emp_local_name(ps.CREATED_BY, #{cpnyId, jdbcType=VARCHAR})  AS CREATED_BY,
                            ps.ACTIVITY,
                            ps.ORDERNO
                       FROM PA_SUPERVISOR  ps
@@ -79,7 +79,7 @@
                hd.ORG_NAME_LOCAL                            AS DEPT_NAME,
                he.EMP_OFFICE,
                TO_CHAR(ps.CREATE_DATE, 'YYYY-MM-DD')        AS CREATE_DATE,
-               ps.CREATED_BY,
+               get_emp_local_name(ps.CREATED_BY, #{cpnyId, jdbcType=VARCHAR})  AS CREATED_BY,
                ps.ACTIVITY,
                ps.ORDERNO
           FROM PA_SUPERVISOR  ps
@@ -120,6 +120,78 @@
     <!-- ── Xóa ────────────────────────────────────────────────────────────────── -->
     <delete id="deleteByPersonId">
         DELETE FROM PA_SUPERVISOR WHERE PERSON_ID = #{personId, jdbcType=VARCHAR}
+    </delete>
+
+    <!-- ── Danh sách tất cả supervisor đang hoạt động (left pane) ─────────── -->
+    <select id="getAllSupervisorList" resultMap="PaSupervisorResultMap">
+        SELECT ps.PERSON_ID,
+               he.EMPID        AS EMP_ID,
+               he.LOCAL_NAME,
+               hd.ORG_NAME_LOCAL AS DEPT_NAME,
+               ps.ACTIVITY,
+               ps.ORDERNO
+          FROM PA_SUPERVISOR ps
+          LEFT JOIN HR_EMPLOYEE   he ON ps.PERSON_ID = he.PERSON_ID
+          LEFT JOIN HR_DEPARTMENT hd ON he.DEPTNO    = hd.DEPTNO
+         WHERE ps.ACTIVITY = 1
+         ORDER BY ps.ORDERNO ASC, ps.CREATE_DATE DESC
+    </select>
+
+    <!-- ── Cây phòng ban từ HR_DEPARTMENT ────────────────────────────────── -->
+    <select id="getDepartmentTree" resultType="java.util.Map">
+        SELECT DEPTNO          AS "id",
+               PARENT_DEPT_NO AS "parent",
+               ORG_NAME_LOCAL AS "text"
+          FROM HR_DEPARTMENT
+         WHERE ACTIVITY = 1
+         ORDER BY ORDERNO ASC
+    </select>
+
+    <!-- ── Phòng ban được phân quyền cho user hiện tại (dùng cho DeptTree) ── -->
+    <select id="getAuthorizedDepartments" resultType="java.util.Map">
+        SELECT d.DEPTNO          AS "id",
+               d.ORG_NAME_LOCAL  AS "text",
+               d.PARENT_DEPT_NO  AS "parent"
+          FROM HR_DEPARTMENT d
+         INNER JOIN PA_SUPERVISOR_INFO si ON d.DEPTNO = si.DEPTNO
+         WHERE d.CPNY_ID  = #{cpnyId,   jdbcType=VARCHAR}
+           AND si.PERSON_ID = #{adminID, jdbcType=VARCHAR}
+           AND d.ACTIVITY  = 1
+         ORDER BY d.DEPT_LEVEL ASC, d.DEPTNO ASC
+    </select>
+
+    <!-- ── Danh sách DEPTNO đã phân quyền cho PERSON_ID ─────────────────── -->
+    <select id="getDeptNoListByPersonId" resultType="java.lang.String">
+        SELECT DEPTNO
+          FROM PA_SUPERVISOR_INFO
+         WHERE PERSON_ID = #{personId, jdbcType=VARCHAR}
+    </select>
+
+    <!-- ── Sequence cho PA_SUPERVISOR_INFO ───────────────────────────────── -->
+    <select id="getNextSeq" resultType="long">
+        SELECT PA_SUPERVISOR_SEQ.NEXTVAL FROM DUAL
+    </select>
+
+    <!-- ── Thêm mới PA_SUPERVISOR_INFO ──────────────────────────────────── -->
+    <insert id="insertSupervisorInfo" parameterType="com.ait.pa.wagebase.dto.PaSupervisorInfoDto">
+        INSERT INTO PA_SUPERVISOR_INFO (
+            PA_SUPERVISOR_NO, PERSON_ID, DEPTNO,
+            CREATE_DATE, CREATED_BY,
+            ACTIVITY, ORDERNO
+        ) VALUES (
+            #{paSupervisorNo, jdbcType=NUMERIC},
+            #{personId,       jdbcType=VARCHAR},
+            #{deptNo,         jdbcType=VARCHAR},
+            SYSDATE,
+            #{adminID,        jdbcType=VARCHAR},
+            #{activity,       jdbcType=NUMERIC},
+            #{orderNo,        jdbcType=NUMERIC}
+        )
+    </insert>
+
+    <!-- ── Xóa tất cả PA_SUPERVISOR_INFO theo PERSON_ID ─────────────────── -->
+    <delete id="deleteInfoByPersonId">
+        DELETE FROM PA_SUPERVISOR_INFO WHERE PERSON_ID = #{personId, jdbcType=VARCHAR}
     </delete>
 
 </mapper>

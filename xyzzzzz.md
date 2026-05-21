@@ -6,6 +6,8 @@ columnDefs: [
 	{ "width": "2%", "targets": 0 },
 ],
 
+CONVERTTOUNSIGN(UPPER(t2.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{localName})) || '%'
+
 <select class="form-select" id="arItemItemGroupCode" name="itemGroupCode"
 	data-parent-code="1429" data-default-text="-- Chọn mã nhóm --">
 </select>
@@ -20,12 +22,13 @@ url: '/sys/api/code/list?parentCodeNo=400223',
 
 sử dụng onclick="openEmployeeSearchPopup()"> như của educationSearch.html để tìm nhân viên.
 
-sử dụng veas_deptSearch như của viewEvsAffirmorSetup.html để lấy ra cây phòng ban để làm điều kiện tìm kiếm phòng ban.
-
+sử dụng cách tìm kiếm Họ tên / Mã NV như của viewPaInputItemData.html để tìm nhân viên.
 
 sử dụng vppoOpenEmpSearch như của viewPaPayObj.html để tìm 1 nhân viên.
 
 sử dụng veas_deptSearch như của viewEvsAffirmorSetup.html để lấy ra cây phòng ban để làm điều kiện tìm kiếm phòng ban.
+
+sử dụng vpid_deptSearch như của viewPaInputItemData.html để lấy ra cây phòng ban để làm điều kiện tìm kiếm phòng ban.
 
 bạn là người hiểu rất rõ về dự án này. căn cứ vào file viewNOContractInfo.html - ký kết hợp đồng,  hãy tạo cho tôi một file viewContractInfoForSearch.html - Tra cứu hợp đồng, dữ liệu lấy ra là tất cả các hợp đồng trong bảng HR_CONTRACT
 
@@ -718,3 +721,374 @@ Dựa vào file viewPaInputItemParam.html. Hãy tạo cho tôi một file viewPa
 
  Dựa vào file viewSalaryCodeList.html. Hãy tạo cho tôi một file viewPaSupervisor.html - Người phụ trách lương lương nằm trong module /pa/wagebase. Giao diện tham khảo hình ảnh. Dữ liệu lấy từ bảng PA_SUPERVISOR với các trường tham khảo hình ảnh kết hợp cùng bảng HR_EMPLOYEE để lấy ra dữ liệu. có đầy đủ chức năng thêm mới, sửa, xóa. Khi thêm mới thì phần Tên người phụ trách sẽ sử dụng onclick="openEmployeeSearchPopup()"> như của educationSearch.html để tìm nhân viên.
 sử dụng veas_deptSearch như của viewEvsAffirmorSetup.html để lấy ra cây phòng ban để làm điều kiện tìm kiếm phòng ban, Trạng thái làm việc - EMP_OFFICE (dữ liệu lấy lấy thông qua data-parent-code="15118" không có data-default-text) . Khi sửa thì không cho phép sửa trường Tên người phụ trách.
+
+ Dựa vào file viewPaSupervisor.html. Hãy tạo cho tôi một file viewPaEmpAccount.html - Người phụ trách lương lương nằm trong module /pa/workManagement. Giao diện tham khảo hình ảnh. Dữ liệu lấy từ bảng PA_EMP_ACCOUNT với các trường tham khảo hình ảnh. trường PA_EMP_ACCOUNT_NO khi thêm mới thì sử dụng PA_EMP_ACCOUNT_SEQ.NEXTVAL, kết hợp cùng bảng HR_EMPLOYEE để lấy ra dữ liệu. có đầy đủ chức năng thêm mới, sửa, xóa. Khi thêm mới thì phần Tên người phụ trách sẽ sử dụng onclick="openEmployeeSearchPopup()"> như của educationSearch.html để tìm nhân viên.
+sử dụng veas_deptSearch như của viewEvsAffirmorSetup.html để lấy ra cây phòng ban để làm điều kiện tìm kiếm phòng ban, Trạng thái làm việc - EMP_OFFICE (dữ liệu lấy lấy thông qua data-parent-code="15118" không có data-default-text), Ngân hàng - ACCOUNT_TYPE (ữ liệu lấy lấy thông qua data-parent-code="14015883") . Khi sửa thì không cho phép sửa trường Tên người phụ trách.
+
+căn cứ vào cấu trúc của viewAttendanceKeeper.html hãy sửa lại file viewPaSupervisor.html - Người phụ trách lương nằm trong module /pa/wagebase, mục đích của giao diện này để phân quyền cho các PERSON_ID của bảng PA_SUPERVISOR thông qua trường PERSON_ID, với điều kiện ACTIVITY = 1. bên trái là dữ liệu thông tin nhân viên lấy từ bảng PA_SUPERVISOR, khi click vào tên nhân viên ở bên trái, thì sẽ xuất hiện cơ cấu sơ đồ tổ chức ở bên phải (dữ liệu lấy từ bảng HR_DEPARTMENT), thêm điều kiện nếu trong bảng PA_SUPERVISOR_INFO có giá trị của trường PERSON_ID tương ứng với giá trị của trường PERSON_ID trong bảng PA_SUPERVISOR, tương ứng với PERSON_ID đó có giá trị DEPTNO  = DEPTNO trong bảng HR_DEPARTMENT thì sẽ xuất hiện nút chọn, cấu trúc 2 bảng PA_SUPERVISOR và PA_SUPERVISOR_INFO tham khảo hình ảnh, có đầy đủ chức năng thêm mới, sửa, xóa. và chức năng thêm, sửa, xóa sẽ tác động vào bảng PA_SUPERVISOR và PA_SUPERVISOR_INFO, việc thêm dữ liệu vào bảng PA_SUPERVISOR tức lấy thông tin nhân viên để thêm vào. lưu ý trường PA_SUPERVISOR_NO của bảng PA_SUPERVISOR_INFO khi tạo mới là tự động tăng với giá trị PA_SUPERVISOR_SEQ.NEXTVAL. Khi thêm mới thì phần Tên người phụ trách sẽ sử dụng onclick="openEmployeeSearchPopup()"> như của educationSearch.html để tìm nhân viên.
+
+căn cứ vào cấu trúc của viewSummaryFormula.html hãy Tạo cho tôi một file viewPaFormula.html - Công thức tính toán nằm trong module /pa/salary. Giao diện tham khảo hình ảnh. Mục đích của giao diện này để cấu hình công thức cho các ITEM_NO của bảng PA_ITEM_PARAM thông qua trường ITEM_NO, với điều kiện ACTIVITY = 1. Dữ liệu các ITEM được lấy ra sử dụng câu lệnh SQL: SELECT PI.ITEM_NO, SY.CONTENT ITEM_NAME
+  FROM PA_ITEM PI, PA_ITEM_PARAM PIP, SY_GLOBAL_NAME SY
+ WHERE PI.ITEM_NO = PIP.ITEM_NO
+   AND PIP.CPNY_ID = #{lang, jdbcType=VARCHAR}
+   AND PI.ITEM_NO = SY.NO(+)
+   AND SY.LANGUAGE(+) = #{cpnyId, jdbcType=VARCHAR}
+   AND PI.ACTIVITY = 1
+ ORDER BY PIP.CALCU_ORDER. khi click vào tên ở bên trái (tức là click vào ITEM_NAME), thì sẽ xuất hiện danh sách các node con ở bên phải (dữ liệu lấy từ bảng PA_FORMULAR thông qua trường ITEM_NO, sửu dụng câu lệnh SQL để lấy dữ liệu: SELECT FORMULAR_NO,
+       ITEM_NO,
+       CONDITION,
+       FORMULAR,
+       CONDITION_SEQ,
+       DESCRIPTION,
+       CPNY_ID
+  FROM PA_FORMULAR T
+ WHERE ITEM_NO = #{itemNo, jdbcType=VARCHAR}
+   AND CPNY_ID = #{cnpyId, jdbcType=VARCHAR}
+ ORDER BY CONDITION_SEQ DESC), cấu trúc bảng PA_FORMULAR tham khảo hình ảnh, có đầy đủ chức năng thêm mới, sửa, xóa. và chức năng thêm, sửa, xóa sẽ tác động vào bảng PA_FORMULAR. lưu ý trường FORMULAR_NO của bảng PA_FORMULAR khi tạo mới là tự động tăng với giá trị PA_FORMULAR_SEQ.NEXTVAL. khi thêm mới vào bảng PA_FORMULAR thì sẽ lấy giá trị của trường ITEM_NO đang được chọn ở bên trái để thêm vào trường ITEM_NO của bảng PA_FORMULAR, CONDITION_SEQ = (SELECT NVL(MAX(CONDITION_SEQ), 0) + 1  FROM PA_FORMULAR WHERE ITEM_NO = #{itemNo, jdbcType=VARCHAR} AND CPNY_ID = #{cnpyId, jdbcType=VARCHAR}). Cột trình tự tính làm giống như Trình tụ tính của viewPaComputeItemParamList.html, khi bấm vào mũi tên thì thay đổi giá trị của trường CONDITION_SEQ chho nhau.
+
+ khi bấm vào thêm mới hoặc chỉnh sửa công thức, sẽ hiện thêm phần công cụ ở bên dưới, thông tin tham khảo ở hình ảnh. với "Danh sách mục nhập" lấy dữ liệu từ câu lệnh: SELECT PI.PARAM_ITEM_ID  AS ITEM_ID,
+       SY.CONTENT        AS ITEM_NAME
+  FROM PA_PARAM_ITEM_PARAM T,
+       PA_PARAM_ITEM       PI,
+       SY_GLOBAL_NAME      SY
+ WHERE T.PARAM_ITEM_NO = PI.PARAM_ITEM_NO
+   AND T.PARAM_ITEM_NO = SY.NO(+)
+   AND SY.LANGUAGE(+) = #{lang, jdbcType=VARCHAR}
+   AND PI.ACTIVITY = 1
+   AND T.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+ ORDER BY PI.ORDER_NO; 
+ với "Danh sách hạng mục lương" lấy dữ liệu từ câu lệnh: SELECT PI.ITEM_ID  AS ITEM_ID,
+       SY.CONTENT  AS ITEM_NAME
+  FROM PA_ITEM_PARAM  T,
+       PA_ITEM        PI,
+       SY_GLOBAL_NAME SY
+ WHERE T.ITEM_NO = PI.ITEM_NO
+   AND T.ITEM_NO = SY.NO(+)
+   AND SY.LANGUAGE(+) = #{lang, jdbcType=VARCHAR}
+   AND PI.ACTIVITY = 1
+   AND T.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+ ORDER BY CALCU_ORDER;
+ "Hạng mục chấm công" lấy dữ liệu từ câu lệnh: SELECT COLUMN_NAME  AS ITEM_ID,
+       SY_GLOBAL_NAME.CONTENT  AS ITEM_NAME
+  FROM USER_TAB_COLUMNS, AR_STA_ITEM, AR_STA_ITEM_PARAM, SY_GLOBAL_NAME
+ WHERE TABLE_NAME = 'AR_SUMMARY_HTSV'
+   AND DATA_TYPE = 'NUMBER'
+   AND COLUMN_NAME = STA_ITEM_ID
+   AND AR_STA_ITEM.ITEM_NO = AR_STA_ITEM_PARAM.ITEM_NO
+   AND AR_STA_ITEM_PARAM.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+   AND AR_STA_ITEM.ITEM_NO = SY_GLOBAL_NAME.NO(+)
+   AND SY_GLOBAL_NAME.LANGUAGE(+) = #{lang, jdbcType=VARCHAR}
+   AND AR_STA_ITEM.ACTIVITY = 1
+   AND NOT EXISTS (SELECT *
+          FROM PA_DISTINCT_LIST
+         WHERE COLUMN_NAME = DISTINCT_FIELD
+           AND TABLE_NAME = 'PA_HR_V'
+           AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR})
+ ORDER BY AR_STA_ITEM_PARAM.CAL_ORDER
+
+ "Tham số cố định" lấy dữ liệu từ câu lệnh: SELECT T.DISTINCT_FIELD AS ITEM_ID, SY.CONTENT AS ITEM_NAME
+  FROM PA_DISTINCT_LIST T, SY_GLOBAL_NAME SY
+ WHERE T.ID = SY.NO(+)
+   AND SY.LANGUAGE(+) = #{lang, jdbcType=VARCHAR}
+   AND T.TABLE_NAME = 'PA_HR_V'
+   AND T.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+ ORDER BY T.ORDERNO, T.ID
+
+ khi bấm vào từng tên của các hạng mục trong phần công cụ, sẽ lấy ra ITEM_ID của hạng mục đó và điền vào ô Công thức (Formular) trong form thêm mới hoặc chỉnh sửa công thức.
+
+ Về mặt hiện thị, ở cột Điều kiện và Công thức đang hiển thị các ITEM_ID, khi hiển thị thì sẽ lấy giá trị của ITEM_ID đó để đi so sánh với các ITEM_ID lấy ra từ các câu lệnh SQL: SELECT II.ITEM_ID AS ITEM_ID, SY.CONTENT AS ITEM_NAME
+  FROM IS_ITEM II, SY_GLOBAL_NAME SY
+ WHERE II.ITEM_NO = SY.NO(+)
+   AND SY.LANGUAGE(+) = #{lang, jdbcType=VARCHAR}
+UNION
+SELECT DISTINCT IPI.PARAM_ID, SY.CONTENT
+  FROM IS_PARAM_ITEM IPI, SY_GLOBAL_NAME SY
+ WHERE IPI.PARAM_ITEM_NO = SY.NO(+)
+   AND SY.LANGUAGE(+) = #{lang, jdbcType=VARCHAR}
+UNION
+SELECT PDL.DISTINCT_FIELD, SY.CONTENT
+  FROM PA_DISTINCT_LIST PDL, SY_GLOBAL_NAME SY
+ WHERE PDL.ID = SY.NO(+)
+   AND SY.LANGUAGE(+) = #{lang, jdbcType=VARCHAR}
+UNION
+SELECT PBI.ITEM_ID, SY.CONTENT
+  FROM PA_BASIC_ITEM PBI, SY_GLOBAL_NAME SY
+ WHERE PBI.ITEM_NO = SY.NO(+)
+   AND SY.LANGUAGE(+) = #{lang, jdbcType=VARCHAR}
+UNION
+SELECT PI.ITEM_ID AS ID, SY.CONTENT AS NAME
+  FROM PA_ITEM PI, SY_GLOBAL_NAME SY
+ WHERE PI.ITEM_NO = SY.NO(+)
+   AND SY.LANGUAGE(+) = #{lang, jdbcType=VARCHAR}
+UNION
+SELECT DISTINCT PPI.PARAM_ITEM_ID, SY.CONTENT
+  FROM PA_PARAM_ITEM PPI, SY_GLOBAL_NAME SY
+ WHERE PPI.PARAM_ITEM_NO = SY.NO(+)
+   AND SY.LANGUAGE(+) = #{lang, jdbcType=VARCHAR}
+UNION
+SELECT ASI.STA_ITEM_ID, SY.CONTENT
+  FROM AR_STA_ITEM ASI, SY_GLOBAL_NAME SY
+ WHERE ASI.ITEM_NO = SY.NO(+)
+   AND SY.LANGUAGE(+) = #{lang, jdbcType=VARCHAR}
+ để hiển thị thành ITEM_NAME cho dễ nhìn.
+
+ căn cứ vào cấu trúc của viewPaFormula.html hãy Tạo cho tôi một file viewPaInputItemData.html - Hạng mục tiêu chuẩn nằm trong module /pa/salary. Giao diện tham khảo hình ảnh. Mục đích của giao diện này để thêm thông tin tiền lương liên quan đến từng PARAM_NO của bảng PA_PARAM_ITEM_PARAM thông qua trường PARAM_NO. Dữ liệu các ITEM được lấy ra sử dụng câu lệnh SQL: SELECT T.PARAM_NO,
+       T.PARAM_ITEM_NO,
+       T.DEFAULT_VAL,
+       PI.PARAM_ITEM_ID,
+       SY.CONTENT   AS PARAM_NAME
+  FROM PA_PARAM_ITEM_PARAM T,
+       PA_PARAM_ITEM       PI,
+       SY_GLOBAL_NAME      SY
+ WHERE T.PARAM_ITEM_NO = PI.PARAM_ITEM_NO
+   AND T.PARAM_ITEM_NO = SY.NO
+   AND SY.LANGUAGE = {#lang, jdbcType=VARCHAR}
+   AND PI.ACTIVITY = 1
+   AND PI.ITEM_TYPE = {#itemType, jdbcType=VARCHAR}
+   AND T.ACTIVITY = '1'
+   AND T.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+ ORDER BY PI.ORDER_NO. khi click vào tên ở bên trái (tức là click vào PARAM_NAME), thì sẽ xuất hiện danh sách các node con ở bên phải (dữ liệu lấy từ bảng PA_PARAM_DATA thông qua trường PARAM_NO, sửu dụng câu lệnh SQL để lấy dữ liệu: SELECT A.PARAM_DATA_NO,
+                       A.PARAM_NO,
+                       A.RETURN_VALUE,
+                       BP.DISTINCT_FIELD,
+                       BP.DISTINCT_FIELD_2ND,
+                       SY0.CONTENT DISTINCT_FIELD_NAME,
+                       SY1.CONTENT DISTINCT_FIELD_2ND_NAME,
+                       D.EMPID,
+                       D.LOCAL_NAME,
+                       get_dept_name(D.DEPTNO, #{lang, jdbcType=VARCHAR}) DEPT_NAME,
+                       SY2.CONTENT POST_GRADE_NAME,
+                       GET_GLOBAL_NAME(D.EMP_OFFICE, #{lang, jdbcType=VARCHAR}) EMP_OFFICE,
+                       TO_CHAR(D.DATE_STARTED, 'YYYY-MM-DD') DATE_STARTED,
+                       TO_CHAR(D.DATE_LEFT, 'YYYY-MM-DD') DATE_LEFT,
+                       A.START_MONTH,
+                       A.END_MONTH,
+                       A.CPNY_ID,
+                       SY4.CONTENT CPNY_NAME,
+                       NVL(A.IS_APPLY, 'N') IS_APPLY,
+                       A.REMARK
+                  FROM PA_PARAM_DATA       A,
+                       PA_PARAM_ITEM_PARAM BP,
+                       HR_EMPLOYEE         D,
+                       HR_COMPANY          HR,
+                       SY_GLOBAL_NAME      SY0,
+                       SY_GLOBAL_NAME      SY1,
+                       SY_GLOBAL_NAME      SY2,
+                       SY_GLOBAL_NAME      SY4,
+                       PA_DISTINCT_LIST    PA1,
+                       PA_DISTINCT_LIST    PA2
+                 WHERE A.PARAM_NO = #{lang, jdbcType=VARCHAR}
+                   AND A.PARAM_NO = BP.PARAM_NO
+                   AND BP.DISTINCT_FIELD = PA1.DISTINCT_FIELD(+)
+                   AND BP.CPNY_ID = PA1.CPNY_ID(+)
+                   AND PA1.ID = SY0.NO(+)
+                   AND SY0.LANGUAGE(+) = #{lang, jdbcType=VARCHAR}
+                   AND BP.DISTINCT_FIELD_2ND = PA2.DISTINCT_FIELD(+)
+                   AND BP.CPNY_ID = PA2.CPNY_ID(+)
+                   AND PA2.ID = SY1.NO(+)
+                   AND SY1.LANGUAGE(+) = #{lang, jdbcType=VARCHAR}
+                   AND A.PERSON_ID = d.person_id
+                   AND D.POST_GRADE_NO = SY2.NO(+)
+                   AND SY2.LANGUAGE(+) = #{lang, jdbcType=VARCHAR}
+                   AND A.CPNY_ID = HR.CPNY_ID
+                   AND HR.CPNY_NO = SY4.NO(+)
+                   AND SY4.LANGUAGE(+) = #{lang, jdbcType=VARCHAR}
+                   AND A.ACTIVITY = 1
+                   AND TO_DATE(#{payMonth, jdbcType=VARCHAR}, 'YYYYMM') >= TO_DATE(A.START_MONTH, 'MMYYYY')
+                   AND TO_DATE(#{payMonth, jdbcType=VARCHAR}, 'YYYYMM') <= TO_DATE(NVL(A.END_MONTH, '129999'), 'MMYYYY')
+                   AND (D.DATE_LEFT IS NULL OR TO_CHAR(D.DATE_LEFT, 'YYYYMM') >= to_char(add_months(to_date(#{payMonth, jdbcType=VARCHAR}, 'yyyymm'), -2), 'yyyymm'))
+                 order by D.PERSON_ID, cấu trúc bảng PA_PARAM_DATA tham khảo hình ảnh, có đầy đủ chức năng thêm mới, sửa, xóa. và chức năng thêm, sửa, xóa sẽ tác động vào bảng PA_PARAM_DATA. lưu ý trường PARAM_DATA_NO của bảng PA_PARAM_DATA khi tạo mới là tự động tăng với giá trị PA_PARAM_DATA_SEQ.NEXTVAL. khi thêm mới vào bảng PA_PARAM_DATA thì sẽ lấy giá trị của trường PARAM_NO đang được chọn ở bên trái để thêm vào trường PARAM_NO của bảng PA_PARAM_DATA. Thêm các điều kiện tìm kiếm theo các trường khác như: Trạng thái làm việc - EMP_OFFICE (dữ liệu lấy lấy thông qua data-parent-code="15118"), Phòng ban, Họ tên/Mã nhân viên, payMonth (tháng trả lương) để dễ dàng tìm kiếm và quản lý dữ liệu.
+
+Tương tự như chức năng upload file excel attNewOpenImportModal của viewApplyAttenanceManagentInfoList_new.html, hãy tạo cho tôi một chức năng upload file excel (nội dung file excel tham khảo hình ảnh) để nhập dữ liệu vào bảng PA_PARAM_DATA_TEMP có trường tham khảo hình ảnh. Khi bấm vào nút Upload Excel thì sẽ hiện ra popup để chọn file excel cần upload, sau khi chọn file và bấm Upload & Import thì  thực hiện import dữ liệu từ file excel vào bảng PA_PARAM_DATA_TEMP (lưu ý lấy giá trị PARAM_NO của ITEM để đưa vào PARAM_NO của bảng PA_PARAM_DATA_TEMP). nếu nhập thành công thì hiển thị giao diện viewImportExcelTempPaParamList giao diện tham khảo hình ảnh. Sau khi bấm Lưu thì sẽ gọi đến pakage PKG_WAGEBASE_EXCEL_TEMP.PR_IMPORT_PAPARAM_DATA(
+						 #adminID:VARCHAR#,#cpnyId:VARCHAR#,#distinctField:VARCHAR#
+						,#message,jdbcType=VARCHAR,mode=OUT#) để thực hiện import dữ liệu . Nếu có lỗi trong quá trình import thì sẽ hiển thị lỗi đó ra giao diện để người dùng biết và chỉnh sửa lại file excel cho đúng rồi mới thực hiện import lại.
+
+
+dựa vào cấu trúc của viewPaFormula.html hãy Tạo cho tôi một file viewPaResult.html - Kết quả tính toán nằm trong module /pa/salary. Giao diện tham khảo hình ảnh. Mục đích của giao diện này để thêm thông tin các hạng mục lương vào bảng PA_ITEM_INPUT với các trường tham khảo hình ảnh.
+Hạng mục tích chọn - IS_USE lấy dữ liệu thông qua <option value="1">Đối chiếu chi tiết </option>
+						<option value="2">Báo cáo chênh lệch lương</option>
+						<option value="3">Các khoản trợ cấp - khấu trừ - bảo hiểm</option>
+						<option value="4">Đối chiếu hạng mục-Đối chiếu kết quả-Đối chiếu chi trả-Đối chiếu bảo hiểm</option>
+						<option value="5">Lương tháng/năm chi tiết</option>
+						<option value="6">Phiếu lương</option>.
+Phân biệt hạng mục - ITEM_TYPE lấy dữ liệu thông qua <option value="1">Khoản trả (chi tiết chấm công trong phiếu lương)</option>
+						<option value="2">Khoản trừ (chi tiết tiền lương trong phiếu lương)</option>
+						<option value="3">BH (chi tiết khoản trừ trong phiếu lương)</option>
+						<option value="4">Các mục tiêu chuẩn (các mục tiêu chuẩn trong phiếu lương)</option>.
+Hạng mục nhân sự lấy ra thông qua câu lệnh SQL: SELECT T.ID AS ITEM_NO, T.DISTINCT_FIELD AS ITEM_ID, SY.CONTENT ITEM_NAME, T.TABLE_NAME
+  FROM PA_DISTINCT_LIST T, SY_GLOBAL_NAME SY
+ WHERE T.ID = SY.NO(+)
+   AND SY.LANGUAGE(+) = {lang, jdbcType=VARCHAR}
+   AND T.TABLE_NAME = 'PA_HR_V'
+   AND T.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+ ORDER BY T.ORDERNO, T.ID.
+ Hạng mục chấm công lấy ra thông qua câu lệnh SQL: SELECT AR_STA_ITEM.ITEM_NO AS ITEM_NO,
+COLUMN_NAME  AS ITEM_ID,
+       SY_GLOBAL_NAME.CONTENT  AS ITEM_NAME
+  FROM USER_TAB_COLUMNS, AR_STA_ITEM, AR_STA_ITEM_PARAM, SY_GLOBAL_NAME
+ WHERE TABLE_NAME = 'AR_SUMMARY_HTSV'
+   AND DATA_TYPE = 'NUMBER'
+   AND COLUMN_NAME = STA_ITEM_ID
+   AND AR_STA_ITEM.ITEM_NO = AR_STA_ITEM_PARAM.ITEM_NO
+   AND AR_STA_ITEM_PARAM.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+   AND AR_STA_ITEM.ITEM_NO = SY_GLOBAL_NAME.NO(+)
+   AND SY_GLOBAL_NAME.LANGUAGE(+) = #{lang, jdbcType=VARCHAR}
+   AND AR_STA_ITEM.ACTIVITY = 1
+   AND NOT EXISTS (SELECT *
+          FROM PA_DISTINCT_LIST
+         WHERE COLUMN_NAME = DISTINCT_FIELD
+           AND TABLE_NAME = 'PA_HR_V'
+           AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR})
+ ORDER BY AR_STA_ITEM_PARAM.CAL_ORDER.
+Hạng mục nhập lấy ra thông qua câu lệnh SQL: SELECT PI.PARAM_ITEM_NO AS ITEM_NO,
+PI.PARAM_ITEM_ID  AS ITEM_ID,
+       SY.CONTENT        AS ITEM_NAME
+  FROM PA_PARAM_ITEM_PARAM T,
+       PA_PARAM_ITEM       PI,
+       SY_GLOBAL_NAME      SY
+ WHERE T.PARAM_ITEM_NO = PI.PARAM_ITEM_NO
+   AND T.PARAM_ITEM_NO = SY.NO(+)
+   AND SY.LANGUAGE(+) = #{lang, jdbcType=VARCHAR}
+   AND PI.ACTIVITY = 1
+   AND T.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+ ORDER BY PI.ORDER_NO; .
+ Hạng mục tính lấy ra thông qua câu lệnh SQL: SELECT T.ITEM_NO AS ITEM_NO,
+       PI.ITEM_ID AS ITEM_ID,
+       SY.CONTENT AS ITEM_NAME
+  FROM PA_ITEM_PARAM  T,
+       PA_ITEM        PI,
+       SY_GLOBAL_NAME SY
+ WHERE T.ITEM_NO = PI.ITEM_NO
+   AND T.ITEM_NO = SY.NO(+)
+   AND SY.LANGUAGE(+) = #{lang, jdbcType=VARCHAR}
+   AND PI.ACTIVITY = 1
+   AND T.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+ ORDER BY CALCU_ORDER.
+Khi tick chọn vào các hạng mục - item, thì sẽ lấy giá trị ITEM_NO, ITEM_NAME, ITEM_ID và thứ tự điền vào ở bên cạnh - ORDERNO, cùng với IS_USE và ITEM_TYPE để thêm vào bảng PA_ITEM_INPUT. INPUT_NO của bảng PA_ITEM_INPUT khi thêm mới sẽ được sinh ra tự động theo PA_ITEM_INPUT_SEQ.NEXTVAL
+   AND SY.LANGUAGE(+) = #{lang, jdbcType=VARCHAR}
+
+   thêm cho tôi điều kiện tìm kiếm sử dụng vpid_deptSearch như của viewPaInputItemData.html để lấy ra cây phòng ban để làm điều kiện tìm kiếm phòng ban. sử dụng vpwf_payScheduleNo như của viewPaWorkFlow.html để lấy ra danh sách kế hoạch trả lương làm điều kiện tìm kiếm. mục đích để khi chọn phòng ban và kế hoạch trả lương, sau đó tick chọn các hạng mục bên dưới thì Khi click vào nút xuất excel thì sẽ xuất ra file excel dữ liệu được lọc theo phòng ban và kế hoạch trả lương đã chọn để láy trong bảng PA_SUMMARY_HTSV với các trường được lấy ra chính là các ITEM_ID đã được tick 
+   chọn.
+
+dựa vào cấu trúc của viewPaResult.html hãy Tạo cho tôi một file payStub.html - Phiếu lương nằm trong module /pa/workManagement. Giao diện tham khảo hình ảnh. điều kiện tìm kiếm sử dụng vpid_deptSearch như của viewPaInputItemData.html để lấy ra cây phòng ban để làm điều kiện tìm kiếm phòng ban. sử dụng vpwf_payScheduleNo như của viewPaWorkFlow.html để lấy ra danh sách kế hoạch trả lương làm điều kiện tìm kiếm, sử dụng cách tìm kiếm Họ tên / Mã NV như của viewPaInputItemData.html để tìm nhân viên. Trạng thái làm việc - EMP_OFFICE (dữ liệu lấy lấy thông qua data-parent-code="15118"). Thoogn tin phiếu lương sẽ được lấy ra từ bảng PA_SUMMARY_HTSV với các trường tham khảo hình ảnh. với điều  kiện tìm kiếm sẽ tìm ra được 1 hoặc nhiều phiếu lương của nhân viên, nếu ra nhiều phiếu lương thì các phiếu lương sẽ được cách nhau và mỗi phiếu lương sẽ được giới hạn trong một khổ giấy A4 để dễ dàng in ấn. tương ứng với số lượng nhân viên tìm được sẽ chạy vòng lặp để chạy pakage PA_FOR_EMP_SALARY_PAGE_P(#{cpnyId, jdbcType=VARCHAR}, #{payScheduleNo, jdbcType=VARCHAR}, #{personId, jdbcType=VARCHAR}, #{adminID, jdbcType=VARCHAR}). sau đó sử dụng câu lệnh SQL sau để hiển thị dữ liệu vào phiếu lương: SELECT T.CPNY_ID,
+       T.PERSON_ID,
+       T.ITEM_TYPE,
+       T.ITEM_NO,
+       GET_GLOBAL_NAME(T.ITEM_NO, #{lang, jdbcType=VARCHAR}) ITEM_NAME,
+       T.ITEM_VALUE,
+       T.ORDERNO,
+       T.CREATE_BY,
+       TO_CHAR(T.CREATE_DATE, 'DD-MM-YYYY') CREATE_DATE
+  FROM PA_EMP_SALARY_PAGE_DATA T
+ WHERE T.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+   AND T.PERSON_ID = #{personId, jdbcType=VARCHAR}. 
+sau khi lấy đựo dữ liệu từ bảng PA_EMP_SALARY_PAGE_DATA thì sẽ hiển thị vào phiếu lương, tương ứng với từng ITEM_TYPE sẽ hiển thị ở từng phần khác nhau trong phiếu lương, cụ thể như sau:
+ITEM_TYPE = 1 sẽ hiển thị ở phần Chấm công chi tiết
+ITEM_TYPE = 2 sẽ hiển thị ở phần Lương chi tiết
+ITEM_TYPE = 3 sẽ hiển thị ở phần Khoản trừ chi tiết
+ITEM_TYPE = 4 sẽ hiển thị ở phần Hạng mục tiêu chuẩn
+phần Hạng mục khác sẽ hiển thị dữ liệu từ câu lệnh SQL: SELECT TO_NUMBER(NVL(C.RETURN_VALUE, 0)) RETURN_VALUE, C.REMARK
+  FROM PA_PARAM_ITEM_PARAM B, PA_PARAM_DATA C, PA_SUMMARY_HTSV PA
+ WHERE B.PARAM_NO = C.PARAM_NO
+   AND C.PERSON_ID = PA.PERSON_ID
+   AND B.PARAM_ITEM_NO IN
+       ('540099', '90000496', '90000495', '90000494', '90000493')
+   AND C.ACTIVITY = '1'
+   AND B.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+   AND PA.PAY_SCHEDULE_NO = #{payScheduleNo, jdbcType=VARCHAR}
+   AND PA.PERSON_ID = #{personId, jdbcType=VARCHAR}
+   AND TO_DATE(TO_CHAR(TO_DATE(PA.PAY_DATE, 'YYYY-MM-DD'), 'MMYYYY'),
+               'MMYYYY') BETWEEN TO_DATE(C.START_MONTH, 'MMYYYY') AND
+       NVL(TO_DATE(C.END_MONTH, 'MMYYYY'), TO_DATE('129999', 'MMYYYY'))
+ ORDER BY C.CREATE_DATE.
+
+Căn cứ vào payStub.html hãy Tạo cho tôi một file viewPaMonthPersonInfoEssList.html - Phiếu lương cá nhân nằm trong module /pa/salary. viewPaMonthPersonInfoEssList sẽ giống hệt như payStub.html về mặt giao diện và cách lấy dữ liệu, chỉ khác ở chỗ viewPaMonthPersonInfoEssList chỉ có điều kiện tìm kiếm là Kế hoạch trả lương. Mục đích của viewPaMonthPersonInfoEssList là để hiển thị phiếu lương của cá nhân đó khi họ đăng nhập vào hệ thống để xem phiếu lương của mình. Khi lấy ra Kế hoạc trả lương cần lưu ý trường PA_OPEN_FLAG của bảng PA_WORK_FLOW, chỉ lấy ra những kế hoạch trả lương có PA_OPEN_FLAG = 1 để hiển thị trong điều kiện tìm kiếm, vì chỉ những kế hoạch trả lương có PA_OPEN_FLAG = 1 thì nhân viên mới được xem phiếu lương của mình.
+
+Căn cứ vào viewPaMonthPersonInfoEssList.html hãy Tạo cho tôi một file changeUser.html - Thay đổi người dùng nằm trong module /ess/change. Giao diện tham khảo hình ảnh. sử dụng vppoOpenEmpSearch như của viewPaPayObj.html để tìm 1 nhân viên. sau khi tìm được, bấm vào Thay đổi người dùng thì sẽ thay người đăng nhập hệ thống bằng PERSON_ID của nhân viên vừa tìm được, sau khi thay đổi người dùng thành công thì sẽ tự động load lại hệ thống. và bay giờ người đăng nhập hệ thống chính là người vừa được thay đổi. Mục đích của chức năng này là để người phụ trách lương có thể thay đổi người dùng sang một nhân viên khác để xem phiếu lương của nhân viên đó mà không cần phải đăng nhập lại bằng tài khoản của nhân viên đó.
+
+căn cứ vào viewEvsSchedulePanel.html hãy Tạo cho tôi một file viewRegPersonalTarget.html - Đăng ký mục tiêu cá nhân nằm trong module /evs/manage. Giao diện tham khảo hình ảnh. Danh sách Tên đánh giá được lấy từ /api/resume/evsResumeList. Dữ liệu THông tin cá nhân lấy từ câu lệnh SQL: SELECT OBJECT.SEQ,
+       RESUME.EVS_YEAR,
+       OBJECT.RESUME_SEQ,
+       OBJECT.LOCAL_NAME,
+       OBJECT.POST_GRADE_NAME,
+       OBJECT.MAIN_BUSINESS,
+       GET_GLOBAL_NAME(OBJECT.MAIN_BUSINESS, #{lang, jdbcType=VARCHAR}) MAIN_BUSINESS_NAME,
+       OBJECT.OBJECT_TYPE,
+       OBJECT.OBJECT_TYPE_NAME,
+       GET_DEPT_NAME(OBJECT.DEPTNO, #{lang, jdbcType=VARCHAR}) DEPTNAME,
+       TO_CHAR(OBJECT.DATE_STARTED, 'DD/MM/YYYY') DATE_STARTED,
+       OBJECT.ACTIVITY,
+       TO_CHAR(TO_DATE(RESUME.EVS_START_DATE, 'DD/MM/YYYY'), 'DD/MM/YYYY') EVS_START_DATE,
+       TO_CHAR(TO_DATE(RESUME.EVS_END_DATE, 'DD/MM/YYYY'), 'DD/MM/YYYY') EVS_END_DATE,
+       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ, 0, 'LOCAL_NAME') LOCAL_NAME0,
+       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ, 1, 'LOCAL_NAME') LOCAL_NAME1,
+       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ, 2, 'LOCAL_NAME') LOCAL_NAME2,
+
+       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ, 0, 'SEQ') SEQ0,
+       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ, 1, 'SEQ') SEQ1,
+       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ, 2, 'SEQ') SEQ2,
+
+       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ, 0, 'EVS_POINT') EVS_POINT0,
+       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ, 1, 'EVS_POINT') EVS_POINT1,
+       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ, 2, 'EVS_POINT') EVS_POINT2,
+
+       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ, 0, 'EVS_GRADE') EVS_GRADE0,
+       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ, 1, 'EVS_GRADE') EVS_GRADE1,
+       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ, 2, 'EVS_GRADE') EVS_GRADE2,
+
+       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ, 0, 'AFFIRM_CONTENT') ||
+       '<br>' ||
+       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ, 0, 'AFFIRM_CONTENT2') AFFIRM_CONTENT0,
+       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ, 1, 'AFFIRM_CONTENT') AFFIRM_CONTENT1,
+       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ, 2, 'AFFIRM_CONTENT') AFFIRM_CONTENT2,
+
+       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ, 1, 'AFFIRM_COMMENT') AFFIRM_COMMENT1,
+       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ, 2, 'AFFIRM_COMMENT') AFFIRM_COMMENT2
+  FROM EVS_RESUME_INFO RESUME, EVS_OBJECT OBJECT
+ WHERE RESUME.SEQ = OBJECT.RESUME_SEQ
+   AND RESUME.SEQ = #{resumeSeq, jdbcType=VARCHAR}
+   AND OBJECT.PERSON_ID = #{adminID, jdbcType=VARCHAR}
+ ORDER BY OBJECT.PERSON_ID ASC.
+Dữ liệu Objective Confirm láy ra từ câu lệnh SQL: SELECT SEQ,
+       RESUME_SEQ,
+       EVS_OBJECT_SEQ,
+       ITEM_NAME,
+       ITEM_CONTENT,
+       ITEM_CONTENT ITEM_CONTENT_TEXT,
+       NVL(ITEM_SCORE, 0) ITEM_SCORE,
+       NVL(EVS_SCORE, 0) EVS_SCORE,
+       NVL(EVS_SCORE1, 0) EVS_SCORE1,
+       NVL(EVS_SCORE2, 0) EVS_SCORE2,
+       NVL(AFFIRM_SCORE, 0) AFFIRM_SCORE,
+       TO_CHAR(START_DATE, 'DD/MM/YYYY') START_DATE,
+       TO_CHAR(END_DATE, 'DD/MM/YYYY') END_DATE,
+       CREATE_DATE,
+       CREATED_BY,
+       CREATED_IP,
+       UPDATE_DATE,
+       UPDATED_BY,
+       UPDATED_IP,
+       ACTIVITY
+  FROM EVS_ITEM_SST
+ WHERE EVS_OBJECT_SEQ = #{evsObjectSeq, jdbcType=VARCHAR}
+ ORDER BY TO_NUMBER(SEQ).
+ Ở Phần 2 ý kiến của người đánh giá cấp 1 và cấp 2 lấy đx liệu từ PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ, 1, 'AFFIRM_COMMENT') AFFIRM_COMMENT1,
+       PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ, 2, 'AFFIRM_COMMENT') AFFIRM_COMMENT2 ở trên.
+Ở phần Objective Confirm có nút (+) để thêm mới mục tiêu, khi bấm vào sẽ hiện ra form để nhập thông tin mục tiêu, khi bấm và Lưu tạm thời (FLAG = 0) sẽ thêm dữ liệu vào bảng EVS_ITEM_SST (có các trường tham khảo hình ảnh) với trường EVS_OBJECT_SEQ lấy giá trị từ OBJECT.SEQ của câu lệnh SQL trên. trường SEQ của bảng EVS_ITEM_SST khi thêm mới sẽ được sinh ra tự động theo EVS_PARAM_SEQ.NEXTVAL. Hạng mục đánh giá lưu vào trường ITEM_NAME, nội dung mục tiêu lưu vào trường ITEM_CONTENT, điểm mục tiêu lưu vào trường ITEM_SCORE. Khi bấm vào Thục hiện (FLAG = 1) thì ngoài việc lưu lại giống chức năng của Lưu tạm thời thì sẽ gọi thêm pakage PKG_EVS_PROCESS.PR_MODIFY_OBJECT_ACTIVITY(
+						#EVS_OBJECT_SEQ:VARCHAR#,
+						#adminID:VARCHAR#,
+						#adminIP:VARCHAR#,
+						#FLAG:VARCHAR#,
+						#message,jdbcType=VARCHAR,mode=OUT#).
+
+Trường ACTIVITY của bảng EVS_OBJECT sẽ có giá trị tương ứng với các giai đoạn của quá trình đánh giá: 14015361 - Kết thúc
+14015362 - Từ chối
+14015365 - Xác nhận mục tiêu (lần 2)
+14015364 - Xác nhận mục tiêu (lần 1)
+14015354 - Đăng ký đánh giá
+14015356 - Đánh giá bản thân
+14015352 - Not started
+14015357 - Đánh giá lần 1
+14015358 - Đánh giá lần 2
+14015363 - Hoàn thành
+.

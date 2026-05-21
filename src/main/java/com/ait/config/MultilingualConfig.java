@@ -1,13 +1,17 @@
 package com.ait.config;
 
+import com.ait.util.I18nUtil;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.ResourceBundleMessageSource;
+import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 import org.springframework.web.servlet.i18n.SessionLocaleResolver;
+import org.springframework.web.servlet.support.RequestContextUtils;
 
 import java.util.Locale;
 
@@ -42,14 +46,33 @@ public class MultilingualConfig implements WebMvcConfigurer {
     }
 
     /**
-     * Cấu hình interceptor để thay đổi ngôn ngữ
+     * Custom interceptor thay thế LocaleChangeInterceptor mặc định.
+     * LocaleChangeInterceptor gốc dùng StringUtils.parseLocaleString("vi") → Locale("vi")
+     * (không có country code), dẫn đến Spring không tìm được messages_vi_VN.properties
+     * mà fallback về messages.properties (tiếng Anh).
+     * Interceptor này dùng I18nUtil.createLocale() để tạo đúng Locale("vi","VN").
      */
     @Bean
-    public LocaleChangeInterceptor localeChangeInterceptor() {
-        LocaleChangeInterceptor localeChangeInterceptor = new LocaleChangeInterceptor();
-        // Tham số để thay đổi ngôn ngữ (mặc định là 'lang')
-        localeChangeInterceptor.setParamName("lang");
-        return localeChangeInterceptor;
+    @org.springframework.lang.NonNull
+    public HandlerInterceptor localeChangeInterceptor() {
+        return new HandlerInterceptor() {
+            @Override
+            public boolean preHandle(@org.springframework.lang.NonNull HttpServletRequest request,
+                                     @org.springframework.lang.NonNull HttpServletResponse response,
+                                     @org.springframework.lang.NonNull Object handler) throws Exception {
+                String lang = request.getParameter("lang");
+                if (lang != null && !lang.trim().isEmpty() && I18nUtil.isLanguageSupported(lang.trim())) {
+                    Locale locale = I18nUtil.createLocale(lang.trim());
+                    LocaleResolver localeResolver = RequestContextUtils.getLocaleResolver(request);
+                    if (localeResolver != null) {
+                        localeResolver.setLocale(request, response, locale);
+                    }
+                    // Đồng bộ session attribute cho LanguageParameterInterceptor
+                    request.getSession(true).setAttribute("language", lang.trim());
+                }
+                return true;
+            }
+        };
     }
 
     /**

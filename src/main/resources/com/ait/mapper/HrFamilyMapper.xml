@@ -70,7 +70,7 @@
             AND t1.PERSON_ID = #{personId}
         </if>
         <if test="localName != null and localName != ''">
-            AND t2.LOCAL_NAME LIKE '%' || #{localName} || '%'
+            AND CONVERTTOUNSIGN(UPPER(t2.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{localName})) || '%'
         </if>
         <if test="famName != null and famName != ''">
             AND t1.FAM_NAME LIKE '%' || #{famName} || '%'

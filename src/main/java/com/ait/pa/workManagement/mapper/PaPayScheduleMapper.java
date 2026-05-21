@@ -11,6 +11,8 @@ public interface PaPayScheduleMapper {
 
     List<PaPayScheduleDto> selectList(PaPayScheduleDto params);
 
+    List<PaPayScheduleDto> selectOpenList();
+
     PaPayScheduleDto selectOne(@Param("payScheduleNo") String payScheduleNo);
 
     String getNextSeq();

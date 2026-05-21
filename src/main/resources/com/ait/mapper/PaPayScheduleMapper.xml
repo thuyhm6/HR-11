@@ -55,6 +55,32 @@
         ORDER BY S.PAY_DATE DESC
     </select>
 
+    <!-- Danh sách kế hoạch trả lương đã mở cho nhân viên xem (PA_OPEN_FLAG = 1) -->
+    <select id="selectOpenList" resultMap="PaPayScheduleResultMap">
+        SELECT TO_CHAR(S.PAY_SCHEDULE_NO)                           AS PAY_SCHEDULE_NO,
+               TO_CHAR(S.PAY_DATE, 'DD-MM-YYYY')                    AS PAY_DATE,
+               TO_CHAR(S.SALARY_DISTIN_NO)                          AS SALARY_DISTIN_NO,
+               GET_GLOBAL_NAME(TO_CHAR(S.SALARY_DISTIN_NO), #{lang, jdbcType=VARCHAR}) AS SALARY_DISTIN_NAME,
+               TO_CHAR(S.HR_START_DATE, 'DD-MM-YYYY')               AS HR_START_DATE,
+               TO_CHAR(S.HR_END_DATE,   'DD-MM-YYYY')               AS HR_END_DATE,
+               TO_CHAR(S.AR_START_DATE, 'DD-MM-YYYY')               AS AR_START_DATE,
+               TO_CHAR(S.AR_END_DATE,   'DD-MM-YYYY')               AS AR_END_DATE,
+               TO_CHAR(S.PA_OPEN_DATE,  'DD-MM-YYYY')               AS PA_OPEN_DATE,
+               TO_CHAR(S.PA_TRANS_DATE, 'DD-MM-YYYY')               AS PA_TRANS_DATE,
+               S.EMP_OPINION,
+               TO_CHAR(S.ACTIVITY)                                   AS ACTIVITY,
+               TO_CHAR(S.CREATE_DATE, 'DD-MM-YYYY HH24:MI')         AS CREATE_DATE,
+               S.CREATED_BY,
+               TO_CHAR(S.UPDATE_DATE, 'DD-MM-YYYY HH24:MI')         AS UPDATE_DATE,
+               S.UPDATED_BY
+          FROM PA_PAY_SCHEDULE S
+          JOIN PA_WORK_FLOW    W ON W.PAY_SCHEDULE_NO = S.PAY_SCHEDULE_NO
+         WHERE S.CPNY_ID  = #{cpnyId, jdbcType=VARCHAR}
+           AND S.ACTIVITY != 0
+           AND W.PA_OPEN_FLAG = 1
+         ORDER BY S.PAY_DATE DESC
+    </select>
+
     <!-- Chi tiết 1 bản ghi -->
     <select id="selectOne" resultMap="PaPayScheduleResultMap">
         SELECT TO_CHAR(S.PAY_SCHEDULE_NO)                           AS PAY_SCHEDULE_NO,

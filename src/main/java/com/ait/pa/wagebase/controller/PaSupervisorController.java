@@ -27,6 +27,7 @@ public class PaSupervisorController {
         return "pa/wagebase/viewPaSupervisor";
     }
 
+    // ── Danh sách phân trang (DataTables) ─────────────────────────────────
     @GetMapping("/api/supervisor/list")
     @ResponseBody
     public ResponseEntity<?> getList(
@@ -53,6 +54,70 @@ public class PaSupervisorController {
         }
     }
 
+    // ── Danh sách tất cả supervisor đang hoạt động (left pane) ────────────
+    @GetMapping("/api/supervisor/all")
+    @ResponseBody
+    public ResponseEntity<?> getAllSupervisorList() {
+        try {
+            return ResponseEntity.ok(paSupervisorService.getAllSupervisorList());
+        } catch (Exception e) {
+            log.error("Lỗi khi lấy danh sách người phụ trách lương (all): {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    // ── Phòng ban được phân quyền PA (dùng cho DeptTree component) ──────────
+    @GetMapping("/api/supervisor/authorized-departments")
+    @ResponseBody
+    public ResponseEntity<?> getAuthorizedDepartments() {
+        try {
+            return ResponseEntity.ok(paSupervisorService.getAuthorizedDepartments());
+        } catch (Exception e) {
+            log.error("Lỗi khi lấy phòng ban được phân quyền PA: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    // ── Cây phòng ban từ HR_DEPARTMENT ────────────────────────────────────
+    @GetMapping("/api/supervisor/departments")
+    @ResponseBody
+    public ResponseEntity<?> getDepartmentTree() {
+        try {
+            return ResponseEntity.ok(paSupervisorService.getDepartmentTree());
+        } catch (Exception e) {
+            log.error("Lỗi khi lấy cây phòng ban: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    // ── Danh sách DEPTNO đã phân quyền cho PERSON_ID ──────────────────────
+    @GetMapping("/api/supervisor/{personId}/departments")
+    @ResponseBody
+    public ResponseEntity<?> getDeptList(@PathVariable String personId) {
+        try {
+            return ResponseEntity.ok(paSupervisorService.getDeptNoListByPersonId(personId));
+        } catch (Exception e) {
+            log.error("Lỗi khi lấy danh sách phòng ban personId={}: {}", personId, e.getMessage(), e);
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    // ── Lưu phân quyền phòng ban ───────────────────────────────────────────
+    @PostMapping("/api/supervisor/{personId}/saveDepartments")
+    @ResponseBody
+    public ResponseEntity<?> saveDepartments(
+            @PathVariable String personId,
+            @RequestBody List<String> deptNoList) {
+        try {
+            paSupervisorService.saveSupervisorDepts(personId, deptNoList);
+            return ResponseEntity.ok(Map.of("success", true, "message", "Cập nhật phân quyền phòng ban thành công!"));
+        } catch (Exception e) {
+            log.error("Lỗi khi lưu phân quyền phòng ban personId={}: {}", personId, e.getMessage(), e);
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    // ── Chi tiết một bản ghi ───────────────────────────────────────────────
     @GetMapping("/api/supervisor/{personId}")
     @ResponseBody
     public ResponseEntity<?> getOne(@PathVariable String personId) {
@@ -61,11 +126,12 @@ public class PaSupervisorController {
             if (dto == null) return ResponseEntity.notFound().build();
             return ResponseEntity.ok(dto);
         } catch (Exception e) {
-            log.error("Lỗi khi lấy chi tiết người phụ trách lương personId={}: {}", personId, e.getMessage(), e);
+            log.error("Lỗi khi lấy chi tiết personId={}: {}", personId, e.getMessage(), e);
             return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
         }
     }
 
+    // ── Lưu (thêm mới / cập nhật) ─────────────────────────────────────────
     @PostMapping("/api/supervisor/save")
     @ResponseBody
     public ResponseEntity<?> save(@RequestBody PaSupervisorDto dto) {
@@ -81,6 +147,20 @@ public class PaSupervisorController {
         }
     }
 
+    // ── Xóa một supervisor kèm toàn bộ PA_SUPERVISOR_INFO ─────────────────
+    @DeleteMapping("/api/supervisor/delete/{personId}")
+    @ResponseBody
+    public ResponseEntity<?> deleteSupervisor(@PathVariable String personId) {
+        try {
+            paSupervisorService.deleteSupervisorWithInfo(personId);
+            return ResponseEntity.ok(Map.of("success", true, "message", "Xóa người phụ trách thành công!"));
+        } catch (Exception e) {
+            log.error("Lỗi khi xóa người phụ trách lương personId={}: {}", personId, e.getMessage(), e);
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    // ── Xóa nhiều bản ghi ─────────────────────────────────────────────────
     @DeleteMapping("/api/supervisor/deleteList")
     @ResponseBody
     public ResponseEntity<?> deleteList(@RequestBody List<String> personIds) {

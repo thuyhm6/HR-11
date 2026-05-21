@@ -236,7 +236,7 @@
 
             function vrlLoadCopyOptions() {
                 $.ajax({
-                    url: '/evs/manage/api/resume/copyOptions',
+                    url: '/evs/manage/api/resume/evsResumeList',
                     type: 'GET',
                     data: { evsType: inst.evsType },
                     success: function (rows) {

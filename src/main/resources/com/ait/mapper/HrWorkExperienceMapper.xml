@@ -67,7 +67,7 @@
             AND e.EMPID LIKE '%' || #{empId} || '%'
         </if>
         <if test="localName != null and localName != ''">
-            AND e.LOCAL_NAME LIKE '%' || #{localName} || '%'
+            AND CONVERTTOUNSIGN(UPPER(e.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{localName})) || '%'
         </if>
         <if test="companyName != null and companyName != ''">
             AND wx.CPNY_NAME LIKE '%' || #{companyName} || '%'

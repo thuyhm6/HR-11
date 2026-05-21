@@ -8,6 +8,8 @@ public interface PaPayScheduleService {
 
     List<PaPayScheduleDto> getList(PaPayScheduleDto params);
 
+    List<PaPayScheduleDto> getOpenList();
+
     PaPayScheduleDto getOne(String payScheduleNo);
 
     void save(PaPayScheduleDto dto);

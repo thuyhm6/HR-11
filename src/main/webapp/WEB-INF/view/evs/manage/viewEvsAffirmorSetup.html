@@ -7,38 +7,38 @@
                 <div class="card-body">
                     <form id="veas_searchForm" class="row gy-2 align-items-end">
                         <div class="col-md-3 d-flex align-items-center gap-2">
-                            <label class="form-label small text-muted mb-0 text-nowrap">Tên đánh giá</label>
+                            <label class="form-label small text-muted mb-0 text-nowrap" th:text="#{evs.viewEvsAffirmorSetup.evalName}">Tên đánh giá</label>
                             <select class="form-select form-select-sm" id="veas_resumeSeq"
                                 style="max-width:260px;"></select>
                         </div>
                         <div class="col-md-2 d-flex align-items-center gap-2">
-                            <label class="form-label small text-muted mb-0 text-nowrap">Phòng ban</label>
+                            <label class="form-label small text-muted mb-0 text-nowrap" th:text="#{evs.viewEvsAffirmorSetup.department}">Phòng ban</label>
                             <input type="text" class="form-control form-control-sm" id="veas_deptSearch"
-                                style="max-width:200px;" placeholder="Chọn phòng ban" readonly>
+                                style="max-width:200px;" th:placeholder="#{evs.viewEvsAffirmorSetup.placeholder.selectDept}" readonly>
                         </div>
                         <div class="col-md-2 d-flex align-items-center gap-2">
-                            <label class="form-label small text-muted mb-0 text-nowrap">Người đánh giá</label>
+                            <label class="form-label small text-muted mb-0 text-nowrap" th:text="#{evs.viewEvsAffirmorSetup.PINGJIAREN.a}">Người đánh giá</label>
                             <input type="text" class="form-control form-control-sm" id="veas_affirmorSearch"
-                                style="max-width:200px;" placeholder="Chọn từ khóa sau đó Enter">
+                                style="max-width:200px;" th:placeholder="#{evs.viewEvsAffirmorSetup.placeholder.selectKeyword}">
                         </div>
                         <div class="col-md-5 d-flex gap-2">
                             <button type="button" class="btn btn-primary" onclick="veasSearch()">
-                                <i class="bi bi-search"></i> Tra cứu
+                                <i class="bi bi-search"></i> <span th:text="#{evs.viewEvsAffirmorSetup.btnSearch}">Tra cứu</span>
                             </button>
                             <button type="button" class="btn btn-secondary" onclick="veasClearSearch()">
-                                <i class="bi bi-x-circle"></i> Xóa lọc
+                                <i class="bi bi-x-circle"></i> <span th:text="#{evs.viewEvsAffirmorSetup.btnClearFilter}">Xóa lọc</span>
                             </button>
                             <button type="button" class="btn btn-primary" onclick="veasOpenAddModal()">
-                                <i class="bi bi-plus-circle"></i> Thêm mới
+                                <i class="bi bi-plus-circle"></i> <span th:text="#{evs.viewEvsAffirmorSetup.btnAddNew}">Thêm mới</span>
                             </button>
                             <button type="button" class="btn btn-success" onclick="veasSaveAll()">
-                                <i class="bi bi-save"></i> Lưu tất cả
+                                <i class="bi bi-save"></i> <span th:text="#{evs.viewEvsAffirmorSetup.btnSaveAll}">Lưu tất cả</span>
                             </button>
                             <button type="button" class="btn btn-warning" onclick="veasCreateTarget()">
-                                <i class="bi bi-bullseye"></i> Tạo mục tiêu
+                                <i class="bi bi-bullseye"></i> <span th:text="#{evs.viewEvsAffirmorSetup.CreateTarget.a}">Tạo mục tiêu</span>
                             </button>
                             <button type="button" class="btn btn-danger" onclick="veasEvsStart()">
-                                <i class="bi bi-play-circle"></i> Bắt đầu đánh giá
+                                <i class="bi bi-play-circle"></i> <span th:text="#{evs.viewEvsAffirmorSetup.StartEvaluation.a}">Bắt đầu đánh giá</span>
                             </button>
                         </div>
                     </form>
@@ -50,16 +50,16 @@
                 <div class="card-body py-2 px-3">
                     <div class="d-flex align-items-end gap-2 flex-wrap">
                         <div class="col-md-6 d-flex align-items-center gap-2">
-                            <label class="form-label small text-muted mb-0 text-nowrap">Giai đoạn</label>
+                            <label class="form-label small text-muted mb-0 text-nowrap" th:text="#{evs.viewEvsAffirmorSetup.PINGJIAJIEDUAN.a}">Giai đoạn</label>
                             <select class="form-select form-select-sm" id="veas_bulkStage">
-                                <option value="">Lựa chọn</option>
-                                <option value="1">Người đánh giá 1</option>
-                                <option value="2">Người đánh giá 2</option>
+                                <option value="" th:text="#{evs.viewEvsAffirmorSetup.selectOption}">Lựa chọn</option>
+                                <option value="1" th:text="#{evs.viewEvsAffirmorSetup.evalStage1}">Người đánh giá 1</option>
+                                <option value="2" th:text="#{evs.viewEvsAffirmorSetup.evalStage2}">Người đánh giá 2</option>
                             </select>
-                            <label class="form-label small text-muted mb-0 text-nowrap">Người đánh giá</label>
+                            <label class="form-label small text-muted mb-0 text-nowrap" th:text="#{evs.viewEvsAffirmorSetup.PINGJIAREN.a}">Người đánh giá</label>
                             <div class="input-group input-group-sm">
                                 <input type="text" class="form-control" id="veas_bulkDisplay"
-                                    placeholder="Chọn từ khóa sau đó Enter" readonly>
+                                    th:placeholder="#{evs.viewEvsAffirmorSetup.placeholder.selectKeyword}" readonly>
                                 <input type="hidden" id="veas_bulkPersonId">
                                 <input type="hidden" id="veas_bulkLocalName">
                                 <input type="hidden" id="veas_bulkPosition">
@@ -71,10 +71,10 @@
 
                         <div class="col-md-4 d-flex align-items-center gap-2">
                             <button type="button" class="btn btn-secondary btn-sm" onclick="veasBulkClear()">
-                                Xóa
+                                <span th:text="#{evs.viewEvsAffirmorSetup.btnClear}">Xóa</span>
                             </button>
                             <button type="button" class="btn btn-primary btn-sm" onclick="veasBulkApply()">
-                                Thực hiện tất cả
+                                <span th:text="#{evs.viewEvsAffirmorSetup.btnDoAll}">Thực hiện tất cả</span>
                             </button>
                         </div>
                     </div>
@@ -90,21 +90,21 @@
                             <thead class="table-light">
                                 <tr>
                                     <th class="text-center no-sort">
-                                        <input type="checkbox" id="veas_checkAll" title="Chọn tất cả">
+                                        <input type="checkbox" id="veas_checkAll" th:title="#{evs.viewEvsAffirmorSetup.selectAll}">
                                     </th>
                                     <th class="text-center no-sort">No.</th>
-                                    <th>Họ tên</th>
-                                    <th class="text-center">Mã NV</th>
-                                    <th>Phòng ban</th>
-                                    <th class="text-center">Chức vụ</th>
-                                    <th class="text-center">Ngày vào làm</th>
-                                    <th class="no-sort">Bảng đánh giá</th>
-                                    <th class="text-center">Nhóm ĐG</th>
-                                    <th class="no-sort">ĐG1 - Họ tên</th>
-                                    <th class="text-center no-sort">ĐG1 - Chức vụ</th>
-                                    <th class="no-sort">ĐG2 - Họ tên</th>
-                                    <th class="text-center no-sort">ĐG2 - Chức vụ</th>
-                                    <th class="no-sort">Người thay đổi</th>
+                                    <th th:text="#{common.empName}">Họ tên</th>
+                                    <th class="text-center" th:text="#{evs.viewEvsAffirmorSetup.empCode}">Mã NV</th>
+                                    <th th:text="#{evs.viewEvsAffirmorSetup.department}">Phòng ban</th>
+                                    <th class="text-center" th:text="#{common.position}">Chức vụ</th>
+                                    <th class="text-center" th:text="#{common.joinDate}">Ngày vào làm</th>
+                                    <th class="no-sort" th:text="#{evs.viewEvsAffirmorSetup.evalSheet}">Bảng đánh giá</th>
+                                    <th class="text-center" th:text="#{evs.viewEvsAffirmorSetup.PINGJIAQUN.a}">Nhóm ĐG</th>
+                                    <th class="no-sort" th:text="#{evs.viewEvsAffirmorSetup.dg1Name}">ĐG1 - Họ tên</th>
+                                    <th class="text-center no-sort" th:text="#{evs.viewEvsAffirmorSetup.dg1Position}">ĐG1 - Chức vụ</th>
+                                    <th class="no-sort" th:text="#{evs.viewEvsAffirmorSetup.dg2Name}">ĐG2 - Họ tên</th>
+                                    <th class="text-center no-sort" th:text="#{evs.viewEvsAffirmorSetup.dg2Position}">ĐG2 - Chức vụ</th>
+                                    <th class="no-sort" th:text="#{evs.viewEvsAffirmorSetup.changeBy}">Người thay đổi</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
@@ -116,21 +116,36 @@
         </div><!-- /#veas_pageWrapper -->
     </div><!-- /.row -->
 
+    <!-- Modal loading tạo mục tiêu -->
+    <div class="modal fade" id="veas_loadingModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content">
+                <div class="modal-body text-center py-4">
+                    <div class="spinner-border text-warning mb-3" role="status" style="width:3rem;height:3rem;">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <div class="fw-semibold" th:text="#{evs.viewEvsAffirmorSetup.loadingTitle}">Đang tạo mục tiêu...</div>
+                    <div class="text-muted small mt-1" th:text="#{evs.viewEvsAffirmorSetup.loadingMessage}">Vui lòng chờ, quá trình này có thể mất vài phút.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal thêm mới đối tượng đánh giá -->
     <div class="modal fade" id="veas_addModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Thêm mới đối tượng đánh giá</h5>
+                    <h5 class="modal-title" th:text="#{evs.viewEvsAffirmorSetup.addModalTitle}">Thêm mới đối tượng đánh giá</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label fw-semibold">Đối tượng đánh giá <span
+                        <label class="form-label fw-semibold"><span th:text="#{evs.viewEvsAffirmorSetup.evalObject}">Đối tượng đánh giá</span> <span
                                 class="text-danger">*</span></label>
                         <div class="input-group input-group-sm">
                             <input type="text" class="form-control" id="veas_add_objectDisplay"
-                                placeholder="Chọn nhân viên..." readonly>
+                                th:placeholder="#{evs.viewEvsAffirmorSetup.placeholder.selectEmployee}" readonly>
                             <input type="hidden" id="veas_add_objectPersonId">
                             <button class="btn btn-outline-primary" type="button" onclick="veasOpenEmpSearch('object')">
                                 <i class="bi bi-search"></i>
@@ -142,10 +157,10 @@
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Người đánh giá lần 1</label>
+                        <label class="form-label" th:text="#{evs.viewEvsAffirmorSetup.YICIPINGJIAREN.a}">Người đánh giá lần 1</label>
                         <div class="input-group input-group-sm">
                             <input type="text" class="form-control" id="veas_add_affirm1Display"
-                                placeholder="Chọn nhân viên..." readonly>
+                                th:placeholder="#{evs.viewEvsAffirmorSetup.placeholder.selectEmployee}" readonly>
                             <input type="hidden" id="veas_add_affirm1PersonId">
                             <button class="btn btn-outline-primary" type="button"
                                 onclick="veasOpenEmpSearch('affirm1')">
@@ -158,10 +173,10 @@
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Người đánh giá lần 2</label>
+                        <label class="form-label" th:text="#{evs.viewEvsAffirmorSetup.LAINGCIPINGJIAREN.a}">Người đánh giá lần 2</label>
                         <div class="input-group input-group-sm">
                             <input type="text" class="form-control" id="veas_add_affirm2Display"
-                                placeholder="Chọn nhân viên..." readonly>
+                                th:placeholder="#{evs.viewEvsAffirmorSetup.placeholder.selectEmployee}" readonly>
                             <input type="hidden" id="veas_add_affirm2PersonId">
                             <button class="btn btn-outline-primary" type="button"
                                 onclick="veasOpenEmpSearch('affirm2')">
@@ -175,9 +190,9 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal" th:text="#{common.close}">Đóng</button>
                     <button type="button" class="btn btn-primary btn-sm" onclick="veasSaveNewObject()">
-                        <i class="bi bi-save"></i> Lưu
+                        <i class="bi bi-save"></i> <span th:text="#{common.save}">Lưu</span>
                     </button>
                 </div>
             </div>
@@ -243,6 +258,32 @@
         (function () {
             var _veas_tabId = window._currentTabId || 'default-content';
 
+            var _veas_i18n = {
+                selectEvalFirst: /*[[#{evs.viewEvsAffirmorSetup.msg.selectEvalFirst}]]*/ 'Vui lòng chọn tên đánh giá trước.',
+                componentNotLoaded: /*[[#{evs.viewEvsAffirmorSetup.msg.componentNotLoaded}]]*/ 'Component tìm kiếm nhân viên chưa được tải!',
+                selectStage: /*[[#{evs.viewEvsAffirmorSetup.msg.selectStage}]]*/ 'Vui lòng chọn Giai đoạn (1 hoặc 2).',
+                selectAffirmor: /*[[#{evs.viewEvsAffirmorSetup.msg.selectAffirmor}]]*/ 'Vui lòng chọn Người đánh giá.',
+                noTickedRows: /*[[#{evs.viewEvsAffirmorSetup.msg.noTickedRows}]]*/ 'Chưa có dòng nào được tick. Vui lòng tick các dòng cần áp dụng.',
+                confirmCreateTarget: /*[[#{evs.viewEvsAffirmorSetup.msg.confirmCreateTarget}]]*/ 'Bạn có chắc muốn tạo mục tiêu cho đợt đánh giá này không?',
+                createTargetSuccess: /*[[#{evs.viewEvsAffirmorSetup.msg.createTargetSuccess}]]*/ 'Tạo mục tiêu thành công!',
+                createTargetError: /*[[#{evs.viewEvsAffirmorSetup.msg.createTargetError}]]*/ 'Không thể tạo mục tiêu.',
+                createTargetTimeout: /*[[#{evs.viewEvsAffirmorSetup.msg.createTargetTimeout}]]*/ 'Quá thời gian chờ. Stored procedure đang chạy lâu, vui lòng kiểm tra lại sau.',
+                createTargetFail: /*[[#{evs.viewEvsAffirmorSetup.msg.createTargetFail}]]*/ 'Lỗi khi gọi tạo mục tiêu. Vui lòng thử lại.',
+                confirmEvsStart: /*[[#{evs.viewEvsAffirmorSetup.msg.confirmEvsStart}]]*/ 'Bạn có chắc muốn bắt đầu đánh giá cho đợt này không?',
+                evsStartSuccess: /*[[#{evs.viewEvsAffirmorSetup.msg.evsStartSuccess}]]*/ 'Bắt đầu đánh giá thành công!',
+                evsStartError: /*[[#{evs.viewEvsAffirmorSetup.msg.evsStartError}]]*/ 'Không thể bắt đầu đánh giá.',
+                evsStartFail: /*[[#{evs.viewEvsAffirmorSetup.msg.evsStartFail}]]*/ 'Lỗi khi gọi bắt đầu đánh giá. Vui lòng thử lại.',
+                noTickedSave: /*[[#{evs.viewEvsAffirmorSetup.msg.noTickedSave}]]*/ 'Chưa có dòng nào được chọn để lưu. Hãy chọn người đánh giá hoặc tick vào dòng cần lưu.',
+                saveSuccess: /*[[#{evs.viewEvsAffirmorSetup.msg.saveSuccess}]]*/ 'Lưu thành công!',
+                saveFail: /*[[#{evs.viewEvsAffirmorSetup.msg.saveFail}]]*/ 'Lỗi khi lưu dữ liệu. Vui lòng thử lại.',
+                addSuccess: /*[[#{evs.viewEvsAffirmorSetup.msg.addSuccess}]]*/ 'Thêm mới thành công!',
+                addError: /*[[#{evs.viewEvsAffirmorSetup.msg.addError}]]*/ 'Không thể thêm mới.',
+                addFail: /*[[#{evs.viewEvsAffirmorSetup.msg.addFail}]]*/ 'Lỗi khi thêm mới. Vui lòng thử lại.',
+                selectEvalObject: /*[[#{evs.viewEvsAffirmorSetup.msg.selectEvalObject}]]*/ 'Vui lòng chọn đối tượng đánh giá.',
+                clickToEdit: /*[[#{evs.viewEvsAffirmorSetup.clickToEdit}]]*/ 'Click để chỉnh sửa',
+                enterNamePlaceholder: /*[[#{evs.viewEvsAffirmorSetup.placeholder.enterName}]]*/ 'Nhập tên, Enter để tìm...'
+            };
+
             window._veas_inst = window._veas_inst || {};
             if (!window._veas_inst[_veas_tabId]) {
                 window._veas_inst[_veas_tabId] = {
@@ -272,7 +313,7 @@
                 return '<div class="input-group input-group-sm">'
                     + '<input type="text" class="form-control veas-affirm-input" style="font-size:0.8rem;"'
                     + ' data-seq="' + veasEsc(seq) + '" data-level="' + level + '" data-pid="' + pid + '"'
-                    + ' value="' + val + '" placeholder="Nhập tên, Enter để tìm...">'
+                    + ' value="' + val + '" placeholder="' + veasEsc(_veas_i18n.enterNamePlaceholder) + '">'
                     + '<button class="btn btn-outline-secondary btn-sm veas-affirm-btn" type="button"'
                     + ' data-seq="' + veasEsc(seq) + '" data-level="' + level + '">'
                     + '<i class="bi bi-search"></i></button>'
@@ -289,13 +330,13 @@
                 return '<span class="veas-affirm-display"'
                     + ' data-seq="' + veasEsc(seq) + '" data-level="' + level + '"'
                     + ' data-name="' + veasEsc(val) + '" data-pid="' + veasEsc(pid) + '"'
-                    + ' title="Click để chỉnh sửa">' + display + '</span>';
+                    + ' title="' + veasEsc(_veas_i18n.clickToEdit) + '">' + display + '</span>';
             }
 
             // Mở EmployeeSearchModal với keyword pre-fill
             function veasOpenAffirmSearch(seq, level, keyword) {
                 if (typeof EmployeeSearchModal === 'undefined') {
-                    alert('Component tìm kiếm nhân viên chưa được tải!');
+                    alert(_veas_i18n.componentNotLoaded);
                     return;
                 }
                 EmployeeSearchModal.currentCallback = function (emp) {
@@ -313,7 +354,6 @@
                         $inp.val(emp.localName).attr('data-pid', emp.personId).focus();
                     } else {
                         // Fallback: cell đã về display mode → cập nhật trực tiếp
-                        var colNameMap = { 1: 9, 2: 11 };
                         veas$('.veas-affirm-display[data-seq="' + seq + '"][data-level="' + level + '"]')
                             .closest('td')
                             .html(veasAffirmDisplay(seq, level, emp.localName, emp.personId));
@@ -349,7 +389,7 @@
             // ── Thực hiện tất cả: mở popup chọn người đánh giá hàng loạt ────
             window.veasBulkSearch = function (keyword) {
                 if (typeof EmployeeSearchModal === 'undefined') {
-                    alert('Component tìm kiếm nhân viên chưa được tải!'); return;
+                    alert(_veas_i18n.componentNotLoaded); return;
                 }
                 EmployeeSearchModal.currentCallback = function (emp) {
                     veas$('#veas_bulkDisplay').val(emp.empId + ' - ' + emp.localName);
@@ -381,10 +421,10 @@
                 var localName = veas$('#veas_bulkLocalName').val();
                 var position = veas$('#veas_bulkPosition').val();
 
-                if (!stage) { alert('Vui lòng chọn Giai đoạn (1 hoặc 2).'); return; }
-                if (!personId) { alert('Vui lòng chọn Người đánh giá.'); return; }
+                if (!stage) { alert(_veas_i18n.selectStage); return; }
+                if (!personId) { alert(_veas_i18n.selectAffirmor); return; }
                 if (inst.ticked.size === 0) {
-                    alert('Chưa có dòng nào được tick. Vui lòng tick các dòng cần áp dụng.'); return;
+                    alert(_veas_i18n.noTickedRows); return;
                 }
 
                 var count = 0;
@@ -399,12 +439,7 @@
                 inst.table.rows().invalidate().draw(false);
                 // Khôi phục highlight cho dòng đã tick sau khi redraw
                 veas$('.veas-row-chk:checked').closest('tr').addClass('veas-ticked');
-
-                // alert('Đã áp dụng Giai đoạn ' + stage + ' cho ' + count + ' dòng.');
             };
-
-            // Cho phép gõ keyword trong ô bulk rồi Enter để mở popup
-            // (bind sau khi DOM ready — xem phần Boot)
 
             // ── Load resume dropdown ──────────────────────────────────────────
             function veasLoadResumeList() {
@@ -440,41 +475,74 @@
             // ── Tạo mục tiêu ─────────────────────────────────────────────────
             window.veasCreateTarget = function () {
                 var resumeSeq = veas$('#veas_resumeSeq').val();
-                if (!resumeSeq) { alert('Vui lòng chọn tên đánh giá trước.'); return; }
-                if (!confirm('Bạn có chắc muốn tạo mục tiêu cho đợt đánh giá này không?')) return;
+                if (!resumeSeq) { alert(_veas_i18n.selectEvalFirst); return; }
+                if (!confirm(_veas_i18n.confirmCreateTarget)) return;
+                var $loadingModal = veas$('#veas_loadingModal');
+                var loadingBs = bootstrap.Modal.getOrCreateInstance($loadingModal[0]);
+                loadingBs.show();
                 $.ajax({
                     url: '/evs/manage/api/affirmorSetup/createTarget',
                     type: 'POST', contentType: 'application/json',
                     data: JSON.stringify({ resumeSeq: resumeSeq }),
+                    timeout: 300000,
                     success: function (res) {
-                        if (res.success) { alert('Tạo mục tiêu thành công!'); if (inst.table) inst.table.ajax.reload(); }
-                        else { alert('Lỗi: ' + (res.message || 'Không thể tạo mục tiêu.')); }
+                        loadingBs.hide();
+                        if (res.success) {
+                            if (inst.table) inst.table.ajax.reload();
+                            $loadingModal.one('hidden.bs.modal', function () {
+                                var $toast = $('<div class="toast align-items-center text-bg-success border-0 position-fixed bottom-0 end-0 m-3" role="alert" style="z-index:9999">'
+                                    + '<div class="d-flex"><div class="toast-body"><i class="bi bi-check-circle-fill me-2"></i>' + veasEsc(_veas_i18n.createTargetSuccess) + '</div>'
+                                    + '<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div></div>');
+                                $('body').append($toast);
+                                new bootstrap.Toast($toast[0], { delay: 4000 }).show();
+                                $toast.on('hidden.bs.toast', function () { $toast.remove(); });
+                            });
+                        } else {
+                            $loadingModal.one('hidden.bs.modal', function () {
+                                alert('Lỗi: ' + (res.message || _veas_i18n.createTargetError));
+                            });
+                        }
                     },
-                    error: function () { alert('Lỗi khi gọi tạo mục tiêu. Vui lòng thử lại.'); }
+                    error: function (xhr, status) {
+                        loadingBs.hide();
+                        $loadingModal.one('hidden.bs.modal', function () {
+                            var msg = status === 'timeout'
+                                ? _veas_i18n.createTargetTimeout
+                                : _veas_i18n.createTargetFail;
+                            alert(msg);
+                        });
+                    }
                 });
             };
 
             // ── Bắt đầu đánh giá ─────────────────────────────────────────────
             window.veasEvsStart = function () {
                 var resumeSeq = veas$('#veas_resumeSeq').val();
-                if (!resumeSeq) { alert('Vui lòng chọn tên đánh giá trước.'); return; }
-                if (!confirm('Bạn có chắc muốn bắt đầu đánh giá cho đợt này không?')) return;
+                if (!resumeSeq) { alert(_veas_i18n.selectEvalFirst); return; }
+                if (!confirm(_veas_i18n.confirmEvsStart)) return;
                 $.ajax({
                     url: '/evs/manage/api/affirmorSetup/evsStart',
                     type: 'POST', contentType: 'application/json',
                     data: JSON.stringify({ resumeSeq: resumeSeq }),
                     success: function (res) {
-                        if (res.success) { alert('Bắt đầu đánh giá thành công!'); if (inst.table) inst.table.ajax.reload(); }
-                        else { alert('Lỗi: ' + (res.message || 'Không thể bắt đầu đánh giá.')); }
+                        if (res.success) {
+                            if (inst.table) inst.table.ajax.reload();
+                            var $toast = $('<div class="toast align-items-center text-bg-success border-0 position-fixed bottom-0 end-0 m-3" role="alert" style="z-index:9999">'
+                                + '<div class="d-flex"><div class="toast-body"><i class="bi bi-check-circle-fill me-2"></i>' + veasEsc(_veas_i18n.evsStartSuccess) + '</div>'
+                                + '<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div></div>');
+                            $('body').append($toast);
+                            new bootstrap.Toast($toast[0], { delay: 4000 }).show();
+                            $toast.on('hidden.bs.toast', function () { $toast.remove(); });
+                        } else { alert('Lỗi: ' + (res.message || _veas_i18n.evsStartError)); }
                     },
-                    error: function () { alert('Lỗi khi gọi bắt đầu đánh giá. Vui lòng thử lại.'); }
+                    error: function () { alert(_veas_i18n.evsStartFail); }
                 });
             };
 
             // ── Lưu tất cả (chỉ lưu dòng được tick) ─────────────────────────
             window.veasSaveAll = function () {
                 if (inst.ticked.size === 0) {
-                    alert('Chưa có dòng nào được chọn để lưu. Hãy chọn người đánh giá hoặc tick vào dòng cần lưu.');
+                    alert(_veas_i18n.noTickedSave);
                     return;
                 }
                 var payload = [];
@@ -496,10 +564,10 @@
                     success: function () {
                         inst.changes = {};
                         inst.ticked = new Set();
-                        alert('Lưu thành công!');
+                        alert(_veas_i18n.saveSuccess);
                         if (inst.table) inst.table.ajax.reload();
                     },
-                    error: function () { alert('Lỗi khi lưu dữ liệu. Vui lòng thử lại.'); }
+                    error: function () { alert(_veas_i18n.saveFail); }
                 });
             };
 
@@ -520,7 +588,7 @@
 
             window.veasOpenEmpSearch = function (field) {
                 if (typeof EmployeeSearchModal === 'undefined') {
-                    alert('Component tìm kiếm nhân viên chưa được tải!'); return;
+                    alert(_veas_i18n.componentNotLoaded); return;
                 }
                 EmployeeSearchModal.open(function (employee) {
                     veas$('#veas_add_' + field + 'Display').val(employee.empId + ' - ' + employee.localName);
@@ -536,8 +604,8 @@
             window.veasSaveNewObject = function () {
                 var resumeSeq = veas$('#veas_resumeSeq').val();
                 var objectPersonId = veas$('#veas_add_objectPersonId').val();
-                if (!resumeSeq) { alert('Vui lòng chọn tên đánh giá trước.'); return; }
-                if (!objectPersonId) { alert('Vui lòng chọn đối tượng đánh giá.'); return; }
+                if (!resumeSeq) { alert(_veas_i18n.selectEvalFirst); return; }
+                if (!objectPersonId) { alert(_veas_i18n.selectEvalObject); return; }
                 $.ajax({
                     url: '/evs/manage/api/affirmorSetup/addObject',
                     type: 'POST', contentType: 'application/json',
@@ -550,10 +618,10 @@
                         personId4: veas$('#veas_add_affirm4PersonId').val() || null
                     }),
                     success: function (res) {
-                        if (res.success) { inst.addModal.hide(); alert('Thêm mới thành công!'); if (inst.table) inst.table.ajax.reload(); }
-                        else { alert('Lỗi: ' + (res.message || 'Không thể thêm mới.')); }
+                        if (res.success) { inst.addModal.hide(); alert(_veas_i18n.addSuccess); if (inst.table) inst.table.ajax.reload(); }
+                        else { alert('Lỗi: ' + (res.message || _veas_i18n.addError)); }
                     },
-                    error: function () { alert('Lỗi khi thêm mới. Vui lòng thử lại.'); }
+                    error: function () { alert(_veas_i18n.addFail); }
                 });
             };
 

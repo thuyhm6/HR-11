@@ -349,6 +349,7 @@
         const templateParser = new DOMParser();
         const templateDoc = templateParser.parseFromString(templateContent, 'text/html');
         const scripts = templateDoc.querySelectorAll('script');
+        const styles  = templateDoc.querySelectorAll('style');
         // console.log('Scripts found:', scripts.length);
 
         // Inject tab URL so fragment scripts can read query params
@@ -357,6 +358,14 @@
         if (dynamicScripts) {
         dynamicScripts.appendChild(urlVarScript);
     }
+
+        styles.forEach(style => {
+        const newStyle = document.createElement('style');
+        newStyle.textContent = style.textContent;
+        if (dynamicScripts) {
+        dynamicScripts.appendChild(newStyle);
+    }
+    });
 
         scripts.forEach(script => {
         const newScript = document.createElement('script');
@@ -446,6 +455,7 @@
         const templateParser = new DOMParser();
         const templateDoc = templateParser.parseFromString(templateContent, 'text/html');
         const scripts = templateDoc.querySelectorAll('script');
+        const styles  = templateDoc.querySelectorAll('style');
 
         // Inject tab URL so fragment scripts can read query params
         const urlVarScript = document.createElement('script');
@@ -453,6 +463,14 @@
         if (dynamicScripts) {
         dynamicScripts.appendChild(urlVarScript);
     }
+
+        styles.forEach(style => {
+        const newStyle = document.createElement('style');
+        newStyle.textContent = style.textContent;
+        if (dynamicScripts) {
+        dynamicScripts.appendChild(newStyle);
+    }
+    });
 
         scripts.forEach(script => {
         const newScript = document.createElement('script');

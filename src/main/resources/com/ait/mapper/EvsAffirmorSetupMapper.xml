@@ -119,7 +119,7 @@
           FROM HR_EMPLOYEE E
          WHERE E.ACTIVITY = 1
         <if test="affirmorKeyword != null and affirmorKeyword != ''">
-            AND (E.LOCAL_NAME LIKE '%' || #{affirmorKeyword, jdbcType=VARCHAR} || '%'
+            AND (CONVERTTOUNSIGN(UPPER(E.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{affirmorKeyword, jdbcType=VARCHAR})) || '%'
               OR E.EMPID      LIKE '%' || #{affirmorKeyword, jdbcType=VARCHAR} || '%')
         </if>
          ORDER BY E.EMPID ASC

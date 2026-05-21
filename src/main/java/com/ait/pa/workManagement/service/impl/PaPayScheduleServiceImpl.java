@@ -34,6 +34,16 @@ public class PaPayScheduleServiceImpl implements PaPayScheduleService {
     }
 
     @Override
+    public List<PaPayScheduleDto> getOpenList() {
+        try {
+            return mapper.selectOpenList();
+        } catch (Exception e) {
+            log.error("Lỗi khi lấy danh sách kế hoạch trả lương đã mở: {}", e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    @Override
     public PaPayScheduleDto getOne(String payScheduleNo) {
         try {
             return mapper.selectOne(payScheduleNo);

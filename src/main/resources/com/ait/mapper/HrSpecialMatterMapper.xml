@@ -73,7 +73,7 @@
     <sql id="keywordSearchConditions">
         <if test="searchValue != null and searchValue != ''">
             AND (
-                he.LOCAL_NAME LIKE '%' || #{searchValue} || '%'
+                CONVERTTOUNSIGN(UPPER(he.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{searchValue})) || '%'
                 OR he.EMPID LIKE '%' || #{searchValue} || '%'
                 OR hsm.SPECIAL_NO LIKE '%' || #{searchValue} || '%'
                 OR he.DEPTNO LIKE '%' || #{searchValue} || '%'
@@ -86,7 +86,7 @@
     <!-- Fragment 6: Advanced search conditions -->
     <sql id="advancedSearchConditions">
         <if test="localName != null and localName != ''">
-            AND he.LOCAL_NAME LIKE '%' || #{localName} || '%'
+            AND CONVERTTOUNSIGN(UPPER(he.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{localName})) || '%'
         </if>
         <if test="empId != null and empId != ''">
             AND he.EMPID LIKE '%' || #{empId} || '%'
@@ -177,7 +177,7 @@
         <include refid="baseFromClause"/>
         <include refid="baseWhereClause"/>
         AND (
-            he.LOCAL_NAME LIKE '%' || #{keyword} || '%'
+            CONVERTTOUNSIGN(UPPER(he.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{keyword})) || '%'
             OR he.EMPID LIKE '%' || #{keyword} || '%'
             OR hsm.SPECIAL_NO LIKE '%' || #{keyword} || '%'
         )

@@ -96,7 +96,7 @@
     <sql id="keywordSearchConditions">
         <if test="searchValue != null and searchValue != ''">
             AND (
-                he.LOCAL_NAME LIKE '%' || #{searchValue} || '%'
+                CONVERTTOUNSIGN(UPPER(he.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{searchValue})) || '%'
                 OR he.EMPID LIKE '%' || #{searchValue} || '%'
                 OR hc.CONTRACT_NO LIKE '%' || #{searchValue} || '%'
                 OR hc.CONTRACT_NAME LIKE '%' || #{searchValue} || '%'
@@ -260,7 +260,7 @@
         <include refid="baseFromClause"/>
         <include refid="baseWhereClause"/>
         AND (
-            he.LOCAL_NAME LIKE '%' || #{keyword} || '%'
+            CONVERTTOUNSIGN(UPPER(he.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{keyword})) || '%'
             OR he.EMPID LIKE '%' || #{keyword} || '%'
             OR hc.CONTRACT_NO LIKE '%' || #{keyword} || '%'
             OR hc.CONTRACT_NAME LIKE '%' || #{keyword} || '%'

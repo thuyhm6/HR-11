@@ -6,8 +6,10 @@ import com.ait.evs.manage.dto.EvsFormulaDto;
 import com.ait.evs.manage.dto.EvsGradeDto;
 import com.ait.evs.manage.dto.EvsItemDto;
 import com.ait.evs.manage.dto.EvsItemParamDto;
+import com.ait.evs.manage.dto.EvsItemSstDto;
 import com.ait.evs.manage.dto.EvsParamDto;
 import com.ait.evs.manage.dto.EvsParamObjectDto;
+import com.ait.evs.manage.dto.EvsPersonalTargetDto;
 import com.ait.evs.manage.dto.EvsResumeDto;
 import com.ait.evs.manage.dto.EvsResultDto;
 import com.ait.evs.manage.dto.EvsScheduleDto;
@@ -20,6 +22,7 @@ import com.ait.evs.manage.service.EvsItemService;
 import com.ait.evs.manage.service.EvsGradeService;
 import com.ait.evs.manage.service.EvsParamObjectService;
 import com.ait.evs.manage.service.EvsParamService;
+import com.ait.evs.manage.service.EvsPersonalTargetService;
 import com.ait.evs.manage.service.EvsResumeService;
 import com.ait.evs.manage.service.EvsResultService;
 import com.ait.evs.manage.service.EvsScheduleService;
@@ -71,6 +74,9 @@ public class EvsManageController {
 
     @Autowired
     private EvsItemParamService evsItemParamService;
+
+    @Autowired
+    private EvsPersonalTargetService evsPersonalTargetService;
 
     @GetMapping("/viewResumeList")
     public String viewResumeList() {
@@ -602,6 +608,53 @@ public class EvsManageController {
     public ResponseEntity<Map<String, Object>> deleteEvsItemParam(@RequestBody Map<String, List<String>> body) {
         try {
             evsItemParamService.deleteBatch(body.get("seqs"));
+            return ResponseEntity.ok(Map.of("success", true));
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
+    // ── Đăng ký mục tiêu cá nhân (EVS_ITEM_SST) ──────────────────────────────
+
+    @GetMapping("/viewRegPersonalTarget")
+    public String viewRegPersonalTarget() {
+        return "evs/manage/viewRegPersonalTarget";
+    }
+
+    @GetMapping("/api/personalTarget/objectInfo")
+    @ResponseBody
+    public ResponseEntity<EvsPersonalTargetDto> getPersonalTargetObjectInfo(
+            @RequestParam(required = false) String resumeSeq) {
+        EvsPersonalTargetDto params = new EvsPersonalTargetDto();
+        params.setResumeSeq(resumeSeq);
+        return ResponseEntity.ok(evsPersonalTargetService.getObjectInfo(params));
+    }
+
+    @GetMapping("/api/personalTarget/itemList")
+    @ResponseBody
+    public ResponseEntity<List<EvsItemSstDto>> getPersonalTargetItemList(
+            @RequestParam(required = false) String evsObjectSeq) {
+        EvsItemSstDto params = new EvsItemSstDto();
+        params.setEvsObjectSeq(evsObjectSeq);
+        return ResponseEntity.ok(evsPersonalTargetService.getItemList(params));
+    }
+
+    @PostMapping("/api/personalTarget/saveItem")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> savePersonalTargetItem(@RequestBody EvsItemSstDto dto) {
+        try {
+            evsPersonalTargetService.saveItem(dto);
+            return ResponseEntity.ok(Map.of("success", true));
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/api/personalTarget/deleteItem")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> deletePersonalTargetItem(@RequestBody EvsItemSstDto dto) {
+        try {
+            evsPersonalTargetService.deleteItem(dto);
             return ResponseEntity.ok(Map.of("success", true));
         } catch (Exception e) {
             return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));

@@ -180,7 +180,7 @@
                 AND he.PERSON_ID LIKE '%' || #{searchParams.personId} || '%'
             </if>
             <if test="searchParams.localName != null and searchParams.localName != ''">
-                AND he.LOCAL_NAME LIKE '%' || #{searchParams.localName} || '%'
+                AND CONVERTTOUNSIGN(UPPER(he.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{searchParams.localName})) || '%'
             </if>
             <if test="searchParams.deptNo != null and searchParams.deptNo != ''">
                 AND he.DEPTNO LIKE '%' || #{searchParams.deptNo} || '%'
@@ -239,7 +239,7 @@
             AND he.PERSON_ID LIKE '%' || #{personId} || '%'
         </if>
         <if test="localName != null and localName != ''">
-            AND he.LOCAL_NAME LIKE '%' || #{localName} || '%'
+            AND CONVERTTOUNSIGN(UPPER(he.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{localName})) || '%'
         </if>
         <if test="deptNo != null and deptNo != ''">
             AND he.DEPTNO LIKE '%' || #{deptNo} || '%'
@@ -412,7 +412,7 @@
             AND he.EMPID LIKE '%' || #{empId, jdbcType=VARCHAR} || '%'
         </if>
         <if test="localName != null and localName != ''">
-            AND he.LOCAL_NAME LIKE '%' || #{localName, jdbcType=VARCHAR} || '%'
+            AND CONVERTTOUNSIGN(UPPER(he.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{localName, jdbcType=VARCHAR})) || '%'
         </if>
         <if test="deptNo != null and deptNo != ''">
             AND he.DEPTNO LIKE '%' || #{deptNo, jdbcType=VARCHAR} || '%'
@@ -425,7 +425,7 @@
         </if>
         <if test="keyword != null and keyword != ''">
             AND (he.EMPID LIKE '%' || #{keyword, jdbcType=VARCHAR} || '%'
-                OR he.LOCAL_NAME LIKE '%' || #{keyword, jdbcType=VARCHAR} || '%')
+                OR CONVERTTOUNSIGN(UPPER(he.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{keyword, jdbcType=VARCHAR})) || '%')
         </if>
         ORDER BY he.EMPID ASC
     </select>
@@ -439,8 +439,7 @@
         <include refid="activeEmployeesFilter"/>
         AND (
             UPPER(he.EMPID) LIKE UPPER('%' || #{keyword} || '%')
-            OR UPPER(he.LOCAL_NAME) LIKE UPPER('%' || #{keyword} || '%')
-            OR UPPER(he.ENGLISH_NAME) LIKE UPPER('%' || #{keyword} || '%')
+            OR CONVERTTOUNSIGN(UPPER(he.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{keyword})) || '%'
             OR UPPER(he.POSITION) LIKE UPPER('%' || #{keyword} || '%')
             OR UPPER(he.DEPTNO) LIKE UPPER('%' || #{keyword} || '%')
         )
@@ -472,7 +471,7 @@
             AND he.EMPID LIKE '%' || #{empId} || '%'
         </if>
         <if test="localName != null and localName != ''">
-            AND he.LOCAL_NAME LIKE '%' || #{localName} || '%'
+            AND CONVERTTOUNSIGN(UPPER(he.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{localName})) || '%'
         </if>
         <if test="deptNo != null and deptNo != ''">
             AND he.DEPTNO LIKE '%' || #{deptNo} || '%'

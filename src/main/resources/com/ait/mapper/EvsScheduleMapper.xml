@@ -126,7 +126,7 @@
             POST_GRADE_NO   = #{postGradeNo,   jdbcType=VARCHAR},
             POST_GRADE_NAME = #{postGradeName, jdbcType=VARCHAR},
             EVS_OBJECT      = #{evsObject,     jdbcType=VARCHAR},
-            EVS_STEP        = GET_CODE_NO(#{evsStepName, jdbcType=VARCHAR},'14015065',#{cpnyId,  jdbcType=VARCHAR},'CODE'),
+            EVS_STEP        = #{evsStep,       jdbcType=VARCHAR},
             DEPT_TYPE       = #{deptType,      jdbcType=VARCHAR},
             PERSON_ID       = #{personId,      jdbcType=VARCHAR},
             START_DATE      = <choose>

@@ -6,6 +6,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.sql.DataSource;
 
@@ -13,6 +16,7 @@ import javax.sql.DataSource;
  * DataSource Configuration với HikariCP
  */
 @Configuration
+@EnableTransactionManagement
 public class DataSourceConfig {
 
     @Value("${spring.datasource.url}")
@@ -70,8 +74,9 @@ public class DataSourceConfig {
 
         // Oracle-specific optimizations
         config.addDataSourceProperty("oracle.net.CONNECT_TIMEOUT", "10000");
-        config.addDataSourceProperty("oracle.jdbc.ReadTimeout", "30000");
-        config.addDataSourceProperty("oracle.net.READ_TIMEOUT", "30000");
+        // ReadTimeout phải là Integer để Oracle JDBC nhận đúng (không phải String)
+        config.addDataSourceProperty("oracle.jdbc.ReadTimeout", 600000);
+        config.addDataSourceProperty("oracle.net.READ_TIMEOUT", 600000);
         config.addDataSourceProperty("oracle.jdbc.defaultNChar", "false");
         config.addDataSourceProperty("oracle.jdbc.defaultBatchValue", "1000");
 
@@ -79,5 +84,13 @@ public class DataSourceConfig {
         config.setRegisterMbeans(false); // Disable to avoid MBean registration conflicts
 
         return new HikariDataSource(config);
+    }
+
+    @Bean
+    @Primary
+    public PlatformTransactionManager transactionManager() {
+        DataSource ds = dataSource();
+        if (ds == null) throw new IllegalStateException("DataSource must not be null");
+        return new DataSourceTransactionManager(ds);
     }
 }

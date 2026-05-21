@@ -60,7 +60,7 @@
         </if>
         <if test="empSearch != null and empSearch != ''">
             AND (O.EMPID LIKE '%' || #{empSearch, jdbcType=VARCHAR} || '%'
-              OR E.LOCAL_NAME LIKE '%' || #{empSearch, jdbcType=VARCHAR} || '%')
+              OR CONVERTTOUNSIGN(UPPER(E.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{empSearch, jdbcType=VARCHAR})) || '%')
         </if>
     </sql>
 

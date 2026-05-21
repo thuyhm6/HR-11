@@ -45,7 +45,7 @@
         <where>
             g.GROUP_NO = '80000084'
             <if test="empId != null and empId != ''">
-                AND (e.EMPID LIKE '%' || #{empId} || '%' OR e.LOCAL_NAME LIKE '%' || #{empId} || '%')
+                AND (e.EMPID LIKE '%' || #{empId} || '%' OR CONVERTTOUNSIGN(UPPER(e.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{empId})) || '%')
             </if>
         </where>
         ORDER BY g.ORDERNO ASC, g.UPDATE_DATE DESC

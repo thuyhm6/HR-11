@@ -53,7 +53,7 @@
             AND t1.PERSON_ID = #{personId}
         </if>
         <if test="localName != null and localName != ''">
-            AND t2.LOCAL_NAME LIKE '%' || #{localName} || '%'
+            AND CONVERTTOUNSIGN(UPPER(t2.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{localName})) || '%'
         </if>
         <if test="emerName != null and emerName != ''">
             AND t1.EMER_NAME LIKE '%' || #{emerName} || '%'

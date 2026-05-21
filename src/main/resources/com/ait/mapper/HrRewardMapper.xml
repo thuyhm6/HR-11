@@ -46,7 +46,7 @@
             AND t2.EMPID LIKE '%' || #{empId} || '%'
         </if>
         <if test="localName != null and localName != ''">
-            AND t2.LOCAL_NAME LIKE '%' || #{localName} || '%'
+            AND CONVERTTOUNSIGN(UPPER(t2.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{localName})) || '%'
         </if>
         <if test="rewardType != null and rewardType != ''">
             AND t1.REWARD_TYPE LIKE '%' || #{rewardType} || '%'

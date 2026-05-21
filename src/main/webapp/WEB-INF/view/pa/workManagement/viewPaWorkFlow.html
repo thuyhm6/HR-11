@@ -114,16 +114,23 @@
                                 <div class="process-header" th:text="#{pa.workFlow.step.adjust}">Điều chỉnh tiền lương
                                 </div>
                                 <div class="step-item">
-                                    <div class="step-btn active-step" onclick="vpwfOpenMenu('adjustPay')"
-                                        th:text="#{pa.workFlow.step.adjust.pay}">Điều chỉnh trả lương</div>
+                                    <div class="step-btn active-step">
+                                        <a href="/pa/salary/viewPaInputItemData?itemType=2" class="text-white"
+                                            data-tab="/pa/salary/viewPaInputItemData?itemType=2"
+                                            th:attr="data-title=#{pa.workFlow.step.adjust.pay}"
+                                            th:text="#{pa.workFlow.step.adjust.pay}">Điều chỉnh trả lương</a></div>
                                 </div>
                                 <div class="step-item">
-                                    <div class="step-btn active-step" onclick="vpwfOpenMenu('adjustDeduct')"
-                                        th:text="#{pa.workFlow.step.adjust.deduct}">Điều chỉnh khoản trừ</div>
+                                    <div class="step-btn active-step"><a href="/pa/salary/viewPaInputItemData?itemType=4" class="text-white"
+                                            data-tab="/pa/salary/viewPaInputItemData?itemType=4"
+                                            th:attr="data-title=#{pa.workFlow.step.adjust.deduct}"
+                                            th:text="#{pa.workFlow.step.adjust.deduct}">Điều chỉnh khoản trừ</a></div>
                                 </div>
                                 <div class="step-item">
-                                    <div class="step-btn active-step" onclick="vpwfOpenMenu('adjustAccount')"
-                                        th:text="#{pa.workFlow.step.adjust.account}">Thông tin tài khoản</div>
+                                    <div class="step-btn active-step"><a href="/pa/workManagement/viewPaEmpAccount?firstView=Y" class="text-white"
+                                            data-tab="/pa/salary/viewPaInputItemData?itemType=4"
+                                            th:attr="data-title=#{pa.workFlow.step.adjust.account}"
+                                            th:text="#{pa.workFlow.step.adjust.account}">Thông tin tài khoản</a></div>
                                 </div>
                             </div>
 

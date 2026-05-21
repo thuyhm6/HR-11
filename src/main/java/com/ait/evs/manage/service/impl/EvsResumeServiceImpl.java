@@ -60,7 +60,7 @@ public class EvsResumeServiceImpl implements EvsResumeService {
                 mapper.callInitEvsParam(procParams);
                 String message = (String) procParams.get("message");
                 log.info("PR_INIT_EVS_PARAM seq={} message={}", dto.getSeq(), message);
-                if (message != null && !message.isEmpty()) {
+                if (message != null && !message.isEmpty() && !message.equalsIgnoreCase("OK")) {
                     throw new RuntimeException(message);
                 }
             }

@@ -124,7 +124,6 @@ public class EvsAffirmorSetupServiceImpl implements EvsAffirmorSetupService {
     }
 
     @Override
-    @Transactional
     public void evsStart(EvsAffirmorSetupDto dto) {
         try {
             dto.setMessage(null);
@@ -140,7 +139,6 @@ public class EvsAffirmorSetupServiceImpl implements EvsAffirmorSetupService {
     }
 
     @Override
-    @Transactional
     public void createTarget(EvsAffirmorSetupDto dto) {
         try {
             dto.setMessage(null);
