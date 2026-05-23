@@ -152,4 +152,16 @@ public class EvsAffirmorSetupServiceImpl implements EvsAffirmorSetupService {
             throw e;
         }
     }
+
+    @Override
+    @Transactional
+    public void deleteObjects(List<String> seqList) {
+        try {
+            mapper.deleteObjects(seqList);
+            log.info("Xóa {} đối tượng đánh giá: seqList={}", seqList.size(), seqList);
+        } catch (Exception e) {
+            log.error("Lỗi khi xóa đối tượng đánh giá: seqList={}, {}", seqList, e.getMessage(), e);
+            throw e;
+        }
+    }
 }

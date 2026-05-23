@@ -50,7 +50,7 @@ public class SecurityConfig implements WebMvcConfigurer {
                                 "/actuator/health", "/api/health", "/api/csrf-token",
                                 "/change-language", "/api/current-language", "/api/supported-languages")
                         .permitAll()
-                        .requestMatchers(HttpMethod.GET, "/sys/api/code/list")
+                        .requestMatchers(HttpMethod.GET, "/sys/api/code/list", "/sys/api/menu/list")
                         .authenticated()
                         .requestMatchers("/sy/excel/api/**")
                         .authenticated()

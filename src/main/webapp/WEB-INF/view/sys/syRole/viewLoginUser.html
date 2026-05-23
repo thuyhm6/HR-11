@@ -1,4 +1,9 @@
 <div th:fragment="content">
+    <!-- Hidden JS messages -->
+    <span id="vlu-msgNoRoleData"   th:text="#{sys.role.viewLoginUser.noRoleData}"    style="display:none">Không có dữ liệu nhóm quyền.</span>
+    <span id="vlu-msgSelectUser"   th:text="#{sys.role.viewLoginUser.hint.selectUser}" style="display:none">Vui lòng chọn một người dùng bên trái để phân nhóm quyền.</span>
+    <span id="vlu-rolePanelPrefix" th:text="#{sys.role.viewLoginUser.rolePanel.titlePrefix}" style="display:none">Nhóm quyền -</span>
+
     <div class="row">
         <!-- Cột trái: Danh sách User -->
         <div class="col-md-7">
@@ -7,19 +12,19 @@
                     <!-- Search Form -->
                     <form id="userSearchForm" class="row g-3 mb-4">
                         <div class="col-md-6">
-                            <label for="userSearchKeyword" class="form-label">Từ khóa (ID, Tên)</label>
+                            <label for="userSearchKeyword" class="form-label" th:text="#{sys.role.viewLoginUser.search.keyword}">Từ khóa (ID, Tên)</label>
                             <input type="text" class="form-control" id="userSearchKeyword"
-                                placeholder="Nhập ID, Mã NV hoặc Tên">
+                                th:placeholder="#{sys.role.viewLoginUser.search.keyword.placeholder}">
                         </div>
                         <div class="col-md-6 d-flex align-items-end">
                             <button type="button" class="btn btn-primary me-2" id="btnSearchUser">
-                                <i class="bx bx-search"></i> Tìm kiếm
+                                <i class="bx bx-search"></i> <span th:text="#{common.search}">Tìm kiếm</span>
                             </button>
                             <button type="button" class="btn btn-secondary me-2" id="btnClearUser">
-                                <i class="bx bx-x"></i> Xóa lọc
+                                <i class="bx bx-x"></i> <span th:text="#{common.clearFilter}">Xóa lọc</span>
                             </button>
                             <button type="button" class="btn btn-info" id="btnExportUser">
-                                <i class="bx bx-download"></i> Xuất Excel
+                                <i class="bx bx-download"></i> <span th:text="#{common.exportExcel}">Xuất Excel</span>
                             </button>
                         </div>
                     </form>
@@ -30,13 +35,13 @@
                             style="width:100%; cursor: pointer;">
                             <thead class="table-light">
                                 <tr>
-                                    <th>STT</th>
-                                    <th>ID Đăng nhập</th>
-                                    <th>Họ tên</th>
-                                    <th>Phòng ban</th>
-                                    <th>Mã NV</th>
-                                    <th>Loại TK</th>
-                                    <th>Thao tác</th>
+                                    <th th:text="#{sys.role.viewLoginUser.col.no}">STT</th>
+                                    <th th:text="#{sys.role.viewLoginUser.col.loginId}">ID Đăng nhập</th>
+                                    <th th:text="#{sys.role.viewLoginUser.col.fullName}">Họ tên</th>
+                                    <th th:text="#{sys.role.viewLoginUser.col.dept}">Phòng ban</th>
+                                    <th th:text="#{sys.role.viewLoginUser.col.empCode}">Mã NV</th>
+                                    <th th:text="#{sys.role.viewLoginUser.col.accountType}">Loại TK</th>
+                                    <th th:text="#{sys.role.viewLoginUser.col.action}">Thao tác</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -52,15 +57,14 @@
         <div class="col-md-5">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0" id="userPanelTitle">Nhóm quyền</h5>
-                    <button type="button" class="btn btn-primary btn-sm" id="btnSaveRelations" disabled>
-                        <i class="bx bx-save"></i> Lưu nhóm quyền
+                    <h5 class="card-title mb-0" id="userPanelTitle" th:text="#{sys.role.viewLoginUser.rolePanel.title}">Nhóm quyền</h5>
+                    <button type="button" class="btn btn-primary btn-sm" id="btnSaveRelations">
+                        <i class="bx bx-save"></i> <span th:text="#{sys.role.viewLoginUser.btn.saveRoleGroup}">Lưu nhóm quyền</span>
                     </button>
                 </div>
                 <div class="card-body" style="height: 600px; overflow-y: auto;">
                     <div id="roleGroupListContainer">
-                        <div class="text-center p-3 text-muted">Vui lòng chọn một người dùng bên trái để phân nhóm
-                            quyền.</div>
+                        <div class="text-center p-3 text-muted" th:text="#{sys.role.viewLoginUser.hint.selectUser}">Vui lòng chọn một người dùng bên trái để phân nhóm quyền.</div>
                     </div>
                 </div>
             </div>
@@ -72,7 +76,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="resetPasswordModalTitle">Reset Mật khẩu</h5>
+                    <h5 class="modal-title" id="resetPasswordModalTitle" th:text="#{sys.role.viewLoginUser.modal.resetPassword.title}">Reset Mật khẩu</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -80,19 +84,22 @@
                         <input type="hidden" id="resetUserNo" name="userNo">
 
                         <div class="mb-3">
-                            <label class="form-label">ID Đăng nhập</label>
+                            <label class="form-label" th:text="#{sys.role.viewLoginUser.modal.resetPassword.loginId}">ID Đăng nhập</label>
                             <input type="text" class="form-control" id="resetUserName" readonly>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Mật khẩu mới <span class="text-danger">*</span></label>
+                            <label class="form-label">
+                                <span th:text="#{sys.role.viewLoginUser.modal.resetPassword.newPassword}">Mật khẩu mới</span>
+                                <span class="text-danger">*</span>
+                            </label>
                             <input type="text" class="form-control" id="newPassword" value="123456A@" required>
-                            <div class="form-text">Mật khẩu mặc định là 123456A@. Bạn có thể tự thay đổi.</div>
+                            <div class="form-text" th:text="#{sys.role.viewLoginUser.modal.resetPassword.defaultNote}">Mật khẩu mặc định là 123456A@. Bạn có thể tự thay đổi.</div>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                    <button type="button" class="btn btn-primary" id="btnConfirmReset">Xác nhận</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" th:text="#{common.close}">Đóng</button>
+                    <button type="button" class="btn btn-primary" id="btnConfirmReset" th:text="#{common.confirm}">Xác nhận</button>
                 </div>
             </div>
         </div>
@@ -103,13 +110,15 @@
     <script th:inline="none">
         $(function () {
             var selectedUserNo = null;
+            var rolePanelPrefix = $('#vlu-rolePanelPrefix').text();
+            var msgNoRoleData   = $('#vlu-msgNoRoleData').text();
 
             var table = $('#userTable').DataTable({
                 destroy: true,
                 paging: true,
                 searching: false,
                 lengthChange: true,
-                pageLength: 25,
+                pageLength: 20,
                 processing: true,
 
                 ajax: {
@@ -140,7 +149,7 @@
                         data: null,
                         className: "text-center",
                         render: function (data, type, row) {
-                            return '<button class="btn btn-warning btn-sm btn-reset-password" data-id="' + row.userNo + '" data-name="' + row.userNo + '" title="Reset Password"><i class="bx bx-key"></i></button>';
+                            return '<button class="btn btn-warning btn-sm btn-reset-password" data-id="' + row.userNo + '" data-name="' + row.userName + '" title="Reset Password"><i class="bx bx-key"></i></button>';
                         }
                     }
                 ]
@@ -221,8 +230,8 @@
                 $(this).addClass('table-active');
 
                 selectedUserNo = data.userNo;
-                $('#userPanelTitle').text('Nhóm quyền - ' + (data.userName || data.userNo));
-                $('#btnSaveRelations').prop('disabled', false);
+                $('#userPanelTitle').text(rolePanelPrefix + ' ' + (data.userName || data.userNo));
+                //$('#btnSaveRelations').prop('disabled', false);
 
                 loadUserRelations(selectedUserNo);
             });
@@ -266,7 +275,7 @@
                     container.empty();
 
                     if (!list || list.length === 0) {
-                        container.html('<div class="text-center text-muted">Không có dữ liệu nhóm quyền.</div>');
+                        container.html('<div class="text-center text-muted">' + msgNoRoleData + '</div>');
                         return;
                     }
 

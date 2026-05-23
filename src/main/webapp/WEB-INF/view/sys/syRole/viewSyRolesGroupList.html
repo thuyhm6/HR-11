@@ -7,22 +7,28 @@
                     <!-- Search Form -->
                     <form id="roleGroupSearchForm" class="row g-3 mb-4">
                         <div class="col-md-4">
-                            <label for="roleGroupSearchKeyword" class="form-label">Từ khóa (ID, Tên)</label>
+                            <label for="roleGroupSearchKeyword" class="form-label"
+                                th:text="#{sys.role.viewRolesGroupList.search.keyword}">Từ khóa (ID, Tên)</label>
                             <input type="text" class="form-control" id="roleGroupSearchKeyword"
+                                th:placeholder="#{sys.role.viewRolesGroupList.search.keyword.placeholder}"
                                 placeholder="Nhập mã hoặc tên nhóm quyền">
                         </div>
                         <div class="col-md-8 d-flex align-items-end">
                             <button type="button" class="btn btn-primary me-2" id="btnSearchRoleGroup">
-                                <i class="bx bx-search"></i> Tìm kiếm
+                                <i class="bx bx-search"></i>
+                                <span th:text="#{common.search}">Tìm kiếm</span>
                             </button>
                             <button type="button" class="btn btn-secondary me-2" id="btnClearRoleGroup">
-                                <i class="bx bx-x"></i> Xóa lọc
+                                <i class="bx bx-x"></i>
+                                <span th:text="#{common.clearFilter}">Xóa lọc</span>
                             </button>
                             <button type="button" class="btn btn-success me-2" id="btnAddRoleGroup">
-                                <i class="bx bx-plus"></i> Thêm mới
+                                <i class="bx bx-plus"></i>
+                                <span th:text="#{common.addNew}">Thêm mới</span>
                             </button>
                             <button type="button" class="btn btn-info" id="btnExportRoleGroup">
-                                <i class="bx bx-download"></i> Xuất Excel
+                                <i class="bx bx-download"></i>
+                                <span th:text="#{common.exportExcel}">Xuất Excel</span>
                             </button>
                         </div>
                     </form>
@@ -33,13 +39,13 @@
                             style="width:100%; cursor: pointer;">
                             <thead class="table-light">
                                 <tr>
-                                    <th>STT</th>
-                                    <th>Mã Nhóm (ID)</th>
-                                    <th>Tên TV</th>
-                                    <th>Hệ thống</th>
-                                    <th>Mặc định</th>
-                                    <th>Trạng thái</th>
-                                    <th>Thao tác</th>
+                                    <th th:text="#{common.stt}">STT</th>
+                                    <th th:text="#{sys.role.viewRolesGroupList.col.roleGroupId}">Mã Nhóm (ID)</th>
+                                    <th th:text="#{sys.role.viewRolesGroupList.col.nameVi}">Tên TV</th>
+                                    <th th:text="#{sys.role.viewRolesGroupList.col.sysType}">Hệ thống</th>
+                                    <th th:text="#{sys.role.viewRolesGroupList.col.joinDefault}">Mặc định</th>
+                                    <th th:text="#{sys.role.viewRolesGroupList.col.status}">Trạng thái</th>
+                                    <th th:text="#{common.action}">Thao tác</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -54,14 +60,17 @@
         <div class="col-md-5">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0" id="rolePanelTitle">Phân quyền hạn</h5>
-                    <button type="button" class="btn btn-primary btn-sm" id="btnSaveRelations" disabled>
-                        <i class="bx bx-save"></i> Lưu quyền hạn
+                    <h5 class="card-title mb-0" id="rolePanelTitle"
+                        th:text="#{sys.role.viewRolesGroupList.panel.title}">Phân quyền hạn</h5>
+                    <button type="button" class="btn btn-primary btn-sm" id="btnSaveRelations">
+                        <i class="bx bx-save"></i>
+                        <span th:text="#{sys.role.viewRolesGroupList.btn.saveRelations}">Lưu quyền hạn</span>
                     </button>
                 </div>
                 <div class="card-body" style="height: 600px; overflow-y: auto;">
                     <div id="rolesListContainer">
-                        <div class="text-center p-3 text-muted">Vui lòng chọn một nhóm quyền bên trái để phân quyền.
+                        <div class="text-center p-3 text-muted"
+                            th:text="#{sys.role.viewRolesGroupList.hint.selectGroup}">Vui lòng chọn một nhóm quyền bên trái để phân quyền.
                         </div>
                     </div>
                 </div>
@@ -78,7 +87,8 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="roleGroupModalTitle">Thông tin Nhóm quyền</h5>
+                <h5 class="modal-title" id="roleGroupModalTitle"
+                    th:text="#{sys.role.viewRolesGroupList.modal.title}">Thông tin Nhóm quyền</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -91,39 +101,49 @@
                         <div class="col-md-12">
                             <div class="row g-3">
                                 <div class="col-md-12">
-                                    <label class="form-label">Mã Nhóm (ID)</label>
+                                    <label class="form-label"
+                                        th:text="#{sys.role.viewRolesGroupList.label.roleGroupId}">Mã Nhóm (ID)</label>
                                     <input type="text" class="form-control" id="roleGroupId" name="roleGroupId" readonly
+                                        th:placeholder="#{sys.role.viewRolesGroupList.label.roleGroupId.placeholder}"
                                         placeholder="Tự động sinh khi lưu (Auto Generated)">
                                 </div>
 
                                 <!-- Multilingual Names -->
                                 <div class="col-md-6">
-                                    <label class="form-label">Tên Tiếng Việt <span class="text-danger">*</span></label>
+                                    <label class="form-label">
+                                        <span th:text="#{sys.role.viewRolesGroup.label.nameVi}">Tên Tiếng Việt</span>
+                                        <span class="text-danger">*</span>
+                                    </label>
                                     <input type="text" class="form-control" id="roleGroupNameVi" name="nameVi" required>
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label">Tên Tiếng Anh</label>
+                                    <label class="form-label"
+                                        th:text="#{sys.role.viewRolesGroup.label.nameEn}">Tên Tiếng Anh</label>
                                     <input type="text" class="form-control" id="roleGroupNameEn" name="nameEn">
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label">Tên Tiếng Trung</label>
+                                    <label class="form-label"
+                                        th:text="#{sys.role.viewRolesGroup.label.nameZh}">Tên Tiếng Trung</label>
                                     <input type="text" class="form-control" id="roleGroupNameZh" name="nameZh">
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label">Tên Tiếng Hàn</label>
+                                    <label class="form-label"
+                                        th:text="#{sys.role.viewRolesGroup.label.nameKo}">Tên Tiếng Hàn</label>
                                     <input type="text" class="form-control" id="roleGroupNameKo" name="nameKo">
                                 </div>
 
                                 <!-- Settings -->
                                 <div class="col-md-6">
-                                    <label class="form-label">Loại hệ thống</label>
+                                    <label class="form-label"
+                                        th:text="#{sys.role.viewRolesGroup.label.sysType}">Loại hệ thống</label>
                                     <select class="form-select" id="sysType" name="sysType">
                                         <option value="0">Hub</option>
                                         <option value="1">Partner</option>
                                     </select>
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label">Thứ tự</label>
+                                    <label class="form-label"
+                                        th:text="#{sys.role.viewRolesGroup.label.orderNo}">Thứ tự</label>
                                     <input type="number" class="form-control" id="roleGroupOrderNo" name="orderNo"
                                         value="0">
                                 </div>
@@ -132,14 +152,16 @@
                                     <div class="form-check mt-4">
                                         <input class="form-check-input" type="checkbox" id="joinDefault"
                                             name="joinDefault">
-                                        <label class="form-check-label" for="joinDefault">Mặc định tham gia</label>
+                                        <label class="form-check-label" for="joinDefault"
+                                            th:text="#{sys.role.viewRolesGroupList.label.joinDefault}">Mặc định tham gia</label>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-check mt-4">
                                         <input class="form-check-input" type="checkbox" id="roleGroupActivity"
                                             name="activity" checked>
-                                        <label class="form-check-label" for="roleGroupActivity">Hoạt động</label>
+                                        <label class="form-check-label" for="roleGroupActivity"
+                                            th:text="#{sys.role.viewRolesGroup.label.activity}">Hoạt động</label>
                                     </div>
                                 </div>
                             </div>
@@ -150,8 +172,10 @@
             </form>
         </div>
         <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-            <button type="button" class="btn btn-primary" id="btnSaveRoleGroup">Lưu</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                th:text="#{common.close}">Đóng</button>
+            <button type="button" class="btn btn-primary" id="btnSaveRoleGroup"
+                th:text="#{common.save}">Lưu</button>
         </div>
     </div>
 </div>
@@ -159,8 +183,18 @@
 </div>
 
 <template id="fragmentScripts">
-    <script th:inline="none">
+    <script th:inline="javascript">
         $(function () {
+            var _i18n = {
+                addTitle:       /*[[#{sys.role.viewRolesGroupList.msg.addTitle}]]*/ 'Thêm mới Nhóm quyền',
+                editTitle:      /*[[#{sys.role.viewRolesGroupList.msg.editTitle}]]*/ 'Cập nhật Nhóm quyền',
+                systemError:    /*[[#{sys.role.viewRolesGroupList.msg.systemError}]]*/ 'Lỗi hệ thống',
+                confirmDelete:  /*[[#{sys.role.viewRolesGroupList.msg.confirmDelete}]]*/ 'Bạn có chắc muốn xóa nhóm quyền này?',
+                noRoleData:     /*[[#{sys.role.viewRolesGroupList.msg.noRoleData}]]*/ 'Không có dữ liệu quyền hạn.',
+                panelTitle:     /*[[#{sys.role.viewRolesGroupList.panel.title}]]*/ 'Phân quyền hạn',
+                panelPrefix:    /*[[#{sys.role.viewRolesGroupList.msg.panelPrefix}]]*/ 'Phân quyền hạn -'
+            };
+
             var allRoles = [];
             var selectedGroupNo = null;
 
@@ -244,7 +278,7 @@
                 $('#roleGroupId').val('');
                 $('#cpnyId').val('');
 
-                $('#roleGroupModalTitle').text('Thêm mới Nhóm quyền');
+                $('#roleGroupModalTitle').text(_i18n.addTitle);
 
                 var modal = new bootstrap.Modal(document.getElementById('roleGroupModal'));
                 modal.show();
@@ -279,13 +313,11 @@
                 var data = table.row(this).data();
                 if (!data) return;
 
-                // Highlight dòng được chọn
                 $('#roleGroupTable tbody tr').removeClass('table-active');
                 $(this).addClass('table-active');
 
                 selectedGroupNo = data.roleGroupNo;
-                $('#rolePanelTitle').text('Phân quyền hạn - ' + data.nameVi);
-                $('#btnSaveRelations').prop('disabled', false);
+                $('#rolePanelTitle').text(_i18n.panelPrefix + ' ' + data.nameVi);
 
                 loadGroupRelations(selectedGroupNo);
             });
@@ -297,7 +329,6 @@
             loadRoles();
 
             function editData(id) {
-                // Fetch detail
                 $.get('/sys/api/role_group/detail?roleGroupNo=' + id, function (res) {
                     if (!res) return;
 
@@ -316,7 +347,7 @@
                     $('#joinDefault').prop('checked', res.joinDefault === 1);
                     $('#roleGroupActivity').prop('checked', res.activity === 1);
 
-                    $('#roleGroupModalTitle').text('Cập nhật Nhóm quyền');
+                    $('#roleGroupModalTitle').text(_i18n.editTitle);
 
                     var modal = new bootstrap.Modal(document.getElementById('roleGroupModal'));
                     modal.show();
@@ -364,14 +395,14 @@
                         }
                     },
                     error: function (xhr) {
-                        if (typeof toastr !== 'undefined') toastr.error('Lỗi hệ thống');
-                        else alert('Lỗi hệ thống');
+                        if (typeof toastr !== 'undefined') toastr.error(_i18n.systemError);
+                        else alert(_i18n.systemError);
                     }
                 });
             }
 
             function deleteData(id) {
-                if (!confirm('Bạn có chắc muốn xóa nhóm quyền này?')) return;
+                if (!confirm(_i18n.confirmDelete)) return;
 
                 $.ajax({
                     url: '/sys/api/role_group/delete',
@@ -384,7 +415,7 @@
 
                             if (selectedGroupNo === id) {
                                 selectedGroupNo = null;
-                                $('#rolePanelTitle').text('Phân quyền hạn');
+                                $('#rolePanelTitle').text(_i18n.panelTitle);
                                 $('#btnSaveRelations').prop('disabled', true);
                                 $('.role-item-checkbox').prop('checked', false);
                             }
@@ -410,7 +441,7 @@
                 container.empty();
 
                 if (!list || list.length === 0) {
-                    container.html('<div class="text-center text-muted">Không có dữ liệu quyền hạn.</div>');
+                    container.html('<div class="text-center text-muted">' + _i18n.noRoleData + '</div>');
                     return;
                 }
 
@@ -421,7 +452,7 @@
                     var div = $('<div>').addClass('form-check');
                     var inp = $('<input>').addClass('form-check-input role-item-checkbox')
                         .attr('type', 'checkbox')
-                        .attr('value', role.roleNo) // Assuming roleNo is key
+                        .attr('value', role.roleNo)
                         .attr('id', 'role_chk_' + role.roleNo);
 
                     var label = $('<label>').addClass('form-check-label')

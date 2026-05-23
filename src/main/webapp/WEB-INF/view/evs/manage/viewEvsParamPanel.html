@@ -6,11 +6,11 @@
             <div class="card mb-2">
                 <div class="card-body py-2">
                     <div class="d-flex align-items-center gap-3 flex-wrap">
-                        <label class="form-label small text-muted mb-0 text-nowrap">Tên đánh giá</label>
+                        <label class="form-label small text-muted mb-0 text-nowrap" th:text="#{evsParam.label.evalName}">Tên đánh giá</label>
                         <select class="form-select form-select-sm" id="vepp_resumeSeq" style="max-width:320px;">
                         </select>
                         <button type="button" class="btn btn-primary btn-sm" onclick="veppSearch()">
-                            <i class="bi bi-search"></i> Tra cứu
+                            <i class="bi bi-search"></i> <span th:text="#{evsParam.btn.search}">Tra cứu</span>
                         </button>
                     </div>
                 </div>
@@ -23,37 +23,37 @@
                         <li class="nav-item" role="presentation">
                             <button class="nav-link active" id="vepp_tab_grade" data-bs-toggle="tab"
                                 data-bs-target="#vepp_pane_grade" type="button" role="tab"
-                                onclick="veppSwitchTab('grade')">Cấp đánh giá</button>
+                                onclick="veppSwitchTab('grade')" th:text="#{evsParam.tab.grade}">Cấp đánh giá</button>
                         </li>
                         <li class="nav-item" role="presentation">
                             <button class="nav-link" id="vepp_tab_item" data-bs-toggle="tab"
                                 data-bs-target="#vepp_pane_item" type="button" role="tab"
-                                onclick="veppSwitchTab('item')">Cấp hạng mục đánh giá</button>
+                                onclick="veppSwitchTab('item')" th:text="#{evsParam.tab.item}">Cấp hạng mục đánh giá</button>
                         </li>
                         <li class="nav-item" role="presentation">
                             <button class="nav-link" id="vepp_tab_object" data-bs-toggle="tab"
                                 data-bs-target="#vepp_pane_object" type="button" role="tab"
-                                onclick="veppSwitchTab('object')">Đối tượng đánh giá</button>
+                                onclick="veppSwitchTab('object')" th:text="#{evsParam.tab.object}">Đối tượng đánh giá</button>
                         </li>
                         <li class="nav-item" role="presentation">
                             <button class="nav-link" id="vepp_tab_list" data-bs-toggle="tab"
                                 data-bs-target="#vepp_pane_list" type="button" role="tab"
-                                onclick="veppSwitchTab('list')">Bảng đánh giá</button>
+                                onclick="veppSwitchTab('list')" th:text="#{evsParam.tab.list}">Bảng đánh giá</button>
                         </li>
                         <li class="nav-item" role="presentation">
                             <button class="nav-link" id="vepp_tab_group" data-bs-toggle="tab"
                                 data-bs-target="#vepp_pane_group" type="button" role="tab"
-                                onclick="veppSwitchTab('group')">Nhóm nhân viên</button>
+                                onclick="veppSwitchTab('group')" th:text="#{evsParam.tab.group}">Nhóm nhân viên</button>
                         </li>
                         <li class="nav-item" role="presentation">
                             <button class="nav-link" id="vepp_tab_family" data-bs-toggle="tab"
                                 data-bs-target="#vepp_pane_family" type="button" role="tab"
-                                onclick="veppSwitchTab('family')">Nhóm chức vụ</button>
+                                onclick="veppSwitchTab('family')" th:text="#{evsParam.tab.family}">Nhóm chức vụ</button>
                         </li>
                         <li class="nav-item" role="presentation">
                             <button class="nav-link" id="vepp_tab_affirm" data-bs-toggle="tab"
                                 data-bs-target="#vepp_pane_affirm" type="button" role="tab"
-                                onclick="veppSwitchTab('affirm')">Người đánh giá</button>
+                                onclick="veppSwitchTab('affirm')" th:text="#{evsParam.tab.affirm}">Người đánh giá</button>
                         </li>
                     </ul>
 
@@ -65,19 +65,19 @@
                                 <div class="d-flex align-items-center gap-3">
                                     <span class="small fw-semibold text-muted" id="vepp_total_grade">Total: 0</span>
                                     <div class="d-flex align-items-center gap-1">
-                                        <label class="small text-muted mb-0 text-nowrap">Lọc nhanh</label>
+                                        <label class="small text-muted mb-0 text-nowrap" th:text="#{evsParam.label.quickFilter}">Lọc nhanh</label>
                                         <input type="text" class="form-control form-control-sm" id="vepp_filter_grade"
                                             style="width:160px;" oninput="veppFilterTable('grade')">
                                     </div>
                                 </div>
                                 <div class="d-flex align-items-center gap-1">
                                     <button class="btn btn-success btn-sm" onclick="veppAddRow('grade')"><i
-                                            class="bi bi-plus-lg"></i> Thêm mới</button>
+                                            class="bi bi-plus-lg"></i> <span th:text="#{evsParam.btn.addNew}">Thêm mới</span></button>
                                     <button class="btn btn-danger btn-sm" onclick="veppDeleteSelected('grade')"><i
-                                            class="bi bi-trash"></i> Xóa</button>
+                                            class="bi bi-trash"></i> <span th:text="#{evsParam.btn.delete}">Xóa</span></button>
                                     <button class="btn btn-primary btn-sm" onclick="veppSave('grade')"><i
-                                            class="bi bi-save"></i> Lưu</button>
-                                    <label class="small text-muted mb-0 ms-2 text-nowrap">Mỗi trang</label>
+                                            class="bi bi-save"></i> <span th:text="#{evsParam.btn.save}">Lưu</span></button>
+                                    <label class="small text-muted mb-0 ms-2 text-nowrap" th:text="#{evsParam.label.perPage}">Mỗi trang</label>
                                     <select class="form-select form-select-sm" id="vepp_pageSize_grade"
                                         style="width:70px;" onchange="veppChangePage('grade')">
                                         <option value="10">10</option>
@@ -85,7 +85,7 @@
                                         <option value="50">50</option>
                                         <option value="100">100</option>
                                     </select>
-                                    <label class="small text-muted mb-0 text-nowrap">dữ liệu</label>
+                                    <label class="small text-muted mb-0 text-nowrap" th:text="#{evsParam.label.records}">dữ liệu</label>
                                 </div>
                             </div>
                             <div class="table-responsive" style="max-height:calc(100vh - 310px); overflow-y:auto;">
@@ -97,15 +97,15 @@
                                             <th style="width:36px;"><input type="checkbox" class="form-check-input"
                                                     id="vepp_chkAll_grade" onchange="veppToggleAll('grade')"></th>
                                             <th style="width:44px;">No.</th>
-                                            <th style="width:130px;">Loại ĐG</th>
-                                            <th style="width:120px;">Cấp ĐG</th>
-                                            <th style="width:70px;">Bao gồm</th>
-                                            <th style="width:90px;">Điểm đầu</th>
-                                            <th style="width:90px;">Điểm cuối</th>
-                                            <th style="width:80px;">Điểm</th>
-                                            <th>Ghi chú</th>
-                                            <th style="width:180px;">Người thay đổi</th>
-                                            <th style="width:130px;">Thời gian TĐ</th>
+                                            <th style="width:130px;" th:text="#{evsParam.col.evalType}">Loại ĐG</th>
+                                            <th style="width:120px;" th:text="#{evsParam.col.evalGrade}">Cấp ĐG</th>
+                                            <th style="width:70px;" th:text="#{evsParam.col.include}">Bao gồm</th>
+                                            <th style="width:90px;" th:text="#{evsParam.col.startScore}">Điểm đầu</th>
+                                            <th style="width:90px;" th:text="#{evsParam.col.endScore}">Điểm cuối</th>
+                                            <th style="width:80px;" th:text="#{evsParam.col.score}">Điểm</th>
+                                            <th th:text="#{evsParam.col.remark}">Ghi chú</th>
+                                            <th style="width:180px;" th:text="#{evsParam.col.updatedBy}">Người thay đổi</th>
+                                            <th style="width:130px;" th:text="#{evsParam.col.updateTime}">Thời gian TĐ</th>
                                         </tr>
                                     </thead>
                                     <tbody id="vepp_tbody_grade"></tbody>
@@ -119,19 +119,19 @@
                                 <div class="d-flex align-items-center gap-3">
                                     <span class="small fw-semibold text-muted" id="vepp_total_item">Total: 0</span>
                                     <div class="d-flex align-items-center gap-1">
-                                        <label class="small text-muted mb-0 text-nowrap">Lọc nhanh</label>
+                                        <label class="small text-muted mb-0 text-nowrap" th:text="#{evsParam.label.quickFilter}">Lọc nhanh</label>
                                         <input type="text" class="form-control form-control-sm" id="vepp_filter_item"
                                             style="width:160px;" oninput="veppFilterTable('item')">
                                     </div>
                                 </div>
                                 <div class="d-flex align-items-center gap-1">
                                     <button class="btn btn-success btn-sm" onclick="veppAddRow('item')"><i
-                                            class="bi bi-plus-lg"></i> Thêm mới</button>
+                                            class="bi bi-plus-lg"></i> <span th:text="#{evsParam.btn.addNew}">Thêm mới</span></button>
                                     <button class="btn btn-danger btn-sm" onclick="veppDeleteSelected('item')"><i
-                                            class="bi bi-trash"></i> Xóa</button>
+                                            class="bi bi-trash"></i> <span th:text="#{evsParam.btn.delete}">Xóa</span></button>
                                     <button class="btn btn-primary btn-sm" onclick="veppSave('item')"><i
-                                            class="bi bi-save"></i> Lưu</button>
-                                    <label class="small text-muted mb-0 ms-2 text-nowrap">Mỗi trang</label>
+                                            class="bi bi-save"></i> <span th:text="#{evsParam.btn.save}">Lưu</span></button>
+                                    <label class="small text-muted mb-0 ms-2 text-nowrap" th:text="#{evsParam.label.perPage}">Mỗi trang</label>
                                     <select class="form-select form-select-sm" id="vepp_pageSize_item"
                                         style="width:70px;" onchange="veppChangePage('item')">
                                         <option value="10">10</option>
@@ -139,7 +139,7 @@
                                         <option value="50">50</option>
                                         <option value="100">100</option>
                                     </select>
-                                    <label class="small text-muted mb-0 text-nowrap">dữ liệu</label>
+                                    <label class="small text-muted mb-0 text-nowrap" th:text="#{evsParam.label.records}">dữ liệu</label>
                                 </div>
                             </div>
                             <div class="table-responsive" style="max-height:calc(100vh - 310px); overflow-y:auto;">
@@ -151,11 +151,11 @@
                                             <th style="width:36px;"><input type="checkbox" class="form-check-input"
                                                     id="vepp_chkAll_item" onchange="veppToggleAll('item')"></th>
                                             <th style="width:44px;">No.</th>
-                                            <th style="width:120px;">Mã</th>
-                                            <th>Tên</th>
-                                            <th style="width:100px;">Điểm</th>
-                                            <th style="width:180px;">Người thay đổi</th>
-                                            <th style="width:130px;">Thời gian TĐ</th>
+                                            <th style="width:120px;" th:text="#{evsParam.col.code}">Mã</th>
+                                            <th th:text="#{evsParam.col.name}">Tên</th>
+                                            <th style="width:100px;" th:text="#{evsParam.col.score}">Điểm</th>
+                                            <th style="width:180px;" th:text="#{evsParam.col.updatedBy}">Người thay đổi</th>
+                                            <th style="width:130px;" th:text="#{evsParam.col.updateTime}">Thời gian TĐ</th>
                                         </tr>
                                     </thead>
                                     <tbody id="vepp_tbody_item"></tbody>
@@ -169,19 +169,19 @@
                                 <div class="d-flex align-items-center gap-3">
                                     <span class="small fw-semibold text-muted" id="vepp_total_object">Total: 0</span>
                                     <div class="d-flex align-items-center gap-1">
-                                        <label class="small text-muted mb-0 text-nowrap">Lọc nhanh</label>
+                                        <label class="small text-muted mb-0 text-nowrap" th:text="#{evsParam.label.quickFilter}">Lọc nhanh</label>
                                         <input type="text" class="form-control form-control-sm" id="vepp_filter_object"
                                             style="width:160px;" oninput="veppFilterTable('object')">
                                     </div>
                                 </div>
                                 <div class="d-flex align-items-center gap-1">
                                     <button class="btn btn-success btn-sm" onclick="veppAddRow('object')"><i
-                                            class="bi bi-plus-lg"></i> Thêm mới</button>
+                                            class="bi bi-plus-lg"></i> <span th:text="#{evsParam.btn.addNew}">Thêm mới</span></button>
                                     <button class="btn btn-danger btn-sm" onclick="veppDeleteSelected('object')"><i
-                                            class="bi bi-trash"></i> Xóa</button>
+                                            class="bi bi-trash"></i> <span th:text="#{evsParam.btn.delete}">Xóa</span></button>
                                     <button class="btn btn-primary btn-sm" onclick="veppSave('object')"><i
-                                            class="bi bi-save"></i> Lưu</button>
-                                    <label class="small text-muted mb-0 ms-2 text-nowrap">Mỗi trang</label>
+                                            class="bi bi-save"></i> <span th:text="#{evsParam.btn.save}">Lưu</span></button>
+                                    <label class="small text-muted mb-0 ms-2 text-nowrap" th:text="#{evsParam.label.perPage}">Mỗi trang</label>
                                     <select class="form-select form-select-sm" id="vepp_pageSize_object"
                                         style="width:70px;" onchange="veppChangePage('object')">
                                         <option value="10">10</option>
@@ -189,7 +189,7 @@
                                         <option value="50">50</option>
                                         <option value="100">100</option>
                                     </select>
-                                    <label class="small text-muted mb-0 text-nowrap">dữ liệu</label>
+                                    <label class="small text-muted mb-0 text-nowrap" th:text="#{evsParam.label.records}">dữ liệu</label>
                                 </div>
                             </div>
                             <div class="table-responsive" style="max-height:calc(100vh - 310px); overflow-y:auto;">
@@ -201,13 +201,13 @@
                                             <th style="width:36px;"><input type="checkbox" class="form-check-input"
                                                     id="vepp_chkAll_object" onchange="veppToggleAll('object')"></th>
                                             <th style="width:44px;">No.</th>
-                                            <th style="width:120px;">Mã</th>
-                                            <th style="width:200px;">Tên</th>
-                                            <th style="width:80px;">Bao gồm</th>
-                                            <th style="width:130px;">Cấp mặc định</th>
-                                            <th>Hình thức tiêu chuẩn</th>
-                                            <th style="width:180px;">Người thay đổi</th>
-                                            <th style="width:130px;">Thời gian TĐ</th>
+                                            <th style="width:120px;" th:text="#{evsParam.col.code}">Mã</th>
+                                            <th style="width:200px;" th:text="#{evsParam.col.name}">Tên</th>
+                                            <th style="width:80px;" th:text="#{evsParam.col.include}">Bao gồm</th>
+                                            <th style="width:130px;" th:text="#{evsParam.col.defaultGrade}">Cấp mặc định</th>
+                                            <th th:text="#{evsParam.col.formula}">Hình thức tiêu chuẩn</th>
+                                            <th style="width:180px;" th:text="#{evsParam.col.updatedBy}">Người thay đổi</th>
+                                            <th style="width:130px;" th:text="#{evsParam.col.updateTime}">Thời gian TĐ</th>
                                         </tr>
                                     </thead>
                                     <tbody id="vepp_tbody_object"></tbody>
@@ -221,19 +221,19 @@
                                 <div class="d-flex align-items-center gap-3">
                                     <span class="small fw-semibold text-muted" id="vepp_total_list">Total: 0</span>
                                     <div class="d-flex align-items-center gap-1">
-                                        <label class="small text-muted mb-0 text-nowrap">Lọc nhanh</label>
+                                        <label class="small text-muted mb-0 text-nowrap" th:text="#{evsParam.label.quickFilter}">Lọc nhanh</label>
                                         <input type="text" class="form-control form-control-sm" id="vepp_filter_list"
                                             style="width:160px;" oninput="veppFilterTable('list')">
                                     </div>
                                 </div>
                                 <div class="d-flex align-items-center gap-1">
                                     <button class="btn btn-success btn-sm" onclick="veppAddRow('list')"><i
-                                            class="bi bi-plus-lg"></i> Thêm mới</button>
+                                            class="bi bi-plus-lg"></i> <span th:text="#{evsParam.btn.addNew}">Thêm mới</span></button>
                                     <button class="btn btn-danger btn-sm" onclick="veppDeleteSelected('list')"><i
-                                            class="bi bi-trash"></i> Xóa</button>
+                                            class="bi bi-trash"></i> <span th:text="#{evsParam.btn.delete}">Xóa</span></button>
                                     <button class="btn btn-primary btn-sm" onclick="veppSave('list')"><i
-                                            class="bi bi-save"></i> Lưu</button>
-                                    <label class="small text-muted mb-0 ms-2 text-nowrap">Mỗi trang</label>
+                                            class="bi bi-save"></i> <span th:text="#{evsParam.btn.save}">Lưu</span></button>
+                                    <label class="small text-muted mb-0 ms-2 text-nowrap" th:text="#{evsParam.label.perPage}">Mỗi trang</label>
                                     <select class="form-select form-select-sm" id="vepp_pageSize_list"
                                         style="width:70px;" onchange="veppChangePage('list')">
                                         <option value="10">10</option>
@@ -241,7 +241,7 @@
                                         <option value="50">50</option>
                                         <option value="100">100</option>
                                     </select>
-                                    <label class="small text-muted mb-0 text-nowrap">dữ liệu</label>
+                                    <label class="small text-muted mb-0 text-nowrap" th:text="#{evsParam.label.records}">dữ liệu</label>
                                 </div>
                             </div>
                             <div class="table-responsive" style="max-height:calc(100vh - 310px); overflow-y:auto;">
@@ -253,12 +253,12 @@
                                             <th style="width:36px;"><input type="checkbox" class="form-check-input"
                                                     id="vepp_chkAll_list" onchange="veppToggleAll('list')"></th>
                                             <th style="width:44px;">No.</th>
-                                            <th style="width:120px;">Mã</th>
-                                            <th>Tên</th>
-                                            <th style="width:200px;">Hình thức tiêu chuẩn</th>
-                                            <th style="width:150px;">Trạng thái ban đầu</th>
-                                            <th style="width:180px;">Người thay đổi</th>
-                                            <th style="width:130px;">Thời gian TĐ</th>
+                                            <th style="width:120px;" th:text="#{evsParam.col.code}">Mã</th>
+                                            <th th:text="#{evsParam.col.name}">Tên</th>
+                                            <th style="width:200px;" th:text="#{evsParam.col.formula}">Hình thức tiêu chuẩn</th>
+                                            <th style="width:150px;" th:text="#{evsParam.col.initialStatus}">Trạng thái ban đầu</th>
+                                            <th style="width:180px;" th:text="#{evsParam.col.updatedBy}">Người thay đổi</th>
+                                            <th style="width:130px;" th:text="#{evsParam.col.updateTime}">Thời gian TĐ</th>
                                         </tr>
                                     </thead>
                                     <tbody id="vepp_tbody_list"></tbody>
@@ -272,19 +272,19 @@
                                 <div class="d-flex align-items-center gap-3">
                                     <span class="small fw-semibold text-muted" id="vepp_total_group">Total: 0</span>
                                     <div class="d-flex align-items-center gap-1">
-                                        <label class="small text-muted mb-0 text-nowrap">Lọc nhanh</label>
+                                        <label class="small text-muted mb-0 text-nowrap" th:text="#{evsParam.label.quickFilter}">Lọc nhanh</label>
                                         <input type="text" class="form-control form-control-sm" id="vepp_filter_group"
                                             style="width:160px;" oninput="veppFilterTable('group')">
                                     </div>
                                 </div>
                                 <div class="d-flex align-items-center gap-1">
                                     <button class="btn btn-success btn-sm" onclick="veppAddRow('group')"><i
-                                            class="bi bi-plus-lg"></i> Thêm mới</button>
+                                            class="bi bi-plus-lg"></i> <span th:text="#{evsParam.btn.addNew}">Thêm mới</span></button>
                                     <button class="btn btn-danger btn-sm" onclick="veppDeleteSelected('group')"><i
-                                            class="bi bi-trash"></i> Xóa</button>
+                                            class="bi bi-trash"></i> <span th:text="#{evsParam.btn.delete}">Xóa</span></button>
                                     <button class="btn btn-primary btn-sm" onclick="veppSave('group')"><i
-                                            class="bi bi-save"></i> Lưu</button>
-                                    <label class="small text-muted mb-0 ms-2 text-nowrap">Mỗi trang</label>
+                                            class="bi bi-save"></i> <span th:text="#{evsParam.btn.save}">Lưu</span></button>
+                                    <label class="small text-muted mb-0 ms-2 text-nowrap" th:text="#{evsParam.label.perPage}">Mỗi trang</label>
                                     <select class="form-select form-select-sm" id="vepp_pageSize_group"
                                         style="width:70px;" onchange="veppChangePage('group')">
                                         <option value="10">10</option>
@@ -292,7 +292,7 @@
                                         <option value="50">50</option>
                                         <option value="100">100</option>
                                     </select>
-                                    <label class="small text-muted mb-0 text-nowrap">dữ liệu</label>
+                                    <label class="small text-muted mb-0 text-nowrap" th:text="#{evsParam.label.records}">dữ liệu</label>
                                 </div>
                             </div>
                             <div class="table-responsive" style="max-height:calc(100vh - 310px); overflow-y:auto;">
@@ -304,11 +304,11 @@
                                             <th style="width:36px;"><input type="checkbox" class="form-check-input"
                                                     id="vepp_chkAll_group" onchange="veppToggleAll('group')"></th>
                                             <th style="width:44px;">No.</th>
-                                            <th style="width:120px;">Mã</th>
-                                            <th style="width:200px;">Tên</th>
-                                            <th>Hình thức tiêu chuẩn</th>
-                                            <th style="width:180px;">Người thay đổi</th>
-                                            <th style="width:130px;">Thời gian TĐ</th>
+                                            <th style="width:120px;" th:text="#{evsParam.col.code}">Mã</th>
+                                            <th style="width:200px;" th:text="#{evsParam.col.name}">Tên</th>
+                                            <th th:text="#{evsParam.col.formula}">Hình thức tiêu chuẩn</th>
+                                            <th style="width:180px;" th:text="#{evsParam.col.updatedBy}">Người thay đổi</th>
+                                            <th style="width:130px;" th:text="#{evsParam.col.updateTime}">Thời gian TĐ</th>
                                         </tr>
                                     </thead>
                                     <tbody id="vepp_tbody_group"></tbody>
@@ -322,19 +322,19 @@
                                 <div class="d-flex align-items-center gap-3">
                                     <span class="small fw-semibold text-muted" id="vepp_total_family">Total: 0</span>
                                     <div class="d-flex align-items-center gap-1">
-                                        <label class="small text-muted mb-0 text-nowrap">Lọc nhanh</label>
+                                        <label class="small text-muted mb-0 text-nowrap" th:text="#{evsParam.label.quickFilter}">Lọc nhanh</label>
                                         <input type="text" class="form-control form-control-sm" id="vepp_filter_family"
                                             style="width:160px;" oninput="veppFilterTable('family')">
                                     </div>
                                 </div>
                                 <div class="d-flex align-items-center gap-1">
                                     <button class="btn btn-success btn-sm" onclick="veppAddRow('family')"><i
-                                            class="bi bi-plus-lg"></i> Thêm mới</button>
+                                            class="bi bi-plus-lg"></i> <span th:text="#{evsParam.btn.addNew}">Thêm mới</span></button>
                                     <button class="btn btn-danger btn-sm" onclick="veppDeleteSelected('family')"><i
-                                            class="bi bi-trash"></i> Xóa</button>
+                                            class="bi bi-trash"></i> <span th:text="#{evsParam.btn.delete}">Xóa</span></button>
                                     <button class="btn btn-primary btn-sm" onclick="veppSave('family')"><i
-                                            class="bi bi-save"></i> Lưu</button>
-                                    <label class="small text-muted mb-0 ms-2 text-nowrap">Mỗi trang</label>
+                                            class="bi bi-save"></i> <span th:text="#{evsParam.btn.save}">Lưu</span></button>
+                                    <label class="small text-muted mb-0 ms-2 text-nowrap" th:text="#{evsParam.label.perPage}">Mỗi trang</label>
                                     <select class="form-select form-select-sm" id="vepp_pageSize_family"
                                         style="width:70px;" onchange="veppChangePage('family')">
                                         <option value="10">10</option>
@@ -342,7 +342,7 @@
                                         <option value="50">50</option>
                                         <option value="100">100</option>
                                     </select>
-                                    <label class="small text-muted mb-0 text-nowrap">dữ liệu</label>
+                                    <label class="small text-muted mb-0 text-nowrap" th:text="#{evsParam.label.records}">dữ liệu</label>
                                 </div>
                             </div>
                             <div class="table-responsive" style="max-height:calc(100vh - 310px); overflow-y:auto;">
@@ -354,11 +354,11 @@
                                             <th style="width:36px;"><input type="checkbox" class="form-check-input"
                                                     id="vepp_chkAll_family" onchange="veppToggleAll('family')"></th>
                                             <th style="width:44px;">No.</th>
-                                            <th style="width:120px;">Mã</th>
-                                            <th style="width:200px;">Tên</th>
-                                            <th>Hình thức tiêu chuẩn</th>
-                                            <th style="width:180px;">Người thay đổi</th>
-                                            <th style="width:130px;">Thời gian TĐ</th>
+                                            <th style="width:120px;" th:text="#{evsParam.col.code}">Mã</th>
+                                            <th style="width:200px;" th:text="#{evsParam.col.name}">Tên</th>
+                                            <th th:text="#{evsParam.col.formula}">Hình thức tiêu chuẩn</th>
+                                            <th style="width:180px;" th:text="#{evsParam.col.updatedBy}">Người thay đổi</th>
+                                            <th style="width:130px;" th:text="#{evsParam.col.updateTime}">Thời gian TĐ</th>
                                         </tr>
                                     </thead>
                                     <tbody id="vepp_tbody_family"></tbody>
@@ -372,19 +372,19 @@
                                 <div class="d-flex align-items-center gap-3">
                                     <span class="small fw-semibold text-muted" id="vepp_total_affirm">Total: 0</span>
                                     <div class="d-flex align-items-center gap-1">
-                                        <label class="small text-muted mb-0 text-nowrap">Lọc nhanh</label>
+                                        <label class="small text-muted mb-0 text-nowrap" th:text="#{evsParam.label.quickFilter}">Lọc nhanh</label>
                                         <input type="text" class="form-control form-control-sm" id="vepp_filter_affirm"
                                             style="width:160px;" oninput="veppFilterTable('affirm')">
                                     </div>
                                 </div>
                                 <div class="d-flex align-items-center gap-1">
                                     <button class="btn btn-success btn-sm" onclick="veppAddRow('affirm')"><i
-                                            class="bi bi-plus-lg"></i> Thêm mới</button>
+                                            class="bi bi-plus-lg"></i> <span th:text="#{evsParam.btn.addNew}">Thêm mới</span></button>
                                     <button class="btn btn-danger btn-sm" onclick="veppDeleteSelected('affirm')"><i
-                                            class="bi bi-trash"></i> Xóa</button>
+                                            class="bi bi-trash"></i> <span th:text="#{evsParam.btn.delete}">Xóa</span></button>
                                     <button class="btn btn-primary btn-sm" onclick="veppSave('affirm')"><i
-                                            class="bi bi-save"></i> Lưu</button>
-                                    <label class="small text-muted mb-0 ms-2 text-nowrap">Mỗi trang</label>
+                                            class="bi bi-save"></i> <span th:text="#{evsParam.btn.save}">Lưu</span></button>
+                                    <label class="small text-muted mb-0 ms-2 text-nowrap" th:text="#{evsParam.label.perPage}">Mỗi trang</label>
                                     <select class="form-select form-select-sm" id="vepp_pageSize_affirm"
                                         style="width:70px;" onchange="veppChangePage('affirm')">
                                         <option value="10">10</option>
@@ -392,7 +392,7 @@
                                         <option value="50">50</option>
                                         <option value="100">100</option>
                                     </select>
-                                    <label class="small text-muted mb-0 text-nowrap">dữ liệu</label>
+                                    <label class="small text-muted mb-0 text-nowrap" th:text="#{evsParam.label.records}">dữ liệu</label>
                                 </div>
                             </div>
                             <div class="table-responsive" style="max-height:calc(100vh - 310px); overflow-y:auto;">
@@ -404,11 +404,11 @@
                                             <th style="width:36px;"><input type="checkbox" class="form-check-input"
                                                     id="vepp_chkAll_affirm" onchange="veppToggleAll('affirm')"></th>
                                             <th style="width:44px;">No.</th>
-                                            <th style="width:180px;">Người đánh giá</th>
-                                            <th>Nhóm đánh giá</th>
-                                            <th style="width:160px;">ID quy tắc</th>
-                                            <th style="width:180px;">Người thay đổi</th>
-                                            <th style="width:130px;">Thời gian TĐ</th>
+                                            <th style="width:180px;" th:text="#{evsParam.col.evaluator}">Người đánh giá</th>
+                                            <th th:text="#{evsParam.col.evalGroup}">Nhóm đánh giá</th>
+                                            <th style="width:160px;" th:text="#{evsParam.col.ruleId}">ID quy tắc</th>
+                                            <th style="width:180px;" th:text="#{evsParam.col.updatedBy}">Người thay đổi</th>
+                                            <th style="width:130px;" th:text="#{evsParam.col.updateTime}">Thời gian TĐ</th>
                                         </tr>
                                     </thead>
                                     <tbody id="vepp_tbody_affirm"></tbody>
@@ -428,16 +428,20 @@
         <div class="modal-dialog modal-sm">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Xác nhận xóa</h5>
+                    <h5 class="modal-title" th:text="#{evsParam.modal.deleteTitle}">Xác nhận xóa</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <p class="mb-0">Bạn có chắc muốn xóa <strong id="vepp_deleteCount">0</strong> dòng đã chọn?</p>
+                    <p class="mb-0">
+                        <span th:text="#{evsParam.modal.deleteBodyPrefix}">Bạn có chắc muốn xóa</span>
+                        <strong id="vepp_deleteCount">0</strong>
+                        <span th:text="#{evsParam.modal.deleteBodySuffix}">dòng đã chọn?</span>
+                    </p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal" th:text="#{evsParam.btn.cancel}">Hủy</button>
                     <button type="button" class="btn btn-danger btn-sm" onclick="veppConfirmDelete()">
-                        <i class="bi bi-trash"></i> Xóa
+                        <i class="bi bi-trash"></i> <span th:text="#{evsParam.btn.delete}">Xóa</span>
                     </button>
                 </div>
             </div>
@@ -499,6 +503,15 @@
                 group: { api: 'evsParam', paramType: 'GROUP' },
                 family: { api: 'evsParam', paramType: 'FAMILY' },
                 affirm: { api: 'evsAffirmRule', paramType: null }
+            };
+
+            var _vepp_msg = {
+                selectFirst: /*[[#{evsParam.js.selectFirst}]]*/ 'Vui lòng chọn Tên đánh giá trước khi lưu.',
+                noChanges: /*[[#{evsParam.js.noChanges}]]*/ 'Không có dữ liệu nào thay đổi để lưu.',
+                saveError: /*[[#{evsParam.js.saveError}]]*/ 'Lỗi khi lưu dữ liệu. Vui lòng thử lại.',
+                selectRow: /*[[#{evsParam.js.selectRow}]]*/ 'Vui lòng chọn ít nhất một dòng để xóa.',
+                deleteError: /*[[#{evsParam.js.deleteError}]]*/ 'Lỗi khi xóa dữ liệu.',
+                defaultSelect: /*[[#{evsParam.js.defaultSelect}]]*/ '-- Chọn --'
             };
 
             /* ── Tiện ích ──────────────────────────────────────────────────────── */
@@ -577,7 +590,7 @@
             function veppSel(field, rowId, parentCode) {
                 var textShow = parentCode === '14015161' ? ' data-text-show="description"' : '';
                 return '<select class="form-select form-select-sm" id="vepp_inp_' + field + '_' + rowId
-                    + '" data-parent-code="' + parentCode + '"' + textShow + ' data-default-text="-- Chọn --"></select>';
+                    + '" data-parent-code="' + parentCode + '"' + textShow + ' data-default-text="' + veppEsc(_vepp_msg.defaultSelect) + '"></select>';
             }
 
             /* ── Load group options (phụ thuộc resumeSeq) ───────────────────── */
@@ -898,9 +911,9 @@
             window.veppSave = function (tab) {
                 veppCommitEditing(tab);
                 var resumeSeq = vepp$('#vepp_resumeSeq').val();
-                if (!resumeSeq) { alert('Vui lòng chọn Tên đánh giá trước khi lưu.'); return; }
+                if (!resumeSeq) { alert(_vepp_msg.selectFirst); return; }
                 var toSave = inst.data[tab].filter(function (r) { return r._modified || r._isNew; });
-                if (!toSave.length) { alert('Không có dữ liệu nào thay đổi để lưu.'); return; }
+                if (!toSave.length) { alert(_vepp_msg.noChanges); return; }
                 var meta = _vepp_meta[tab];
                 var payload = toSave.map(function (r) {
                     var base = { seq: r._isNew ? null : r.seq, resumeSeq: resumeSeq, evsType: inst.evsType };
@@ -938,7 +951,7 @@
                     url: '/evs/manage/api/' + meta.api + '/save',
                     type: 'POST', contentType: 'application/json', data: JSON.stringify(payload),
                     success: function () { veppLoadTab(tab, resumeSeq); },
-                    error: function () { alert('Lỗi khi lưu dữ liệu. Vui lòng thử lại.'); }
+                    error: function () { alert(_vepp_msg.saveError); }
                 });
             };
 
@@ -946,7 +959,7 @@
             window.veppDeleteSelected = function (tab) {
                 var ids = [];
                 vepp$('#vepp_tbody_' + tab + ' .vepp-row-chk:checked').each(function () { ids.push($(this).data('rowid')); });
-                if (!ids.length) { alert('Vui lòng chọn ít nhất một dòng để xóa.'); return; }
+                if (!ids.length) { alert(_vepp_msg.selectRow); return; }
                 inst.pendingDeleteType = tab;
                 inst.pendingDeleteIds = ids;
                 vepp$('#vepp_deleteCount').text(ids.length);
@@ -966,7 +979,7 @@
                     url: '/evs/manage/api/' + _vepp_meta[tab].api + '/delete',
                     type: 'POST', contentType: 'application/json', data: JSON.stringify({ seqs: existingSeqs }),
                     success: function () { veppRenderTable(tab); },
-                    error: function () { alert('Lỗi khi xóa dữ liệu.'); veppLoadTab(tab, resumeSeq); }
+                    error: function () { alert(_vepp_msg.deleteError); veppLoadTab(tab, resumeSeq); }
                 });
             };
 

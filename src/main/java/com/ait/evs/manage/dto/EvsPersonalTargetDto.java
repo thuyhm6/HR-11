@@ -43,4 +43,12 @@ public class EvsPersonalTargetDto {
     private String affirmContent2;
     private String affirmComment1;
     private String affirmComment2;
+
+    // Phần 2: AFFIRM_CONTENT1 (thành tích) và AFFIRM_CONTENT2 (hạn chế) theo từng AFFIRM_LEVEL
+    private String affirmC1L0; // AFFIRM_LEVEL=0, AFFIRM_CONTENT1 (thành tích nhân viên)
+    private String affirmC2L0; // AFFIRM_LEVEL=0, AFFIRM_CONTENT2 (hạn chế nhân viên)
+    private String affirmC1L1; // AFFIRM_LEVEL=1, AFFIRM_CONTENT1 (thành tích cấp 1)
+    private String affirmC2L1; // AFFIRM_LEVEL=1, AFFIRM_CONTENT2 (hạn chế cấp 1)
+    private String affirmC1L2; // AFFIRM_LEVEL=2, AFFIRM_CONTENT1 (thành tích cấp 2)
+    private String affirmC2L2; // AFFIRM_LEVEL=2, AFFIRM_CONTENT2 (hạn chế cấp 2)
 }

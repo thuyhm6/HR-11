@@ -36,7 +36,7 @@
             ORDERNO,
             ACTIVITY
         FROM sy_role_relation 
-        WHERE ROLE_NO = #{roleNo}
+        WHERE ROLE_NO = #{roleNo, jdbcType=VARCHAR}
         ORDER BY ORDERNO
     </select>
 
@@ -56,7 +56,7 @@
             ORDERNO,
             ACTIVITY
         FROM sy_role_relation 
-        WHERE MENU_NO = #{menuNo}
+        WHERE MENU_NO = #{menuNo, jdbcType=VARCHAR}
         ORDER BY ORDERNO
     </select>
 
@@ -76,58 +76,58 @@
             ORDERNO,
             ACTIVITY
         FROM sy_role_relation 
-        WHERE ROLE_NO = #{roleNo}
-          AND MENU_NO = #{menuNo}
+        WHERE ROLE_NO = #{roleNo, jdbcType=VARCHAR}
+          AND MENU_NO = #{menuNo, jdbcType=VARCHAR}
     </select>
 
     <!-- Kiểm tra role có quyền trên menu không -->
     <select id="hasPermission" resultType="boolean">
         SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END
         FROM sy_role_relation 
-        WHERE ROLE_NO = #{roleNo}
-          AND MENU_NO = #{menuNo}
+        WHERE ROLE_NO = #{roleNo, jdbcType=VARCHAR}
+          AND MENU_NO = #{menuNo, jdbcType=VARCHAR}
           AND ACTIVITY = 1
-          AND (SELECTR = 'Y' OR INSERTR = 'Y' OR UPDATER = 'Y' OR DELETER = 'Y')
+          AND (SELECTR = 1 OR INSERTR = 1 OR UPDATER = 1 OR DELETER = 1)
     </select>
 
     <!-- Kiểm tra role có quyền SELECT trên menu không -->
     <select id="hasSelectPermission" resultType="boolean">
         SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END
         FROM sy_role_relation 
-        WHERE ROLE_NO = #{roleNo}
-          AND MENU_NO = #{menuNo}
+        WHERE ROLE_NO = #{roleNo, jdbcType=VARCHAR}
+          AND MENU_NO = #{menuNo, jdbcType=VARCHAR}
           AND ACTIVITY = 1
-          AND SELECTR = 'Y'
+          AND SELECTR = 1
     </select>
 
     <!-- Kiểm tra role có quyền INSERT trên menu không -->
     <select id="hasInsertPermission" resultType="boolean">
         SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END
         FROM sy_role_relation 
-        WHERE ROLE_NO = #{roleNo}
-          AND MENU_NO = #{menuNo}
+        WHERE ROLE_NO = #{roleNo, jdbcType=VARCHAR}
+          AND MENU_NO = #{menuNo, jdbcType=VARCHAR}
           AND ACTIVITY = 1
-          AND INSERTR = 'Y'
+          AND INSERTR = 1
     </select>
 
     <!-- Kiểm tra role có quyền UPDATE trên menu không -->
     <select id="hasUpdatePermission" resultType="boolean">
         SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END
         FROM sy_role_relation 
-        WHERE ROLE_NO = #{roleNo}
-          AND MENU_NO = #{menuNo}
+        WHERE ROLE_NO = #{roleNo, jdbcType=VARCHAR}
+          AND MENU_NO = #{menuNo, jdbcType=VARCHAR}
           AND ACTIVITY = 1
-          AND UPDATER = 'Y'
+          AND UPDATER = 1
     </select>
 
     <!-- Kiểm tra role có quyền DELETE trên menu không -->
     <select id="hasDeletePermission" resultType="boolean">
         SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END
         FROM sy_role_relation 
-        WHERE ROLE_NO = #{roleNo}
-          AND MENU_NO = #{menuNo}
+        WHERE ROLE_NO = #{roleNo, jdbcType=VARCHAR}
+          AND MENU_NO = #{menuNo, jdbcType=VARCHAR}
           AND ACTIVITY = 1
-          AND DELETER = 'Y'
+          AND DELETER = 1
     </select>
 
     <!-- Lấy danh sách relations hoạt động theo roleNo -->
@@ -146,7 +146,7 @@
             ORDERNO,
             ACTIVITY
         FROM sy_role_relation 
-        WHERE ROLE_NO = #{roleNo}
+        WHERE ROLE_NO = #{roleNo, jdbcType=VARCHAR}
           AND ACTIVITY = 1
         ORDER BY ORDERNO
     </select>
@@ -157,15 +157,15 @@
             ROLE_NO, MENU_NO, SELECTR, INSERTR, UPDATER, DELETER,
             CREATE_DATE, CREATED_BY, UPDATE_DATE, UPDATED_BY, ORDERNO, ACTIVITY
         ) VALUES (
-            #{roleNo}, #{menuNo}, #{selectr}, #{insertr}, #{updater}, #{deleter},
-            SYSDATE, #{adminID, jdbcType=VARCHAR}, SYSDATE, #{adminID, jdbcType=VARCHAR}, #{orderNo}, #{activity}
+            #{roleNo, jdbcType=VARCHAR}, #{menuNo, jdbcType=VARCHAR}, #{selectr, jdbcType=NUMERIC}, #{insertr, jdbcType=NUMERIC}, #{updater, jdbcType=NUMERIC}, #{deleter, jdbcType=NUMERIC},
+            SYSDATE, #{adminID, jdbcType=VARCHAR}, SYSDATE, #{adminID, jdbcType=VARCHAR}, #{orderNo, jdbcType=INTEGER}, #{activity, jdbcType=INTEGER}
         )
     </insert>
 
     <!-- Delete by Role No -->
     <delete id="deleteByRoleNo">
         DELETE FROM sy_role_relation
-        WHERE ROLE_NO = #{roleNo}
+        WHERE ROLE_NO = #{roleNo, jdbcType=VARCHAR}
     </delete>
 
 </mapper>

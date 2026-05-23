@@ -23,4 +23,7 @@ public interface EvsAffirmorSetupService {
 
     /** Bắt đầu đánh giá (gọi PKG_EVS_PROCESS.PR_EVS_START) */
     void evsStart(EvsAffirmorSetupDto dto);
+
+    /** Xóa các đối tượng đánh giá theo danh sách SEQ */
+    void deleteObjects(List<String> seqList);
 }

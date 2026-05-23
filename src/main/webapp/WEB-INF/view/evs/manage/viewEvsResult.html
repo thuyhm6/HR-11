@@ -31,17 +31,22 @@
                             </div>
                         </div>
                         <div class="col-auto d-flex align-items-center gap-2">
-                            <label class="form-label small text-muted mb-0 text-nowrap">Phòng ban</label>
+                            <label class="form-label small text-muted mb-0 text-nowrap"
+                                th:text="#{evs.result.label.dept}">Phòng ban</label>
                             <div class="input-group input-group-sm" style="max-width:180px;">
-                                <input type="text" class="form-control" id="ver_deptSearch" placeholder="Chọn phòng ban"
-                                    readonly>
+                                <input type="text" class="form-control" id="ver_deptSearch"
+                                    th:placeholder="#{evs.result.placeholder.selectDept}"
+                                    placeholder="Chọn phòng ban" readonly>
                                 <span class="input-group-text"><i class="bi bi-people"></i></span>
                             </div>
                         </div>
                         <div class="col-auto d-flex align-items-center gap-2">
-                            <label class="form-label small text-muted mb-0 text-nowrap">Nhóm đánh giá</label>
+                            <label class="form-label small text-muted mb-0 text-nowrap"
+                                th:text="#{evs.result.label.group}">Nhóm đánh giá</label>
                             <div class="input-group input-group-sm" style="max-width:180px;">
-                                <input type="text" class="form-control" id="ver_groupSearch" placeholder="Chọn nhóm">
+                                <input type="text" class="form-control" id="ver_groupSearch"
+                                    th:placeholder="#{evs.result.placeholder.selectGroup}"
+                                    placeholder="Chọn nhóm">
                                 <span class="input-group-text"><i class="bi bi-people-fill"></i></span>
                             </div>
                         </div>
@@ -55,12 +60,12 @@
                 <div class="col-md-8">
                     <div class="card h-100">
                         <div class="card-body p-2">
-                            <div class="fw-semibold small mb-1">Tiêu chuẩn cơ bản</div>
+                            <div class="fw-semibold small mb-1" th:text="#{evs.result.panel.standard}">Tiêu chuẩn cơ bản</div>
                             <table class="table table-bordered table-sm mb-0 text-center" id="ver_standardTable">
                                 <thead class="table-light">
                                     <tr>
                                         <th rowspan="2" style="vertical-align:middle;">-</th>
-                                        <th rowspan="2" style="vertical-align:middle;">Tổng số người</th>
+                                        <th rowspan="2" style="vertical-align:middle;" th:text="#{evs.result.col.total}">Tổng số người</th>
                                         <th colspan="2" class="text-center">EX</th>
                                         <th colspan="2" class="text-center">VG</th>
                                         <th colspan="2" class="text-center">GD</th>
@@ -68,21 +73,21 @@
                                         <th colspan="2" class="text-center">UN</th>
                                     </tr>
                                     <tr>
-                                        <th>Số lượng</th>
-                                        <th>Tỷ lệ</th>
-                                        <th>Số lượng</th>
-                                        <th>Tỷ lệ</th>
-                                        <th>Số lượng</th>
-                                        <th>Tỷ lệ</th>
-                                        <th>Số lượng</th>
-                                        <th>Tỷ lệ</th>
-                                        <th>Số lượng</th>
-                                        <th>Tỷ lệ</th>
+                                        <th th:text="#{evs.result.col.count}">Số lượng</th>
+                                        <th th:text="#{evs.result.col.rate}">Tỷ lệ</th>
+                                        <th th:text="#{evs.result.col.count}">Số lượng</th>
+                                        <th th:text="#{evs.result.col.rate}">Tỷ lệ</th>
+                                        <th th:text="#{evs.result.col.count}">Số lượng</th>
+                                        <th th:text="#{evs.result.col.rate}">Tỷ lệ</th>
+                                        <th th:text="#{evs.result.col.count}">Số lượng</th>
+                                        <th th:text="#{evs.result.col.rate}">Tỷ lệ</th>
+                                        <th th:text="#{evs.result.col.count}">Số lượng</th>
+                                        <th th:text="#{evs.result.col.rate}">Tỷ lệ</th>
                                     </tr>
                                 </thead>
                                 <tbody id="ver_standardTbody">
                                     <tr>
-                                        <td>Tỷ lệ tiêu chuẩn</td>
+                                        <td th:text="#{evs.result.col.std}">Tỷ lệ tiêu chuẩn</td>
                                         <td id="ver_std_total">0</td>
                                         <td id="ver_std_ex_cnt">0</td>
                                         <td id="ver_std_ex_pct">0</td>
@@ -96,7 +101,7 @@
                                         <td id="ver_std_un_pct">0</td>
                                     </tr>
                                     <tr>
-                                        <td>Nhân sự</td>
+                                        <td th:text="#{evs.result.col.hr}">Nhân sự</td>
                                         <td id="ver_hr_total">0</td>
                                         <td id="ver_hr_ex_cnt">0</td>
                                         <td id="ver_hr_ex_pct">0</td>
@@ -110,7 +115,7 @@
                                         <td id="ver_hr_un_pct">0</td>
                                     </tr>
                                     <tr>
-                                        <td>Lần 2</td>
+                                        <td th:text="#{evs.result.col.prog_l2}">Lần 2</td>
                                         <td id="ver_l2_total">0</td>
                                         <td id="ver_l2_ex_cnt">0</td>
                                         <td id="ver_l2_ex_pct">0</td>
@@ -124,7 +129,7 @@
                                         <td id="ver_l2_un_pct">0</td>
                                     </tr>
                                     <tr>
-                                        <td>Lần 1</td>
+                                        <td th:text="#{evs.result.col.prog_l1}">Lần 1</td>
                                         <td id="ver_l1_total">0</td>
                                         <td id="ver_l1_ex_cnt">0</td>
                                         <td id="ver_l1_ex_pct">0</td>
@@ -148,33 +153,34 @@
                     <div class="card h-100">
                         <div class="card-body p-2">
                             <div class="d-flex justify-content-between align-items-center mb-1">
-                                <span class="fw-semibold small">Trạng thái tiến hành</span>
+                                <span class="fw-semibold small" th:text="#{evs.result.panel.statusProgress}">Trạng thái tiến hành</span>
                                 <div class="d-flex gap-1">
                                     <button type="button" class="btn btn-outline-secondary btn-sm"
-                                        onclick="verEmail()">Email</button>
-                                    <button type="button" class="btn btn-danger btn-sm" onclick="verEvaluateEnd()">Đánh
-                                        giá kết thúc</button>
+                                        onclick="verEmail()" th:text="#{evs.result.btn.email}">Email</button>
+                                    <button type="button" class="btn btn-danger btn-sm"
+                                        onclick="verEvaluateEnd()" th:text="#{evs.result.btn.evaluateEnd}">Đánh giá kết thúc</button>
                                 </div>
                             </div>
                             <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
-                                <label class="form-label small text-muted mb-0 text-nowrap">Trạng thái</label>
+                                <label class="form-label small text-muted mb-0 text-nowrap"
+                                    th:text="#{evs.result.label.status}">Trạng thái</label>
                                 <select class="form-select form-select-sm" id="ver_statusFilter"
                                     style="max-width:160px;" data-parent-code="14015351"></select>
-                                <button type="button" class="btn btn-primary btn-sm" onclick="verSearch()">Tra cứu và
-                                    in</button>
-                                <button type="button" class="btn btn-warning btn-sm" onclick="verChangeStatus()">Thay
-                                    đổi trạng thái</button>
+                                <button type="button" class="btn btn-primary btn-sm"
+                                    onclick="verSearch()" th:text="#{evs.result.btn.searchAndPrint}">Tra cứu và in</button>
+                                <button type="button" class="btn btn-warning btn-sm"
+                                    onclick="verChangeStatus()" th:text="#{evs.result.btn.changeStatus}">Thay đổi trạng thái</button>
                             </div>
-                            <div class="fw-semibold small mb-1">Tình trạng đánh giá giai đoạn</div>
+                            <div class="fw-semibold small mb-1" th:text="#{evs.result.panel.progress}">Tình trạng đánh giá giai đoạn</div>
                             <table class="table table-bordered table-sm text-center mb-0">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>Tổng số người</th>
-                                        <th>Bản thân</th>
-                                        <th>Lần 1</th>
-                                        <th>Lần 2</th>
-                                        <th>Hoàn thành</th>
-                                        <th>Kết thúc</th>
+                                        <th th:text="#{evs.result.col.total}">Tổng số người</th>
+                                        <th th:text="#{evs.result.col.prog_self}">Bản thân</th>
+                                        <th th:text="#{evs.result.col.prog_l1}">Lần 1</th>
+                                        <th th:text="#{evs.result.col.prog_l2}">Lần 2</th>
+                                        <th th:text="#{evs.result.col.prog_done}">Hoàn thành</th>
+                                        <th th:text="#{evs.result.col.prog_end}">Kết thúc</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -195,29 +201,29 @@
 
             <!-- Thanh hành động & lọc nhanh -->
             <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
-                <span class="small text-muted">Total: <strong id="ver_totalCount">0</strong></span>
+                <span class="small text-muted"><span th:text="#{evs.result.label.total}">Tổng</span>: <strong id="ver_totalCount">0</strong></span>
                 <div class="d-flex align-items-center gap-1">
-                    <label class="form-label small text-muted mb-0">Lọc nhanh</label>
+                    <label class="form-label small text-muted mb-0" th:text="#{evs.result.quickFilter}">Lọc nhanh</label>
                     <input type="text" class="form-control form-control-sm" id="ver_quickFilter" style="width:130px;"
-                        placeholder="Từ khóa...">
+                        th:placeholder="#{evs.result.placeholder.keyword}" placeholder="Từ khóa...">
                 </div>
                 <button type="button" class="btn btn-primary btn-sm" onclick="verSearch()">
-                    <i class="bi bi-search"></i> Tra cứu
+                    <i class="bi bi-search"></i> <span th:text="#{evs.result.btn.search}">Tra cứu</span>
                 </button>
                 <button type="button" class="btn btn-secondary btn-sm" onclick="verOpenTemplate()">
-                    <i class="bi bi-file-earmark-text"></i> Bản mẫu
+                    <i class="bi bi-file-earmark-text"></i> <span th:text="#{evs.result.btn.template}">Bản mẫu</span>
                 </button>
                 <button type="button" class="btn btn-secondary btn-sm" onclick="verInsertFile()">
-                    <i class="bi bi-paperclip"></i> Chèn file
+                    <i class="bi bi-paperclip"></i> <span th:text="#{evs.result.btn.insertFile}">Chèn file</span>
                 </button>
                 <button type="button" class="btn btn-secondary btn-sm" onclick="verCopyGrade()">
-                    <i class="bi bi-copy"></i> Sao chép cấp đánh giá
+                    <i class="bi bi-copy"></i> <span th:text="#{evs.result.btn.copyGrade}">Sao chép cấp đánh giá</span>
                 </button>
                 <button type="button" class="btn btn-success btn-sm" onclick="verSave()">
-                    <i class="bi bi-save"></i> Lưu
+                    <i class="bi bi-save"></i> <span th:text="#{evs.result.btn.save}">Lưu</span>
                 </button>
                 <button type="button" class="btn btn-info btn-sm text-white" onclick="verExportExcel()">
-                    <i class="bi bi-file-earmark-excel"></i> Xuất Excel
+                    <i class="bi bi-file-earmark-excel"></i> <span th:text="#{evs.result.btn.exportExcel}">Xuất Excel</span>
                 </button>
             </div>
 
@@ -232,41 +238,39 @@
                             <thead class="table-light">
                                 <tr>
                                     <th rowspan="2" class="text-center align-middle no-sort" style="width:30px;">
-                                        <input type="checkbox" id="ver_checkAll" title="Chọn tất cả">
+                                        <input type="checkbox" id="ver_checkAll" th:title="#{evs.result.label.selectAll}" title="Chọn tất cả">
                                     </th>
-                                    <th rowspan="2" class="text-center align-middle no-sort" style="width:35px;">Nо.
-                                    </th>
-                                    <th rowspan="2" class="align-middle">Họ tên</th>
-                                    <th rowspan="2" class="text-center align-middle">Mã nhân viên</th>
-                                    <th rowspan="2" class="align-middle">Phòng ban</th>
-                                    <th rowspan="2" class="text-center align-middle">Chức vụ</th>
-                                    <th rowspan="2" class="text-center align-middle">Ngày vào làm</th>
-                                    <th rowspan="2" class="text-center align-middle">Trạng thái</th>
-                                    <th colspan="3" class="text-center">Bản thân</th>
-                                    <th colspan="5" class="text-center">Người đánh giá lần 1</th>
-                                    <th colspan="5" class="text-center">Người đánh giá lần 2</th>
-                                    <th rowspan="2" class="text-center align-middle">Cấp đánh giá<br><small>(nhân
-                                            sự)</small></th>
-                                    <th rowspan="2" class="align-middle no-sort">Ý kiến</th>
-                                    <th rowspan="2" class="text-center align-middle no-sort">Người thay đổi</th>
+                                    <th rowspan="2" class="text-center align-middle no-sort" style="width:35px;" th:text="#{evs.result.col.no}">Nо.</th>
+                                    <th rowspan="2" class="align-middle" th:text="#{evs.result.col.name}">Họ tên</th>
+                                    <th rowspan="2" class="text-center align-middle" th:text="#{evs.result.col.empId}">Mã nhân viên</th>
+                                    <th rowspan="2" class="align-middle" th:text="#{evs.result.col.dept}">Phòng ban</th>
+                                    <th rowspan="2" class="text-center align-middle" th:text="#{evs.result.col.position}">Chức vụ</th>
+                                    <th rowspan="2" class="text-center align-middle" th:text="#{evs.result.col.dateStarted}">Ngày vào làm</th>
+                                    <th rowspan="2" class="text-center align-middle" th:text="#{evs.result.col.statusActivity}">Trạng thái</th>
+                                    <th colspan="3" class="text-center" th:text="#{evs.result.col.self}">Bản thân</th>
+                                    <th colspan="5" class="text-center" th:text="#{evs.result.col.appraiser1}">Người đánh giá lần 1</th>
+                                    <th colspan="5" class="text-center" th:text="#{evs.result.col.appraiser2}">Người đánh giá lần 2</th>
+                                    <th rowspan="2" class="text-center align-middle" th:text="#{evs.result.col.hrGrade}">Cấp đánh giá (nhân sự)</th>
+                                    <th rowspan="2" class="align-middle no-sort" th:text="#{evs.result.col.opinion}">Ý kiến</th>
+                                    <th rowspan="2" class="text-center align-middle no-sort" th:text="#{evs.result.col.updatedBy}">Người thay đổi</th>
                                 </tr>
                                 <tr>
                                     <!-- Bản thân: 3 cột -->
-                                    <th class="text-center">Trạng thái</th>
-                                    <th class="text-center">Điểm số</th>
-                                    <th class="text-center">Cấp</th>
+                                    <th class="text-center" th:text="#{evs.result.col.statusEval}">Trạng thái</th>
+                                    <th class="text-center" th:text="#{evs.result.col.point}">Điểm số</th>
+                                    <th class="text-center" th:text="#{evs.result.col.grade}">Cấp</th>
                                     <!-- ĐG lần 1: 5 cột -->
-                                    <th>Họ tên</th>
-                                    <th class="text-center">Chức vụ</th>
-                                    <th class="text-center">Trạng thái</th>
-                                    <th class="text-center">Điểm số</th>
-                                    <th class="text-center">Cấp</th>
+                                    <th th:text="#{evs.result.col.name}">Họ tên</th>
+                                    <th class="text-center" th:text="#{evs.result.col.position}">Chức vụ</th>
+                                    <th class="text-center" th:text="#{evs.result.col.statusEval}">Trạng thái</th>
+                                    <th class="text-center" th:text="#{evs.result.col.point}">Điểm số</th>
+                                    <th class="text-center" th:text="#{evs.result.col.grade}">Cấp</th>
                                     <!-- ĐG lần 2: 5 cột -->
-                                    <th>Họ tên</th>
-                                    <th class="text-center">Chức vụ</th>
-                                    <th class="text-center">Trạng thái</th>
-                                    <th class="text-center">Điểm số</th>
-                                    <th class="text-center">Cấp</th>
+                                    <th th:text="#{evs.result.col.name}">Họ tên</th>
+                                    <th class="text-center" th:text="#{evs.result.col.position}">Chức vụ</th>
+                                    <th class="text-center" th:text="#{evs.result.col.statusEval}">Trạng thái</th>
+                                    <th class="text-center" th:text="#{evs.result.col.point}">Điểm số</th>
+                                    <th class="text-center" th:text="#{evs.result.col.grade}">Cấp</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>

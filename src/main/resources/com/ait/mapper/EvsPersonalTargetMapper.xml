@@ -35,6 +35,12 @@
         <result column="AFFIRM_CONTENT2"   property="affirmContent2"   jdbcType="VARCHAR" />
         <result column="AFFIRM_COMMENT1"   property="affirmComment1"   jdbcType="VARCHAR" />
         <result column="AFFIRM_COMMENT2"   property="affirmComment2"   jdbcType="VARCHAR" />
+        <result column="AFFIRM_C1_L0"      property="affirmC1L0"       jdbcType="VARCHAR" />
+        <result column="AFFIRM_C2_L0"      property="affirmC2L0"       jdbcType="VARCHAR" />
+        <result column="AFFIRM_C1_L1"      property="affirmC1L1"       jdbcType="VARCHAR" />
+        <result column="AFFIRM_C2_L1"      property="affirmC2L1"       jdbcType="VARCHAR" />
+        <result column="AFFIRM_C1_L2"      property="affirmC1L2"       jdbcType="VARCHAR" />
+        <result column="AFFIRM_C2_L2"      property="affirmC2L2"       jdbcType="VARCHAR" />
     </resultMap>
 
     <!-- ── ResultMap: EVS_ITEM_SST ──────────────────────────────────────────── -->
@@ -96,7 +102,13 @@
                PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ, 1, 'AFFIRM_CONTENT') AFFIRM_CONTENT1,
                PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ, 2, 'AFFIRM_CONTENT') AFFIRM_CONTENT2,
                PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ, 1, 'AFFIRM_COMMENT') AFFIRM_COMMENT1,
-               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ, 2, 'AFFIRM_COMMENT') AFFIRM_COMMENT2
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ, 2, 'AFFIRM_COMMENT') AFFIRM_COMMENT2,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ, 0, 'AFFIRM_CONTENT')  AFFIRM_C1_L0,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ, 0, 'AFFIRM_CONTENT2') AFFIRM_C2_L0,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ, 1, 'AFFIRM_CONTENT')  AFFIRM_C1_L1,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ, 1, 'AFFIRM_CONTENT2') AFFIRM_C2_L1,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ, 2, 'AFFIRM_CONTENT')  AFFIRM_C1_L2,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ, 2, 'AFFIRM_CONTENT2') AFFIRM_C2_L2
           FROM EVS_RESUME_INFO RESUME, EVS_OBJECT OBJECT
          WHERE RESUME.SEQ  = OBJECT.RESUME_SEQ
            AND RESUME.SEQ  = #{resumeSeq, jdbcType=VARCHAR}

@@ -164,7 +164,7 @@
         <if test="statusFilter != null and statusFilter == 'Not_Evaluated'">
             AND PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(A.SEQ, 1, 'AFFIRM_FLAG') = 0
         </if>
-         ORDER BY A.ORDERNO ASC, A.PERSON_ID ASC
+         ORDER BY A.PERSON_ID ASC
     </select>
 
     <!-- ── selectProgressSummary: tiến độ đánh giá theo giai đoạn ───────────── -->

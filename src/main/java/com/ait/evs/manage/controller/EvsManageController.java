@@ -1,7 +1,11 @@
 package com.ait.evs.manage.controller;
 
 import com.ait.evs.manage.dto.EvsAffirmRuleDto;
+import com.ait.evs.manage.dto.EvsAffirmTarget1Dto;
+import com.ait.evs.manage.dto.EvsAffirmTarget2Dto;
 import com.ait.evs.manage.dto.EvsAffirmorSetupDto;
+import com.ait.evs.manage.dto.EvsConfirmTarget1Dto;
+import com.ait.evs.manage.dto.EvsEvsBySelfHtsvDto;
 import com.ait.evs.manage.dto.EvsFormulaDto;
 import com.ait.evs.manage.dto.EvsGradeDto;
 import com.ait.evs.manage.dto.EvsItemDto;
@@ -15,7 +19,11 @@ import com.ait.evs.manage.dto.EvsResultDto;
 import com.ait.evs.manage.dto.EvsScheduleDto;
 import com.ait.evs.manage.dto.EvsScoreDto;
 import com.ait.evs.manage.service.EvsAffirmRuleService;
+import com.ait.evs.manage.service.EvsAffirmTarget1Service;
+import com.ait.evs.manage.service.EvsAffirmTarget2Service;
 import com.ait.evs.manage.service.EvsAffirmorSetupService;
+import com.ait.evs.manage.service.EvsConfirmTarget1Service;
+import com.ait.evs.manage.service.EvsEvsBySelfHtsvService;
 import com.ait.evs.manage.service.EvsFormulaService;
 import com.ait.evs.manage.service.EvsItemParamService;
 import com.ait.evs.manage.service.EvsItemService;
@@ -27,6 +35,7 @@ import com.ait.evs.manage.service.EvsResumeService;
 import com.ait.evs.manage.service.EvsResultService;
 import com.ait.evs.manage.service.EvsScheduleService;
 import com.ait.evs.manage.service.EvsScoreService;
+import com.ait.sy.sys.dto.DataTablesResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -77,6 +86,18 @@ public class EvsManageController {
 
     @Autowired
     private EvsPersonalTargetService evsPersonalTargetService;
+
+    @Autowired
+    private EvsConfirmTarget1Service evsConfirmTarget1Service;
+
+    @Autowired
+    private EvsEvsBySelfHtsvService evsEvsBySelfHtsvService;
+
+    @Autowired
+    private EvsAffirmTarget1Service evsAffirmTarget1Service;
+
+    @Autowired
+    private EvsAffirmTarget2Service evsAffirmTarget2Service;
 
     @GetMapping("/viewResumeList")
     public String viewResumeList() {
@@ -447,6 +468,17 @@ public class EvsManageController {
         }
     }
 
+    @PostMapping("/api/affirmorSetup/delete")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> deleteAffirmorSetup(@RequestBody List<String> seqList) {
+        try {
+            evsAffirmorSetupService.deleteObjects(seqList);
+            return ResponseEntity.ok(Map.of("success", true));
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
     // ── Kết quả đánh giá (EVS_OBJECT - viewEvsResult) ────────────────────────
 
     @GetMapping("/viewEvsResult")
@@ -655,6 +687,370 @@ public class EvsManageController {
     public ResponseEntity<Map<String, Object>> deletePersonalTargetItem(@RequestBody EvsItemSstDto dto) {
         try {
             evsPersonalTargetService.deleteItem(dto);
+            return ResponseEntity.ok(Map.of("success", true));
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
+    // ── Xác nhận mục tiêu lần 1 (EVS_OBJECT + EVS_AFFIRM level 1) ────────────
+
+    @GetMapping("/viewConfirmTarget1")
+    public String viewConfirmTarget1() {
+        return "evs/manage/viewConfirmTarget1";
+    }
+
+    // ── Xác nhận mục tiêu lần 2 (EVS_OBJECT + EVS_AFFIRM level 2) ────────────
+
+    @GetMapping("/viewConfirmTarget2")
+    public String viewConfirmTarget2() {
+        return "evs/manage/viewConfirmTarget2";
+    }
+
+    @GetMapping("/api/confirmTarget2/objectList")
+    @ResponseBody
+    public ResponseEntity<DataTablesResponse<EvsConfirmTarget1Dto>> getConfirmTarget2ObjectList(
+            @RequestParam(required = false) String resumeSeq,
+            @RequestParam(required = false) String evsType,
+            @RequestParam(defaultValue = "1") int draw,
+            @RequestParam(defaultValue = "0") int start,
+            @RequestParam(defaultValue = "50") int length) {
+        EvsConfirmTarget1Dto params = new EvsConfirmTarget1Dto();
+        params.setResumeSeq(resumeSeq);
+        params.setEvsType(evsType);
+        params.setAffirmLevel("2");
+        params.setDraw(draw);
+        params.setStart(start);
+        params.setLength(length);
+        return ResponseEntity.ok(evsConfirmTarget1Service.getObjectList(params));
+    }
+
+    @GetMapping("/api/confirmTarget2/objectInfo")
+    @ResponseBody
+    public ResponseEntity<EvsPersonalTargetDto> getConfirmTarget2ObjectInfo(
+            @RequestParam String evsObjectSeq) {
+        return ResponseEntity.ok(evsConfirmTarget1Service.getObjectInfoBySeq(evsObjectSeq));
+    }
+
+    @PostMapping("/api/confirmTarget2/confirm")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> confirmTarget2(@RequestBody EvsConfirmTarget1Dto dto) {
+        try {
+            dto.setAffirmLevel("2");
+            evsConfirmTarget1Service.confirm(dto);
+            return ResponseEntity.ok(Map.of("success", true));
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
+    // ── Đánh giá bản thân HTSV (EVS_OBJECT + EVS_ITEM_SST.EVS_SCORE) ─────────────
+
+    @GetMapping("/viewEvsBySelfHTSV")
+    public String viewEvsBySelfHTSV() {
+        return "evs/manage/viewEvsBySelfHTSV";
+    }
+
+    @GetMapping("/api/evsBySelfHTSV/objectList")
+    @ResponseBody
+    public ResponseEntity<DataTablesResponse<EvsEvsBySelfHtsvDto>> getEvsBySelfHTSVObjectList(
+            @RequestParam(required = false) String resumeSeq,
+            @RequestParam(required = false) String evsType,
+            @RequestParam(defaultValue = "1") int draw,
+            @RequestParam(defaultValue = "0") int start,
+            @RequestParam(defaultValue = "50") int length) {
+        EvsEvsBySelfHtsvDto params = new EvsEvsBySelfHtsvDto();
+        params.setResumeSeq(resumeSeq);
+        params.setEvsType(evsType);
+        params.setDraw(draw);
+        params.setStart(start);
+        params.setLength(length);
+        return ResponseEntity.ok(evsEvsBySelfHtsvService.getObjectList(params));
+    }
+
+    @GetMapping("/api/evsBySelfHTSV/objectInfo")
+    @ResponseBody
+    public ResponseEntity<EvsPersonalTargetDto> getEvsBySelfHTSVObjectInfo(
+            @RequestParam String evsObjectSeq) {
+        return ResponseEntity.ok(evsEvsBySelfHtsvService.getObjectInfoBySeq(evsObjectSeq));
+    }
+
+    @PostMapping("/api/evsBySelfHTSV/save")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> saveEvsBySelfHTSV(@RequestBody EvsEvsBySelfHtsvDto dto) {
+        try {
+            evsEvsBySelfHtsvService.save(dto);
+            return ResponseEntity.ok(Map.of("success", true));
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
+    // ── Đánh giá lần 1 (EVS_AFFIRM level 1 - nhập điểm + cấp đánh giá) ─────────
+
+    @GetMapping("/viewAffirmTarget1")
+    public String viewAffirmTarget1() {
+        return "evs/manage/viewAffirmTarget1";
+    }
+
+    @GetMapping("/api/affirmTarget1/objectList")
+    @ResponseBody
+    public ResponseEntity<DataTablesResponse<EvsAffirmTarget1Dto>> getAffirmTarget1ObjectList(
+            @RequestParam(required = false) String resumeSeq,
+            @RequestParam(required = false) String evsType,
+            @RequestParam(defaultValue = "1") int draw,
+            @RequestParam(defaultValue = "0") int start,
+            @RequestParam(defaultValue = "50") int length) {
+        EvsAffirmTarget1Dto params = new EvsAffirmTarget1Dto();
+        params.setResumeSeq(resumeSeq);
+        params.setEvsType(evsType);
+        params.setAffirmLevel("1");
+        params.setDraw(draw);
+        params.setStart(start);
+        params.setLength(length);
+        return ResponseEntity.ok(evsAffirmTarget1Service.getObjectList(params));
+    }
+
+    @GetMapping("/api/affirmTarget1/gradeSummary")
+    @ResponseBody
+    public ResponseEntity<List<Map<String, Object>>> getAffirmTarget1GradeSummary(
+            @RequestParam(required = false) String resumeSeq) {
+        EvsAffirmTarget1Dto params = new EvsAffirmTarget1Dto();
+        params.setResumeSeq(resumeSeq);
+        params.setAffirmLevel("1");
+        return ResponseEntity.ok(evsAffirmTarget1Service.getGradeSummary(params));
+    }
+
+    @GetMapping("/api/affirmTarget1/standardRate")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> getAffirmTarget1StandardRate(
+            @RequestParam(required = false) String resumeSeq) {
+        EvsResultDto params = new EvsResultDto();
+        params.setResumeSeq(resumeSeq);
+        return ResponseEntity.ok(evsResultService.getStandardRate(params));
+    }
+
+    @PostMapping("/api/affirmTarget1/save")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> saveAffirmTarget1(@RequestBody EvsAffirmTarget1Dto dto) {
+        try {
+            dto.setAffirmLevel("1");
+            evsAffirmTarget1Service.saveBatch(dto);
+            return ResponseEntity.ok(Map.of("success", true));
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/api/affirmTarget1/execute")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> executeAffirmTarget1(@RequestBody EvsAffirmTarget1Dto dto) {
+        try {
+            dto.setAffirmLevel("1");
+            evsAffirmTarget1Service.executeActivity(dto);
+            return ResponseEntity.ok(Map.of("success", true));
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/api/affirmTarget1/objectInfo")
+    @ResponseBody
+    public ResponseEntity<EvsPersonalTargetDto> getAffirmTarget1ObjectInfo(
+            @RequestParam String evsObjectSeq) {
+        return ResponseEntity.ok(evsAffirmTarget1Service.getObjectInfoBySeq(evsObjectSeq));
+    }
+
+    @GetMapping("/api/affirmTarget1/itemList")
+    @ResponseBody
+    public ResponseEntity<List<EvsItemSstDto>> getAffirmTarget1ItemList(
+            @RequestParam String evsObjectSeq) {
+        return ResponseEntity.ok(evsAffirmTarget1Service.getItemList(evsObjectSeq));
+    }
+
+    @PostMapping("/api/affirmTarget1/saveDetail")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> saveAffirmTarget1Detail(@RequestBody EvsAffirmTarget1Dto dto) {
+        try {
+            dto.setAffirmLevel("1");
+            evsAffirmTarget1Service.saveDetail(dto);
+            return ResponseEntity.ok(Map.of("success", true));
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/api/affirmTarget1/confirmDetail")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> confirmAffirmTarget1Detail(@RequestBody EvsAffirmTarget1Dto dto) {
+        try {
+            dto.setAffirmLevel("1");
+            evsAffirmTarget1Service.confirmDetail(dto);
+            return ResponseEntity.ok(Map.of("success", true));
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/api/affirmTarget1/rejectDetail")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> rejectAffirmTarget1Detail(@RequestBody EvsAffirmTarget1Dto dto) {
+        try {
+            evsAffirmTarget1Service.rejectDetail(dto);
+            return ResponseEntity.ok(Map.of("success", true));
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
+    // ── Đánh giá lần 2 (EVS_AFFIRM level 2 - nhập điểm + cấp đánh giá) ─────────
+
+    @GetMapping("/viewAffirmTarget2")
+    public String viewAffirmTarget2() {
+        return "evs/manage/viewAffirmTarget2";
+    }
+
+    @GetMapping("/api/affirmTarget2/objectList")
+    @ResponseBody
+    public ResponseEntity<DataTablesResponse<EvsAffirmTarget2Dto>> getAffirmTarget2ObjectList(
+            @RequestParam(required = false) String resumeSeq,
+            @RequestParam(required = false) String evsType,
+            @RequestParam(defaultValue = "1") int draw,
+            @RequestParam(defaultValue = "0") int start,
+            @RequestParam(defaultValue = "50") int length) {
+        EvsAffirmTarget2Dto params = new EvsAffirmTarget2Dto();
+        params.setResumeSeq(resumeSeq);
+        params.setEvsType(evsType);
+        params.setAffirmLevel("2");
+        params.setDraw(draw);
+        params.setStart(start);
+        params.setLength(length);
+        return ResponseEntity.ok(evsAffirmTarget2Service.getObjectList(params));
+    }
+
+    @GetMapping("/api/affirmTarget2/gradeSummary")
+    @ResponseBody
+    public ResponseEntity<List<Map<String, Object>>> getAffirmTarget2GradeSummary(
+            @RequestParam(required = false) String resumeSeq) {
+        EvsAffirmTarget2Dto params = new EvsAffirmTarget2Dto();
+        params.setResumeSeq(resumeSeq);
+        params.setAffirmLevel("2");
+        return ResponseEntity.ok(evsAffirmTarget2Service.getGradeSummary(params));
+    }
+
+    @GetMapping("/api/affirmTarget2/standardRate")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> getAffirmTarget2StandardRate(
+            @RequestParam(required = false) String resumeSeq) {
+        EvsResultDto params = new EvsResultDto();
+        params.setResumeSeq(resumeSeq);
+        return ResponseEntity.ok(evsResultService.getStandardRate(params));
+    }
+
+    @PostMapping("/api/affirmTarget2/save")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> saveAffirmTarget2(@RequestBody EvsAffirmTarget2Dto dto) {
+        try {
+            dto.setAffirmLevel("2");
+            evsAffirmTarget2Service.saveBatch(dto);
+            return ResponseEntity.ok(Map.of("success", true));
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/api/affirmTarget2/execute")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> executeAffirmTarget2(@RequestBody EvsAffirmTarget2Dto dto) {
+        try {
+            dto.setAffirmLevel("2");
+            evsAffirmTarget2Service.executeActivity(dto);
+            return ResponseEntity.ok(Map.of("success", true));
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/api/affirmTarget2/objectInfo")
+    @ResponseBody
+    public ResponseEntity<EvsPersonalTargetDto> getAffirmTarget2ObjectInfo(
+            @RequestParam String evsObjectSeq) {
+        return ResponseEntity.ok(evsAffirmTarget2Service.getObjectInfoBySeq(evsObjectSeq));
+    }
+
+    @GetMapping("/api/affirmTarget2/itemList")
+    @ResponseBody
+    public ResponseEntity<List<EvsItemSstDto>> getAffirmTarget2ItemList(
+            @RequestParam String evsObjectSeq) {
+        return ResponseEntity.ok(evsAffirmTarget2Service.getItemList(evsObjectSeq));
+    }
+
+    @PostMapping("/api/affirmTarget2/saveDetail")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> saveAffirmTarget2Detail(@RequestBody EvsAffirmTarget2Dto dto) {
+        try {
+            dto.setAffirmLevel("2");
+            evsAffirmTarget2Service.saveDetail(dto);
+            return ResponseEntity.ok(Map.of("success", true));
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/api/affirmTarget2/confirmDetail")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> confirmAffirmTarget2Detail(@RequestBody EvsAffirmTarget2Dto dto) {
+        try {
+            dto.setAffirmLevel("2");
+            evsAffirmTarget2Service.confirmDetail(dto);
+            return ResponseEntity.ok(Map.of("success", true));
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/api/affirmTarget2/rejectDetail")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> rejectAffirmTarget2Detail(@RequestBody EvsAffirmTarget2Dto dto) {
+        try {
+            evsAffirmTarget2Service.rejectDetail(dto);
+            return ResponseEntity.ok(Map.of("success", true));
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/api/confirmTarget1/objectList")
+    @ResponseBody
+    public ResponseEntity<DataTablesResponse<EvsConfirmTarget1Dto>> getConfirmTarget1ObjectList(
+            @RequestParam(required = false) String resumeSeq,
+            @RequestParam(required = false) String evsType,
+            @RequestParam(defaultValue = "1") String affirmLevel,
+            @RequestParam(defaultValue = "1") int draw,
+            @RequestParam(defaultValue = "0") int start,
+            @RequestParam(defaultValue = "50") int length) {
+        EvsConfirmTarget1Dto params = new EvsConfirmTarget1Dto();
+        params.setResumeSeq(resumeSeq);
+        params.setEvsType(evsType);
+        params.setAffirmLevel(affirmLevel == null || affirmLevel.isEmpty() ? "1" : affirmLevel);
+        params.setDraw(draw);
+        params.setStart(start);
+        params.setLength(length);
+        return ResponseEntity.ok(evsConfirmTarget1Service.getObjectList(params));
+    }
+
+    @GetMapping("/api/confirmTarget1/objectInfo")
+    @ResponseBody
+    public ResponseEntity<EvsPersonalTargetDto> getConfirmTarget1ObjectInfo(
+            @RequestParam String evsObjectSeq) {
+        return ResponseEntity.ok(evsConfirmTarget1Service.getObjectInfoBySeq(evsObjectSeq));
+    }
+
+    @PostMapping("/api/confirmTarget1/confirm")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> confirmTarget1(@RequestBody EvsConfirmTarget1Dto dto) {
+        try {
+            evsConfirmTarget1Service.confirm(dto);
             return ResponseEntity.ok(Map.of("success", true));
         } catch (Exception e) {
             return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));

@@ -635,7 +635,7 @@
                     success: function (res) {
                         if (res.success) {
                             alert(/*[[#{evs.viewRegPersonalTarget.msg.executeSuccess}]]*/ 'Thực hiện thành công!');
-                            vrptLoadItems(inst.currentObjectSeq);
+                            vrptSearch();
                         } else {
                             alert(res.message || /*[[#{evs.viewRegPersonalTarget.msg.saveFail}]]*/ 'Lỗi khi thực hiện.');
                         }

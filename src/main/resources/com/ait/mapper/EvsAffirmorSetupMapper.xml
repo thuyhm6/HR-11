@@ -254,4 +254,13 @@
         )}
     </update>
 
+    <!-- ── deleteObjects: xóa các đối tượng đánh giá theo danh sách SEQ ────── -->
+    <delete id="deleteObjects">
+        DELETE FROM EVS_OBJECT
+         WHERE SEQ IN
+        <foreach collection="seqList" item="seq" open="(" separator="," close=")">
+            #{seq, jdbcType=VARCHAR}
+        </foreach>
+    </delete>
+
 </mapper>

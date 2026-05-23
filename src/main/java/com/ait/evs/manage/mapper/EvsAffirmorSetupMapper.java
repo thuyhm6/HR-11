@@ -35,4 +35,7 @@ public interface EvsAffirmorSetupMapper {
 
     /** Gọi PR_EVS_START để bắt đầu đánh giá */
     void callEvsStart(EvsAffirmorSetupDto dto);
+
+    /** Xóa các đối tượng đánh giá theo danh sách SEQ */
+    void deleteObjects(@Param("seqList") List<String> seqList);
 }

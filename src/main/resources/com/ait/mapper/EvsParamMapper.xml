@@ -83,7 +83,7 @@
             #{codeName,   jdbcType=VARCHAR},
             #{formula,    jdbcType=VARCHAR},
             #{remark,     jdbcType=VARCHAR},
-            #{activity,   jdbcType=VARCHAR},
+            1,
             <choose><when test="orderNo != null and orderNo != ''">#{orderNo, jdbcType=VARCHAR},</when><otherwise>200,</otherwise></choose>
             #{startStep,  jdbcType=VARCHAR},
             NVL(#{listType,   jdbcType=VARCHAR},0),
@@ -100,7 +100,7 @@
             CODE_NAME   = #{codeName,  jdbcType=VARCHAR},
             FORMULA     = #{formula,   jdbcType=VARCHAR},
             REMARK      = #{remark,    jdbcType=VARCHAR},
-            ACTIVITY    = #{activity,  jdbcType=VARCHAR},
+            ACTIVITY    = 1,
             START_STEP  = #{startStep, jdbcType=VARCHAR},
             LIST_TYPE   = NVL(#{listType,   jdbcType=VARCHAR},0),
             EVS_SCORE   = <choose><when test="evsScore != null and evsScore != ''">#{evsScore, jdbcType=VARCHAR}</when><otherwise>NULL</otherwise></choose>,
