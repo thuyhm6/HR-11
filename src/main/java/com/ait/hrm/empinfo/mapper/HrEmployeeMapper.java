@@ -3,6 +3,7 @@ package com.ait.hrm.empinfo.mapper;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import com.ait.hrm.empinfo.dto.EmpMonthlyStatsDto;
 import com.ait.hrm.empinfo.dto.EmployeeSearchResponse;
 import com.ait.hrm.empinfo.model.HrEmployee;
 
@@ -95,4 +96,6 @@ public interface HrEmployeeMapper {
             @Param("keyword") String keyword,
             @Param("deptCodes") List<String> deptCodes,
             @Param("empOffice") String empOffice);
+
+    List<EmpMonthlyStatsDto> selectEmpMonthlyStats();
 }

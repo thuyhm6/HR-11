@@ -240,7 +240,7 @@
                                         <i class="bx bx-help-circle text-muted fs-18 align-middle me-1"></i>
                                         <span class="align-middle" th:text="#{topbar.help}">Trợ giúp</span>
                                    </a>
-                                   <a class="dropdown-item" href="auth-lock-screen.html">
+                                   <a class="dropdown-item" href="javascript:void(0);" onclick="topbarLockScreen()">
                                         <i class="bx bx-lock text-muted fs-18 align-middle me-1"></i>
                                         <span class="align-middle" th:text="#{topbar.lockScreen}">Khóa màn hình</span>
                                    </a>
@@ -255,6 +255,83 @@
                </div>
           </div>
      </header>
+
+     <!-- Lock Screen Overlay -->
+     <!-- <div id="lockScreenOverlay"
+          th:data-csrf-token="${_csrf.token}"
+          th:data-csrf-header="${_csrf.headerName}"
+          th:data-msg-subtitle="#{topbar.lockScreen.subtitle}"
+          th:data-msg-auto-lock="#{topbar.lockScreen.autoLockMessage}"
+          th:data-msg-wrong-pwd="#{topbar.lockScreen.wrongPassword}"
+          th:data-msg-verify-error="#{topbar.lockScreen.verifyError}"
+          style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:99999;
+                 background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);"
+          class="d-flex align-items-center justify-content-center">
+          <div class="text-center p-4" style="max-width:420px; width:90%;">
+
+               Biểu tượng khóa 
+               <div class="mb-3">
+                    <iconify-icon icon="solar:lock-keyhole-bold-duotone"
+                         style="font-size:56px; color:rgba(255,255,255,0.5);"></iconify-icon>
+               </div>
+
+               Avatar người dùng 
+               <div class="mb-3">
+                    <img id="lockScreenAvatar"
+                         th:src="${currentHrUser != null ? currentHrUser.photoUrl : '/assets/images/users/dummy-avatar.jpg'}"
+                         class="rounded-circle"
+                         style="width:80px; height:80px; object-fit:cover; border:3px solid rgba(255,255,255,0.4);"
+                         alt="avatar">
+               </div>
+
+               Tên người dùng
+               <h5 class="text-white mb-1"
+                   th:text="${currentHrUser != null and currentHrUser.employeeName != null and !#strings.isEmpty(currentHrUser.employeeName) ? currentHrUser.employeeName : 'HR System'}">
+                   HR System
+               </h5>
+
+               Thông báo trạng thái khóa
+               <p id="lockScreenSubtitle" class="mb-4" style="color:rgba(255,255,255,0.6);"
+                  th:text="#{topbar.lockScreen.subtitle}">Nhập mật khẩu để tiếp tục</p>
+
+               Ô nhập mật khẩu
+               <div class="mb-2">
+                    <div class="input-group">
+                         <input type="password"
+                                id="lockScreenPassword"
+                                class="form-control form-control-lg text-center"
+                                th:placeholder="#{topbar.lockScreen.passwordPlaceholder}"
+                                placeholder="Nhập mật khẩu"
+                                autocomplete="current-password"
+                                style="background:rgba(255,255,255,0.1); border-color:rgba(255,255,255,0.25);
+                                       color:white; border-right:none;">
+                         <button type="button" id="lockScreenTogglePwd"
+                                 style="background:rgba(255,255,255,0.1); border-color:rgba(255,255,255,0.25);
+                                        color:rgba(255,255,255,0.7); border-left:none;">
+                              <iconify-icon icon="solar:eye-bold" id="lockScreenEyeIcon"></iconify-icon>
+                         </button>
+                    </div>
+                    <div id="lockScreenError" class="text-danger mt-2 small" style="display:none;min-height:20px;"
+                         th:text="#{topbar.lockScreen.wrongPassword}">Mật khẩu không đúng, vui lòng thử lại</div>
+               </div>
+
+               Nút Mở khóa / Đăng xuất
+               <div class="d-flex gap-2 justify-content-center mt-3">
+                    <button type="button" id="lockScreenUnlockBtn"
+                            class="btn btn-primary px-4"
+                            onclick="topbarUnlockScreen()">
+                         <iconify-icon icon="solar:lock-keyhole-unlocked-bold-duotone" class="me-1"></iconify-icon>
+                         <span th:text="#{topbar.lockScreen.unlockBtn}">Mở khóa</span>
+                    </button>
+                    <a th:href="@{/logout}" class="btn btn-outline-light px-4">
+                         <iconify-icon icon="solar:logout-2-bold-duotone" class="me-1"></iconify-icon>
+                         <span th:text="#{topbar.logout}">Đăng xuất</span>
+                    </a>
+               </div>
+
+          </div>
+     </div> -->
+     <!-- /Lock Screen Overlay -->
 
      <script>
           document.addEventListener("DOMContentLoaded", function () {
@@ -303,5 +380,164 @@
                     });
                });
           });
+
+          // ===================== LOCK SCREEN =====================
+          (function () {
+               var IDLE_TIMEOUT = 5 * 60 * 1000;
+               var idleTimer = null;
+               var isLocked = false;
+               var unlockBtnOriginalHTML = '';
+
+               function getOverlay() {
+                    return document.getElementById('lockScreenOverlay');
+               }
+
+               function getMsgs() {
+                    var el = getOverlay();
+                    return {
+                         subtitle:    el ? (el.getAttribute('data-msg-subtitle')     || 'Nhập mật khẩu để tiếp tục') : 'Nhập mật khẩu để tiếp tục',
+                         autoLock:    el ? (el.getAttribute('data-msg-auto-lock')    || 'Màn hình tự động khóa do không có thao tác') : 'Màn hình tự động khóa do không có thao tác',
+                         wrongPwd:    el ? (el.getAttribute('data-msg-wrong-pwd')    || 'Mật khẩu không đúng, vui lòng thử lại') : 'Mật khẩu không đúng, vui lòng thử lại',
+                         verifyError: el ? (el.getAttribute('data-msg-verify-error') || 'Có lỗi xảy ra, vui lòng thử lại') : 'Có lỗi xảy ra, vui lòng thử lại'
+                    };
+               }
+
+               function getCsrfToken() {
+                    var el = getOverlay();
+                    return el ? el.getAttribute('data-csrf-token') : null;
+               }
+
+               function getCsrfHeader() {
+                    var el = getOverlay();
+                    return (el && el.getAttribute('data-csrf-header')) ? el.getAttribute('data-csrf-header') : 'X-CSRF-TOKEN';
+               }
+
+               function doLock(isAuto) {
+                    if (isLocked) return;
+                    isLocked = true;
+                    clearIdleTimer();
+                    var overlay = getOverlay();
+                    var msgs = getMsgs();
+                    var subtitle = document.getElementById('lockScreenSubtitle');
+                    var pwdInput = document.getElementById('lockScreenPassword');
+                    var errDiv   = document.getElementById('lockScreenError');
+                    if (subtitle) subtitle.textContent = isAuto ? msgs.autoLock : msgs.subtitle;
+                    if (overlay)  { overlay.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
+                    if (errDiv)   errDiv.style.display = 'none';
+                    if (pwdInput) { pwdInput.value = ''; setTimeout(function () { pwdInput.focus(); }, 150); }
+               }
+
+               function doUnlock() {
+                    var overlay    = getOverlay();
+                    var pwdInput   = document.getElementById('lockScreenPassword');
+                    var errDiv     = document.getElementById('lockScreenError');
+                    var unlockBtn  = document.getElementById('lockScreenUnlockBtn');
+                    var msgs       = getMsgs();
+                    var password   = pwdInput ? pwdInput.value : '';
+
+                    if (!password || !password.trim()) {
+                         if (errDiv)   { errDiv.textContent = msgs.wrongPwd; errDiv.style.display = 'block'; }
+                         if (pwdInput) pwdInput.focus();
+                         return;
+                    }
+
+                    if (unlockBtn) {
+                         unlockBtnOriginalHTML = unlockBtn.innerHTML;
+                         unlockBtn.disabled = true;
+                         unlockBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span>';
+                    }
+                    if (errDiv) errDiv.style.display = 'none';
+
+                    var headers = { 'Content-Type': 'application/x-www-form-urlencoded' };
+                    var csrfToken = getCsrfToken();
+                    if (csrfToken) headers[getCsrfHeader()] = csrfToken;
+
+                    fetch('/password/api/verify-old-password', {
+                         method: 'POST',
+                         headers: headers,
+                         body: 'oldPassword=' + encodeURIComponent(password),
+                         credentials: 'same-origin'
+                    })
+                    .then(function (r) {
+                         if (r.status === 403) throw new Error('forbidden');
+                         return r.json();
+                    })
+                    .then(function (data) {
+                         if (data.success) {
+                              if (overlay) overlay.style.display = 'none';
+                              document.body.style.overflow = '';
+                              isLocked = false;
+                              resetIdleTimer();
+                         } else {
+                              if (errDiv)   { errDiv.textContent = msgs.wrongPwd; errDiv.style.display = 'block'; }
+                              if (pwdInput) { pwdInput.value = ''; pwdInput.focus(); }
+                         }
+                    })
+                    .catch(function () {
+                         if (errDiv) { errDiv.textContent = msgs.verifyError; errDiv.style.display = 'block'; }
+                         if (pwdInput) pwdInput.focus();
+                    })
+                    .finally(function () {
+                         if (unlockBtn) {
+                              unlockBtn.disabled = false;
+                              unlockBtn.innerHTML = unlockBtnOriginalHTML;
+                         }
+                    });
+               }
+
+               function resetIdleTimer() {
+                    clearIdleTimer();
+                    idleTimer = setTimeout(function () { doLock(true); }, IDLE_TIMEOUT);
+               }
+
+               function clearIdleTimer() {
+                    if (idleTimer) { clearTimeout(idleTimer); idleTimer = null; }
+               }
+
+               // Theo dõi hoạt động người dùng để reset timer
+               var activityEvents = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart', 'wheel'];
+               activityEvents.forEach(function (evt) {
+                    document.addEventListener(evt, function () {
+                         if (!isLocked) resetIdleTimer();
+                    }, { passive: true });
+               });
+
+               function initLockScreen() {
+                    resetIdleTimer();
+
+                    var toggleBtn = document.getElementById('lockScreenTogglePwd');
+                    var pwdInput  = document.getElementById('lockScreenPassword');
+                    var eyeIcon   = document.getElementById('lockScreenEyeIcon');
+
+                    if (toggleBtn && pwdInput && eyeIcon) {
+                         toggleBtn.addEventListener('click', function () {
+                              if (pwdInput.type === 'password') {
+                                   pwdInput.type = 'text';
+                                   eyeIcon.setAttribute('icon', 'solar:eye-closed-bold');
+                              } else {
+                                   pwdInput.type = 'password';
+                                   eyeIcon.setAttribute('icon', 'solar:eye-bold');
+                              }
+                         });
+                    }
+
+                    if (pwdInput) {
+                         pwdInput.addEventListener('keydown', function (e) {
+                              if (e.key === 'Enter') doUnlock();
+                         });
+                    }
+               }
+
+               // Xử lý đúng dù DOMContentLoaded đã fire hay chưa
+               if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', initLockScreen);
+               } else {
+                    initLockScreen();
+               }
+
+               window.topbarLockScreen  = function () { doLock(false); };
+               window.topbarUnlockScreen = doUnlock;
+          })();
+          // ==================== /LOCK SCREEN ====================
      </script>
 </div>

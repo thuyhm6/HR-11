@@ -6,12 +6,14 @@
             <div class="card mb-2">
                 <div class="card-body py-2">
                     <div class="d-flex align-items-center gap-3 flex-wrap">
-                        <label class="form-label small text-muted mb-0 text-nowrap">Tên đánh giá</label>
+                        <label class="form-label small text-muted mb-0 text-nowrap"
+                            th:text="#{evs.manage.viewEvsSchedulePanel.search.evaluationName}">Tên đánh giá</label>
                         <select class="form-select form-select-sm" id="vesp_resumeSeq" style="max-width:320px;">
-                            <option value="">-- Chọn tên đánh giá --</option>
+                            <option value="" th:text="#{evs.manage.viewEvsSchedulePanel.search.selectOption}">-- Chọn tên đánh giá --</option>
                         </select>
                         <button type="button" class="btn btn-primary btn-sm" onclick="vespSearch()">
-                            <i class="bi bi-search"></i> Tra cứu
+                            <i class="bi bi-search"></i>
+                            <span th:text="#{evs.manage.viewEvsSchedulePanel.btn.search}">Tra cứu</span>
                         </button>
                     </div>
                 </div>
@@ -24,17 +26,20 @@
                         <li class="nav-item" role="presentation">
                             <button class="nav-link active" id="vesp_tab_cpny" data-bs-toggle="tab"
                                 data-bs-target="#vesp_pane_cpny" type="button" role="tab"
-                                onclick="vespSwitchTab('CPNY')">Công ty</button>
+                                onclick="vespSwitchTab('CPNY')"
+                                th:text="#{evs.viewEvsSchedulePanel.GONGSIRICHENG.a}">Công ty</button>
                         </li>
                         <li class="nav-item" role="presentation">
                             <button class="nav-link" id="vesp_tab_dept" data-bs-toggle="tab"
                                 data-bs-target="#vesp_pane_dept" type="button" role="tab"
-                                onclick="vespSwitchTab('DEPT')">Phòng ban</button>
+                                onclick="vespSwitchTab('DEPT')"
+                                th:text="#{evs.viewEvsSchedulePanel.BUMENRICHENG.a}">Phòng ban</button>
                         </li>
                         <li class="nav-item" role="presentation">
                             <button class="nav-link" id="vesp_tab_emp" data-bs-toggle="tab"
                                 data-bs-target="#vesp_pane_emp" type="button" role="tab"
-                                onclick="vespSwitchTab('EMP')">Cá nhân</button>
+                                onclick="vespSwitchTab('EMP')"
+                                th:text="#{evs.viewEvsSchedulePanel.GERENRICHENG.a}">Cá nhân</button>
                         </li>
                     </ul>
 
@@ -46,22 +51,27 @@
                                 <div class="d-flex align-items-center gap-3">
                                     <span class="small fw-semibold text-muted" id="vesp_total_cpny">Total: 0</span>
                                     <div class="d-flex align-items-center gap-1">
-                                        <label class="small text-muted mb-0 text-nowrap">Lọc nhanh</label>
+                                        <label class="small text-muted mb-0 text-nowrap"
+                                            th:text="#{evs.manage.viewEvsSchedulePanel.filter.quickFilter}">Lọc nhanh</label>
                                         <input type="text" class="form-control form-control-sm" id="vesp_filter_cpny"
                                             style="width:160px;" oninput="vespFilterTable('CPNY')">
                                     </div>
                                 </div>
                                 <div class="d-flex align-items-center gap-1">
                                     <button class="btn btn-success btn-sm" onclick="vespAddRow('CPNY')">
-                                        <i class="bi bi-plus-lg"></i> Thêm mới
+                                        <i class="bi bi-plus-lg"></i>
+                                        <span th:text="#{evs.manage.viewEvsSchedulePanel.btn.addNew}">Thêm mới</span>
                                     </button>
                                     <button class="btn btn-danger btn-sm" onclick="vespDeleteSelected('CPNY')">
-                                        <i class="bi bi-trash"></i> Xóa
+                                        <i class="bi bi-trash"></i>
+                                        <span th:text="#{common.delete}">Xóa</span>
                                     </button>
                                     <button class="btn btn-primary btn-sm" onclick="vespSave('CPNY')">
-                                        <i class="bi bi-save"></i> Lưu
+                                        <i class="bi bi-save"></i>
+                                        <span th:text="#{common.save}">Lưu</span>
                                     </button>
-                                    <label class="small text-muted mb-0 ms-2 text-nowrap">Mỗi trang</label>
+                                    <label class="small text-muted mb-0 ms-2 text-nowrap"
+                                        th:text="#{evs.manage.viewEvsSchedulePanel.pagination.perPage}">Mỗi trang</label>
                                     <select class="form-select form-select-sm" id="vesp_pageSize_cpny"
                                         style="width:70px;" onchange="vespChangePage('CPNY')">
                                         <option value="10">10</option>
@@ -69,7 +79,8 @@
                                         <option value="50">50</option>
                                         <option value="100">100</option>
                                     </select>
-                                    <label class="small text-muted mb-0 text-nowrap">dữ liệu</label>
+                                    <label class="small text-muted mb-0 text-nowrap"
+                                        th:text="#{evs.manage.viewEvsSchedulePanel.pagination.records}">dữ liệu</label>
                                 </div>
                             </div>
                             <div class="table-responsive" style="max-height:calc(100vh - 310px); overflow-y:auto;">
@@ -83,12 +94,12 @@
                                                     onchange="vespToggleAll('CPNY')">
                                             </th>
                                             <th style="width:48px;">No.</th>
-                                            <th>Giai đoạn thực hiện</th>
-                                            <th style="width:120px;">Ngày bắt đầu</th>
-                                            <th style="width:120px;">Ngày kết thúc</th>
-                                            <th style="width:70px;">Sử dụng</th>
-                                            <th style="width:220px;">Người thay đổi</th>
-                                            <th style="width:140px;">Thời gian thay đổi</th>
+                                            <th th:text="#{evs.manage.viewEvsSchedulePanel.col.evsStep}">Giai đoạn thực hiện</th>
+                                            <th style="width:120px;" th:text="#{evs.manage.viewEvsSchedulePanel.col.startDate}">Ngày bắt đầu</th>
+                                            <th style="width:120px;" th:text="#{evs.manage.viewEvsSchedulePanel.col.endDate}">Ngày kết thúc</th>
+                                            <th style="width:70px;" th:text="#{evs.manage.viewEvsSchedulePanel.col.active}">Sử dụng</th>
+                                            <th style="width:220px;" th:text="#{evs.manage.viewEvsSchedulePanel.col.updatedBy}">Người thay đổi</th>
+                                            <th style="width:140px;" th:text="#{evs.manage.viewEvsSchedulePanel.col.updateDate}">Thời gian thay đổi</th>
                                         </tr>
                                     </thead>
                                     <tbody id="vesp_tbody_cpny"></tbody>
@@ -102,22 +113,27 @@
                                 <div class="d-flex align-items-center gap-3">
                                     <span class="small fw-semibold text-muted" id="vesp_total_dept">Total: 0</span>
                                     <div class="d-flex align-items-center gap-1">
-                                        <label class="small text-muted mb-0 text-nowrap">Lọc nhanh</label>
+                                        <label class="small text-muted mb-0 text-nowrap"
+                                            th:text="#{evs.manage.viewEvsSchedulePanel.filter.quickFilter}">Lọc nhanh</label>
                                         <input type="text" class="form-control form-control-sm" id="vesp_filter_dept"
                                             style="width:160px;" oninput="vespFilterTable('DEPT')">
                                     </div>
                                 </div>
                                 <div class="d-flex align-items-center gap-1">
                                     <button class="btn btn-success btn-sm" onclick="vespAddRow('DEPT')">
-                                        <i class="bi bi-plus-lg"></i> Thêm mới
+                                        <i class="bi bi-plus-lg"></i>
+                                        <span th:text="#{evs.manage.viewEvsSchedulePanel.btn.addNew}">Thêm mới</span>
                                     </button>
                                     <button class="btn btn-danger btn-sm" onclick="vespDeleteSelected('DEPT')">
-                                        <i class="bi bi-trash"></i> Xóa
+                                        <i class="bi bi-trash"></i>
+                                        <span th:text="#{common.delete}">Xóa</span>
                                     </button>
                                     <button class="btn btn-primary btn-sm" onclick="vespSave('DEPT')">
-                                        <i class="bi bi-save"></i> Lưu
+                                        <i class="bi bi-save"></i>
+                                        <span th:text="#{common.save}">Lưu</span>
                                     </button>
-                                    <label class="small text-muted mb-0 ms-2 text-nowrap">Mỗi trang</label>
+                                    <label class="small text-muted mb-0 ms-2 text-nowrap"
+                                        th:text="#{evs.manage.viewEvsSchedulePanel.pagination.perPage}">Mỗi trang</label>
                                     <select class="form-select form-select-sm" id="vesp_pageSize_dept"
                                         style="width:70px;" onchange="vespChangePage('DEPT')">
                                         <option value="10">10</option>
@@ -125,7 +141,8 @@
                                         <option value="50">50</option>
                                         <option value="100">100</option>
                                     </select>
-                                    <label class="small text-muted mb-0 text-nowrap">dữ liệu</label>
+                                    <label class="small text-muted mb-0 text-nowrap"
+                                        th:text="#{evs.manage.viewEvsSchedulePanel.pagination.records}">dữ liệu</label>
                                 </div>
                             </div>
                             <div class="table-responsive" style="max-height:calc(100vh - 310px); overflow-y:auto;">
@@ -139,15 +156,15 @@
                                                     onchange="vespToggleAll('DEPT')">
                                             </th>
                                             <th style="width:48px;">No.</th>
-                                            <th>Giai đoạn thực hiện</th>
-                                            <th style="width:100px;">Mã phòng ban</th>
-                                            <th style="width:160px;">Tên phòng ban</th>
-                                            <th style="width:120px;">Loại phòng ban</th>
-                                            <th style="width:120px;">Ngày bắt đầu</th>
-                                            <th style="width:120px;">Ngày kết thúc</th>
-                                            <th style="width:70px;">Sử dụng</th>
-                                            <th style="width:200px;">Người thay đổi</th>
-                                            <th style="width:140px;">Thời gian thay đổi</th>
+                                            <th th:text="#{evs.manage.viewEvsSchedulePanel.col.evsStep}">Giai đoạn thực hiện</th>
+                                            <th style="width:100px;" th:text="#{evs.manage.viewEvsSchedulePanel.col.deptNo}">Mã phòng ban</th>
+                                            <th style="width:160px;" th:text="#{evs.manage.viewEvsSchedulePanel.col.deptName}">Tên phòng ban</th>
+                                            <th style="width:120px;" th:text="#{evs.manage.viewEvsSchedulePanel.col.deptType}">Loại phòng ban</th>
+                                            <th style="width:120px;" th:text="#{evs.manage.viewEvsSchedulePanel.col.startDate}">Ngày bắt đầu</th>
+                                            <th style="width:120px;" th:text="#{evs.manage.viewEvsSchedulePanel.col.endDate}">Ngày kết thúc</th>
+                                            <th style="width:70px;" th:text="#{evs.manage.viewEvsSchedulePanel.col.active}">Sử dụng</th>
+                                            <th style="width:200px;" th:text="#{evs.manage.viewEvsSchedulePanel.col.updatedBy}">Người thay đổi</th>
+                                            <th style="width:140px;" th:text="#{evs.manage.viewEvsSchedulePanel.col.updateDate}">Thời gian thay đổi</th>
                                         </tr>
                                     </thead>
                                     <tbody id="vesp_tbody_dept"></tbody>
@@ -161,22 +178,27 @@
                                 <div class="d-flex align-items-center gap-3">
                                     <span class="small fw-semibold text-muted" id="vesp_total_emp">Total: 0</span>
                                     <div class="d-flex align-items-center gap-1">
-                                        <label class="small text-muted mb-0 text-nowrap">Lọc nhanh</label>
+                                        <label class="small text-muted mb-0 text-nowrap"
+                                            th:text="#{evs.manage.viewEvsSchedulePanel.filter.quickFilter}">Lọc nhanh</label>
                                         <input type="text" class="form-control form-control-sm" id="vesp_filter_emp"
                                             style="width:160px;" oninput="vespFilterTable('EMP')">
                                     </div>
                                 </div>
                                 <div class="d-flex align-items-center gap-1">
                                     <button class="btn btn-success btn-sm" onclick="vespAddRow('EMP')">
-                                        <i class="bi bi-plus-lg"></i> Thêm mới
+                                        <i class="bi bi-plus-lg"></i>
+                                        <span th:text="#{evs.manage.viewEvsSchedulePanel.btn.addNew}">Thêm mới</span>
                                     </button>
                                     <button class="btn btn-danger btn-sm" onclick="vespDeleteSelected('EMP')">
-                                        <i class="bi bi-trash"></i> Xóa
+                                        <i class="bi bi-trash"></i>
+                                        <span th:text="#{common.delete}">Xóa</span>
                                     </button>
                                     <button class="btn btn-primary btn-sm" onclick="vespSave('EMP')">
-                                        <i class="bi bi-save"></i> Lưu
+                                        <i class="bi bi-save"></i>
+                                        <span th:text="#{common.save}">Lưu</span>
                                     </button>
-                                    <label class="small text-muted mb-0 ms-2 text-nowrap">Mỗi trang</label>
+                                    <label class="small text-muted mb-0 ms-2 text-nowrap"
+                                        th:text="#{evs.manage.viewEvsSchedulePanel.pagination.perPage}">Mỗi trang</label>
                                     <select class="form-select form-select-sm" id="vesp_pageSize_emp"
                                         style="width:70px;" onchange="vespChangePage('EMP')">
                                         <option value="10">10</option>
@@ -184,7 +206,8 @@
                                         <option value="50">50</option>
                                         <option value="100">100</option>
                                     </select>
-                                    <label class="small text-muted mb-0 text-nowrap">dữ liệu</label>
+                                    <label class="small text-muted mb-0 text-nowrap"
+                                        th:text="#{evs.manage.viewEvsSchedulePanel.pagination.records}">dữ liệu</label>
                                 </div>
                             </div>
                             <div class="table-responsive" style="max-height:calc(100vh - 310px); overflow-y:auto;">
@@ -198,17 +221,17 @@
                                                     onchange="vespToggleAll('EMP')">
                                             </th>
                                             <th style="width:48px;">No.</th>
-                                            <th>Giai đoạn thực hiện</th>
-                                            <th style="width:100px;">Mã phòng ban</th>
-                                            <th style="width:150px;">Tên phòng ban</th>
-                                            <th style="width:100px;">Mã chức danh</th>
-                                            <th style="width:140px;">Tên chức danh</th>
-                                            <th style="width:120px;">Mã cá nhân</th>
-                                            <th style="width:120px;">Ngày bắt đầu</th>
-                                            <th style="width:120px;">Ngày kết thúc</th>
-                                            <th style="width:70px;">Sử dụng</th>
-                                            <th style="width:200px;">Người thay đổi</th>
-                                            <th style="width:140px;">Thời gian thay đổi</th>
+                                            <th th:text="#{evs.manage.viewEvsSchedulePanel.col.evsStep}">Giai đoạn thực hiện</th>
+                                            <th style="width:100px;" th:text="#{evs.manage.viewEvsSchedulePanel.col.deptNo}">Mã phòng ban</th>
+                                            <th style="width:150px;" th:text="#{evs.manage.viewEvsSchedulePanel.col.deptName}">Tên phòng ban</th>
+                                            <th style="width:100px;" th:text="#{evs.manage.viewEvsSchedulePanel.col.postGradeNo}">Mã chức danh</th>
+                                            <th style="width:140px;" th:text="#{evs.manage.viewEvsSchedulePanel.col.postGradeName}">Tên chức danh</th>
+                                            <th style="width:120px;" th:text="#{evs.manage.viewEvsSchedulePanel.col.personId}">Mã cá nhân</th>
+                                            <th style="width:120px;" th:text="#{evs.manage.viewEvsSchedulePanel.col.startDate}">Ngày bắt đầu</th>
+                                            <th style="width:120px;" th:text="#{evs.manage.viewEvsSchedulePanel.col.endDate}">Ngày kết thúc</th>
+                                            <th style="width:70px;" th:text="#{evs.manage.viewEvsSchedulePanel.col.active}">Sử dụng</th>
+                                            <th style="width:200px;" th:text="#{evs.manage.viewEvsSchedulePanel.col.updatedBy}">Người thay đổi</th>
+                                            <th style="width:140px;" th:text="#{evs.manage.viewEvsSchedulePanel.col.updateDate}">Thời gian thay đổi</th>
                                         </tr>
                                     </thead>
                                     <tbody id="vesp_tbody_emp"></tbody>
@@ -228,16 +251,22 @@
         <div class="modal-dialog modal-sm">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Xác nhận xóa</h5>
+                    <h5 class="modal-title" th:text="#{evs.manage.viewEvsSchedulePanel.modal.deleteTitle}">Xác nhận xóa</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <p class="mb-0">Bạn có chắc muốn xóa <strong id="vesp_deleteCount">0</strong> dòng đã chọn?</p>
+                    <p class="mb-0">
+                        <span th:text="#{evs.manage.viewEvsSchedulePanel.modal.deletePrefix}">Bạn có chắc muốn xóa</span>
+                        <strong id="vesp_deleteCount">0</strong>
+                        <span th:text="#{evs.manage.viewEvsSchedulePanel.modal.deleteSuffix}">dòng đã chọn?</span>
+                    </p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"
+                        th:text="#{common.cancel}">Hủy</button>
                     <button type="button" class="btn btn-danger btn-sm" onclick="vespConfirmDelete()">
-                        <i class="bi bi-trash"></i> Xóa
+                        <i class="bi bi-trash"></i>
+                        <span th:text="#{common.delete}">Xóa</span>
                     </button>
                 </div>
             </div>
@@ -291,6 +320,15 @@
             }
             var inst = window._vesp_inst[_vesp_tabId];
             function vesp$(sel) { return $('#' + _vesp_tabId).find(sel); }
+
+            var _msg = {
+                selectEvaluation: /*[[#{evs.manage.viewEvsSchedulePanel.msg.selectEvaluationFirst}]]*/ 'Vui lòng chọn Tên đánh giá trước khi lưu.',
+                noDataToSave: /*[[#{evs.manage.viewEvsSchedulePanel.msg.noDataToSave}]]*/ 'Không có dữ liệu nào thay đổi để lưu.',
+                selectEvsStep: /*[[#{evs.manage.viewEvsSchedulePanel.msg.selectEvsStep}]]*/ 'Vui lòng chọn Giai đoạn thực hiện cho tất cả các dòng.',
+                saveError: /*[[#{evs.manage.viewEvsSchedulePanel.msg.saveError}]]*/ 'Lỗi khi lưu dữ liệu. Vui lòng thử lại.',
+                selectRow: /*[[#{evs.manage.viewEvsSchedulePanel.msg.selectRowToDelete}]]*/ 'Vui lòng chọn ít nhất một dòng để xóa.',
+                deleteError: /*[[#{evs.manage.viewEvsSchedulePanel.msg.deleteError}]]*/ 'Lỗi khi xóa dữ liệu. Vui lòng thử lại.'
+            };
 
             /* ── Tiện ích ──────────────────────────────────────────────────────── */
             function vespEsc(s) {
@@ -595,11 +633,11 @@
             window.vespSave = function (type) {
                 vespCommitCurrentEditing(type);
                 var resumeSeq = vesp$('#vesp_resumeSeq').val();
-                if (!resumeSeq) { alert('Vui lòng chọn Tên đánh giá trước khi lưu.'); return; }
+                if (!resumeSeq) { alert(_msg.selectEvaluation); return; }
                 var toSave = inst.data[type].filter(function (r) { return r._modified || r._isNew; });
-                if (!toSave.length) { alert('Không có dữ liệu nào thay đổi để lưu.'); return; }
+                if (!toSave.length) { alert(_msg.noDataToSave); return; }
                 var invalid = toSave.filter(function (r) { return !r.evsStep || !r.evsStep.trim(); });
-                if (invalid.length) { alert('Vui lòng chọn Giai đoạn thực hiện cho tất cả các dòng.'); return; }
+                if (invalid.length) { alert(_msg.selectEvsStep); return; }
                 var payload = toSave.map(function (r) {
                     return {
                         seq: r._isNew ? null : r.seq,
@@ -620,7 +658,7 @@
                     type: 'POST', contentType: 'application/json',
                     data: JSON.stringify(payload),
                     success: function () { vespLoadTab(type, resumeSeq); },
-                    error: function () { alert('Lỗi khi lưu dữ liệu. Vui lòng thử lại.'); }
+                    error: function () { alert(_msg.saveError); }
                 });
             };
 
@@ -630,7 +668,7 @@
                 vesp$('#vesp_tbody_' + type.toLowerCase() + ' .vesp-row-chk:checked').each(function () {
                     checkedIds.push($(this).data('rowid'));
                 });
-                if (!checkedIds.length) { alert('Vui lòng chọn ít nhất một dòng để xóa.'); return; }
+                if (!checkedIds.length) { alert(_msg.selectRow); return; }
                 inst.pendingDeleteType = type;
                 inst.pendingDeleteIds = checkedIds;
                 vesp$('#vesp_deleteCount').text(checkedIds.length);
@@ -654,7 +692,7 @@
                     data: JSON.stringify({ seqs: existingSeqs }),
                     success: function () { vespRenderTable(type); },
                     error: function () {
-                        alert('Lỗi khi xóa dữ liệu. Vui lòng thử lại.');
+                        alert(_msg.deleteError);
                         vespLoadTab(type, resumeSeq);
                     }
                 });

@@ -3,31 +3,34 @@
     <!-- ===== Toolbar ===== -->
     <div id="esscal_toolbar" class="ccal-toolbar">
         <div class="ccal-nav">
-            <button class="ccal-nav-btn" id="esscal_prevMonth" title="Tháng trước">
+            <button class="ccal-nav-btn" id="esscal_prevMonth"
+                    th:title="#{esscal.nav.prevMonth}" title="Tháng trước">
                 <i class="bx bx-chevron-left"></i>
             </button>
             <select id="esscal_monthSel" class="ccal-combo">
-                <option value="1">Tháng 01</option>
-                <option value="2">Tháng 02</option>
-                <option value="3">Tháng 03</option>
-                <option value="4">Tháng 04</option>
-                <option value="5">Tháng 05</option>
-                <option value="6">Tháng 06</option>
-                <option value="7">Tháng 07</option>
-                <option value="8">Tháng 08</option>
-                <option value="9">Tháng 09</option>
-                <option value="10">Tháng 10</option>
-                <option value="11">Tháng 11</option>
-                <option value="12">Tháng 12</option>
+                <option value="1"  th:text="#{common.month.01}">Tháng 01</option>
+                <option value="2"  th:text="#{common.month.02}">Tháng 02</option>
+                <option value="3"  th:text="#{common.month.03}">Tháng 03</option>
+                <option value="4"  th:text="#{common.month.04}">Tháng 04</option>
+                <option value="5"  th:text="#{common.month.05}">Tháng 05</option>
+                <option value="6"  th:text="#{common.month.06}">Tháng 06</option>
+                <option value="7"  th:text="#{common.month.07}">Tháng 07</option>
+                <option value="8"  th:text="#{common.month.08}">Tháng 08</option>
+                <option value="9"  th:text="#{common.month.09}">Tháng 09</option>
+                <option value="10" th:text="#{common.month.10}">Tháng 10</option>
+                <option value="11" th:text="#{common.month.11}">Tháng 11</option>
+                <option value="12" th:text="#{common.month.12}">Tháng 12</option>
             </select>
             <select id="esscal_yearSel" class="ccal-combo ccal-year"></select>
-            <button class="ccal-nav-btn" id="esscal_nextMonth" title="Tháng sau">
+            <button class="ccal-nav-btn" id="esscal_nextMonth"
+                    th:title="#{esscal.nav.nextMonth}" title="Tháng sau">
                 <i class="bx bx-chevron-right"></i>
             </button>
         </div>
         <div class="ccal-actions">
             <button class="ccal-btn ccal-btn-default" onclick="esscalLoad()">
-                <i class="bx bx-refresh"></i> Tra cứu
+                <i class="bx bx-refresh"></i>
+                <span th:text="#{button.search}">Tra cứu</span>
             </button>
         </div>
     </div>
@@ -35,23 +38,23 @@
     <!-- ===== Calendar ===== -->
     <div id="esscal_gridWrap" class="ccal-grid-wrap">
         <div class="ccal-hrow">
-            <div class="ccal-hcell ccal-col-sun"><i class="bx bxs-sun"></i> CN</div>
-            <div class="ccal-hcell">T2</div>
-            <div class="ccal-hcell">T3</div>
-            <div class="ccal-hcell">T4</div>
-            <div class="ccal-hcell">T5</div>
-            <div class="ccal-hcell">T6</div>
-            <div class="ccal-hcell ccal-col-sat"><i class="bx bxs-star"></i> T7</div>
+            <div class="ccal-hcell ccal-col-sun"><i class="bx bxs-sun"></i> <span th:text="#{common.day.sun}">CN</span></div>
+            <div class="ccal-hcell" th:text="#{common.day.mon}">T2</div>
+            <div class="ccal-hcell" th:text="#{common.day.tue}">T3</div>
+            <div class="ccal-hcell" th:text="#{common.day.wed}">T4</div>
+            <div class="ccal-hcell" th:text="#{common.day.thu}">T5</div>
+            <div class="ccal-hcell" th:text="#{common.day.fri}">T6</div>
+            <div class="ccal-hcell ccal-col-sat"><i class="bx bxs-star"></i> <span th:text="#{common.day.sat}">T7</span></div>
         </div>
         <div id="esscal_body"></div>
     </div>
 
     <!-- ===== Legend ===== -->
     <div class="ccal-legend">
-        <span class="ccal-legend-item"><span class="ccal-legend-dot ccal-lg-work"></span> Ngày làm việc</span>
-        <span class="ccal-legend-item"><span class="ccal-legend-dot ccal-lg-rest"></span> Ngày nghỉ</span>
-        <span class="ccal-legend-item"><span class="ccal-legend-dot ccal-lg-holiday"></span> Ngày lễ</span>
-        <span class="ccal-legend-item"><span class="ccal-legend-dot ccal-lg-today"></span> Hôm nay</span>
+        <span class="ccal-legend-item"><span class="ccal-legend-dot ccal-lg-work"></span> <span th:text="#{esscal.legend.workDay}">Ngày làm việc</span></span>
+        <span class="ccal-legend-item"><span class="ccal-legend-dot ccal-lg-rest"></span> <span th:text="#{esscal.legend.restDay}">Ngày nghỉ</span></span>
+        <span class="ccal-legend-item"><span class="ccal-legend-dot ccal-lg-holiday"></span> <span th:text="#{esscal.legend.holiday}">Ngày lễ</span></span>
+        <span class="ccal-legend-item"><span class="ccal-legend-dot ccal-lg-today"></span> <span th:text="#{esscal.legend.today}">Hôm nay</span></span>
     </div>
 
 </div>
@@ -65,6 +68,21 @@
 
         var _esscal_initialized = false;
         var _esscal_personId    = '';
+
+        var _esscal_i18n = {
+            loading:       /*[[#{esscal.msg.loading}]]*/ 'Đang tải...',
+            loadError:     /*[[#{esscal.msg.loadError}]]*/ 'Lỗi tải lịch!',
+            noCalData:     /*[[#{esscal.msg.noCalData}]]*/ 'Không có dữ liệu lịch trong tháng này.',
+            empNotFound:   /*[[#{esscal.msg.empNotFound}]]*/ 'Không tìm thấy thông tin nhân viên.',
+            loadEmpFailed: /*[[#{esscal.msg.loadEmpFailed}]]*/ 'Không lấy được thông tin nhân viên!',
+            statusHoliday: /*[[#{esscal.status.holiday}]]*/ 'Ngày lễ',
+            statusRest:    /*[[#{esscal.status.rest}]]*/ 'Nghỉ',
+            statusWork:    /*[[#{esscal.status.work}]]*/ 'Làm việc',
+            tagWeekend:    /*[[#{esscal.status.weekend}]]*/ 'Cuối tuần',
+            tagWeekday:    /*[[#{esscal.status.weekday}]]*/ 'Ngày thường',
+            tagHoliday:    /*[[#{esscal.status.holidayStar}]]*/ '★ Lễ',
+            adminShift:    /*[[#{esscal.status.adminShift}]]*/ 'Ca hành chính'
+        };
 
         /* Inject CSS ccal-* nếu chưa có (dùng chung với viewEmpCalendar gốc) */
         (function () {
@@ -147,13 +165,13 @@
             if (!_esscal_personId) return;
             var year  = parseInt($('#esscal_yearSel').val());
             var month = parseInt($('#esscal_monthSel').val());
-            $('#esscal_body').html('<div style="padding:20px;text-align:center;color:#64748b;">Đang tải...</div>');
+            $('#esscal_body').html('<div style="padding:20px;text-align:center;color:#64748b;">' + esscalEsc(_esscal_i18n.loading) + '</div>');
             $.ajax({
                 url : '/ar/attendanceSettings/api/calender/emp/month',
                 data: { year: year, month: month, personId: _esscal_personId },
                 success: function (data) { esscalRender(year, month, data); },
                 error: function (err) {
-                    var msg = (err.responseJSON && err.responseJSON.error) ? err.responseJSON.error : 'Lỗi tải lịch!';
+                    var msg = (err.responseJSON && err.responseJSON.error) ? err.responseJSON.error : _esscal_i18n.loadError;
                     $('#esscal_body').html('<div style="padding:20px;text-align:center;color:#dc2626;">' + esscalEsc(msg) + '</div>');
                     toastr && toastr.error(msg);
                 }
@@ -162,7 +180,7 @@
 
         function esscalRender(year, month, records) {
             if (!records || !records.length) {
-                $('#esscal_body').html('<div style="padding:20px;text-align:center;color:#64748b;">Không có dữ liệu lịch trong tháng này.</div>');
+                $('#esscal_body').html('<div style="padding:20px;text-align:center;color:#64748b;">' + esscalEsc(_esscal_i18n.noCalData) + '</div>');
                 return;
             }
 
@@ -201,18 +219,18 @@
                 var numCls = 'ccal-day-num' + (isSun ? ' is-sun' : isSat ? ' is-sat' : '');
 
                 var statusHtml;
-                if (isStat)      statusHtml = '<span class="ccal-status s-holiday">Ngày lễ</span>';
-                else if (isRest) statusHtml = '<span class="ccal-status s-rest">Nghỉ</span>';
-                else             statusHtml = '<span class="ccal-status s-work-text">Làm việc</span>';
+                if (isStat)      statusHtml = '<span class="ccal-status s-holiday">' + esscalEsc(_esscal_i18n.statusHoliday) + '</span>';
+                else if (isRest) statusHtml = '<span class="ccal-status s-rest">' + esscalEsc(_esscal_i18n.statusRest) + '</span>';
+                else             statusHtml = '<span class="ccal-status s-work-text">' + esscalEsc(_esscal_i18n.statusWork) + '</span>';
 
                 var tags = isWE
-                    ? '<span class="ccal-tag t-we">Cuối tuần</span>'
-                    : '<span class="ccal-tag t-wd">Ngày thường</span>';
-                if (isStat) tags += '<span class="ccal-tag t-hol">★ Lễ</span>';
+                    ? '<span class="ccal-tag t-we">' + esscalEsc(_esscal_i18n.tagWeekend) + '</span>'
+                    : '<span class="ccal-tag t-wd">' + esscalEsc(_esscal_i18n.tagWeekday) + '</span>';
+                if (isStat) tags += '<span class="ccal-tag t-hol">' + esscalEsc(_esscal_i18n.tagHoliday) + '</span>';
                 if (rec.shiftName || rec.shiftNo) {
                     tags += '<span class="ccal-tag t-sh">' + esscalEsc(rec.shiftName || rec.shiftNo) + '</span>';
                 } else if (!isWE && !isStat) {
-                    tags += '<span class="ccal-tag t-sh">Ca hành chính</span>';
+                    tags += '<span class="ccal-tag t-sh">' + esscalEsc(_esscal_i18n.adminShift) + '</span>';
                 }
                 if (rec.typeidName) {
                     tags += '<span class="ccal-tag t-custom">' + esscalEsc(rec.typeidName) + '</span>';
@@ -274,11 +292,11 @@
                         _esscal_personId = data.personId;
                         esscalLoad();
                     } else {
-                        $('#esscal_body').html('<div style="padding:20px;text-align:center;color:#64748b;">Không tìm thấy thông tin nhân viên.</div>');
+                        $('#esscal_body').html('<div style="padding:20px;text-align:center;color:#64748b;">' + esscalEsc(_esscal_i18n.empNotFound) + '</div>');
                     }
                 },
                 error: function () {
-                    toastr && toastr.error('Không lấy được thông tin nhân viên!');
+                    toastr && toastr.error(_esscal_i18n.loadEmpFailed);
                 }
             });
         });

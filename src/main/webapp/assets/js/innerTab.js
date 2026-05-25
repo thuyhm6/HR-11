@@ -72,12 +72,14 @@
         contentPane.className = 'tab-pane active';
         contentPane.id = tab.id;
 
-        // Move default content to this tab
+        // Move default content to this tab (using DOM node move to avoid duplicate IDs)
         const defaultContentDiv = document.getElementById('default-content');
         if (defaultContentDiv) {
-        contentPane.innerHTML = defaultContentDiv.innerHTML;
-        defaultContentDiv.style.display = 'none';
-    }
+            while (defaultContentDiv.firstChild) {
+                contentPane.appendChild(defaultContentDiv.firstChild);
+            }
+            defaultContentDiv.style.display = 'none';
+        }
 
         contentArea.appendChild(contentPane);
     }

@@ -3,14 +3,15 @@
         <!-- Left Pane: Supervisor List -->
         <div class="col-md-4 border-end p-3 bg-white mb-3">
             <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
-                <h6 class="mb-0 text-primary fw-bold">Nhân viên Phân quyền</h6>
+                <h6 class="mb-0 text-primary fw-bold" th:text="#{arSupervisor.pageTitle}">Nhân viên Phân quyền</h6>
                 <button type="button" class="btn btn-success btn-sm" onclick="arSupervisorOpenModal()">
-                    <i class="bx bx-user-plus"></i> Thêm mới
+                    <i class="bx bx-user-plus"></i> <span th:text="#{arSupervisor.btn.addNew}">Thêm mới</span>
                 </button>
             </div>
             <div class="input-group mb-3">
                 <input type="text" id="arSupervisor_searchInput" class="form-control form-control-sm"
-                    placeholder="Tìm kiếm nhân viên..." onkeyup="arSupervisorFilterList()">
+                    th:placeholder="#{arSupervisor.placeholder.search}" placeholder="Tìm kiếm nhân viên..."
+                    onkeyup="arSupervisorFilterList()">
                 <button class="btn btn-outline-secondary btn-sm" type="button" disabled><i
                         class="bx bx-search"></i></button>
             </div>
@@ -23,19 +24,18 @@
         <div class="col-md-8 p-3 bg-white">
             <div class="card h-100 border-0 shadow-none">
                 <div class="card-header d-flex justify-content-between align-items-center bg-light border">
-                    <h6 class="mb-0 fw-bold" id="arSupervisor_selectedLabel">Sơ đồ Tổ chức Phân quyền</h6>
+                    <h6 class="mb-0 fw-bold" id="arSupervisor_selectedLabel" th:text="#{arSupervisor.orgChart}">Sơ đồ Tổ chức Phân quyền</h6>
                     <button type="button" class="btn btn-primary btn-sm" id="arSupervisor_btnSaveDepts"
                         onclick="arSupervisorSaveDepts()" disabled>
-                        <i class="bx bx-save"></i> Lưu phân quyền phòng ban
+                        <i class="bx bx-save"></i> <span th:text="#{arSupervisor.saveDepts}">Lưu phân quyền phòng ban</span>
                     </button>
                 </div>
                 <div class="card-body border border-top-0 d-flex flex-column p-0">
                     <div class="p-2 bg-light border-bottom text-muted" style="font-size: 0.9rem;"
                         id="arSupervisor_selectedEmpInfo">
-                        <i class="bx bx-info-circle"></i> Vui lòng chọn một nhân viên bên trái để xem/cấu hình thông
-                        tin.
+                        <i class="bx bx-info-circle"></i> <span th:text="#{arSupervisor.hint}">Vui lòng chọn một nhân viên bên trái để xem/cấu hình thông tin.</span>
                     </div>
-                    <!-- JSTree cho Sơ đồ phòng ban -->
+                    <!-- Department Tree -->
                     <div id="arSupervisor_deptTree" class="overflow-auto mt-2 p-3"
                         style="flex: 1; height: calc(100vh - 330px); display: none;"></div>
                 </div>
@@ -49,53 +49,56 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="arSupervisorModalTitle">Quản lý Nhân viên Phân quyền</h5>
+                <h5 class="modal-title" id="arSupervisorModalTitle" th:text="#{arSupervisor.modalTitle}">Quản lý Nhân viên Phân quyền</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <form id="arSupervisorForm">
                     <div class="row g-3">
                         <div class="col-md-12">
-                            <label for="arSupervisor_empNameDisplay" class="form-label">Nhân viên <span
-                                    class="text-danger">*</span></label>
+                            <label for="arSupervisor_empNameDisplay" class="form-label">
+                                <span th:text="#{arSupervisor.field.emp}">Nhân viên</span>
+                                <span class="text-danger">*</span>
+                            </label>
                             <div class="input-group">
                                 <input type="text" class="form-control" id="arSupervisor_empNameDisplay"
-                                    placeholder="Chọn nhân viên..." readonly required>
+                                    th:placeholder="#{arSupervisor.placeholder.selectEmp}" placeholder="Chọn nhân viên..." readonly required>
                                 <input type="hidden" id="arSupervisor_personId" name="personId">
                                 <button class="btn btn-outline-primary" type="button"
-                                    onclick="arSupervisorOpenEmpSearch()"><i class="bx bx-search"></i> Chọn</button>
+                                    onclick="arSupervisorOpenEmpSearch()">
+                                    <i class="bx bx-search"></i> <span th:text="#{arSupervisor.btn.select}">Chọn</span>
+                                </button>
                             </div>
                             <small class="text-info d-block mt-1" id="arSupervisor_lookupResultMsg"></small>
                         </div>
-                        <!-- Cột hiển thị tên nhân viên lúc trước đã gộp vào thẻ input readonly ở trên, ta ẩn/xoá element cũ đi -->
                         <div class="col-md-12" style="display:none;">
-                            <input type="text" class="form-control" id="arSupervisor_empNameDisplay" disabled>
+                            <input type="text" class="form-control" id="arSupervisor_empNameDisplay2" disabled>
                         </div>
                         <div class="col-md-6">
-                            <label for="arSupervisor_orderno" class="form-label">Sắp xếp (Orderno)</label>
+                            <label for="arSupervisor_orderno" class="form-label" th:text="#{arSupervisor.field.orderno}">Sắp xếp (Orderno)</label>
                             <input type="number" class="form-control" id="arSupervisor_orderno">
                         </div>
                         <div class="col-md-6">
-                            <label for="arSupervisor_modifyYn" class="form-label">Quyền sửa đổi (Modify_YN)</label>
+                            <label for="arSupervisor_modifyYn" class="form-label" th:text="#{arSupervisor.field.modifyYn}">Quyền sửa đổi (Modify_YN)</label>
                             <select class="form-select" id="arSupervisor_modifyYn">
-                                <option value="1">1 - Cho phép</option>
-                                <option value="0">0 - Không</option>
+                                <option value="1" th:text="#{arSupervisor.opt.allow}">1 - Cho phép</option>
+                                <option value="0" th:text="#{arSupervisor.opt.disallow}">0 - Không</option>
                             </select>
                         </div>
                         <div class="col-md-12">
-                            <label for="arSupervisor_activity" class="form-label">Trạng thái (Activity)</label>
+                            <label for="arSupervisor_activity" class="form-label" th:text="#{arSupervisor.field.activity}">Trạng thái (Activity)</label>
                             <select class="form-select" id="arSupervisor_activity">
-                                <option value="1">1 - Hoạt động</option>
-                                <option value="0">0 - Ngừng</option>
+                                <option value="1" th:text="#{arSupervisor.opt.active}">1 - Hoạt động</option>
+                                <option value="0" th:text="#{arSupervisor.opt.inactive}">0 - Ngừng</option>
                             </select>
                         </div>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" th:text="#{arSupervisor.btn.close}">Đóng</button>
                 <button type="button" class="btn btn-primary" id="arSupervisor_btnSave" onclick="arSupervisorSaveInfo()"
-                    disabled>Lưu dữ liệu</button>
+                    disabled th:text="#{arSupervisor.btn.saveData}">Lưu dữ liệu</button>
             </div>
         </div>
     </div>
@@ -107,26 +110,48 @@
     <script src="/assets/plugins/jstree/jstree.min.js"></script>
 
     <script th:inline="javascript">
+        /* i18n messages for JS */
+        var _i18n = {
+            noDeptData:          /*[[#{arSupervisor.js.noDeptData}]]*/ 'Không có dữ liệu phòng ban.',
+            noSupervisor:        /*[[#{arSupervisor.js.noSupervisor}]]*/ 'Không có nhân viên phân quyền nào',
+            titleAdd:            /*[[#{arSupervisor.js.titleAdd}]]*/ 'Thêm mới Nhân sự Phân quyền',
+            empSelected:         /*[[#{arSupervisor.js.empSelected}]]*/ 'Đã chọn NV: ',
+            componentNotLoaded:  /*[[#{arSupervisor.js.componentNotLoaded}]]*/ 'Component tìm kiếm nhân viên chưa được tải!',
+            pleaseSearch:        /*[[#{arSupervisor.js.pleaseSearch}]]*/ 'Vui lòng Tra cứu để đảm bảo mã NV hợp lệ.',
+            connectionError:     /*[[#{arSupervisor.js.connectionError}]]*/ 'Lỗi kết nối!',
+            deleteConfirm:       /*[[#{arSupervisor.js.deleteConfirm}]]*/ 'Bạn có chắc chắn muốn xóa phân quyền NV này?\nChú ý: Toàn bộ cấu hình phòng ban của NV sẽ bị xóa theo!',
+            noPersonId:          /*[[#{arSupervisor.js.noPersonId}]]*/ 'Chưa có ID nhân sự được chọn.',
+            configDeptFor:       /*[[#{arSupervisor.js.configDeptFor}]]*/ 'Cấu hình nhóm phòng ban cho: ',
+            loading:             /*[[#{arSupervisor.js.loading}]]*/ 'Đang tải thông tin...',
+            deptError:           /*[[#{arSupervisor.js.deptError}]]*/ 'Lỗi dữ liệu phòng ban.',
+            serverError:         /*[[#{arSupervisor.js.serverError}]]*/ 'Lỗi xử lý server',
+            saveConnError:       /*[[#{arSupervisor.js.saveConnError}]]*/ 'Lỗi kết nối khi lưu!',
+            deptLoaded:          /*[[#{arSupervisor.js.deptLoaded}]]*/ 'Đã tải dữ liệu phòng ban mà',
+            deptLoadedSuf:       /*[[#{arSupervisor.js.deptLoadedSuf}]]*/ ' được quản lý.',
+            savedDeptsPrefix:    /*[[#{arSupervisor.js.savedDeptsPrefix}]]*/ 'Đã lưu',
+            savedDeptsSuf:       /*[[#{arSupervisor.js.savedDeptsSuf}]]*/ ' phòng ban phân quyền cho NV!',
+            deleteError:         /*[[#{arSupervisor.js.deleteError}]]*/ 'Lỗi khi xóa!',
+            hint:                /*[[#{arSupervisor.hint}]]*/ 'Vui lòng chọn một nhân viên bên trái để xem/cấu hình thông tin.',
+            orgChart:            /*[[#{arSupervisor.orgChart}]]*/ 'Sơ đồ Tổ chức Phân quyền'
+        };
+
         $(document).ready(function () {
             var currentPersonId = '';
             var currentEmpName = '';
             var isEmpValidForSave = false;
             var deptTreeData = [];
 
-            // 1. Tải danh sách phòng ban (Cây Tổ Chức) - Chỉ load 1 lần
+            // 1. Tải danh sách phòng ban - Chỉ load 1 lần
             function loadDepartmentTree(callback) {
                 $.ajax({
                     url: '/ar/attendanceSettings/api/arSupervisor/departments',
                     success: function (res) {
                         if (res && res.length > 0) {
                             deptTreeData = res.map(itm => {
-                                // Oracle/Mybatis can return uppercase keys for Map result types
                                 var nId = itm.id || itm.ID || itm.Id || '';
                                 var nParent = itm.parent || itm.PARENT || itm.Parent || '#';
                                 var nText = itm.text || itm.TEXT || itm.Text || '';
 
-                                // Dựa vào ảnh database: Root node có PARENT_DEPT_NO = '0'
-                                // Prevent cyclic reference which causes jstree "Loading..." freeze
                                 if (!nParent || String(nParent) === String(nId) || nParent === '0') {
                                     nParent = '#';
                                 }
@@ -144,18 +169,17 @@
                 });
             }
 
-            // 2. Load cây phòng ban bằng HTML tĩnh (thay cho JSTree)
+            // 2. Render cây phòng ban dạng HTML
             function renderDeptTreeHTML(checkedDepts) {
                 var container = $('#arSupervisor_deptTree');
                 container.empty();
 
                 if (!deptTreeData || deptTreeData.length === 0) {
-                    container.html('<div class="text-muted p-2">Không có dữ liệu phòng ban.</div>');
+                    container.html('<div class="text-muted p-2">' + _i18n.noDeptData + '</div>');
                     container.show();
                     return;
                 }
 
-                // Xây dựng cây từ mảng phẳng
                 var map = {};
                 var roots = [];
                 deptTreeData.forEach(function (item) {
@@ -187,7 +211,6 @@
                 var toggleIcon = $('<i>').addClass('bx me-2');
 
                 if (hasChildren) {
-                    // Default open (minus icon)
                     toggleIcon.addClass('bx-minus text-primary')
                         .css('cursor', 'pointer')
                         .on('click', function (e) {
@@ -203,7 +226,6 @@
                 rowDiv.append(toggleIcon);
 
                 var divCheck = $('<div>').addClass('form-check mb-0');
-
                 var isChecked = checkedDepts && checkedDepts.includes(item.id);
 
                 var inp = $('<input>').addClass('form-check-input dept-checkbox')
@@ -214,10 +236,7 @@
 
                 inp.on('change', function () {
                     var checked = $(this).is(':checked');
-                    // Tự động check/uncheck các dept con
                     $(this).closest('li').find('ul input.dept-checkbox').prop('checked', checked);
-
-                    // Nếu check thì tự động check các dept cha
                     if (checked) {
                         $(this).parents('li').each(function () {
                             $(this).children('div').find('input.dept-checkbox').prop('checked', true);
@@ -244,7 +263,7 @@
                 return li;
             }
 
-            // 3. Tải danh sách Nhân sự phân quyền (Cột Trái)
+            // 3. Tải danh sách Nhân sự phân quyền
             window.loadSupervisorList = function () {
                 $.ajax({
                     url: '/ar/attendanceSettings/api/arSupervisor',
@@ -253,7 +272,7 @@
                         $container.empty();
 
                         if (!data || data.length === 0) {
-                            $container.html('<div class="text-muted p-2 text-center mt-3">Không có kỹ thuật viên/người phân quyền nào</div>');
+                            $container.html('<div class="text-muted p-2 text-center mt-3">' + _i18n.noSupervisor + '</div>');
                             return;
                         }
 
@@ -262,8 +281,8 @@
                             var deptInfo = itm.deptName ? `<div class="small text-muted"><i class="bx bx-building"></i> ${itm.deptName}</div>` : '';
 
                             var html = `
-                                <a href="javascript:void(0);" 
-                                   class="list-group-item list-group-item-action arSupervisor-list-item" 
+                                <a href="javascript:void(0);"
+                                   class="list-group-item list-group-item-action arSupervisor-list-item"
                                    data-id="${itm.personId}" data-name="${dispName}"
                                    onclick="selectSupervisor('${itm.personId}', '${dispName}')">
                                     <div class="d-flex w-100 justify-content-between">
@@ -275,7 +294,6 @@
                             $container.append(html);
                         });
 
-                        // Clear right pane
                         resetRightPane();
                     }
                 });
@@ -283,36 +301,33 @@
 
             // 4. Chọn 1 nhân viên từ cột trái
             window.selectSupervisor = function (personId, empName) {
-                // Highlight item
                 $('.arSupervisor-list-item').removeClass('active bg-light border-primary');
                 $(`.arSupervisor-list-item[data-id='${personId}']`).addClass('active bg-light border-primary');
 
                 currentPersonId = personId;
                 currentEmpName = empName;
-                $('#arSupervisor_selectedLabel').html(`Cấu hình nhóm phòng ban cho: <span class="text-primary">${empName}</span>`);
+                $('#arSupervisor_selectedLabel').html(_i18n.configDeptFor + '<span class="text-primary">' + empName + '</span>');
                 $('#arSupervisor_btnSaveDepts').prop('disabled', false);
 
-                // Fetch detail of Supervisor Dept Info (AR_SUPERVISOR_INFO)
-                $('#arSupervisor_selectedEmpInfo').html(`<div class="spinner-border spinner-border-sm text-primary" role="status"></div> Đang tải thông tin...`);
+                $('#arSupervisor_selectedEmpInfo').html('<div class="spinner-border spinner-border-sm text-primary" role="status"></div> ' + _i18n.loading);
 
                 $.ajax({
                     url: '/ar/attendanceSettings/api/arSupervisor/' + personId + '/departments',
                     success: function (checkedDepartments) {
-                        $('#arSupervisor_selectedEmpInfo').html(`<i class="bx bx-check-double text-success"></i> Đã tải dữ liệu phòng ban mà <b>${empName}</b> được quản lý.`);
+                        $('#arSupervisor_selectedEmpInfo').html('<i class="bx bx-check-double text-success"></i> ' + _i18n.deptLoaded + ' <b>' + empName + '</b>' + _i18n.deptLoadedSuf);
                         renderDeptTreeHTML(checkedDepartments);
                     },
                     error: function () {
-                        $('#arSupervisor_selectedEmpInfo').html(`<i class="bx bx-error text-danger"></i> Lỗi dữ liệu phòng ban.`);
+                        $('#arSupervisor_selectedEmpInfo').html('<i class="bx bx-error text-danger"></i> ' + _i18n.deptError);
                     }
                 });
             };
 
-            // Reset panel phải
             function resetRightPane() {
                 currentPersonId = '';
                 currentEmpName = '';
-                $('#arSupervisor_selectedLabel').text('Sơ đồ Tổ chức Phân quyền');
-                $('#arSupervisor_selectedEmpInfo').html('<i class="bx bx-info-circle"></i> Vui lòng chọn một nhân viên bên trái để xem/cấu hình thông tin.');
+                $('#arSupervisor_selectedLabel').text(_i18n.orgChart);
+                $('#arSupervisor_selectedEmpInfo').html('<i class="bx bx-info-circle"></i> ' + _i18n.hint);
                 $('#arSupervisor_deptTree').hide();
                 $('#arSupervisor_btnSaveDepts').prop('disabled', true);
             }
@@ -322,7 +337,6 @@
                 loadSupervisorList();
             });
 
-            // Tiện ích lọc tìm kiếm danh sách NV
             window.arSupervisorFilterList = function () {
                 var value = $('#arSupervisor_searchInput').val().toLowerCase();
                 $(".arSupervisor-list-item").filter(function () {
@@ -330,9 +344,8 @@
                 });
             };
 
-            // ================== CÁC CHỨC NĂNG =====================
             window.arSupervisorOpenModal = function () {
-                $('#arSupervisorModalTitle').text('Thêm mới Nhân sự Phân quyền');
+                $('#arSupervisorModalTitle').text(_i18n.titleAdd);
                 $('#arSupervisorForm')[0].reset();
                 $('#arSupervisor_personId').prop('readonly', false);
                 $('#arSupervisor_lookupResultMsg').html('');
@@ -344,26 +357,23 @@
                 new bootstrap.Modal(document.getElementById('arSupervisorModal')).show();
             };
 
-            // Mở popup chọn nhân viên (Giống module Education)
             window.arSupervisorOpenEmpSearch = function () {
                 if (typeof EmployeeSearchModal !== 'undefined') {
                     EmployeeSearchModal.open(function (employee) {
                         $('#arSupervisor_personId').val(employee.personId);
                         $('#arSupervisor_empNameDisplay').val(employee.empId + ' - ' + employee.localName);
-
-                        $('#arSupervisor_lookupResultMsg').html(`<i class="bx bx-check text-success"></i> Đã chọn NV: ${employee.localName}`);
+                        $('#arSupervisor_lookupResultMsg').html('<i class="bx bx-check text-success"></i> ' + _i18n.empSelected + employee.localName);
                         isEmpValidForSave = true;
                         $('#arSupervisor_btnSave').prop('disabled', false);
                     });
                 } else {
-                    toastr.error('Component tìm kiếm nhân viên chưa được tải!');
+                    toastr.error(_i18n.componentNotLoaded);
                 }
             };
 
-            // Lưu Thông tin Supervisor (Vào list)
             window.arSupervisorSaveInfo = function () {
                 if (!isEmpValidForSave) {
-                    toastr.warning('Vui lòng Tra cứu để đảm bảo mã NV hợp lệ.');
+                    toastr.warning(_i18n.pleaseSearch);
                     return;
                 }
                 var model = {
@@ -383,21 +393,20 @@
                             toastr.success(res.message);
                             var modalEl = document.getElementById('arSupervisorModal');
                             if (modalEl) bootstrap.Modal.getInstance(modalEl).hide();
-                            loadSupervisorList(); // Reload left
+                            loadSupervisorList();
                         } else {
-                            toastr.error(res.error || 'Server Error');
+                            toastr.error(res.error || _i18n.serverError);
                         }
                     },
-                    error: function (err) {
-                        toastr.error('Lỗi kết nối!');
+                    error: function () {
+                        toastr.error(_i18n.connectionError);
                     }
                 });
             };
 
-            // Xóa Khỏi List
             window.arSupervisorDelete = function (personId, event) {
                 event.stopPropagation();
-                if (confirm(`Bạn có phân quyền cho NV ${personId}?\nChú ý: Toàn bộ cấu hình phòng ban của NV này sẽ bị xóa theo!`)) {
+                if (confirm(_i18n.deleteConfirm)) {
                     $.ajax({
                         url: '/ar/attendanceSettings/api/arSupervisor/delete/' + personId,
                         type: 'DELETE',
@@ -405,40 +414,37 @@
                             toastr.success(res.message);
                             loadSupervisorList();
                         },
-                        error: function (err) {
-                            toastr.error('Lỗi khi xóa!');
+                        error: function () {
+                            toastr.error(_i18n.deleteError);
                         }
                     });
                 }
             };
 
-            // Lưu dữ quyền cây phòng ban (Bên Trái -> AR_SUPERVISOR_INFO)
             window.arSupervisorSaveDepts = function () {
                 if (!currentPersonId) {
-                    toastr.error('Chưa có ID nhân sự được chọn.');
+                    toastr.error(_i18n.noPersonId);
                     return;
                 }
-                // Lấy tất cả node đang chọn (Bao gồm id con và nửa checked - tuỳ logic cascade)
-                // Ta chỉ cần id của các phòng đang select
                 var selectedNodes = [];
                 $('#arSupervisor_deptTree input.dept-checkbox:checked').each(function () {
                     selectedNodes.push($(this).val());
                 });
 
                 $.ajax({
-                    url: `/ar/attendanceSettings/api/arSupervisor/${currentPersonId}/saveDepartments`,
+                    url: '/ar/attendanceSettings/api/arSupervisor/' + currentPersonId + '/saveDepartments',
                     type: 'POST',
                     contentType: 'application/json',
                     data: JSON.stringify(selectedNodes),
                     success: function (res) {
                         if (res.success) {
-                            toastr.success(`Đã lưu ${selectedNodes.length} phòng ban phân quyền cho NV!`);
+                            toastr.success(_i18n.savedDeptsPrefix + ' ' + selectedNodes.length + _i18n.savedDeptsSuf);
                         } else {
-                            toastr.error(res.error || 'Lỗi xử lý server');
+                            toastr.error(res.error || _i18n.serverError);
                         }
                     },
-                    error: function (err) {
-                        toastr.error('Lỗi kết nối khi lưu!');
+                    error: function () {
+                        toastr.error(_i18n.saveConnError);
                     }
                 });
             };

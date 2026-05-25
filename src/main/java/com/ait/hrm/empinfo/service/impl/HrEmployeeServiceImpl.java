@@ -1,5 +1,6 @@
 package com.ait.hrm.empinfo.service.impl;
 
+import com.ait.hrm.empinfo.dto.EmpMonthlyStatsDto;
 import com.ait.hrm.empinfo.dto.EmployeeSearchResponse;
 import com.ait.hrm.empinfo.mapper.HrEmployeeMapper;
 import com.ait.hrm.empinfo.model.HrEmployee;
@@ -186,6 +187,16 @@ public class HrEmployeeServiceImpl implements HrEmployeeService {
         } catch (Exception e) {
             log.error("Error searching employees empId={} deptNo={} keyword={} empOffice={}", empId, deptNo, keyword, empOffice, e);
             return new ArrayList<>();
+        }
+    }
+
+    @Override
+    public List<EmpMonthlyStatsDto> getEmpMonthlyStats() {
+        try {
+            return hrEmployeeMapper.selectEmpMonthlyStats();
+        } catch (Exception e) {
+            log.error("Error getting emp monthly stats", e);
+            return List.of();
         }
     }
 }

@@ -1241,3 +1241,112 @@ căn cứ vào viewConfirmTarget1.html, hãy tạo cho tôi một file viewAffir
 
 
 Giống như viewAffirmTarget1.html, hãy tạo cho tôi một file viewAffirmTarget2.html - Đánh giá lần 2 nằm trong module /evs/manage. Giao diện và cách lấy dữ liệu tương tự như viewAffirmTarget1.html, chỉ khác ở chỗ viewAffirmTarget2.html sẽ hiển thị danh sách những nhân viên mà người đánh giá lần 2 cần phải đánh giá cho họ. Hiển thị thêm 3 cột Lần 2(Điểm số - EVS_POINT2, Cấp ĐG - EVS_GRADE2, Ý kiến - AFFIRM_CONTENT2), nhập điểm thì cũng tự tính ra cấp đánh giá tương ứng, giống như viewAffirmTarget1.html. Cũng có nút Lưu tạm thời (flag = '0') và Thực hiện (flag = '1') chức năng giống như viewAffirmTarget1.html. Khi click vào tên nhân viên  thì cũng hiện ra modal hiển thị chi tiết các mục tiêu của nhân viên đó giống như viewAffirmTarget1.html. Thêm cột Đánh giá lần 2 để điền điểm (%) do người đánh giá lần 2 nhập vào, khi nhập điểm xong thì tự động tính ra cấp đánh giá tương ứng và hiển thị ở cột Cấp ĐG lần 2. Thêm một dòng Ý kiến, Điểm số, Cấp ĐG của người đánh giá lần 2 giống như lần 1. Khi nhập điểm thì cũng tự tính toán điểm tổng dựa vào công thức: (Điểm ĐG lần 2 * Tỷ lệ(%)) / 100 của từng mục tiêu, và cũng hiện ở cột Điểm số của người đánh giá lần 2. cũng tự tính ra Cấp đánh giá giống như lần 1. Cũng có chức năng, Lưu tạm thời ('draft') và Thực hiện ('confirm') và Từ chối (flag = '0') chức năng giống như viewAffirmTarget1.html. Chỉ khác là những giá trị nhập điểm của người đánh giá lần 2 sẽ lưu vào trường EVS_SCORE2 của bảng EVS_ITEM_SST.
+
+Giống như viewRegPersonalTarget.html, hãy tạo cho tôi một file viewEvsBySelfSSTAbility.html - Đánh giá năng lực bản thân nằm trong module /evs/manage. Giao diện tham khảo hình ảnh. Dữ liệu phần SECTION 1 lấy ra dựa vào câu lệnh SQL: SELECT ITEM.SEQ,
+       GET_CODE_NAME(ITEM.GROUP_NO, #{lang, jdbcType=VARCHAR}) GROUP_NAME,
+       ITEM.ITEM_CODE,
+       ITEM.ITEM_NAME,
+       ITEM.REMARK,
+       ITEM.ITEM_NAME_KO,
+       ITEM.REMARK_KO,
+       PARAM.ITEM_SCORE,
+       EVS.EVS_OCC_GROUP_NAME,
+       (SELECT SCORE.EVS_SCORE
+          FROM EVS_ITEM_SCORE SCORE, EVS_AFFIRM AFFIRM
+         WHERE SCORE.AFFIRM_SEQ = AFFIRM.SEQ
+           AND SCORE.ITEM_SEQ = ITEM.SEQ
+           AND AFFIRM.EVS_OBJECT_SEQ = EVS.SEQ
+           AND AFFIRM.AFFIRM_LEVEL = 0) EVS_SCORE0,
+       (SELECT SCORE.EVS_SCORE
+          FROM EVS_ITEM_SCORE SCORE, EVS_AFFIRM AFFIRM
+         WHERE SCORE.AFFIRM_SEQ = AFFIRM.SEQ
+           AND SCORE.ITEM_SEQ = ITEM.SEQ
+           AND AFFIRM.EVS_OBJECT_SEQ = EVS.SEQ
+           AND AFFIRM.AFFIRM_LEVEL = 1) EVS_SCORE1,
+       (SELECT SCORE.EVS_SCORE
+          FROM EVS_ITEM_SCORE SCORE, EVS_AFFIRM AFFIRM
+         WHERE SCORE.AFFIRM_SEQ = AFFIRM.SEQ
+           AND SCORE.ITEM_SEQ = ITEM.SEQ
+           AND AFFIRM.EVS_OBJECT_SEQ = EVS.SEQ
+           AND AFFIRM.AFFIRM_LEVEL = 2) EVS_SCORE2
+  FROM EVS_OBJECT EVS, EVS_ITEM ITEM, EVS_ITEM_PARAM PARAM
+ WHERE ITEM.RESUME_SEQ = PARAM.RESUME_SEQ
+   AND ITEM.ITEM_CODE = PARAM.ITEM_CODE
+   AND PARAM.RESUME_SEQ = EVS.RESUME_SEQ
+   AND PARAM.EVS_OCC_GROUP = EVS.EVS_OCC_GROUP
+   AND PARAM.EVS_GROUP = EVS.EVS_GROUP
+   AND EVS.RESUME_SEQ = #{resumeSeq, jdbcType=VARCHAR}
+   AND PARAM.ACTIVITY <> 2
+   AND EVS.PERSON_ID = #{adminID, jdbcType=VARCHAR}
+ ORDER BY TO_NUMBER(ITEM.SEQ). Cột Tự đánh giá (EVS_SCORE0) sẽ là cột để nhân viên nhập điểm tự đánh giá năng lực của bản thân, các giá trị nhập được lấy từ cấu lệnh SQL: SELECT SEQ,
+       PARAM_TYPE,
+       RESUME_SEQ,
+       CODE_NO,
+       CODE_NAME,
+       FORMULA,
+       REMARK,
+       ACTIVITY,
+       ORDERNO,
+       START_STEP,
+       LIST_TYPE,
+       EVS_SCORE
+  FROM EVS_PARAM A
+ WHERE ACTIVITY <> 2
+   AND RESUME_SEQ = #{resumeSeq, jdbcType=VARCHAR}
+   AND PARAM_TYPE = 'ITEM'
+ ORDER BY TO_NUMBER(SEQ). Cũng có chức năng Lưu tạm thời (flag = '0') và Thực hiện (flag = '1') giống như viewRegPersonalTarget.html, khi Lưu thì sẽ Thêm mới hoặc cập nhật lại trường EVS_SCORE của bảng EVS_ITEM_SCORE với điểm mà nhân viên vừa nhập vào, các trường của bảng EVS_ITEM_SCORE tham khảo hình anh. khi thêm mới vào bảng EVS_ITEM_SCORE thì giá trị của trường SEQ sẽ được tăng dần dựa vào EVS_PARAM_SEQ.NEXTVAL. Khi bấm vào Thục hiện (FLAG = 1) thì ngoài việc lưu lại giống chức năng của Lưu tạm thời thì sẽ gọi thêm pakage PKG_EVS_PROCESS.PR_MODIFY_OBJECT_ACTIVITY(
+            #EVS_OBJECT_SEQ:VARCHAR#,
+            #adminID:VARCHAR#,
+            #adminIP:VARCHAR#,
+            #FLAG:VARCHAR#,
+            #message,jdbcType=VARCHAR,mode=OUT#). 
+
+Hãy chỉnh sửa lại cách tính tổng điểm. Tổng điểm sẽ được tính dựa vào công thức: Điểm Tự đánh giá * Điểm chỉ tiêu / (Điểm tối đa) của từng mục tiêu, . Ví dụ, trong dánh sách điểm được lấy ra có 1,2,3,4,5. thì nếu người dùng nhập điểm là 3 thì điểm được tính sẽ là 3 * Điểm chỉ tiêu / 5, sau đó cộng tổng điểm của tất cả các mục tiêu lại với nhau để ra được tổng điểm đánh giá của nhân viên đó.
+
+
+Giống như viewAffirmTarget1.html, hãy tạo cho tôi một file viewAffirmTarget1Ability.html - Đánh giá năng lực lần 1 nằm trong module /evs/manage. Có 1 điểm khác là khi bấm vào tên nhân viên sẽ hiển thị ra modal hiển thị chi tiết các năng lực của nhân viên đó nhưng cột Đánh giá lần 1 sẽ là ác giá trị nhập được lấy từ cấu lệnh SQL: SELECT SEQ,
+       PARAM_TYPE,
+       RESUME_SEQ,
+       CODE_NO,
+       CODE_NAME,
+       FORMULA,
+       REMARK,
+       ACTIVITY,
+       ORDERNO,
+       START_STEP,
+       LIST_TYPE,
+       EVS_SCORE
+  FROM EVS_PARAM A
+ WHERE ACTIVITY <> 2
+   AND RESUME_SEQ = #{resumeSeq, jdbcType=VARCHAR}
+   AND PARAM_TYPE = 'ITEM'
+ ORDER BY TO_NUMBER(SEQ). và cách tính ra tổng điểm cũng giống như viewEvsBySelfSSTAbility.html.
+
+
+ Giống như viewAffirmTarget2.html, hãy tạo cho tôi một file viewAffirmTarget2Ability.html - Đánh giá năng lực lần 2 nằm trong module /evs/manage. Có 1 điểm khác là khi bấm vào tên nhân viên sẽ hiển thị ra modal hiển thị chi tiết các năng lực của nhân viên đó nhưng cột Đánh giá lần 2 sẽ là ác giá trị nhập được lấy từ cấu lệnh SQL: SELECT SEQ,
+       PARAM_TYPE,
+       RESUME_SEQ,
+       CODE_NO,
+       CODE_NAME,
+       FORMULA,
+       REMARK,
+       ACTIVITY,
+       ORDERNO,
+       START_STEP,
+       LIST_TYPE,
+       EVS_SCORE
+  FROM EVS_PARAM A
+ WHERE ACTIVITY <> 2
+   AND RESUME_SEQ = #{resumeSeq, jdbcType=VARCHAR}
+   AND PARAM_TYPE = 'ITEM'
+ ORDER BY TO_NUMBER(SEQ). và cách tính ra tổng điểm cũng giống như viewEvsBySelfSSTAbility.html.
+
+ ở đây hãy thêm cho tôi 3 dòng liên quan đến Nghỉ phép, Tăng ca và Nghỉ bất thường của người dùng. 
+ Phần Nghỉ phép sẽ hiện ra số lượng đơn nghỉ phép mà nhân viên đó đã đăng ký trong khoảng thời gian của tháng hiện tại, dữ liệu lấy ra dựa vào viewApplyAttendanceInfoList.html với điều kiện tìm kiếm là Thời gian bắt đầu và kết thúc của đơn nằm trong khoảng thời gian của tháng hiện tại.
+ phần Tăng ca sẽ hiện ra số lượng đơn tăng ca mà nhân viên đó đã đăng ký trong khoảng thời gian của tháng hiện tại, dữ liệu lấy ra dựa vào viewPOtApplyInfoList.html với điều kiện tìm kiếm là Thời gian bắt đầu và kết thúc của đơn nằm trong khoảng thời gian của tháng hiện tại.
+ phần Nghỉ bất thường sẽ hiện ra số lượng Nghỉ bất thường mà nhân viên đó trong khoảng thời gian của tháng hiện tại. Dữ liệu lấy ra dựa vào viewShowCwaAbnormalApply.html với điều kiện tìm kiếm là Thời gian bắt đầu và kết thúc của đơn nằm trong khoảng thời gian của tháng hiện tại.
+
+
+ Ở đây hãy thể hiện tình hình chấm công và tăng ca theo từng ngày từ ngày 25 tháng trước đến 24 tháng này. Ở trên cũng có ô input để nhập giá trị ngày giống như vrl_standardDate của /evs/manage/viewResumeList.html. Dữ liệu chấm công lấy ra dựa vào viewAttendancePersonalInfoList, Dữ liệu tăng ca lấy ra dựa vào viewPersonOtApplyInfoList. hãy thể hiện bàng dạng biểu đồ cột hoặc một dạng nào đó để nhìn vào trực quan nhất.
+
+ Ở trong bảng HR_EMPLOYEE có trường DATE_STARTED là ngày nhân viên vào công ty nhận việc, DATE_LEFT là ngày nhân viên nghỉ việc. dựa vòa đó hãy làm cho tôi một biểu đồ dạng cột kết hợp với biểu đồ dạng đường, thể hiện số lượng nhân viên làm việc trong từng tháng (tính đến ngày cuối tháng) của năm hiện tại

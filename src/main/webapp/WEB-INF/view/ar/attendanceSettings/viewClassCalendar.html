@@ -3,25 +3,25 @@
     <!-- ===== Toolbar ===== -->
     <div id="cccal_toolbar" class="ccal-toolbar">
         <div class="ccal-nav">
-            <button class="ccal-nav-btn" id="cccal_prevMonth" title="Tháng trước">
+            <button class="ccal-nav-btn" id="cccal_prevMonth" th:title="#{cccal.btn.prevMonth}" title="Tháng trước">
                 <i class="bx bx-chevron-left"></i>
             </button>
             <select id="cccal_monthSel" class="ccal-combo">
-                <option value="1">Tháng 01</option>
-                <option value="2">Tháng 02</option>
-                <option value="3">Tháng 03</option>
-                <option value="4">Tháng 04</option>
-                <option value="5">Tháng 05</option>
-                <option value="6">Tháng 06</option>
-                <option value="7">Tháng 07</option>
-                <option value="8">Tháng 08</option>
-                <option value="9">Tháng 09</option>
-                <option value="10">Tháng 10</option>
-                <option value="11">Tháng 11</option>
-                <option value="12">Tháng 12</option>
+                <option value="1"  th:text="#{cccal.month.1}">Tháng 01</option>
+                <option value="2"  th:text="#{cccal.month.2}">Tháng 02</option>
+                <option value="3"  th:text="#{cccal.month.3}">Tháng 03</option>
+                <option value="4"  th:text="#{cccal.month.4}">Tháng 04</option>
+                <option value="5"  th:text="#{cccal.month.5}">Tháng 05</option>
+                <option value="6"  th:text="#{cccal.month.6}">Tháng 06</option>
+                <option value="7"  th:text="#{cccal.month.7}">Tháng 07</option>
+                <option value="8"  th:text="#{cccal.month.8}">Tháng 08</option>
+                <option value="9"  th:text="#{cccal.month.9}">Tháng 09</option>
+                <option value="10" th:text="#{cccal.month.10}">Tháng 10</option>
+                <option value="11" th:text="#{cccal.month.11}">Tháng 11</option>
+                <option value="12" th:text="#{cccal.month.12}">Tháng 12</option>
             </select>
             <select id="cccal_yearSel" class="ccal-combo ccal-year"></select>
-            <button class="ccal-nav-btn" id="cccal_nextMonth" title="Tháng sau">
+            <button class="ccal-nav-btn" id="cccal_nextMonth" th:title="#{cccal.btn.nextMonth}" title="Tháng sau">
                 <i class="bx bx-chevron-right"></i>
             </button>
             <select id="cccal_groupFilter" class="ccal-combo" data-parent-code="400223"
@@ -29,10 +29,12 @@
         </div>
 
         <div class="ccal-actions">
-            <button class="ccal-btn ccal-btn-default" onclick="cccalLoad()"><i class="bx bx-refresh"></i> Tra
-                cứu</button>
-            <button class="ccal-btn ccal-btn-primary" onclick="cccalOpenAddModal()"><i class="bx bx-plus"></i> Thêm
-                mới</button>
+            <button class="ccal-btn ccal-btn-default" onclick="cccalLoad()">
+                <i class="bx bx-refresh"></i> <span th:text="#{cccal.btn.search}">Tra cứu</span>
+            </button>
+            <button class="ccal-btn ccal-btn-primary" onclick="cccalOpenAddModal()">
+                <i class="bx bx-plus"></i> <span th:text="#{cccal.btn.addNew}">Thêm mới</span>
+            </button>
             <!-- <button class="ccal-btn ccal-btn-success" onclick="cccalOpenEditSelected()"><i class="bx bx-edit"></i>Sửa</button> -->
         </div>
     </div>
@@ -40,22 +42,22 @@
     <!-- ===== Calendar ===== -->
     <div id="cccal_gridWrap" class="ccal-grid-wrap">
         <div class="ccal-hrow">
-            <div class="ccal-hcell ccal-col-sun"><i class="bx bxs-sun"></i> CN</div>
-            <div class="ccal-hcell">T2</div>
-            <div class="ccal-hcell">T3</div>
-            <div class="ccal-hcell">T4</div>
-            <div class="ccal-hcell">T5</div>
-            <div class="ccal-hcell">T6</div>
-            <div class="ccal-hcell ccal-col-sat"><i class="bx bxs-star"></i> T7</div>
+            <div class="ccal-hcell ccal-col-sun"><i class="bx bxs-sun"></i> <span th:text="#{cccal.day.sun}">CN</span></div>
+            <div class="ccal-hcell" th:text="#{cccal.day.mon}">T2</div>
+            <div class="ccal-hcell" th:text="#{cccal.day.tue}">T3</div>
+            <div class="ccal-hcell" th:text="#{cccal.day.wed}">T4</div>
+            <div class="ccal-hcell" th:text="#{cccal.day.thu}">T5</div>
+            <div class="ccal-hcell" th:text="#{cccal.day.fri}">T6</div>
+            <div class="ccal-hcell ccal-col-sat"><i class="bx bxs-star"></i> <span th:text="#{cccal.day.sat}">T7</span></div>
         </div>
         <div id="cccal_body"></div>
     </div>
 
     <!-- ===== Legend ===== -->
     <div class="ccal-legend">
-        <span class="ccal-legend-item"><span class="ccal-legend-dot ccal-lg-work"></span> Ngày làm việc</span>
-        <span class="ccal-legend-item"><span class="ccal-legend-dot ccal-lg-rest"></span> Ngày nghỉ</span>
-        <span class="ccal-legend-item"><span class="ccal-legend-dot ccal-lg-today"></span> Hôm nay</span>
+        <span class="ccal-legend-item"><span class="ccal-legend-dot ccal-lg-work"></span> <span th:text="#{cccal.legend.workday}">Ngày làm việc</span></span>
+        <span class="ccal-legend-item"><span class="ccal-legend-dot ccal-lg-rest"></span> <span th:text="#{cccal.legend.restday}">Ngày nghỉ</span></span>
+        <span class="ccal-legend-item"><span class="ccal-legend-dot ccal-lg-today"></span> <span th:text="#{cccal.legend.today}">Hôm nay</span></span>
     </div>
 
     <!-- ===== Modal Thêm Mới Batch ===== -->
@@ -63,44 +65,43 @@
         <div class="modal-dialog modal-md">
             <div class="modal-content">
                 <div class="modal-header py-2">
-                    <h6 class="modal-title mb-0">Thêm Mới Lịch Nhóm Ca</h6>
+                    <h6 class="modal-title mb-0" th:text="#{cccal.modal.addTitle}">Thêm Mới Lịch Nhóm Ca</h6>
                     <button class="btn-close btn-sm" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="row g-2">
                         <div class="col-md-6">
-                            <label class="form-label form-label-sm">Từ ngày <span class="text-danger">*</span></label>
+                            <label class="form-label form-label-sm"><span th:text="#{cccal.label.fromDate}">Từ ngày</span> <span class="text-danger">*</span></label>
                             <input type="text" class="form-control form-control-sm js-daterangepicker" id="cccal_startDate"
                                 data-drp-format="DD-MM-YYYY"
                                 placeholder="DD-MM-YYYY">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label form-label-sm">Đến ngày <span class="text-danger">*</span></label>
+                            <label class="form-label form-label-sm"><span th:text="#{cccal.label.toDate}">Đến ngày</span> <span class="text-danger">*</span></label>
                             <input type="text" class="form-control form-control-sm js-daterangepicker" id="cccal_endDate"
                                 data-drp-format="DD-MM-YYYY"
                                 placeholder="DD-MM-YYYY">
                         </div>
                         <div class="col-md-12">
-                            <label class="form-label form-label-sm">Nhóm ca <span class="text-danger">*</span></label>
+                            <label class="form-label form-label-sm"><span th:text="#{cccal.label.groupShift}">Nhóm ca</span> <span class="text-danger">*</span></label>
                             <select class="form-select form-select-sm" id="cccal_addGroupId" data-parent-code="400223"
+                                th:attr="data-default-text=#{cccal.select.chooseGroup}"
                                 data-default-text="-- Chọn nhóm ca --"></select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label form-label-sm">Ca làm việc (Work Shift) <span
-                                    class="text-danger">*</span></label>
+                            <label class="form-label form-label-sm"><span th:text="#{cccal.label.workShift}">Ca làm việc (Work Shift)</span> <span class="text-danger">*</span></label>
                             <select class="form-select form-select-sm" id="cccal_workShift"></select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label form-label-sm">Ca nghỉ ngơi (Rest Shift) <span
-                                    class="text-danger">*</span></label>
+                            <label class="form-label form-label-sm"><span th:text="#{cccal.label.restShift}">Ca nghỉ ngơi (Rest Shift)</span> <span class="text-danger">*</span></label>
                             <select class="form-select form-select-sm" id="cccal_restShift"></select>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer py-2">
-                    <button class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button class="btn btn-sm btn-secondary" data-bs-dismiss="modal" th:text="#{cccal.btn.close}">Đóng</button>
                     <button class="btn btn-sm btn-primary" onclick="cccalSaveBatch()">
-                        <i class="bx bx-save me-1"></i>Thêm Mới
+                        <i class="bx bx-save me-1"></i><span th:text="#{cccal.btn.addNew}">Thêm Mới</span>
                     </button>
                 </div>
             </div>
@@ -112,7 +113,7 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header py-2">
-                    <h6 class="modal-title mb-0" id="cccal_modalTitle">Cập nhật ngày</h6>
+                    <h6 class="modal-title mb-0" id="cccal_modalTitle" th:text="#{cccal.modal.editTitle}">Cập nhật ngày</h6>
                     <button class="btn-close btn-sm" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -121,14 +122,14 @@
                         <input type="hidden" id="cccal_editGroupId">
                         <div class="row g-2">
                             <div class="col-md-6">
-                                <label class="form-label form-label-sm">Ngày làm việc</label>
+                                <label class="form-label form-label-sm" th:text="#{cccal.label.workdayflag}">Ngày làm việc</label>
                                 <select class="form-select form-select-sm" id="cccal_workdayflag">
-                                    <option value="0">0 — Ngày nghỉ</option>
-                                    <option value="1">1 — Ngày làm việc</option>
+                                    <option value="0" th:text="#{cccal.option.restday}">0 — Ngày nghỉ</option>
+                                    <option value="1" th:text="#{cccal.option.workday}">1 — Ngày làm việc</option>
                                 </select>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label form-label-sm">Ca làm việc (Shift No)</label>
+                                <label class="form-label form-label-sm" th:text="#{cccal.label.shiftNo}">Ca làm việc (Shift No)</label>
                                 <select class="form-select form-select-sm" id="cccal_shiftNo"></select>
                             </div>
                             <div class="col-md-4">
@@ -140,7 +141,7 @@
                                 <select class="form-select" id="cccal_overtypeid" data-parent-code="1439"></select>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label form-label-sm">TypeID mặc định</label>
+                                <label class="form-label form-label-sm" th:text="#{cccal.label.typeidDefault}">TypeID mặc định</label>
                                 <select class="form-select" id="cccal_typeidDefault" data-parent-code="1439"></select>
                             </div>
                             <div class="col-md-4">
@@ -148,23 +149,23 @@
                                 <input type="text" class="form-control form-control-sm" id="cccal_operationId">
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label form-label-sm">Sắp xếp</label>
+                                <label class="form-label form-label-sm" th:text="#{cccal.label.orderno}">Sắp xếp</label>
                                 <input type="number" class="form-control form-control-sm" id="cccal_orderno" value="0">
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label form-label-sm">Trạng thái</label>
+                                <label class="form-label form-label-sm" th:text="#{cccal.label.activity}">Trạng thái</label>
                                 <select class="form-select form-select-sm" id="cccal_activity">
-                                    <option value="1">Hoạt động</option>
-                                    <option value="0">Ngừng</option>
+                                    <option value="1" th:text="#{cccal.option.active}">Hoạt động</option>
+                                    <option value="0" th:text="#{cccal.option.inactive}">Ngừng</option>
                                 </select>
                             </div>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer py-2">
-                    <button class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button class="btn btn-sm btn-secondary" data-bs-dismiss="modal" th:text="#{cccal.btn.close}">Đóng</button>
                     <button class="btn btn-sm btn-primary" onclick="cccalSave()">
-                        <i class="bx bx-save me-1"></i>Lưu
+                        <i class="bx bx-save me-1"></i><span th:text="#{cccal.btn.save}">Lưu</span>
                     </button>
                 </div>
             </div>
@@ -277,6 +278,29 @@
         /* ===========================
            MAIN LOGIC — prefix: cccal (Class Calendar)
            =========================== */
+
+        /* i18n strings injected by Thymeleaf */
+        var cccalI18n = {
+            loadError:       /*[[#{cccal.msg.loadError}]]*/ 'Lỗi tải lịch nhóm ca!',
+            noData:          /*[[#{cccal.msg.noData}]]*/ 'Không có dữ liệu lịch nhóm ca trong khoảng thời gian này.',
+            statusWork:      /*[[#{cccal.status.work}]]*/ 'Làm việc',
+            statusRest:      /*[[#{cccal.status.rest}]]*/ 'Nghỉ',
+            tagWeekend:      /*[[#{cccal.tag.weekend}]]*/ 'Cuối tuần',
+            tagNoData:       /*[[#{cccal.tag.noData}]]*/ 'Chưa có dữ liệu',
+            selectDay:       /*[[#{cccal.msg.selectDay}]]*/ 'Bấm chọn 1 ngày trên lịch!',
+            selectGroup:     /*[[#{cccal.msg.selectGroup}]]*/ 'Vui lòng chọn Nhóm ca ở thanh lọc trước khi sửa!',
+            requiredFields:  /*[[#{cccal.msg.requiredFields}]]*/ 'Vui lòng điền đủ thông tin bắt buộc!',
+            addSuccess:      /*[[#{cccal.msg.addSuccess}]]*/ 'Thêm mới thành công!',
+            error:           /*[[#{cccal.msg.error}]]*/ 'Lỗi!',
+            connError:       /*[[#{cccal.msg.connectionError}]]*/ 'Lỗi kết nối!',
+            notFound:        /*[[#{cccal.msg.notFound}]]*/ 'Không tìm thấy dữ liệu!',
+            invalidData:     /*[[#{cccal.msg.invalidData}]]*/ 'Dữ liệu không hợp lệ!',
+            saveSuccess:     /*[[#{cccal.msg.saveSuccess}]]*/ 'Lưu thành công!',
+            unknownError:    /*[[#{cccal.msg.unknownError}]]*/ 'Lỗi không xác định',
+            editTitlePrefix: /*[[#{cccal.modal.editTitlePrefix}]]*/ 'Cập nhật — ',
+            editTitleGroup:  /*[[#{cccal.modal.editTitleGroup}]]*/ ' / Nhóm: '
+        };
+
         $(document).ready(function () {
             var now = new Date();
             var curYear = now.getFullYear();
@@ -330,13 +354,13 @@
                 url: '/ar/attendanceSettings/api/calender/group/month',
                 data: { year: year, month: month, groupId: gId },
                 success: function (data) { cccalRender(year, month, data); },
-                error: function () { toastr && toastr.error('Lỗi tải lịch nhóm ca!'); }
+                error: function () { toastr && toastr.error(cccalI18n.loadError); }
             });
         };
 
         function cccalRender(year, month, records) {
             if (!records || records.length === 0) {
-                $('#cccal_body').html('<div style="padding: 20px; text-align: center; color: #64748b;">Không có dữ liệu lịch nhóm ca trong khoảng thời gian này.</div>');
+                $('#cccal_body').html('<div style="padding: 20px; text-align: center; color: #64748b;">' + cccalI18n.noData + '</div>');
                 return;
             }
 
@@ -391,14 +415,14 @@
                 var numCls = 'ccal-day-num' + (isSun ? ' is-sun' : isSat ? ' is-sat' : '');
 
                 var statusHtml = hasWork
-                    ? '<span class="ccal-status s-work-text">Làm việc</span>'
-                    : '<span class="ccal-status s-rest">Nghỉ</span>';
+                    ? '<span class="ccal-status s-work-text">' + cccalI18n.statusWork + '</span>'
+                    : '<span class="ccal-status s-rest">' + cccalI18n.statusRest + '</span>';
 
                 var tagsHtml = '';
                 if (items.length === 0) {
                     tagsHtml += isSun || isSat
-                        ? '<span class="ccal-tag t-rest">Cuối tuần</span>'
-                        : '<span class="ccal-tag t-wd">Chưa có dữ liệu</span>';
+                        ? '<span class="ccal-tag t-rest">' + cccalI18n.tagWeekend + '</span>'
+                        : '<span class="ccal-tag t-wd">' + cccalI18n.tagNoData + '</span>';
                 } else {
                     items.forEach(function (it) {
                         var shiftName = esc(it.shiftName || it.shiftNo || '');
@@ -436,10 +460,10 @@
 
         window.cccalOpenEditSelected = function () {
             var sel = document.querySelector('#cccal_body .ccal-selected');
-            if (!sel) { toastr && toastr.warning('Bấm chọn 1 ngày trên lịch!'); return; }
+            if (!sel) { toastr && toastr.warning(cccalI18n.selectDay); return; }
             var dateStr = $(sel).attr('data-datestr');
             var gId = $('#cccal_groupFilter').val() || '';
-            if (!gId) { toastr && toastr.warning('Vui lòng chọn Nhóm ca ở thanh lọc trước khi sửa!'); return; }
+            if (!gId) { toastr && toastr.warning(cccalI18n.selectGroup); return; }
             cccalOpenEditModal(dateStr, gId);
         };
 
@@ -463,7 +487,7 @@
                 restShift: $('#cccal_restShift').val()
             };
             if (!data.startDate || !data.endDate || !data.groupId || !data.workShift || !data.restShift) {
-                toastr ? toastr.warning('Vui lòng điền đủ thông tin bắt buộc!') : alert('Vui lòng điền đủ thông tin!');
+                toastr ? toastr.warning(cccalI18n.requiredFields) : alert(cccalI18n.requiredFields);
                 return;
             }
             $.ajax({
@@ -471,12 +495,12 @@
                 type: 'POST', data: data,
                 success: function (res) {
                     if (res && res.success) {
-                        toastr && toastr.success(res.message || 'Thêm mới thành công!');
+                        toastr && toastr.success(res.message || cccalI18n.addSuccess);
                         bootstrap.Modal.getInstance(document.getElementById('cccal_addModal')).hide();
                         cccalLoad();
-                    } else { toastr && toastr.error((res && res.error) || 'Lỗi!'); }
+                    } else { toastr && toastr.error((res && res.error) || cccalI18n.error); }
                 },
-                error: function () { toastr && toastr.error('Lỗi kết nối!'); }
+                error: function () { toastr && toastr.error(cccalI18n.connError); }
             });
         };
 
@@ -486,10 +510,10 @@
                 url: '/ar/attendanceSettings/api/calender/group/detail',
                 data: { arDateStr: dateStr, groupId: groupId },
                 success: function (item) {
-                    if (!item) { toastr && toastr.warning('Không tìm thấy dữ liệu!'); return; }
+                    if (!item) { toastr && toastr.warning(cccalI18n.notFound); return; }
                     var p = dateStr.split('/');
                     var display = p[2] + '/' + p[1] + '/' + p[0];
-                    $('#cccal_modalTitle').text('Cập nhật — ' + display + ' / Nhóm: ' + (item.groupName || item.groupId));
+                    $('#cccal_modalTitle').text(cccalI18n.editTitlePrefix + display + cccalI18n.editTitleGroup + (item.groupName || item.groupId));
                     $('#cccal_editArDateStr').val(item.arDateStr);
                     $('#cccal_editGroupId').val(item.groupId);
                     $('#cccal_workdayflag').val(item.workdayflag != null ? item.workdayflag : 0);
@@ -502,13 +526,13 @@
                     $('#cccal_activity').val(item.activity != null ? item.activity : 1);
                     new bootstrap.Modal(document.getElementById('cccal_modal')).show();
                 },
-                error: function () { toastr && toastr.error('Không tìm thấy dữ liệu!'); }
+                error: function () { toastr && toastr.error(cccalI18n.notFound); }
             });
         }
 
         window.cccalSave = function () {
             var arDateStr = $('#cccal_editArDateStr').val();
-            if (!arDateStr) { toastr && toastr.warning('Dữ liệu không hợp lệ!'); return; }
+            if (!arDateStr) { toastr && toastr.warning(cccalI18n.invalidData); return; }
             var payload = {
                 arDateStr: arDateStr,
                 groupId: $('#cccal_editGroupId').val(),
@@ -526,15 +550,15 @@
                 type: 'POST', contentType: 'application/json', data: JSON.stringify(payload),
                 success: function (res) {
                     if (res && res.success) {
-                        toastr && toastr.success(res.message || 'Lưu thành công!');
+                        toastr && toastr.success(res.message || cccalI18n.saveSuccess);
                         var m = bootstrap.Modal.getInstance(document.getElementById('cccal_modal'));
                         if (m) m.hide();
                         cccalLoad();
-                    } else { toastr && toastr.error((res && res.error) || 'Lỗi!'); }
+                    } else { toastr && toastr.error((res && res.error) || cccalI18n.error); }
                 },
                 error: function (err) {
-                    var msg = (err.responseJSON && err.responseJSON.error) ? err.responseJSON.error : 'Lỗi không xác định';
-                    toastr && toastr.error('Lỗi: ' + msg);
+                    var msg = (err.responseJSON && err.responseJSON.error) ? err.responseJSON.error : cccalI18n.unknownError;
+                    toastr && toastr.error(cccalI18n.error + ' ' + msg);
                 }
             });
         };

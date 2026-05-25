@@ -7,32 +7,38 @@
                 <div class="card-body">
                     <form id="vefl_searchForm" class="row gy-2 align-items-end">
                         <div class="col-md-3 d-flex align-items-center gap-2">
-                            <label class="form-label small text-muted mb-0 text-nowrap">Mã</label>
+                            <label class="form-label small text-muted mb-0 text-nowrap"
+                                th:text="#{evs.manage.viewEvsFormulaList.search.code}">Mã</label>
                             <input type="text" class="form-control form-control-sm" id="vefl_codeNoSearch"
                                 maxlength="20" style="max-width:160px;">
                         </div>
                         <div class="col-md-3 d-flex align-items-center gap-2">
-                            <label class="form-label small text-muted mb-0 text-nowrap">Tên</label>
+                            <label class="form-label small text-muted mb-0 text-nowrap"
+                                th:text="#{evs.manage.viewEvsFormulaList.search.name}">Tên</label>
                             <input type="text" class="form-control form-control-sm" id="vefl_codeNameSearch"
                                 maxlength="200" style="max-width:200px;">
                         </div>
                         <div class="col-md-3 d-flex align-items-center gap-2">
-                            <label class="form-label small text-muted mb-0 text-nowrap">Trạng thái</label>
+                            <label class="form-label small text-muted mb-0 text-nowrap"
+                                th:text="#{evs.manage.viewEvsFormulaList.search.status}">Trạng thái</label>
                             <select class="form-select form-select-sm" id="vefl_activitySearch" style="max-width:160px;">
-                                <option value="">-- Tất cả --</option>
-                                <option value="1">Sử dụng</option>
-                                <option value="0">Không sử dụng</option>
+                                <option value="" th:text="#{evs.manage.viewEvsFormulaList.search.allOption}">-- Tất cả --</option>
+                                <option value="1" th:text="#{evs.manage.viewEvsFormulaList.search.active}">Sử dụng</option>
+                                <option value="0" th:text="#{evs.manage.viewEvsFormulaList.search.inactive}">Không sử dụng</option>
                             </select>
                         </div>
                         <div class="col-md-3 d-flex gap-2">
                             <button type="button" class="btn btn-primary btn-sm" onclick="veflSearch()">
-                                <i class="bi bi-search"></i> Tra cứu
+                                <i class="bi bi-search"></i>
+                                <span th:text="#{evs.manage.viewEvsFormulaList.btn.search}">Tra cứu</span>
                             </button>
                             <button type="button" class="btn btn-secondary btn-sm" onclick="veflClearSearch()">
-                                <i class="bi bi-x-circle"></i> Xóa lọc
+                                <i class="bi bi-x-circle"></i>
+                                <span th:text="#{evs.manage.viewEvsFormulaList.btn.clearFilter}">Xóa lọc</span>
                             </button>
                             <button type="button" class="btn btn-success btn-sm" onclick="veflOpenAddModal()">
-                                <i class="bi bi-plus-circle"></i> Thêm mới
+                                <i class="bi bi-plus-circle"></i>
+                                <span th:text="#{evs.manage.viewEvsFormulaList.btn.addNew}">Thêm mới</span>
                             </button>
                         </div>
                     </form>
@@ -47,14 +53,21 @@
                             style="width:100%">
                             <thead class="table-light">
                                 <tr>
-                                    <th class="text-center" style="width:44px;">No.</th>
-                                    <th class="text-center" style="width:120px;">Mã</th>
-                                    <th style="width:200px;">Tên</th>
-                                    <th>Công thức</th>
-                                    <th style="width:200px;">Ghi chú</th>
-                                    <th class="text-center" style="width:100px;">Trạng thái</th>
-                                    <th class="text-center" style="width:70px;">Thứ tự</th>
-                                    <th class="text-center" style="width:70px;">Thao tác</th>
+                                    <th class="text-center" style="width:44px;"
+                                        th:text="#{evs.manage.viewEvsFormulaList.col.no}">No.</th>
+                                    <th class="text-center" style="width:120px;"
+                                        th:text="#{evs.manage.viewEvsFormulaList.col.code}">Mã</th>
+                                    <th style="width:200px;"
+                                        th:text="#{evs.manage.viewEvsFormulaList.col.name}">Tên</th>
+                                    <th th:text="#{evs.manage.viewEvsFormulaList.col.formula}">Công thức</th>
+                                    <th style="width:200px;"
+                                        th:text="#{evs.manage.viewEvsFormulaList.col.remark}">Ghi chú</th>
+                                    <th class="text-center" style="width:100px;"
+                                        th:text="#{evs.manage.viewEvsFormulaList.col.status}">Trạng thái</th>
+                                    <th class="text-center" style="width:70px;"
+                                        th:text="#{evs.manage.viewEvsFormulaList.col.orderNo}">Thứ tự</th>
+                                    <th class="text-center" style="width:70px;"
+                                        th:text="#{evs.manage.viewEvsFormulaList.col.action}">Thao tác</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
@@ -71,7 +84,8 @@
         <div class="modal-dialog modal-lg modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="vefl_modalTitle">Thêm mới công thức</h5>
+                    <h5 class="modal-title" id="vefl_modalTitle"
+                        th:text="#{evs.manage.viewEvsFormulaList.modal.addTitle}">Thêm mới công thức</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -84,7 +98,8 @@
                         <tbody>
                             <tr>
                                 <th class="table-light text-end pe-3">
-                                    Mã <span class="text-danger">*</span>
+                                    <span th:text="#{evs.manage.viewEvsFormulaList.modal.code}">Mã</span>
+                                    <span class="text-danger">*</span>
                                 </th>
                                 <td>
                                     <input type="text" class="form-control form-control-sm" id="vefl_codeNo"
@@ -93,7 +108,8 @@
                             </tr>
                             <tr>
                                 <th class="table-light text-end pe-3">
-                                    Tên <span class="text-danger">*</span>
+                                    <span th:text="#{evs.manage.viewEvsFormulaList.modal.name}">Tên</span>
+                                    <span class="text-danger">*</span>
                                 </th>
                                 <td>
                                     <input type="text" class="form-control form-control-sm" id="vefl_codeName"
@@ -101,37 +117,43 @@
                                 </td>
                             </tr>
                             <tr>
-                                <th class="table-light text-end pe-3">Công thức</th>
+                                <th class="table-light text-end pe-3"
+                                    th:text="#{evs.manage.viewEvsFormulaList.modal.formula}">Công thức</th>
                                 <td>
                                     <textarea class="form-control form-control-sm" id="vefl_formula" rows="5"
                                         maxlength="4000" style="font-family:monospace; font-size:0.8rem;"></textarea>
                                 </td>
                             </tr>
                             <tr>
-                                <th class="table-light text-end pe-3">Ghi chú</th>
+                                <th class="table-light text-end pe-3"
+                                    th:text="#{evs.manage.viewEvsFormulaList.modal.remark}">Ghi chú</th>
                                 <td>
                                     <textarea class="form-control form-control-sm" id="vefl_remark" rows="3"
                                         maxlength="4000"></textarea>
                                 </td>
                             </tr>
                             <tr>
-                                <th class="table-light text-end pe-3">Thứ tự</th>
+                                <th class="table-light text-end pe-3"
+                                    th:text="#{evs.manage.viewEvsFormulaList.modal.orderNo}">Thứ tự</th>
                                 <td>
                                     <input type="number" class="form-control form-control-sm" id="vefl_orderNo"
                                         min="0" max="9999" style="max-width:100px;">
                                 </td>
                             </tr>
                             <tr>
-                                <th class="table-light text-end pe-3">Trạng thái</th>
+                                <th class="table-light text-end pe-3"
+                                    th:text="#{evs.manage.viewEvsFormulaList.modal.status}">Trạng thái</th>
                                 <td>
                                     <div class="form-check form-switch">
                                         <input class="form-check-input" type="checkbox" id="vefl_activity" value="1">
-                                        <label class="form-check-label small" for="vefl_activity">Sử dụng</label>
+                                        <label class="form-check-label small" for="vefl_activity"
+                                            th:text="#{evs.manage.viewEvsFormulaList.modal.activeLabel}">Sử dụng</label>
                                     </div>
                                 </td>
                             </tr>
                             <tr id="vefl_auditRow" style="display:none;">
-                                <th class="table-light text-end pe-3">Thông tin cập nhật</th>
+                                <th class="table-light text-end pe-3"
+                                    th:text="#{evs.manage.viewEvsFormulaList.modal.auditInfo}">Thông tin cập nhật</th>
                                 <td>
                                     <span id="vefl_auditDisplay" class="small text-muted"></span>
                                 </td>
@@ -140,9 +162,11 @@
                     </table>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"
+                        th:text="#{common.close}">Đóng</button>
                     <button type="button" class="btn btn-primary btn-sm" onclick="veflSave()">
-                        <i class="bi bi-save"></i> Lưu
+                        <i class="bi bi-save"></i>
+                        <span th:text="#{common.save}">Lưu</span>
                     </button>
                 </div>
             </div>
@@ -154,16 +178,19 @@
         <div class="modal-dialog modal-sm">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Xác nhận xóa</h5>
+                    <h5 class="modal-title"
+                        th:text="#{evs.manage.viewEvsFormulaList.modal.deleteTitle}">Xác nhận xóa</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <p>Bạn có chắc muốn xóa công thức "<strong id="vefl_deleteCodeName"></strong>"?</p>
+                    <p><span id="vefl_deleteConfirmMsg"></span></p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"
+                        th:text="#{common.cancel}">Hủy</button>
                     <button type="button" class="btn btn-danger btn-sm" onclick="veflConfirmDelete()">
-                        <i class="bi bi-trash"></i> Xóa
+                        <i class="bi bi-trash"></i>
+                        <span th:text="#{common.delete}">Xóa</span>
                     </button>
                 </div>
             </div>
@@ -179,6 +206,21 @@
         var _vefl_deleteModal = null;
         var _vefl_table = null;
 
+        var _vefl_i18n = {
+            addTitle:      /*[[#{evs.manage.viewEvsFormulaList.modal.addTitle}]]*/ 'Thêm mới công thức',
+            editTitle:     /*[[#{evs.manage.viewEvsFormulaList.modal.editTitle}]]*/ 'Chỉnh sửa công thức',
+            badgeActive:   /*[[#{evs.manage.viewEvsFormulaList.badge.active}]]*/ 'Sử dụng',
+            badgeInactive: /*[[#{evs.manage.viewEvsFormulaList.badge.inactive}]]*/ 'Không sử dụng',
+            loadError:     /*[[#{evs.manage.viewEvsFormulaList.msg.loadError}]]*/ 'Lỗi khi tải thông tin công thức.',
+            enterCode:     /*[[#{evs.manage.viewEvsFormulaList.msg.enterCode}]]*/ 'Vui lòng nhập Mã.',
+            enterName:     /*[[#{evs.manage.viewEvsFormulaList.msg.enterName}]]*/ 'Vui lòng nhập Tên.',
+            saveError:     /*[[#{evs.manage.viewEvsFormulaList.msg.saveError}]]*/ 'Lỗi khi lưu dữ liệu. Vui lòng thử lại.',
+            deleteError:   /*[[#{evs.manage.viewEvsFormulaList.msg.deleteError}]]*/ 'Lỗi khi xóa dữ liệu. Vui lòng thử lại.',
+            deleteConfirm: /*[[#{evs.manage.viewEvsFormulaList.modal.deleteConfirm}]]*/ 'Bạn có chắc muốn xóa công thức "{0}"?',
+            btnEdit:       /*[[#{evs.manage.viewEvsFormulaList.btn.edit}]]*/ 'Sửa',
+            btnDelete:     /*[[#{evs.manage.viewEvsFormulaList.btn.delete}]]*/ 'Xóa'
+        };
+
         // ── Tiện ích ─────────────────────────────────────────────────────────
         function veflEsc(s) {
             if (s == null) return '';
@@ -189,8 +231,8 @@
 
         function veflActivityBadge(val) {
             return (val === '1' || val === 1)
-                ? '<span class="badge bg-success">Sử dụng</span>'
-                : '<span class="badge bg-secondary">Không sử dụng</span>';
+                ? '<span class="badge bg-success">' + veflEsc(_vefl_i18n.badgeActive) + '</span>'
+                : '<span class="badge bg-secondary">' + veflEsc(_vefl_i18n.badgeInactive) + '</span>';
         }
 
         // ── Search ───────────────────────────────────────────────────────────
@@ -207,7 +249,7 @@
 
         // ── Modal thêm mới ───────────────────────────────────────────────────
         window.veflOpenAddModal = function () {
-            $('#vefl_modalTitle').text('Thêm mới công thức');
+            $('#vefl_modalTitle').text(_vefl_i18n.addTitle);
             $('#vefl_seq').val('');
             $('#vefl_codeNo').val('').prop('readonly', false);
             $('#vefl_codeName').val('');
@@ -226,7 +268,7 @@
                 type: 'GET',
                 success: function (r) {
                     if (!r) return;
-                    $('#vefl_modalTitle').text('Chỉnh sửa công thức');
+                    $('#vefl_modalTitle').text(_vefl_i18n.editTitle);
                     $('#vefl_seq').val(r.seq || '');
                     $('#vefl_codeNo').val(r.codeNo || '').prop('readonly', true);
                     $('#vefl_codeName').val(r.codeName || '');
@@ -243,7 +285,7 @@
                     _vefl_detailModal.show();
                 },
                 error: function () {
-                    alert('Lỗi khi tải thông tin công thức.');
+                    alert(_vefl_i18n.loadError);
                 }
             });
         };
@@ -252,13 +294,13 @@
         window.veflSave = function () {
             var codeNo = $('#vefl_codeNo').val().trim();
             if (!codeNo) {
-                alert('Vui lòng nhập Mã.');
+                alert(_vefl_i18n.enterCode);
                 $('#vefl_codeNo').focus();
                 return;
             }
             var codeName = $('#vefl_codeName').val().trim();
             if (!codeName) {
-                alert('Vui lòng nhập Tên.');
+                alert(_vefl_i18n.enterName);
                 $('#vefl_codeName').focus();
                 return;
             }
@@ -281,7 +323,7 @@
                     if (_vefl_table) _vefl_table.ajax.reload();
                 },
                 error: function () {
-                    alert('Lỗi khi lưu dữ liệu. Vui lòng thử lại.');
+                    alert(_vefl_i18n.saveError);
                 }
             });
         };
@@ -289,7 +331,8 @@
         // ── Xóa ─────────────────────────────────────────────────────────────
         window.veflOpenDeleteModal = function (seq, codeName) {
             _vefl_deleteSeq = seq;
-            $('#vefl_deleteCodeName').text(codeName || seq);
+            var msg = _vefl_i18n.deleteConfirm.replace('{0}', codeName || seq);
+            $('#vefl_deleteConfirmMsg').text(msg);
             _vefl_deleteModal.show();
         };
 
@@ -306,7 +349,7 @@
                     if (_vefl_table) _vefl_table.ajax.reload();
                 },
                 error: function () {
-                    alert('Lỗi khi xóa dữ liệu. Vui lòng thử lại.');
+                    alert(_vefl_i18n.deleteError);
                 }
             });
         };
@@ -384,10 +427,10 @@
                             return '<div class="btn-group btn-group-sm">'
                                 + '<button class="btn btn-outline-primary py-0 px-1"'
                                 + ' onclick="event.stopPropagation(); veflOpenEditModal(\'' + veflEsc(row.seq) + '\')"'
-                                + ' title="Sửa"><i class="bi bi-pencil"></i></button>'
+                                + ' title="' + veflEsc(_vefl_i18n.btnEdit) + '"><i class="bi bi-pencil"></i></button>'
                                 + '<button class="btn btn-outline-danger py-0 px-1"'
                                 + ' onclick="event.stopPropagation(); veflOpenDeleteModal(\'' + veflEsc(row.seq) + '\',\'' + veflEsc(row.codeName) + '\')"'
-                                + ' title="Xóa"><i class="bi bi-trash"></i></button>'
+                                + ' title="' + veflEsc(_vefl_i18n.btnDelete) + '"><i class="bi bi-trash"></i></button>'
                                 + '</div>';
                         }
                     }

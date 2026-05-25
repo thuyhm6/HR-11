@@ -7,24 +7,30 @@
                 <div class="card-body">
                     <form id="vrl_searchForm" class="row gy-3 align-items-end">
                         <div class="col-md-3 d-flex align-items-center gap-2">
-                            <label class="form-label small text-muted">Năm đánh giá</label>
+                            <label class="form-label small text-muted"
+                                th:text="#{evs.manage.viewResumeList.label.evsYear}">Năm đánh giá</label>
                             <input type="number" class="form-control form-control-sm" id="vrl_yearSearch"
                                 style="max-width:120px;" min="2000" max="2099" step="1">
                         </div>
                         <div class="col-md-3 d-flex align-items-center gap-2">
-                            <label class="form-label small text-muted">Chu kỳ</label>
+                            <label class="form-label small text-muted"
+                                th:text="#{evs.manage.viewResumeList.label.evsCycle}">Chu kỳ</label>
                             <select class="form-select form-select-sm" id="vrl_cycleSearch" style="max-width:180px;"
-                                data-parent-code="14015038" data-default-text="-- Tất cả --"></select>
+                                data-parent-code="14015038"
+                                th:attr="data-default-text=#{evs.manage.viewResumeList.label.allOption}">-- Tất cả --</select>
                         </div>
                         <div class="col-md-6 d-flex gap-2">
                             <button type="button" class="btn btn-primary btn-sm" onclick="vrlSearch()">
-                                <i class="bi bi-search"></i> Tra cứu
+                                <i class="bi bi-search"></i>
+                                <span th:text="#{evs.manage.viewResumeList.btn.search}">Tra cứu</span>
                             </button>
                             <button type="button" class="btn btn-secondary btn-sm" onclick="vrlClearSearch()">
-                                <i class="bi bi-x-circle"></i> Xóa lọc
+                                <i class="bi bi-x-circle"></i>
+                                <span th:text="#{evs.manage.viewResumeList.btn.clearFilter}">Xóa lọc</span>
                             </button>
                             <button type="button" class="btn btn-success btn-sm" onclick="vrlOpenAddModal()">
-                                <i class="bi bi-plus-circle"></i> Thêm mới
+                                <i class="bi bi-plus-circle"></i>
+                                <span th:text="#{evs.manage.viewResumeList.btn.addNew}">Thêm mới</span>
                             </button>
                         </div>
                     </form>
@@ -39,16 +45,25 @@
                             style="width:100%">
                             <thead class="table-light">
                                 <tr>
-                                    <th class="text-center">NO</th>
-                                    <th>Tên đánh giá</th>
-                                    <th class="text-center">Chu kỳ</th>
-                                    <th class="text-center">Năm đánh giá</th>
-                                    <th class="text-center">Tháng đánh giá</th>
-                                    <th class="text-center">Ngày tiêu chuẩn</th>
-                                    <th class="text-center">Thời gian bắt đầu</th>
-                                    <th class="text-center">Thời gian kết thúc</th>
-                                    <th class="text-center">Trạng thái</th>
-                                    <th class="text-center">Thao tác</th>
+                                    <th class="text-center"
+                                        th:text="#{evs.manage.viewResumeList.col.no}">NO</th>
+                                    <th th:text="#{evs.manage.viewResumeList.col.resumeName}">Tên đánh giá</th>
+                                    <th class="text-center"
+                                        th:text="#{evs.manage.viewResumeList.col.evsCycle}">Chu kỳ</th>
+                                    <th class="text-center"
+                                        th:text="#{evs.manage.viewResumeList.col.evsYear}">Năm đánh giá</th>
+                                    <th class="text-center"
+                                        th:text="#{evs.manage.viewResumeList.col.evsMonth}">Tháng đánh giá</th>
+                                    <th class="text-center"
+                                        th:text="#{evs.manage.viewResumeList.col.standardDate}">Ngày tiêu chuẩn</th>
+                                    <th class="text-center"
+                                        th:text="#{evs.manage.viewResumeList.col.startDate}">Thời gian bắt đầu</th>
+                                    <th class="text-center"
+                                        th:text="#{evs.manage.viewResumeList.col.endDate}">Thời gian kết thúc</th>
+                                    <th class="text-center"
+                                        th:text="#{evs.manage.viewResumeList.col.status}">Trạng thái</th>
+                                    <th class="text-center"
+                                        th:text="#{evs.manage.viewResumeList.col.action}">Thao tác</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
@@ -65,7 +80,8 @@
         <div class="modal-dialog modal-lg modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="vrl_modalTitle">Thêm mới đánh giá</h5>
+                    <h5 class="modal-title" id="vrl_modalTitle"
+                        th:text="#{evs.manage.viewResumeList.modal.titleAdd}">Thêm mới đánh giá</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -78,7 +94,8 @@
                         <tbody>
                             <tr>
                                 <th class="table-light text-end pe-3">
-                                    Tên đánh giá <span class="text-danger">*</span>
+                                    <span th:text="#{evs.manage.viewResumeList.field.resumeName}">Tên đánh giá</span>
+                                    <span class="text-danger">*</span>
                                 </th>
                                 <td>
                                     <input type="text" class="form-control form-control-sm" id="vrl_resumeName"
@@ -86,29 +103,33 @@
                                 </td>
                             </tr>
                             <tr>
-                                <th class="table-light text-end pe-3">Giải thích</th>
+                                <th class="table-light text-end pe-3"
+                                    th:text="#{evs.manage.viewResumeList.field.remark}">Giải thích</th>
                                 <td>
                                     <textarea class="form-control form-control-sm" id="vrl_remark" rows="3"
                                         maxlength="2000"></textarea>
                                 </td>
                             </tr>
                             <tr>
-                                <th class="table-light text-end pe-3">Chu kỳ</th>
+                                <th class="table-light text-end pe-3"
+                                    th:text="#{evs.manage.viewResumeList.field.evsCycle}">Chu kỳ</th>
                                 <td>
                                     <select class="form-select form-select-sm" id="vrl_evsCycle"
                                         style="max-width:200px;" data-parent-code="14015038"
-                                        data-default-text="-- Chọn --"></select>
+                                        th:attr="data-default-text=#{evs.manage.viewResumeList.option.selectDefault}">-- Chọn --</select>
                                 </td>
                             </tr>
                             <tr>
-                                <th class="table-light text-end pe-3">Năm đánh giá</th>
+                                <th class="table-light text-end pe-3"
+                                    th:text="#{evs.manage.viewResumeList.field.evsYear}">Năm đánh giá</th>
                                 <td>
                                     <input type="number" class="form-control form-control-sm" id="vrl_evsYear"
                                         min="2000" max="2099" style="max-width:120px;">
                                 </td>
                             </tr>
                             <tr>
-                                <th class="table-light text-end pe-3">Tháng đánh giá</th>
+                                <th class="table-light text-end pe-3"
+                                    th:text="#{evs.manage.viewResumeList.field.evsMonth}">Tháng đánh giá</th>
                                 <td>
                                     <select class="form-select form-select-sm" id="vrl_evsMonth"
                                         style="max-width:200px;">
@@ -117,7 +138,8 @@
                             </tr>
                             <tr>
                                 <th class="table-light text-end pe-3">
-                                    Ngày tiêu chuẩn <span class="text-danger">*</span>
+                                    <span th:text="#{evs.manage.viewResumeList.field.standardDate}">Ngày tiêu chuẩn</span>
+                                    <span class="text-danger">*</span>
                                 </th>
                                 <td>
                                     <input type="text" class="form-control form-control-sm js-daterangepicker"
@@ -126,7 +148,8 @@
                                 </td>
                             </tr>
                             <tr>
-                                <th class="table-light text-end pe-3">Thời gian</th>
+                                <th class="table-light text-end pe-3"
+                                    th:text="#{evs.manage.viewResumeList.field.duration}">Thời gian</th>
                                 <td>
                                     <div class="d-flex align-items-center gap-2 flex-wrap">
                                         <input type="text" class="form-control form-control-sm js-daterangepicker"
@@ -142,25 +165,29 @@
                                 </td>
                             </tr>
                             <tr id="vrl_activityRow" style="display:none;">
-                                <th class="table-light text-end pe-3">Trạng thái thực hiện</th>
+                                <th class="table-light text-end pe-3"
+                                    th:text="#{evs.manage.viewResumeList.field.activityStatus}">Trạng thái thực hiện</th>
                                 <td>
                                     <span id="vrl_activityDisplay" class="text-muted"></span>
                                 </td>
                             </tr>
                             <tr>
-                                <th class="table-light text-end pe-3">Số lần đánh giá</th>
+                                <th class="table-light text-end pe-3"
+                                    th:text="#{evs.manage.viewResumeList.field.evsLevel}">Số lần đánh giá</th>
                                 <td>
                                     <select class="form-select form-select-sm" id="vrl_evsLevel"
                                         style="max-width:200px;" data-parent-code="14015060"
-                                        data-default-text="-- Chọn --"></select>
+                                        th:attr="data-default-text=#{evs.manage.viewResumeList.option.selectDefault}">-- Chọn --</select>
                                 </td>
                             </tr>
                             <tr>
-                                <th class="table-light text-end pe-3">Sao chép đối tượng</th>
+                                <th class="table-light text-end pe-3"
+                                    th:text="#{evs.manage.viewResumeList.field.copyObject}">Sao chép đối tượng</th>
                                 <td>
                                     <select class="form-select form-select-sm" id="vrl_copyObject"
                                         style="max-width:300px;">
-                                        <option value="">-- Không sao chép --</option>
+                                        <option value=""
+                                            th:text="#{evs.manage.viewResumeList.option.noCopy}">-- Không sao chép --</option>
                                     </select>
                                 </td>
                             </tr>
@@ -168,9 +195,11 @@
                     </table>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"
+                        th:text="#{evs.manage.viewResumeList.btn.close}">Đóng</button>
                     <button type="button" class="btn btn-primary btn-sm" onclick="vrlSave()">
-                        <i class="bi bi-save"></i> Lưu
+                        <i class="bi bi-save"></i>
+                        <span th:text="#{evs.manage.viewResumeList.btn.save}">Lưu</span>
                     </button>
                 </div>
             </div>
@@ -182,16 +211,19 @@
         <div class="modal-dialog modal-sm">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Xác nhận xóa</h5>
+                    <h5 class="modal-title"
+                        th:text="#{evs.manage.viewResumeList.modal.deleteTitle}">Xác nhận xóa</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <p>Bạn có chắc muốn xóa đánh giá "<strong id="vrl_deleteResumeName"></strong>"?</p>
+                    <p id="vrl_deleteConfirmMsg"></p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"
+                        th:text="#{evs.manage.viewResumeList.btn.cancel}">Hủy</button>
                     <button type="button" class="btn btn-danger btn-sm" onclick="vrlConfirmDelete()">
-                        <i class="bi bi-trash"></i> Xóa
+                        <i class="bi bi-trash"></i>
+                        <span th:text="#{evs.manage.viewResumeList.btn.delete}">Xóa</span>
                     </button>
                 </div>
             </div>
@@ -203,6 +235,19 @@
 <template id="fragmentScripts">
     <script th:inline="javascript">
         (function () {
+            var _vrl_i18n = {
+                addTitle:             /*[[#{evs.manage.viewResumeList.modal.titleAdd}]]*/ 'Thêm mới đánh giá',
+                editTitle:            /*[[#{evs.manage.viewResumeList.modal.titleEdit}]]*/ 'Chỉnh sửa đánh giá',
+                selectDefault:        /*[[#{evs.manage.viewResumeList.option.selectDefault}]]*/ '-- Chọn --',
+                noCopy:               /*[[#{evs.manage.viewResumeList.option.noCopy}]]*/ '-- Không sao chép --',
+                requiredResumeName:   /*[[#{evs.manage.viewResumeList.msg.requiredResumeName}]]*/ 'Vui lòng nhập Tên đánh giá.',
+                requiredStandardDate: /*[[#{evs.manage.viewResumeList.msg.requiredStandardDate}]]*/ 'Vui lòng nhập Ngày tiêu chuẩn.',
+                loadError:            /*[[#{evs.manage.viewResumeList.msg.loadError}]]*/ 'Lỗi khi tải thông tin đánh giá.',
+                saveError:            /*[[#{evs.manage.viewResumeList.msg.saveError}]]*/ 'Lỗi khi lưu dữ liệu. Vui lòng thử lại.',
+                deleteError:          /*[[#{evs.manage.viewResumeList.msg.deleteError}]]*/ 'Lỗi khi xóa dữ liệu. Vui lòng thử lại.',
+                deleteConfirm:        /*[[#{evs.manage.viewResumeList.modal.deleteConfirm}]]*/ 'Bạn có chắc muốn xóa đánh giá "{0}"?'
+            };
+
             var _vrl_tabId = window._currentTabId || 'default-content';
             window._vrl_inst = window._vrl_inst || {};
             if (!window._vrl_inst[_vrl_tabId]) {
@@ -231,7 +276,7 @@
             }
 
             function vrlLoadMonthOptions(parentCode, selectedValue) {
-                reloadCodeSelect('#' + _vrl_tabId + ' #vrl_evsMonth', parentCode, '-- Chọn --', selectedValue);
+                reloadCodeSelect('#' + _vrl_tabId + ' #vrl_evsMonth', parentCode, _vrl_i18n.selectDefault, selectedValue);
             }
 
             function vrlLoadCopyOptions() {
@@ -240,7 +285,7 @@
                     type: 'GET',
                     data: { evsType: inst.evsType },
                     success: function (rows) {
-                        var html = '<option value="">-- Không sao chép --</option>';
+                        var html = '<option value="">' + vrlEscHtml(_vrl_i18n.noCopy) + '</option>';
                         (rows || []).forEach(function (r) {
                             html += '<option value="' + vrlEscHtml(r.seq) + '">'
                                 + vrlEscHtml(r.resumeName)
@@ -263,7 +308,7 @@
             };
 
             window.vrlOpenAddModal = function () {
-                vrl$('#vrl_modalTitle').text('Thêm mới đánh giá');
+                vrl$('#vrl_modalTitle').text(_vrl_i18n.addTitle);
                 vrl$('#vrl_seq').val('');
                 vrl$('#vrl_resumeName').val('');
                 vrl$('#vrl_remark').val('');
@@ -290,7 +335,7 @@
                     data: { evsType: inst.evsType },
                     success: function (r) {
                         if (!r) return;
-                        vrl$('#vrl_modalTitle').text('Chỉnh sửa đánh giá');
+                        vrl$('#vrl_modalTitle').text(_vrl_i18n.editTitle);
                         vrl$('#vrl_seq').val(r.seq || '');
                         vrl$('#vrl_resumeName').val(r.resumeName || '');
                         vrl$('#vrl_remark').val(r.remark || '');
@@ -314,15 +359,15 @@
                         }
                         inst.detailModal.show();
                     },
-                    error: function () { alert('Lỗi khi tải thông tin đánh giá.'); }
+                    error: function () { alert(_vrl_i18n.loadError); }
                 });
             };
 
             window.vrlSave = function () {
                 var resumeName = vrl$('#vrl_resumeName').val().trim();
-                if (!resumeName) { alert('Vui lòng nhập Tên đánh giá.'); vrl$('#vrl_resumeName').focus(); return; }
+                if (!resumeName) { alert(_vrl_i18n.requiredResumeName); vrl$('#vrl_resumeName').focus(); return; }
                 var standardDate = vrl$('#vrl_standardDate').val().trim();
-                if (!standardDate) { alert('Vui lòng nhập Ngày tiêu chuẩn.'); vrl$('#vrl_standardDate').focus(); return; }
+                if (!standardDate) { alert(_vrl_i18n.requiredStandardDate); vrl$('#vrl_standardDate').focus(); return; }
                 var payload = {
                     seq: vrl$('#vrl_seq').val(),
                     resumeName: resumeName,
@@ -343,13 +388,14 @@
                     contentType: 'application/json',
                     data: JSON.stringify(payload),
                     success: function () { inst.detailModal.hide(); if (inst.table) inst.table.ajax.reload(); },
-                    error: function () { alert('Lỗi khi lưu dữ liệu. Vui lòng thử lại.'); }
+                    error: function () { alert(_vrl_i18n.saveError); }
                 });
             };
 
             window.vrlOpenDeleteModal = function (seq, resumeName) {
                 inst.deleteSeq = seq;
-                vrl$('#vrl_deleteResumeName').text(resumeName || seq);
+                var msg = _vrl_i18n.deleteConfirm.replace('{0}', resumeName || seq);
+                vrl$('#vrl_deleteConfirmMsg').text(msg);
                 inst.deleteModal.show();
             };
 
@@ -365,7 +411,7 @@
                         inst.deleteSeq = null;
                         if (inst.table) inst.table.ajax.reload();
                     },
-                    error: function () { alert('Lỗi khi xóa dữ liệu. Vui lòng thử lại.'); }
+                    error: function () { alert(_vrl_i18n.deleteError); }
                 });
             };
 

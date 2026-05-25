@@ -5,54 +5,60 @@
                 <div class="card-body">
                     <form id="ck_searchForm" class="row g-3 mb-4">
                         <div class="col-md-3">
-                            <label for="ck_keyword" class="form-label">Mã nhân viên / Họ tên</label>
-                            <input type="text" class="form-control" id="ck_keyword" placeholder="Nhập mã hoặc họ tên">
+                            <label for="ck_keyword" class="form-label" th:text="#{ck.label.keyword}">Mã nhân viên / Họ tên</label>
+                            <input type="text" class="form-control" id="ck_keyword"
+                                th:placeholder="#{ck.placeholder.keyword}" placeholder="Nhập mã hoặc họ tên">
                         </div>
                         <div class="col-md-3">
-                            <label for="ck_deptNo" class="form-label">Phòng ban</label>
-                            <input type="text" class="form-control" id="ck_deptNo" placeholder="Chọn phòng ban"
+                            <label for="ck_deptNo" class="form-label" th:text="#{ck.label.deptNo}">Phòng ban</label>
+                            <input type="text" class="form-control" id="ck_deptNo"
+                                th:placeholder="#{ck.placeholder.deptNo}" placeholder="Chọn phòng ban"
                                 readonly>
                         </div>
                         <div class="col-md-2">
-                            <label for="ck_fromDate" class="form-label">Ngày bắt đầu</label>
+                            <label for="ck_fromDate" class="form-label" th:text="#{ck.label.fromDate}">Ngày bắt đầu</label>
                             <input type="text" class="form-control js-daterangepicker" id="ck_fromDate"
                                 data-drp-format="DD/MM/YYYY" autocomplete="off">
                         </div>
                         <div class="col-md-2">
-                            <label for="ck_toDate" class="form-label">Ngày kết thúc</label>
+                            <label for="ck_toDate" class="form-label" th:text="#{ck.label.toDate}">Ngày kết thúc</label>
                             <input type="text" class="form-control js-daterangepicker" id="ck_toDate"
                                 data-drp-format="DD/MM/YYYY" autocomplete="off">
                         </div>
                         <div class="col-md-2">
-                            <label for="ck_postFamily" class="form-label">Nhóm nhân viên</label>
+                            <label for="ck_postFamily" class="form-label" th:text="#{ck.label.postFamily}">Nhóm nhân viên</label>
                             <select class="form-select" id="ck_postFamily" data-parent-code="14015812"
+                                th:attr="data-default-text=#{ck.select.allOption}"
                                 data-default-text="-- Tất cả --"></select>
                         </div>
                         <div class="col-md-3">
-                            <label for="ck_shiftNo" class="form-label">Ca làm việc</label>
+                            <label for="ck_shiftNo" class="form-label" th:text="#{ck.label.shiftNo}">Ca làm việc</label>
                             <select class="form-select" id="ck_shiftNo">
-                                <option value="">-- Tất cả --</option>
+                                <option value="" th:text="#{ck.select.allOption}">-- Tất cả --</option>
                             </select>
                         </div>
                         <div class="col-md-3">
-                            <label for="ck_itemNo" class="form-label">Loại nghỉ phép</label>
+                            <label for="ck_itemNo" class="form-label" th:text="#{ck.label.itemNo}">Loại nghỉ phép</label>
                             <select class="form-select" id="ck_itemNo">
-                                <option value="">Lựa chọn</option>
-                                <option value="141443">Nghỉ không phép</option>
-                                <option value="141442">Về sớm</option>
-                                <option value="141441">Đến muộn</option>
-                                <option value="14015448">Quên quẹt thẻ</option>
+                                <option value="" th:text="#{ck.select.choose}">Lựa chọn</option>
+                                <option value="141443" th:text="#{ck.itemNo.unauthorized}">Nghỉ không phép</option>
+                                <option value="141442" th:text="#{ck.itemNo.leaveEarly}">Về sớm</option>
+                                <option value="141441" th:text="#{ck.itemNo.lateComing}">Đến muộn</option>
+                                <option value="14015448" th:text="#{ck.itemNo.forgotSwipe}">Quên quẹt thẻ</option>
                             </select>
                         </div>
                         <div class="col-md-6 d-flex align-items-end gap-2 flex-wrap">
                             <button type="button" class="btn btn-primary" onclick="ckSearchData()">
-                                <i class="bx bx-search"></i> Tra cứu
+                                <i class="bx bx-search"></i>
+                                <span th:text="#{ck.btn.search}">Tra cứu</span>
                             </button>
                             <button type="button" class="btn btn-secondary" onclick="ckClearSearch()">
-                                <i class="bx bx-x"></i> Xóa lọc
+                                <i class="bx bx-x"></i>
+                                <span th:text="#{ck.btn.clearFilter}">Xóa lọc</span>
                             </button>
                             <button type="button" class="btn btn-success" onclick="ckExportExcel()">
-                                <i class="bx bx-export"></i> Xuất excel
+                                <i class="bx bx-export"></i>
+                                <span th:text="#{ck.btn.exportExcel}">Xuất excel</span>
                             </button>
                         </div>
                     </form>
@@ -62,20 +68,20 @@
                             style="width: 100%;">
                             <thead class="table-light text-center align-middle">
                                 <tr>
-                                    <th>No.</th>
-                                    <th>Mã nhân viên</th>
-                                    <th>Họ tên</th>
-                                    <th>Phòng ban</th>
-                                    <th>Chức vụ</th>
-                                    <th>Nhóm nhân viên</th>
-                                    <th>Ca làm việc</th>
-                                    <th>Loại nghỉ phép</th>
-                                    <th>Ngày công</th>
-                                    <th>Từ thời gian</th>
-                                    <th>Đến thời gian</th>
-                                    <th>Lý do</th>
-                                    <th>Người tạo</th>
-                                    <th>Ngày tạo</th>
+                                    <th th:text="#{ck.col.no}">No.</th>
+                                    <th th:text="#{ck.col.empId}">Mã nhân viên</th>
+                                    <th th:text="#{ck.col.localName}">Họ tên</th>
+                                    <th th:text="#{ck.col.deptName}">Phòng ban</th>
+                                    <th th:text="#{ck.col.postGradeName}">Chức vụ</th>
+                                    <th th:text="#{ck.col.postFamilyName}">Nhóm nhân viên</th>
+                                    <th th:text="#{ck.col.shiftName}">Ca làm việc</th>
+                                    <th th:text="#{ck.col.itemNoName}">Loại nghỉ phép</th>
+                                    <th th:text="#{ck.col.arDate}">Ngày công</th>
+                                    <th th:text="#{ck.col.fromDateTime}">Từ thời gian</th>
+                                    <th th:text="#{ck.col.toDateTime}">Đến thời gian</th>
+                                    <th th:text="#{ck.col.remark}">Lý do</th>
+                                    <th th:text="#{ck.col.createdName}">Người tạo</th>
+                                    <th th:text="#{ck.col.createDate}">Ngày tạo</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
@@ -91,7 +97,8 @@
     <div class="modal-dialog modal-xl modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="ck_applyDetailTitle">[Thông tin phê duyệt]</h5>
+                <h5 class="modal-title" id="ck_applyDetailTitle"
+                    th:text="'[' + #{ck.modal.title} + ']'">[Thông tin phê duyệt]</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -99,11 +106,11 @@
                     <table class="table table-bordered table-sm align-middle mb-0">
                         <tbody>
                             <tr>
-                                <th class="table-light text-center" style="width: 160px;">Tiêu đề</th>
+                                <th class="table-light text-center" style="width: 160px;" th:text="#{ck.modal.applyTitle}">Tiêu đề</th>
                                 <td id="ck_modalApplyTitle"></td>
                             </tr>
                             <tr>
-                                <th class="table-light text-center">Người xin phép</th>
+                                <th class="table-light text-center" th:text="#{ck.modal.requester}">Người xin phép</th>
                                 <td id="ck_modalApplicant"></td>
                             </tr>
                         </tbody>
@@ -114,49 +121,49 @@
                     <table class="table table-bordered table-sm align-middle mb-0">
                         <thead class="table-light text-center">
                             <tr>
-                                <th style="width: 50px;">STT</th>
-                                <th style="width: 90px;">Trình tự duyệt</th>
-                                <th style="width: 110px;">Trạng thái duyệt</th>
-                                <th>Họ tên</th>
-                                <th>Ý kiến</th>
-                                <th style="width: 170px;">Thời gian thực hiện</th>
-                                <th style="width: 120px;">Phòng ban</th>
+                                <th style="width: 50px;" th:text="#{ck.modal.stt}">STT</th>
+                                <th style="width: 90px;" th:text="#{ck.modal.approvalSeq}">Trình tự duyệt</th>
+                                <th style="width: 110px;" th:text="#{ck.modal.approvalStatus}">Trạng thái duyệt</th>
+                                <th th:text="#{ck.col.localName}">Họ tên</th>
+                                <th th:text="#{ck.modal.opinion}">Ý kiến</th>
+                                <th style="width: 170px;" th:text="#{ck.modal.actionTime}">Thời gian thực hiện</th>
+                                <th style="width: 120px;" th:text="#{ck.col.deptName}">Phòng ban</th>
                             </tr>
                         </thead>
                         <tbody id="ck_modalApprovalBody"></tbody>
                     </table>
                 </div>
 
-                <h6 class="fw-bold mb-2">Thông tin nhân viên</h6>
+                <h6 class="fw-bold mb-2" th:text="#{ck.modal.empInfoTitle}">Thông tin nhân viên</h6>
                 <div class="table-responsive mb-4">
                     <table class="table table-bordered table-sm align-middle mb-0">
                         <tbody>
                             <tr>
-                                <th class="table-light text-center" style="width: 100px;">Họ tên</th>
+                                <th class="table-light text-center" style="width: 100px;" th:text="#{ck.modal.empName}">Họ tên</th>
                                 <td id="ck_modalEmpName"></td>
-                                <th class="table-light text-center" style="width: 100px;">Mã nhân viên</th>
+                                <th class="table-light text-center" style="width: 100px;" th:text="#{ck.modal.empId}">Mã nhân viên</th>
                                 <td id="ck_modalEmpId"></td>
                             </tr>
                             <tr>
-                                <th class="table-light text-center">Phòng ban</th>
+                                <th class="table-light text-center" th:text="#{ck.modal.empDept}">Phòng ban</th>
                                 <td id="ck_modalEmpDept"></td>
-                                <th class="table-light text-center">Chức vụ</th>
+                                <th class="table-light text-center" th:text="#{ck.modal.empPost}">Chức vụ</th>
                                 <td id="ck_modalEmpPost"></td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
 
-                <h6 class="fw-bold mb-2">Thông tin xin phép</h6>
+                <h6 class="fw-bold mb-2" th:text="#{ck.modal.applyInfo}">Thông tin xin phép</h6>
                 <div class="table-responsive">
                     <table class="table table-bordered table-sm align-middle mb-0">
                         <thead class="table-light text-center">
                             <tr>
-                                <th>Loại nghỉ phép</th>
-                                <th style="width: 170px;">Thời gian bắt đầu</th>
-                                <th style="width: 170px;">Thời gian kết thúc</th>
-                                <th style="width: 140px;">Thời lượng</th>
-                                <th>Lý do</th>
+                                <th th:text="#{ck.modal.leaveType}">Loại nghỉ phép</th>
+                                <th style="width: 170px;" th:text="#{ck.modal.leaveFrom}">Thời gian bắt đầu</th>
+                                <th style="width: 170px;" th:text="#{ck.modal.leaveTo}">Thời gian kết thúc</th>
+                                <th style="width: 140px;" th:text="#{ck.modal.duration}">Thời lượng</th>
+                                <th th:text="#{ck.modal.remark}">Lý do</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -172,7 +179,8 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                    th:text="#{ck.btn.close}">Đóng</button>
             </div>
         </div>
     </div>
@@ -184,6 +192,17 @@
         var _ck_pageBooted = false;
         var _ck_selectedDeptCodes = [];
         var _ck_detailModal = null;
+
+        /* i18n */
+        var _ck_i18n = {
+            allOption          : /*[[#{ck.js.allOption}]]*/ '-- Tất cả --',
+            loading            : /*[[#{ck.js.loading}]]*/ 'Đang tải dữ liệu...',
+            noApprovalData     : /*[[#{ck.js.noApprovalData}]]*/ 'Không có dữ liệu phê duyệt',
+            loadDetailFailed   : /*[[#{ck.js.loadDetailFailed}]]*/ 'Tải dữ liệu thất bại',
+            loadApprovalFailed : /*[[#{ck.js.loadApprovalFailed}]]*/ 'Không tải được thông tin phê duyệt',
+            noApplyNo          : /*[[#{ck.js.noApplyNo}]]*/ 'Không tìm thấy số đơn để xem chi tiết',
+            approvalInfoTitle  : /*[[#{ck.js.approvalInfoTitle}]]*/ 'Thông tin phê duyệt'
+        };
 
         function ckFormatDate(dateObj) {
             var d = String(dateObj.getDate()).padStart(2, '0');
@@ -223,7 +242,7 @@
                 url: '/ar/attendanceSettings/api/shift',
                 type: 'GET',
                 success: function (data) {
-                    var html = '<option value="">-- Tất cả --</option>';
+                    var html = '<option value="">' + _ck_i18n.allOption + '</option>';
                     (data || []).forEach(function (item) {
                         var code = item.shiftNo || '';
                         var name = item.nameVi || item.shiftName || code;
@@ -391,12 +410,12 @@
             ckSetText('#ck_modalLeaveTo', '');
             ckSetText('#ck_modalLeaveLength', '');
             ckSetText('#ck_modalLeaveReason', '');
-            $('#ck_modalApprovalBody').html('<tr><td colspan="7" class="text-center text-muted">Đang tải dữ liệu...</td></tr>');
+            $('#ck_modalApprovalBody').html('<tr><td colspan="7" class="text-center text-muted">' + _ck_i18n.loading + '</td></tr>');
         }
 
         function ckRenderApprovalRows(approvalList) {
             if (!approvalList || !approvalList.length) {
-                $('#ck_modalApprovalBody').html('<tr><td colspan="7" class="text-center text-muted">Không có dữ liệu phê duyệt</td></tr>');
+                $('#ck_modalApprovalBody').html('<tr><td colspan="7" class="text-center text-muted">' + _ck_i18n.noApprovalData + '</td></tr>');
                 return;
             }
 
@@ -424,7 +443,7 @@
             var employeeInfo = data && data.employeeInfo ? data.employeeInfo : leaveInfo;
             var approvalList = data && data.approvalList ? data.approvalList : [];
 
-            $('#ck_applyDetailTitle').text('[' + (leaveInfo.leaveTypeName || 'Thông tin phê duyệt') + ']');
+            $('#ck_applyDetailTitle').text('[' + (leaveInfo.leaveTypeName || _ck_i18n.approvalInfoTitle) + ']');
             ckSetText('#ck_modalApplyTitle', ckBuildApplyTitle(leaveInfo));
             ckSetText('#ck_modalApplicant', (employeeInfo.localName || '') + '/' + (employeeInfo.postGradeName || '') + '/' + (employeeInfo.deptName || ''));
 
@@ -444,7 +463,7 @@
 
         window.ckOpenApplyDetail = function (applyNo, applyType) {
             if (!applyNo) {
-                toastr && toastr.warning('Không tìm thấy số đơn để xem chi tiết');
+                toastr && toastr.warning(_ck_i18n.noApplyNo);
                 return;
             }
             if (!_ck_detailModal && window.bootstrap && document.getElementById('ck_applyDetailModal')) {
@@ -466,8 +485,8 @@
                     ckRenderApplyDetail(res || {});
                 },
                 error: function () {
-                    $('#ck_modalApprovalBody').html('<tr><td colspan="7" class="text-center text-danger">Tải dữ liệu thất bại</td></tr>');
-                    toastr && toastr.error('Không tải được thông tin phê duyệt');
+                    $('#ck_modalApprovalBody').html('<tr><td colspan="7" class="text-center text-danger">' + _ck_i18n.loadDetailFailed + '</td></tr>');
+                    toastr && toastr.error(_ck_i18n.loadApprovalFailed);
                 }
             });
         };

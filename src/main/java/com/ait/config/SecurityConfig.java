@@ -82,7 +82,8 @@ public class SecurityConfig implements WebMvcConfigurer {
                         .ignoringRequestMatchers(
                                 "/auth/login", "/logout",
                                 "/api/change-first-password",
-                                "/api/csrf-token"))
+                                "/api/csrf-token",
+                                "/password/api/verify-old-password"))
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint((request, response, authException) -> response.sendRedirect("/login")))
                 .addFilterBefore(new SessionAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);

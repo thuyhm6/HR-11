@@ -9,19 +9,19 @@
             <div class="card mb-2">
                 <div class="card-body py-2 px-3">
                     <div class="d-flex align-items-center flex-wrap gap-2">
-                        <span class="fw-semibold small">Tăng ca</span>
+                        <span class="fw-semibold small" th:text="#{poi.field.otType}">Tăng ca</span>
                         <select class="form-select form-select-sm" id="poi_otTypeCode"
                             data-parent-code="31"
-                            data-default-text="Lựa chọn"
+                            th:attr="data-default-text=#{common.selectOne}"
                             style="width:150px;">
                         </select>
-                        <span class="fw-semibold small">Trạng thái duyệt</span>
+                        <span class="fw-semibold small" th:text="#{common.approvalStatus}">Trạng thái duyệt</span>
                         <select class="form-select form-select-sm" id="poi_affirmFlag"
                             data-parent-code="14014304"
-                            data-default-text="Lựa chọn"
+                            th:attr="data-default-text=#{common.selectOne}"
                             style="width:150px;">
                         </select>
-                        <span class="fw-semibold small">Thời gian</span>
+                        <span class="fw-semibold small" th:text="#{poi.field.dateRange}">Thời gian</span>
                         <input type="text" class="form-control form-control-sm js-daterangepicker"
                             id="poi_fromDate"
                             data-drp-format="DD/MM/YYYY"
@@ -35,27 +35,30 @@
                             data-drp-auto-update-input="false"
                             autocomplete="off"
                             style="width:130px;">
-                        <button class="btn btn-primary btn-sm ms-1" onclick="poiSearch()">Tra cứu</button>
+                        <button class="btn btn-primary btn-sm ms-1" onclick="poiSearch()"
+                            th:text="#{common.search}">Tra cứu</button>
                     </div>
                 </div>
             </div>
 
             <!-- Toolbar -->
             <div class="d-flex align-items-center gap-2 mb-2">
-                <span class="small">Lọc nhanh</span>
+                <span class="small" th:text="#{common.quickFilter}">Lọc nhanh</span>
                 <input type="text" class="form-control form-control-sm" id="poi_filterInput"
                     style="max-width:160px;" oninput="poiQuickFilter(this.value)">
                 <div class="ms-auto d-flex align-items-center gap-2">
-                    <button class="btn btn-danger btn-sm" onclick="poiCancel()">Hủy bỏ</button>
-                    <button class="btn btn-success btn-sm" onclick="poiGoApply()">Xin tăng ca</button>
-                    <span class="small">Mỗi trang</span>
+                    <button class="btn btn-danger btn-sm" onclick="poiCancel()"
+                        th:text="#{common.cancel}">Hủy bỏ</button>
+                    <button class="btn btn-success btn-sm" onclick="poiGoApply()"
+                        th:text="#{poi.btn.applyOt}">Xin tăng ca</button>
+                    <span class="small" th:text="#{common.perPage}">Mỗi trang</span>
                     <select class="form-select form-select-sm" id="poi_pageSize" style="width:70px;"
                         onchange="poiChangePageSize(this.value)">
                         <option value="25">25</option>
                         <option value="50" selected>50</option>
                         <option value="100">100</option>
                     </select>
-                    <span class="small">Dữ liệu</span>
+                    <span class="small" th:text="#{poi.label.rows}">Dữ liệu</span>
                 </div>
             </div>
 
@@ -66,24 +69,24 @@
                         <table class="table table-bordered table-sm align-middle mb-0" id="poi_table">
                             <thead class="table-light">
                                 <tr>
-                                    <th class="text-center" style="width:36px;">NO</th>
+                                    <th class="text-center" style="width:36px;" th:text="#{common.no.serial}">NO</th>
                                     <th class="text-center" style="width:40px;">
                                         <input type="checkbox" id="poi_checkAll" onclick="poiToggleAll(this)">
                                     </th>
-                                    <th class="text-center" style="min-width:120px;">Tăng ca</th>
-                                    <th class="text-center" style="min-width:110px;">Ngày tăng ca</th>
-                                    <th class="text-center" style="min-width:100px;">Thời gian bắt đầu</th>
-                                    <th class="text-center" style="min-width:100px;">Thời gian kết thúc</th>
-                                    <th class="text-center" style="min-width:100px;">Thời lượng</th>
-                                    <th class="text-center" style="min-width:130px;">Bảo cơm / Nghỉ ngơi (30')</th>
-                                    <th class="text-center" style="min-width:180px;">Lý do</th>
-                                    <th class="text-center" style="min-width:110px;">Trạng thái</th>
-                                    <th class="text-center" style="min-width:110px;">Trạng thái</th>
+                                    <th class="text-center" style="min-width:120px;" th:text="#{poi.field.otType}">Tăng ca</th>
+                                    <th class="text-center" style="min-width:110px;" th:text="#{poi.col.otDate}">Ngày tăng ca</th>
+                                    <th class="text-center" style="min-width:100px;" th:text="#{common.startTime}">Thời gian bắt đầu</th>
+                                    <th class="text-center" style="min-width:100px;" th:text="#{common.endTime}">Thời gian kết thúc</th>
+                                    <th class="text-center" style="min-width:100px;" th:text="#{common.duration}">Thời lượng</th>
+                                    <th class="text-center" style="min-width:130px;" th:text="#{poi.col.mealRest}">Bảo cơm / Nghỉ ngơi (30')</th>
+                                    <th class="text-center" style="min-width:180px;" th:text="#{common.reason}">Lý do</th>
+                                    <th class="text-center" style="min-width:110px;" th:text="#{common.approvalStatus}">Trạng thái duyệt</th>
+                                    <th class="text-center" style="min-width:110px;" th:text="#{common.status}">Trạng thái</th>
                                 </tr>
                             </thead>
                             <tbody id="poi_tableBody">
                                 <tr>
-                                    <td colspan="11" class="text-center text-muted py-3">Đang tải dữ liệu...</td>
+                                    <td colspan="11" class="text-center text-muted py-3" th:text="#{poi.msg.loading}">Đang tải dữ liệu...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -105,7 +108,7 @@
     <div class="modal-dialog modal-xl modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="poi_applyDetailTitle">[Xin tăng ca]</h5>
+                <h5 class="modal-title" id="poi_applyDetailTitle" th:text="#{poi.modal.title}">[Xin tăng ca]</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -113,11 +116,11 @@
                     <table class="table table-bordered table-sm align-middle mb-0">
                         <tbody>
                             <tr>
-                                <th class="table-light text-center" style="width:160px;">Tiêu đề</th>
+                                <th class="table-light text-center" style="width:160px;" th:text="#{poi.modal.subject}">Tiêu đề</th>
                                 <td id="poi_modalApplyTitle"></td>
                             </tr>
                             <tr>
-                                <th class="table-light text-center">Người đăng ký</th>
+                                <th class="table-light text-center" th:text="#{poi.modal.applicant}">Người đăng ký</th>
                                 <td id="poi_modalApplicant"></td>
                             </tr>
                         </tbody>
@@ -128,50 +131,50 @@
                     <table class="table table-bordered table-sm align-middle mb-0">
                         <thead class="table-light text-center">
                             <tr>
-                                <th style="width:50px;">STT</th>
-                                <th style="width:90px;">Trình tự duyệt</th>
-                                <th style="width:110px;">Trạng thái duyệt</th>
-                                <th>Họ tên</th>
-                                <th>Ý kiến</th>
-                                <th style="width:170px;">Thời gian thực hiện</th>
-                                <th style="width:120px;">Phòng ban</th>
+                                <th style="width:50px;" th:text="#{common.no.serial}">STT</th>
+                                <th style="width:90px;" th:text="#{poi.col.approvalSeq}">Trình tự duyệt</th>
+                                <th style="width:110px;" th:text="#{common.approvalStatus}">Trạng thái duyệt</th>
+                                <th th:text="#{common.name}">Họ tên</th>
+                                <th th:text="#{poi.modal.opinion}">Ý kiến</th>
+                                <th style="width:170px;" th:text="#{poi.col.actionTime}">Thời gian thực hiện</th>
+                                <th style="width:120px;" th:text="#{common.deptName}">Phòng ban</th>
                             </tr>
                         </thead>
                         <tbody id="poi_modalApprovalBody"></tbody>
                     </table>
                 </div>
 
-                <h6 class="fw-bold mb-2">Thông tin nhân viên</h6>
+                <h6 class="fw-bold mb-2" th:text="#{poi.modal.empInfo}">Thông tin nhân viên</h6>
                 <div class="table-responsive mb-4">
                     <table class="table table-bordered table-sm align-middle mb-0">
                         <tbody>
                             <tr>
-                                <th class="table-light text-center" style="width:100px;">Họ tên</th>
+                                <th class="table-light text-center" style="width:100px;" th:text="#{common.name}">Họ tên</th>
                                 <td id="poi_modalEmpName"></td>
-                                <th class="table-light text-center" style="width:100px;">Mã nhân viên</th>
+                                <th class="table-light text-center" style="width:100px;" th:text="#{common.empId}">Mã nhân viên</th>
                                 <td id="poi_modalEmpId"></td>
                             </tr>
                             <tr>
-                                <th class="table-light text-center">Phòng ban</th>
+                                <th class="table-light text-center" th:text="#{common.deptName}">Phòng ban</th>
                                 <td id="poi_modalEmpDept"></td>
-                                <th class="table-light text-center">Chức vụ</th>
+                                <th class="table-light text-center" th:text="#{common.position}">Chức vụ</th>
                                 <td id="poi_modalEmpPost"></td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
 
-                <h6 class="fw-bold mb-2">Thông tin tăng ca</h6>
+                <h6 class="fw-bold mb-2" th:text="#{poi.modal.otInfo}">Thông tin tăng ca</h6>
                 <div class="table-responsive">
                     <table class="table table-bordered table-sm align-middle mb-0">
                         <thead class="table-light text-center">
                             <tr>
-                                <th>Loại tăng ca</th>
-                                <th style="width:130px;">Ngày tăng ca</th>
-                                <th style="width:130px;">Bắt đầu</th>
-                                <th style="width:130px;">Kết thúc</th>
-                                <th style="width:110px;">Số giờ</th>
-                                <th>Lý do</th>
+                                <th th:text="#{poi.field.otType}">Loại tăng ca</th>
+                                <th style="width:130px;" th:text="#{poi.col.otDate}">Ngày tăng ca</th>
+                                <th style="width:130px;" th:text="#{common.startTime}">Bắt đầu</th>
+                                <th style="width:130px;" th:text="#{common.endTime}">Kết thúc</th>
+                                <th style="width:110px;" th:text="#{poi.col.hours}">Số giờ</th>
+                                <th th:text="#{common.reason}">Lý do</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -188,7 +191,8 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                    th:text="#{common.close}">Đóng</button>
             </div>
         </div>
     </div>
@@ -203,6 +207,25 @@
         var _poi_detailModal = null;
         var _poi_pageSize   = 50;
         var _poi_currentPage = 1;
+
+        var _poi_msgLoading          = /*[[#{poi.msg.loading}]]*/'Đang tải...';
+        var _poi_msgNoData           = /*[[#{poi.msg.noData}]]*/'Không có dữ liệu';
+        var _poi_msgLoadErr          = /*[[#{poi.msg.loadError}]]*/'Lỗi tải dữ liệu';
+        var _poi_msgNoApproval       = /*[[#{poi.msg.noApprovalData}]]*/'Không có dữ liệu phê duyệt';
+        var _poi_msgSelectMin        = /*[[#{poi.msg.selectMinOne}]]*/'Vui lòng chọn ít nhất một dòng để hủy bỏ.';
+        var _poi_msgConfirmCancel1   = /*[[#{poi.msg.confirmCancel1}]]*/'Bạn có chắc muốn hủy bỏ';
+        var _poi_msgConfirmCancel2   = /*[[#{poi.msg.confirmCancel2}]]*/'đơn xin tăng ca đã chọn?';
+        var _poi_msgCancelSuccess    = /*[[#{poi.msg.cancelSuccess}]]*/'Hủy bỏ thành công.';
+        var _poi_msgCancelFailed     = /*[[#{poi.msg.cancelFailed}]]*/'Hủy bỏ thất bại.';
+        var _poi_msgCancelError      = /*[[#{poi.msg.cancelError}]]*/'Lỗi khi hủy bỏ đơn.';
+        var _poi_msgLoadApprovalFail = /*[[#{poi.msg.loadApprovalFailed}]]*/'Không tải được thông tin phê duyệt';
+        var _poi_msgLoadDetailFail   = /*[[#{poi.msg.loadDetailFailed}]]*/'Tải dữ liệu thất bại';
+        var _poi_msgPageInfo         = /*[[#{poi.msg.pageInfo}]]*/'Hiển thị {0} - {1} / {2} dòng';
+        var _poi_valYes              = /*[[#{poi.val.yes}]]*/'Có';
+        var _poi_valNo               = /*[[#{poi.val.no}]]*/'Không';
+        var _poi_unitHour            = /*[[#{poi.unit.hour}]]*/'Tiếng';
+        var _poi_unitMin             = /*[[#{poi.unit.minute}]]*/'Phút';
+        var _poi_titleApplyOt        = /*[[#{poi.btn.applyOt}]]*/'Xin tăng ca';
 
         function poiEscHtml(s) {
             if (s == null) return '';
@@ -220,8 +243,8 @@
             var hrs  = Math.floor(v);
             var mins = Math.round((v - hrs) * 60);
             var text = '';
-            if (hrs  > 0) text += hrs  + ' Tiếng';
-            if (mins > 0) text += (text ? ' ' : '') + mins + ' Phút';
+            if (hrs  > 0) text += hrs  + ' ' + _poi_unitHour;
+            if (mins > 0) text += (text ? ' ' : '') + mins + ' ' + _poi_unitMin;
             return text || String(v);
         }
 
@@ -251,7 +274,7 @@
                 fromDate  : poiConvertDrpDate($('#poi_fromDate').val()),
                 toDate    : poiConvertDrpDate($('#poi_toDate').val())
             };
-            $('#poi_tableBody').html('<tr><td colspan="11" class="text-center text-muted py-3">Đang tải...</td></tr>');
+            $('#poi_tableBody').html('<tr><td colspan="11" class="text-center text-muted py-3">' + poiEscHtml(_poi_msgLoading) + '</td></tr>');
             $('#poi_checkAll').prop('checked', false);
 
             $.ajax({
@@ -265,7 +288,7 @@
                     poiRenderPage();
                 },
                 error: function() {
-                    $('#poi_tableBody').html('<tr><td colspan="11" class="text-center text-danger py-3">Lỗi tải dữ liệu</td></tr>');
+                    $('#poi_tableBody').html('<tr><td colspan="11" class="text-center text-danger py-3">' + poiEscHtml(_poi_msgLoadErr) + '</td></tr>');
                 }
             });
         };
@@ -282,12 +305,12 @@
 
             var $tbody = $('#poi_tableBody');
             if (!page.length) {
-                $tbody.html('<tr><td colspan="11" class="text-center text-muted py-3">Không có dữ liệu</td></tr>');
+                $tbody.html('<tr><td colspan="11" class="text-center text-muted py-3">' + poiEscHtml(_poi_msgNoData) + '</td></tr>');
             } else {
                 var html = '';
                 page.forEach(function(r, idx) {
                     var rowNo    = start + idx + 1;
-                    var deduct   = r.deductYn === '1' ? 'Có' : 'Không';
+                    var deduct   = r.deductYn === '1' ? _poi_valYes : _poi_valNo;
                     var applyNo  = poiEscHtml(r.applyNo);
                     var otType   = poiEscHtml(r.otTypeCode || '');
                     html += '<tr style="cursor:pointer;" onclick="poiOpenDetail(event,\'' + applyNo + '\',\'' + otType + '\')">'
@@ -299,7 +322,7 @@
                         + '<td class="text-center">' + poiEscHtml(r.otFromTime  || '') + '</td>'
                         + '<td class="text-center">' + poiEscHtml(r.otToTime    || '') + '</td>'
                         + '<td class="text-center">' + poiFormatHour(r.otApplyHour) + '</td>'
-                        + '<td class="text-center">' + deduct + '</td>'
+                        + '<td class="text-center">' + poiEscHtml(deduct) + '</td>'
                         + '<td>' + poiEscHtml(r.applyOtRemark || '') + '</td>'
                         + '<td class="text-center">' + poiEscHtml(r.affirmFlagName  || r.affirmFlag  || '') + '</td>'
                         + '<td class="text-center">' + poiEscHtml(r.confirmFlagName || '') + '</td>'
@@ -308,8 +331,11 @@
                 $tbody.html(html);
             }
 
-            // Pagination info
-            $('#poi_pageInfo').text('Hiển thị ' + (total ? start + 1 : 0) + ' - ' + end + ' / ' + total + ' dòng');
+            var pageInfoText = _poi_msgPageInfo
+                .replace('{0}', total ? start + 1 : 0)
+                .replace('{1}', end)
+                .replace('{2}', total);
+            $('#poi_pageInfo').text(pageInfoText);
             poiRenderPagination(totalPg);
         }
 
@@ -362,8 +388,8 @@
         // ── Hủy bỏ ───────────────────────────────────────────────────────────
         window.poiCancel = function() {
             var selected = $('.poi_rowCheck:checked').map(function() { return this.value; }).get();
-            if (!selected.length) { alert('Vui lòng chọn ít nhất một dòng để hủy bỏ.'); return; }
-            if (!confirm('Bạn có chắc muốn hủy bỏ ' + selected.length + ' đơn xin tăng ca đã chọn?')) return;
+            if (!selected.length) { alert(_poi_msgSelectMin); return; }
+            if (!confirm(_poi_msgConfirmCancel1 + ' ' + selected.length + ' ' + _poi_msgConfirmCancel2)) return;
 
             $.ajax({
                 url        : '/ess/infoApply/api/myOtApply/cancel',
@@ -371,16 +397,16 @@
                 contentType: 'application/json',
                 data       : JSON.stringify(selected),
                 success    : function(res) {
-                    if (res && res.success) { alert(res.message || 'Hủy bỏ thành công.'); poiSearch(); }
-                    else { alert(res && res.error ? res.error : 'Hủy bỏ thất bại.'); }
+                    if (res && res.success) { alert(res.message || _poi_msgCancelSuccess); poiSearch(); }
+                    else { alert(res && res.error ? res.error : _poi_msgCancelFailed); }
                 },
-                error: function() { alert('Lỗi khi hủy bỏ đơn.'); }
+                error: function() { alert(_poi_msgCancelError); }
             });
         };
 
         window.poiGoApply = function() {
             if (typeof tabSystem !== 'undefined') {
-                tabSystem.openTab('/ess/infoApply/viewSSTOtApplyInfo', 'Xin tăng ca');
+                tabSystem.openTab('/ess/infoApply/viewSSTOtApplyInfo', _poi_titleApplyOt);
             } else {
                 location.href = '/ess/infoApply/viewSSTOtApplyInfo';
             }
@@ -408,12 +434,12 @@
             poiSetText('#poi_modalTo',         '');
             poiSetText('#poi_modalHour',       '');
             poiSetText('#poi_modalRemark',     '');
-            $('#poi_modalApprovalBody').html('<tr><td colspan="7" class="text-center text-muted">Đang tải dữ liệu...</td></tr>');
+            $('#poi_modalApprovalBody').html('<tr><td colspan="7" class="text-center text-muted">' + poiEscHtml(_poi_msgLoading) + '</td></tr>');
         }
 
         function poiRenderApprovalRows(approvalList) {
             if (!approvalList || !approvalList.length) {
-                $('#poi_modalApprovalBody').html('<tr><td colspan="7" class="text-center text-muted">Không có dữ liệu phê duyệt</td></tr>');
+                $('#poi_modalApprovalBody').html('<tr><td colspan="7" class="text-center text-muted">' + poiEscHtml(_poi_msgNoApproval) + '</td></tr>');
                 return;
             }
             var html = '';
@@ -438,7 +464,7 @@
             var employeeInfo = (data && data.employeeInfo) ? data.employeeInfo : otInfo;
             var approvalList = (data && data.approvalList) ? data.approvalList : [];
 
-            $('#poi_applyDetailTitle').text('[' + (otInfo.otTypeName || 'Xin tăng ca') + ']');
+            $('#poi_applyDetailTitle').text('[' + (otInfo.otTypeName || _poi_titleApplyOt) + ']');
             poiSetText('#poi_modalApplyTitle', poiBuildApplyTitle(otInfo));
             poiSetText('#poi_modalApplicant',  (employeeInfo.localName || '') + '/' + (employeeInfo.postGradeName || '') + '/' + (employeeInfo.deptName || ''));
             poiSetText('#poi_modalEmpName',    employeeInfo.localName    || '');
@@ -469,8 +495,8 @@
                 data: { applyNo: applyNo, applyType: applyType || '' },
                 success: function(res) { poiRenderDetailData(res || {}); },
                 error  : function() {
-                    $('#poi_modalApprovalBody').html('<tr><td colspan="7" class="text-center text-danger">Tải dữ liệu thất bại</td></tr>');
-                    toastr && toastr.error('Không tải được thông tin phê duyệt');
+                    $('#poi_modalApprovalBody').html('<tr><td colspan="7" class="text-center text-danger">' + poiEscHtml(_poi_msgLoadDetailFail) + '</td></tr>');
+                    toastr && toastr.error(_poi_msgLoadApprovalFail);
                 }
             });
         };

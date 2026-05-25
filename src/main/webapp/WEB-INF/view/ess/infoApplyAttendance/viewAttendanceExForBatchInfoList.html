@@ -1,4 +1,4 @@
-﻿<div th:fragment="content">
+<div th:fragment="content">
     <style>
         #ex_dataTable tbody tr.ex-row-selected>td {
             background-color: #fff3cd !important;
@@ -10,74 +10,79 @@
                 <div class="card-body">
                     <form id="ex_searchForm" class="row g-3 mb-4 d-flex align-items-end">
                         <div class="col-md-1">
-                            <label for="ex_keyword" class="form-label">Mã NV / Họ tên</label>
-                            <input type="text" class="form-control" id="ex_keyword" placeholder="Nhập mã hoặc họ tên">
+                            <label for="ex_keyword" class="form-label" th:text="#{ex.field.empIdOrName}">Mã NV / Họ tên</label>
+                            <input type="text" class="form-control" id="ex_keyword"
+                                th:placeholder="#{ex.placeholder.empIdOrName}" placeholder="Nhập mã hoặc họ tên">
                         </div>
                         <div class="col-md-1">
-                            <label for="ex_deptNo" class="form-label">Phòng ban</label>
-                            <input type="text" class="form-control" id="ex_deptNo" placeholder="Chọn phòng ban"
-                                readonly>
+                            <label for="ex_deptNo" class="form-label" th:text="#{ex.field.dept}">Phòng ban</label>
+                            <input type="text" class="form-control" id="ex_deptNo"
+                                th:placeholder="#{ex.placeholder.dept}" placeholder="Chọn phòng ban" readonly>
                         </div>
                         <div class="col-md-1">
-                            <label for="ex_fromDate" class="form-label">Ngày bắt đầu</label>
+                            <label for="ex_fromDate" class="form-label" th:text="#{ex.field.fromDate}">Ngày bắt đầu</label>
                             <input type="text" class="form-control js-daterangepicker" id="ex_fromDate"
                                 data-drp-format="DD/MM/YYYY" autocomplete="off">
                         </div>
                         <div class="col-md-1">
-                            <label for="ex_toDate" class="form-label">Ngày kết thúc</label>
+                            <label for="ex_toDate" class="form-label" th:text="#{ex.field.toDate}">Ngày kết thúc</label>
                             <input type="text" class="form-control js-daterangepicker" id="ex_toDate"
                                 data-drp-format="DD/MM/YYYY" autocomplete="off">
                         </div>
                         <div class="col-md-1">
-                            <label for="ex_postFamily" class="form-label">Nhóm nhân viên</label>
+                            <label for="ex_postFamily" class="form-label" th:text="#{ex.field.postFamily}">Nhóm nhân viên</label>
                             <select class="form-select" id="ex_postFamily" data-parent-code="14015812"
-                                data-default-text="-- Tất cả --"></select>
+                                th:attr="data-default-text=#{ex.opt.all}" data-default-text="-- Tất cả --"></select>
                         </div>
                         <div class="col-md-1">
-                            <label for="ex_shiftNo" class="form-label">Ca làm việc</label>
+                            <label for="ex_shiftNo" class="form-label" th:text="#{ex.field.shiftNo}">Ca làm việc</label>
                             <select class="form-select" id="ex_shiftNo">
-                                <option value="">-- Tất cả --</option>
+                                <option value="" th:text="#{ex.opt.all}">-- Tất cả --</option>
                             </select>
                         </div>
                         <div class="col-md-1">
-                            <label for="ex_itemNo" class="form-label">Loại nghỉ phép</label>
+                            <label for="ex_itemNo" class="form-label" th:text="#{ex.field.leaveType}">Loại nghỉ phép</label>
                             <select class="form-select" id="ex_itemNo">
-                                <option value="">Lựa chọn</option>
-                                <option value="141443">Nghỉ không phép</option>
-                                <option value="141442">Về sớm</option>
-                                <option value="141441">Đến muộn</option>
-                                <option value="14015448">Quên quẹt thẻ</option>
+                                <option value="" th:text="#{ex.opt.select}">Lựa chọn</option>
+                                <option value="141443" th:text="#{ex.opt.unauthorized}">Nghỉ không phép</option>
+                                <option value="141442" th:text="#{ex.opt.earlyLeave}">Về sớm</option>
+                                <option value="141441" th:text="#{ex.opt.lateArrival}">Đến muộn</option>
+                                <option value="14015448" th:text="#{ex.opt.forgotSwipe}">Quên quẹt thẻ</option>
                             </select>
                         </div>
                         <div class="col-md-3 d-flex align-items-end gap-2 flex-wrap">
                             <button type="button" class="btn btn-primary" onclick="exSearchData()">
-                                <i class="bx bx-search"></i> Tra cứu
+                                <i class="bx bx-search"></i>
+                                <span th:text="#{ex.btn.search}">Tra cứu</span>
                             </button>
                             <button type="button" class="btn btn-warning" onclick="exApplySelected()">
-                                <i class="bx bx-send"></i> Xin phép
+                                <i class="bx bx-send"></i>
+                                <span th:text="#{ex.btn.apply}">Xin phép</span>
                             </button>
                             <button type="button" class="btn btn-success" onclick="exExportExcel()">
-                                <i class="bx bx-export"></i> Xuất excel
+                                <i class="bx bx-export"></i>
+                                <span th:text="#{ex.btn.export}">Xuất excel</span>
                             </button>
                         </div>
                     </form>
 
                     <form id="ex_bulkActionForm" class="row g-3 align-items-end mb-3">
                         <div class="col-md-3">
-                            <label for="ex_bulkInTime" class="form-label">Thời gian vào</label>
+                            <label for="ex_bulkInTime" class="form-label" th:text="#{ex.field.inTime}">Thời gian vào</label>
                             <input type="text" class="form-control js-daterangepicker" id="ex_bulkInTime"
                                 data-drp-format="DD/MM/YYYY HH:mm" data-drp-time="true" data-drp-24h="true"
                                 autocomplete="off">
                         </div>
                         <div class="col-md-3">
-                            <label for="ex_bulkOutTime" class="form-label">Thời gian ra</label>
+                            <label for="ex_bulkOutTime" class="form-label" th:text="#{ex.field.outTime}">Thời gian ra</label>
                             <input type="text" class="form-control js-daterangepicker" id="ex_bulkOutTime"
                                 data-drp-format="DD/MM/YYYY HH:mm" data-drp-time="true" data-drp-24h="true"
                                 autocomplete="off">
                         </div>
                         <div class="col-md-3">
                             <button type="button" class="btn btn-info" onclick="exApplyAllSelected()">
-                                <i class="bx bx-check-double"></i> Thực hiện tất cả
+                                <i class="bx bx-check-double"></i>
+                                <span th:text="#{ex.btn.applyAll}">Thực hiện tất cả</span>
                             </button>
                         </div>
                     </form>
@@ -91,17 +96,17 @@
                                             class="form-check-input ex-select-all-rows"
                                             onclick="exToggleAllRows(this.checked)">
                                     </th>
-                                    <th>No.</th>
-                                    <th>Mã nhân viên</th>
-                                    <th>Họ tên</th>
-                                    <th>Phòng ban</th>
-                                    <th>Chức vụ</th>
-                                    <th>Ngày công</th>
-                                    <th>Phân loại</th>
-                                    <th>Thời gian quẹt thẻ</th>
-                                    <th>Thời gian thực tế</th>
-                                    <th>Lý do</th>
-                                    <th>Người duyệt</th>
+                                    <th th:text="#{ex.col.no}">No.</th>
+                                    <th th:text="#{ex.col.empId}">Mã nhân viên</th>
+                                    <th th:text="#{ex.col.fullName}">Họ tên</th>
+                                    <th th:text="#{ex.col.dept}">Phòng ban</th>
+                                    <th th:text="#{ex.col.position}">Chức vụ</th>
+                                    <th th:text="#{ex.col.workDate}">Ngày công</th>
+                                    <th th:text="#{ex.col.absenceType}">Phân loại</th>
+                                    <th th:text="#{ex.col.swipeTime}">Thời gian quẹt thẻ</th>
+                                    <th th:text="#{ex.col.actualTime}">Thời gian thực tế</th>
+                                    <th th:text="#{ex.col.reason}">Lý do</th>
+                                    <th th:text="#{ex.col.approver}">Người duyệt</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
@@ -119,6 +124,23 @@
         var _ex_pageBooted = false;
         var _ex_selectedDeptCodes = [];
         var _ex_selectedRowKeys = {};
+
+        /* i18n */
+        var _ex_i18n = {
+            optAll            : /*[[#{ex.opt.all}]]*/ '-- Tất cả --',
+            placeholderRemark : /*[[#{ex.placeholder.remark}]]*/ 'Nhập lý do',
+            labelIn           : /*[[#{ex.js.in}]]*/ 'Vào',
+            labelOut          : /*[[#{ex.js.out}]]*/ 'Ra',
+            selectMinOne      : /*[[#{ex.msg.selectMinOne}]]*/ 'Vui lòng tick chọn ít nhất một dòng.',
+            missingData       : /*[[#{ex.msg.missingData}]]*/ 'Thiếu dữ liệu bắt buộc ở dòng đã chọn: nhân viên/loại nghỉ/ngày công.',
+            fillTimeRequired  : /*[[#{ex.msg.fillTimeRequired}]]*/ 'Vui lòng nhập đầy đủ thời gian vào/ra cho tất cả dòng đã chọn.',
+            submitSuccess     : /*[[#{ex.msg.submitSuccess}]]*/ 'Xin phép thành công.',
+            submitFailed      : /*[[#{ex.msg.submitFailed}]]*/ 'Xin phép thất bại.',
+            submitError       : /*[[#{ex.msg.submitError}]]*/ 'Lỗi khi gửi dữ liệu xin phép.',
+            selectMinOneBatch : /*[[#{ex.msg.selectMinOneBatch}]]*/ 'Vui lòng chọn ít nhất một dòng để thực hiện.',
+            enterBatchTime    : /*[[#{ex.msg.enterBatchTime}]]*/ 'Vui lòng nhập thời gian vào hoặc thời gian ra.',
+            batchApplied      : /*[[#{ex.msg.batchApplied}]]*/ 'Đã áp dụng thời gian cho các dòng đã chọn.'
+        };
 
         function exFormatDate(dateObj) {
             var d = String(dateObj.getDate()).padStart(2, '0');
@@ -162,7 +184,7 @@
                 url: '/ar/attendanceSettings/api/shift',
                 type: 'GET',
                 success: function (data) {
-                    var html = '<option value="">-- Tất cả --</option>';
+                    var html = '<option value="">' + _ex_i18n.optAll + '</option>';
                     (data || []).forEach(function (item) {
                         var code = item.shiftNo || '';
                         var name = item.nameVi || item.shiftName || code;
@@ -518,7 +540,7 @@
                         render: function (data, type, row) {
                             var inTime = row.inDoorTime || '';
                             var outTime = row.outDoorTime || '';
-                            return 'Vào: ' + inTime + '<br>Ra: ' + outTime;
+                            return _ex_i18n.labelIn + ': ' + inTime + '<br>' + _ex_i18n.labelOut + ': ' + outTime;
                         }
                     },
                     {
@@ -530,13 +552,13 @@
                             var keyToken = exGetRowToken(row);
                             return ''
                                 + '<div class="input-group input-group-sm mb-1">'
-                                + '<span class="input-group-text" style="width: 40px">Vào</span>'
+                                + '<span class="input-group-text" style="width: 40px">' + _ex_i18n.labelIn + '</span>'
                                 + '<input type="text" class="form-control js-daterangepicker ex-in-time" '
                                 + 'data-row-key="' + exEscapeAttr(keyToken) + '" '
                                 + 'data-drp-format="DD/MM/YYYY HH:mm" data-drp-time="true" data-drp-24h="true" value="' + (inVal || '') + '">'
                                 + '</div>'
                                 + '<div class="input-group input-group-sm">'
-                                + '<span class="input-group-text" style="width: 40px">Ra</span>'
+                                + '<span class="input-group-text" style="width: 40px">' + _ex_i18n.labelOut + '</span>'
                                 + '<input type="text" class="form-control js-daterangepicker ex-out-time" '
                                 + 'data-row-key="' + exEscapeAttr(keyToken) + '" '
                                 + 'data-drp-format="DD/MM/YYYY HH:mm" data-drp-time="true" data-drp-24h="true" value="' + (outVal || '') + '">'
@@ -549,7 +571,7 @@
                             var keyToken = exGetRowToken(row);
                             return '<input type="text" class="form-control form-control-sm ex-remark" '
                                 + 'data-row-key="' + exEscapeAttr(keyToken) + '" '
-                                + 'value="' + exEscapeAttr(data || '') + '" placeholder="Nhập lý do">';
+                                + 'value="' + exEscapeAttr(data || '') + '" placeholder="' + exEscapeAttr(_ex_i18n.placeholderRemark) + '">';
                         }
                     },
                     { data: 'updatedBy', render: function (data) { return data || ''; } }
@@ -616,18 +638,18 @@
             });
 
             if (selectedRows.length === 0) {
-                toastr && toastr.warning('Vui lòng tick chọn ít nhất một dòng.');
+                toastr && toastr.warning(_ex_i18n.selectMinOne);
                 return;
             }
 
             for (var i = 0; i < selectedRows.length; i++) {
                 var row = selectedRows[i];
                 if (!row.personId || !row.itemNo || !row.arDateStr) {
-                    toastr && toastr.warning('Thiếu dữ liệu bắt buộc ở dòng đã chọn: nhân viên/loại nghỉ/ngày công.');
+                    toastr && toastr.warning(_ex_i18n.missingData);
                     return;
                 }
                 if (!row.fromDateTime || !row.toDateTime) {
-                    toastr && toastr.warning('Vui lòng nhập đầy đủ thời gian vào/ra cho tất cả dòng đã chọn.');
+                    toastr && toastr.warning(_ex_i18n.fillTimeRequired);
                     return;
                 }
             }
@@ -639,16 +661,16 @@
                 data: JSON.stringify(selectedRows),
                 success: function (res) {
                     if (res && res.success) {
-                        toastr && toastr.success(res.message || 'Xin phép thành công.');
+                        toastr && toastr.success(res.message || _ex_i18n.submitSuccess);
                         _ex_selectedRowKeys = {};
                         $('.ex-select-all-rows').prop('checked', false);
                         _ex_table.ajax.reload(null, false);
                     } else {
-                        toastr && toastr.error((res && res.error) || 'Xin phép thất bại.');
+                        toastr && toastr.error((res && res.error) || _ex_i18n.submitFailed);
                     }
                 },
                 error: function () {
-                    toastr && toastr.error('Lỗi khi gửi dữ liệu xin phép.');
+                    toastr && toastr.error(_ex_i18n.submitError);
                 }
             });
         };
@@ -671,14 +693,14 @@
 
             if (selectedCount === 0) {
                 if (typeof toastr !== 'undefined') {
-                    toastr.warning('Vui lòng chọn ít nhất một dòng để thực hiện.');
+                    toastr.warning(_ex_i18n.selectMinOneBatch);
                 }
                 return;
             }
 
             if (!batchIn && !batchOut) {
                 if (typeof toastr !== 'undefined') {
-                    toastr.warning('Vui lòng nhập thời gian vào hoặc thời gian ra.');
+                    toastr.warning(_ex_i18n.enterBatchTime);
                 }
                 return;
             }
@@ -700,7 +722,7 @@
             _ex_table.draw(false);
 
             if (typeof toastr !== 'undefined') {
-                toastr.success('Đã áp dụng thời gian cho các dòng đã chọn.');
+                toastr.success(_ex_i18n.batchApplied);
             }
         };
 

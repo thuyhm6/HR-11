@@ -5,21 +5,21 @@
             <!-- ===== Thông tin cơ bản ===== -->
             <div class="card mb-3">
                 <div class="card-header bg-primary text-white py-2">
-                    <strong><i class="bx bx-briefcase me-1"></i>Thông tin Công việc</strong>
+                    <strong><i class="bx bx-briefcase me-1"></i><span th:text="#{epi.section.workInfo}">Thông tin Công việc</span></strong>
                 </div>
                 <div class="card-body p-0">
                     <table class="table table-bordered table-sm align-middle mb-0">
                         <tbody>
                             <tr>
-                                <th class="table-light text-center" style="width:150px;">Họ tên</th>
+                                <th class="table-light text-center" style="width:150px;" th:text="#{epi.field.fullName}">Họ tên</th>
                                 <td id="wi_localName"></td>
-                                <th class="table-light text-center" style="width:150px;">Mã nhân viên</th>
+                                <th class="table-light text-center" style="width:150px;" th:text="#{epi.field.empId}">Mã nhân viên</th>
                                 <td id="wi_empId"></td>
                             </tr>
                             <tr>
-                                <th class="table-light text-center">Phòng ban</th>
+                                <th class="table-light text-center" th:text="#{epi.field.department}">Phòng ban</th>
                                 <td id="wi_deptName"></td>
-                                <th class="table-light text-center">Chức vụ</th>
+                                <th class="table-light text-center" th:text="#{epi.field.position}">Chức vụ</th>
                                 <td id="wi_dutyName"></td>
                             </tr>
                         </tbody>
@@ -30,22 +30,22 @@
             <!-- ===== Quyết định nhân sự ===== -->
             <div class="card mb-3">
                 <div class="card-header bg-light py-2">
-                    <strong><i class="bx bx-transfer me-1"></i>Quyết định nhân sự</strong>
+                    <strong><i class="bx bx-transfer me-1"></i><span th:text="#{epi.section.hrDecision}">Quyết định nhân sự</span></strong>
                 </div>
                 <div class="card-body p-0">
                     <table class="table table-bordered table-sm align-middle mb-0 w-100">
                         <thead class="table-light">
                             <tr>
-                                <th style="width:140px;">Thời gian</th>
-                                <th>Quyết định</th>
-                                <th>Lý do</th>
-                                <th>Phòng ban</th>
-                                <th>Công việc</th>
+                                <th style="width:140px;" th:text="#{epi.field.period}">Thời gian</th>
+                                <th th:text="#{epi.field.decision}">Quyết định</th>
+                                <th th:text="#{epi.field.reason}">Lý do</th>
+                                <th th:text="#{epi.field.department}">Phòng ban</th>
+                                <th th:text="#{epi.field.work}">Công việc</th>
                             </tr>
                         </thead>
                         <tbody id="wi_insideBody">
                             <tr>
-                                <td colspan="5" class="text-center text-muted">Đang tải...</td>
+                                <td colspan="5" class="text-center text-muted" th:text="#{common.loading}">Đang tải...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -55,24 +55,24 @@
             <!-- ===== Kinh nghiệm ===== -->
             <div class="card mb-3">
                 <div class="card-header bg-light py-2 d-flex justify-content-between align-items-center">
-                    <strong><i class="bx bx-buildings me-1"></i>Kinh nghiệm</strong>
+                    <strong><i class="bx bx-buildings me-1"></i><span th:text="#{epi.section.workExp}">Kinh nghiệm</span></strong>
                     <button type="button" class="btn btn-sm btn-success" onclick="openWorkExpModal(null)">
-                        <i class="bx bx-plus me-1"></i>Thêm mới
+                        <i class="bx bx-plus me-1"></i><span th:text="#{epi.btn.addNew}">Thêm mới</span>
                     </button>
                 </div>
                 <div class="card-body p-0">
                     <table class="table table-bordered table-sm align-middle mb-0 w-100">
                         <thead class="table-light">
                             <tr>
-                                <th>Tên công ty</th>
-                                <th style="width:120px;">Ngày vào làm</th>
-                                <th style="width:120px;">Ngày thôi việc</th>
-                                <th>Lý do</th>
+                                <th th:text="#{epi.field.cpnyName}">Tên công ty</th>
+                                <th style="width:120px;" th:text="#{epi.field.startDate}">Ngày vào làm</th>
+                                <th style="width:120px;" th:text="#{epi.field.endDate}">Ngày thôi việc</th>
+                                <th th:text="#{epi.field.reason}">Lý do</th>
                             </tr>
                         </thead>
                         <tbody id="wi_workExpBody">
                             <tr>
-                                <td colspan="4" class="text-center text-muted">Đang tải...</td>
+                                <td colspan="4" class="text-center text-muted" th:text="#{common.loading}">Đang tải...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -88,7 +88,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="modalWorkExpTitle">
-                        <i class="bx bx-buildings me-1"></i>Kinh nghiệm làm việc
+                        <i class="bx bx-buildings me-1"></i><span th:text="#{epi.modal.workExp}">Kinh nghiệm làm việc</span>
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
@@ -96,37 +96,37 @@
                     <input type="hidden" id="we_workExpNo">
                     <div class="row g-2">
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold">Tên công ty <span class="text-danger">*</span></label>
+                            <label class="form-label fw-semibold"><span th:text="#{epi.field.cpnyName}">Tên công ty</span> <span class="text-danger">*</span></label>
                             <input type="text" class="form-control form-control-sm" id="we_cpnyName">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold">Tên bộ phận</label>
+                            <label class="form-label fw-semibold" th:text="#{epi.field.department}">Tên bộ phận</label>
                             <input type="text" class="form-control form-control-sm" id="we_deptName">
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label fw-semibold">Ngày vào làm (MM/YYYY)</label>
+                            <label class="form-label fw-semibold" th:text="#{epi.field.startMonth}">Ngày vào làm (MM/YYYY)</label>
                             <input type="text" class="form-control form-control-sm" id="we_startMonth"
-                                placeholder="VD: 01/2020">
+                                th:placeholder="#{epi.field.startMonth}" placeholder="VD: 01/2020">
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label fw-semibold">Ngày thôi việc (MM/YYYY)</label>
+                            <label class="form-label fw-semibold" th:text="#{epi.field.endMonth}">Ngày thôi việc (MM/YYYY)</label>
                             <input type="text" class="form-control form-control-sm" id="we_endMonth"
-                                placeholder="VD: 12/2022">
+                                th:placeholder="#{epi.field.endMonth}" placeholder="VD: 12/2022">
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label fw-semibold">Chức vụ</label>
+                            <label class="form-label fw-semibold" th:text="#{epi.field.position}">Chức vụ</label>
                             <input type="text" class="form-control form-control-sm" id="we_position">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold">Lý do nghỉ việc</label>
+                            <label class="form-label fw-semibold" th:text="#{epi.field.resignReason}">Lý do nghỉ việc</label>
                             <input type="text" class="form-control form-control-sm" id="we_resignReason">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold">Người làm chứng</label>
+                            <label class="form-label fw-semibold" th:text="#{epi.field.witness}">Người làm chứng</label>
                             <input type="text" class="form-control form-control-sm" id="we_witness">
                         </div>
                         <div class="col-12">
-                            <label class="form-label fw-semibold">Ghi chú</label>
+                            <label class="form-label fw-semibold" th:text="#{epi.field.remark}">Ghi chú</label>
                             <textarea class="form-control form-control-sm" id="we_remark" rows="2"></textarea>
                         </div>
                     </div>
@@ -134,9 +134,9 @@
                 <div class="modal-footer d-flex justify-content-end">
                     <div>
                         <button type="button" class="btn btn-secondary btn-sm me-1"
-                            data-bs-dismiss="modal">Đóng</button>
+                            data-bs-dismiss="modal" th:text="#{common.close}">Đóng</button>
                         <button type="button" class="btn btn-primary btn-sm" onclick="saveWorkExp()">
-                            <i class="bx bx-save me-1"></i>Lưu
+                            <i class="bx bx-save me-1"></i><span th:text="#{common.save}">Lưu</span>
                         </button>
                     </div>
                 </div>
@@ -147,8 +147,21 @@
 </div>
 
 <template id="fragmentScripts">
-    <script>
+    <script th:inline="javascript">
         (function () {
+            var i18n = {
+                noData:            /*[[#{epi.msg.noData}]]*/ 'Không có dữ liệu',
+                loading:           /*[[#{common.loading}]]*/ 'Đang tải...',
+                loadErrWorkInfo:   /*[[#{epi.msg.loadError.workInfo}]]*/ 'Lỗi tải dữ liệu công việc',
+                loadErrWorkExp:    /*[[#{epi.msg.loadError.workExp}]]*/ 'Lỗi tải dữ liệu kinh nghiệm',
+                validateCpnyName:  /*[[#{epi.msg.validate.cpnyName}]]*/ 'Vui lòng nhập Tên công ty!',
+                saveSuccess:       /*[[#{epi.msg.saveSuccess}]]*/ 'Cập nhật thành công!',
+                addSuccess:        /*[[#{epi.msg.addSuccess}]]*/ 'Thêm mới thành công!',
+                systemError:       /*[[#{epi.msg.systemError}]]*/ 'Lỗi hệ thống',
+                titleAddWorkExp:   /*[[#{epi.modal.addWorkExp}]]*/ 'Thêm mới kinh nghiệm',
+                titleEditWorkExp:  /*[[#{epi.modal.editWorkExp}]]*/ 'Cập nhật kinh nghiệm'
+            };
+
             var currentWorkExpList = [];
 
             function setText(id, val) {
@@ -194,7 +207,7 @@
                     success: function (list) {
                         var tbody = document.getElementById('wi_insideBody');
                         if (!list || list.length === 0) {
-                            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Không có dữ liệu</td></tr>';
+                            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">' + i18n.noData + '</td></tr>';
                             return;
                         }
                         var html = '';
@@ -211,7 +224,7 @@
                     },
                     error: function () {
                         document.getElementById('wi_insideBody').innerHTML =
-                            '<tr><td colspan="5" class="text-center text-danger">Lỗi tải dữ liệu</td></tr>';
+                            '<tr><td colspan="5" class="text-center text-danger">' + i18n.loadErrWorkInfo + '</td></tr>';
                     }
                 });
             }
@@ -225,7 +238,7 @@
                         currentWorkExpList = list || [];
                         var tbody = document.getElementById('wi_workExpBody');
                         if (!list || list.length === 0) {
-                            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Không có dữ liệu</td></tr>';
+                            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">' + i18n.noData + '</td></tr>';
                             return;
                         }
                         var html = '';
@@ -241,7 +254,7 @@
                     },
                     error: function () {
                         document.getElementById('wi_workExpBody').innerHTML =
-                            '<tr><td colspan="4" class="text-center text-danger">Lỗi tải dữ liệu</td></tr>';
+                            '<tr><td colspan="4" class="text-center text-danger">' + i18n.loadErrWorkExp + '</td></tr>';
                     }
                 });
             }
@@ -250,7 +263,7 @@
             window.openWorkExpModal = function (indexOrNull) {
                 var isNew = indexOrNull === null;
                 document.getElementById('modalWorkExpTitle').innerHTML =
-                    '<i class="bx bx-buildings me-1"></i>' + (isNew ? 'Thêm mới kinh nghiệm' : 'Cập nhật kinh nghiệm');
+                    '<i class="bx bx-buildings me-1"></i>' + (isNew ? i18n.titleAddWorkExp : i18n.titleEditWorkExp);
 
                 if (isNew) {
                     document.getElementById('we_workExpNo').value = '';
@@ -281,7 +294,7 @@
             window.saveWorkExp = function () {
                 var cpnyName = document.getElementById('we_cpnyName').value;
                 if (!cpnyName) {
-                    showToast('Vui lòng nhập Tên công ty!', 'danger');
+                    showToast(i18n.validateCpnyName, 'danger');
                     return;
                 }
                 var workExpNo = document.getElementById('we_workExpNo').value;
@@ -303,17 +316,15 @@
                     data: JSON.stringify(payload),
                     success: function () {
                         bootstrap.Modal.getInstance(document.getElementById('modalWorkExp')).hide();
-                        showToast(workExpNo ? 'Cập nhật thành công!' : 'Thêm mới thành công!', 'success');
+                        showToast(workExpNo ? i18n.saveSuccess : i18n.addSuccess, 'success');
                         loadWorkExperience();
                     },
                     error: function (err) {
-                        var msg = (err.responseJSON && err.responseJSON.error) ? err.responseJSON.error : 'Lỗi hệ thống';
+                        var msg = (err.responseJSON && err.responseJSON.error) ? err.responseJSON.error : i18n.systemError;
                         showToast(msg, 'danger');
                     }
                 });
             };
-
-
 
             $(document).ready(function () {
                 loadBasicInfo();

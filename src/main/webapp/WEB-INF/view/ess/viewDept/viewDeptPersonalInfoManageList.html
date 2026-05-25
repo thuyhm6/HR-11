@@ -5,52 +5,54 @@
                 <div class="card-body">
                     <form id="vdp_searchForm" class="row g-3 mb-4">
                         <div class="col-md-3">
-                            <label for="vdp_keyword" class="form-label">Mã nhân viên / Họ tên</label>
-                            <input type="text" class="form-control" id="vdp_keyword" placeholder="Nhập mã hoặc họ tên">
+                            <label for="vdp_keyword" class="form-label" th:text="#{vdp.search.empKeyword}">Mã nhân viên / Họ tên</label>
+                            <input type="text" class="form-control" id="vdp_keyword"
+                                th:placeholder="#{vdp.search.empKeyword.placeholder}" placeholder="Nhập mã hoặc họ tên">
                         </div>
                         <div class="col-md-3">
-                            <label for="vdp_deptNo" class="form-label">Phòng ban</label>
-                            <input type="text" class="form-control" id="vdp_deptNo" placeholder="Chọn phòng ban" readonly>
+                            <label for="vdp_deptNo" class="form-label" th:text="#{common.deptName}">Phòng ban</label>
+                            <input type="text" class="form-control" id="vdp_deptNo"
+                                th:placeholder="#{vdp.search.dept.placeholder}" placeholder="Chọn phòng ban" readonly>
                         </div>
                         <div class="col-md-2">
-                            <label for="vdp_fromDate" class="form-label">Ngày vào làm từ</label>
+                            <label for="vdp_fromDate" class="form-label" th:text="#{vdp.search.joinDateFrom}">Ngày vào làm từ</label>
                             <input type="text" class="form-control js-daterangepicker" id="vdp_fromDate"
                                 data-drp-format="YYYY-MM-DD" data-drp-auto-update-input="false" autocomplete="off">
                         </div>
                         <div class="col-md-2">
-                            <label for="vdp_toDate" class="form-label">Ngày vào làm đến</label>
+                            <label for="vdp_toDate" class="form-label" th:text="#{vdp.search.joinDateTo}">Ngày vào làm đến</label>
                             <input type="text" class="form-control js-daterangepicker" id="vdp_toDate"
                                 data-drp-format="YYYY-MM-DD" data-drp-auto-update-input="false" autocomplete="off">
                         </div>
                         <div class="col-md-2">
-                            <label for="vdp_postFamily" class="form-label">Nhóm nhân viên</label>
+                            <label for="vdp_postFamily" class="form-label" th:text="#{vdp.search.postFamily}">Nhóm nhân viên</label>
                             <select class="form-select" id="vdp_postFamily" data-parent-code="14015812"
                                 data-default-text="-- Tất cả --"></select>
                         </div>
                         <div class="col-md-2">
-                            <label for="vdp_empTypeCode" class="form-label">Loại nhân viên</label>
+                            <label for="vdp_empTypeCode" class="form-label" th:text="#{common.empType}">Loại nhân viên</label>
                             <select class="form-select" id="vdp_empTypeCode" data-parent-code="13864"
                                 data-default-text="-- Tất cả --"></select>
                         </div>
                         <div class="col-md-2">
-                            <label for="vdp_empOffice" class="form-label">Trạng thái</label>
+                            <label for="vdp_empOffice" class="form-label" th:text="#{common.status}">Trạng thái</label>
                             <select class="form-select" id="vdp_empOffice" data-parent-code="15118"
                                 data-default-text="-- Tất cả --" data-default-value="15119"></select>
                         </div>
                         <div class="col-md-2">
-                            <label for="vdp_nationalityCode" class="form-label">Quốc tịch</label>
+                            <label for="vdp_nationalityCode" class="form-label" th:text="#{common.nationality}">Quốc tịch</label>
                             <select class="form-select" id="vdp_nationalityCode" data-parent-code="870"
                                 data-default-text="-- Tất cả --"></select>
                         </div>
                         <div class="col-md-6 d-flex align-items-end gap-2 flex-wrap">
                             <button type="button" class="btn btn-primary" onclick="vdpSearchData()">
-                                <i class="bx bx-search"></i> Tra cứu
+                                <i class="bx bx-search"></i> <span th:text="#{button.search}">Tra cứu</span>
                             </button>
                             <button type="button" class="btn btn-secondary" onclick="vdpClearSearch()">
-                                <i class="bx bx-x"></i> Xóa lọc
+                                <i class="bx bx-x"></i> <span th:text="#{common.clearFilter}">Xóa lọc</span>
                             </button>
                             <button type="button" class="btn btn-success" onclick="vdpExportExcel()">
-                                <i class="bx bx-export"></i> Xuất excel
+                                <i class="bx bx-export"></i> <span th:text="#{common.exportExcel}">Xuất excel</span>
                             </button>
                         </div>
                     </form>
@@ -59,7 +61,7 @@
                         <table id="vdp_dataTable" class="table table-bordered table-hover align-middle mb-0 w-100">
                             <thead>
                                 <tr>
-                                    <th>Danh sách nhân sự</th>
+                                    <th th:text="#{vdp.list.title}">Danh sách nhân sự</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
@@ -75,7 +77,7 @@
     <div class="modal-dialog modal-xl modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Chi tiết nhân viên</h5>
+                <h5 class="modal-title" th:text="#{vdp.detail.title}">Chi tiết nhân viên</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -83,86 +85,86 @@
                     <table class="table table-bordered table-sm align-middle mb-0">
                         <tbody>
                             <tr>
-                                <th class="table-light text-center" style="width: 160px;">Mã nhân viên</th>
+                                <th class="table-light text-center" style="width: 160px;" th:text="#{common.empId}">Mã nhân viên</th>
                                 <td id="vdp_detailEmpId"></td>
-                                <th class="table-light text-center" style="width: 160px;">Họ tên</th>
+                                <th class="table-light text-center" style="width: 160px;" th:text="#{common.empName}">Họ tên</th>
                                 <td id="vdp_detailLocalName"></td>
                             </tr>
                             <tr>
-                                <th class="table-light text-center">Person ID</th>
+                                <th class="table-light text-center" th:text="#{vdp.detail.personId}">Person ID</th>
                                 <td id="vdp_detailPersonId"></td>
-                                <th class="table-light text-center">Mã NCC</th>
+                                <th class="table-light text-center" th:text="#{vdp.detail.supplierCode}">Mã NCC</th>
                                 <td id="vdp_detailPersonSupplierCompany"></td>
                             </tr>
                             <tr>
-                                <th class="table-light text-center">Phòng ban</th>
+                                <th class="table-light text-center" th:text="#{common.deptName}">Phòng ban</th>
                                 <td id="vdp_detailDeptName"></td>
-                                <th class="table-light text-center">Tên phòng local</th>
+                                <th class="table-light text-center" th:text="#{vdp.detail.orgNameLocal}">Tên phòng local</th>
                                 <td id="vdp_detailOrgNameLocal"></td>
                             </tr>
                             <tr>
-                                <th class="table-light text-center">Chức vụ</th>
+                                <th class="table-light text-center" th:text="#{common.position}">Chức vụ</th>
                                 <td id="vdp_detailDutyName"></td>
-                                <th class="table-light text-center">Chức danh</th>
+                                <th class="table-light text-center" th:text="#{vdp.detail.jobTitle}">Chức danh</th>
                                 <td id="vdp_detailPostGradeNo"></td>
                             </tr>
                             <tr>
-                                <th class="table-light text-center">Vị trí</th>
+                                <th class="table-light text-center" th:text="#{vdp.detail.positionName}">Vị trí</th>
                                 <td id="vdp_detailPositionName"></td>
-                                <th class="table-light text-center">Nhóm nhân viên</th>
+                                <th class="table-light text-center" th:text="#{vdp.detail.postFamily}">Nhóm nhân viên</th>
                                 <td id="vdp_detailPostFamily"></td>
                             </tr>
                             <tr>
-                                <th class="table-light text-center">Loại nhân viên</th>
+                                <th class="table-light text-center" th:text="#{common.empType}">Loại nhân viên</th>
                                 <td id="vdp_detailEmpTypeName"></td>
-                                <th class="table-light text-center">Trạng thái</th>
+                                <th class="table-light text-center" th:text="#{common.status}">Trạng thái</th>
                                 <td id="vdp_detailEmpOfficeName"></td>
                             </tr>
                             <tr>
-                                <th class="table-light text-center">Quốc tịch</th>
+                                <th class="table-light text-center" th:text="#{common.nationality}">Quốc tịch</th>
                                 <td id="vdp_detailNationalityName"></td>
-                                <th class="table-light text-center">Ngày vào làm</th>
+                                <th class="table-light text-center" th:text="#{vdp.detail.dateStarted}">Ngày vào làm</th>
                                 <td id="vdp_detailDateStarted"></td>
                             </tr>
                             <tr>
-                                <th class="table-light text-center">Nghiệp vụ chính</th>
+                                <th class="table-light text-center" th:text="#{vdp.detail.mainBusiness}">Nghiệp vụ chính</th>
                                 <td id="vdp_detailMainBusiness"></td>
-                                <th class="table-light text-center">Khối sở hữu</th>
+                                <th class="table-light text-center" th:text="#{vdp.detail.employeeOwned}">Khối sở hữu</th>
                                 <td id="vdp_detailEmployeeOwned"></td>
                             </tr>
                             <tr>
-                                <th class="table-light text-center">Quản lý hiển thị</th>
+                                <th class="table-light text-center" th:text="#{vdp.detail.manager}">Quản lý hiển thị</th>
                                 <td id="vdp_detailManagerName"></td>
-                                <th class="table-light text-center">Quản lý cập nhật</th>
+                                <th class="table-light text-center" th:text="#{vdp.detail.managerUpdate}">Quản lý cập nhật</th>
                                 <td id="vdp_detailManagerEmpName"></td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
 
-                <h6 class="fw-bold mb-2">Quá trình nội bộ</h6>
+                <h6 class="fw-bold mb-2" th:text="#{vdp.detail.insideProcess}">Quá trình nội bộ</h6>
                 <div class="table-responsive">
                     <table class="table table-bordered table-sm align-middle mb-0">
                         <thead class="table-light text-center">
                             <tr>
-                                <th style="width: 60px;">STT</th>
-                                <th style="width: 140px;">Ngày bắt đầu</th>
-                                <th>Phòng ban</th>
-                                <th>Nghiệp vụ chính</th>
-                                <th>Chức danh</th>
-                                <th>Loại điều chuyển</th>
+                                <th style="width: 60px;" th:text="#{common.stt}">STT</th>
+                                <th style="width: 140px;" th:text="#{common.startDate}">Ngày bắt đầu</th>
+                                <th th:text="#{common.deptName}">Phòng ban</th>
+                                <th th:text="#{vdp.detail.mainBusiness}">Nghiệp vụ chính</th>
+                                <th th:text="#{vdp.detail.jobTitle}">Chức danh</th>
+                                <th th:text="#{vdp.detail.transType}">Loại điều chuyển</th>
                             </tr>
                         </thead>
                         <tbody id="vdp_insideExperienceBody">
                             <tr>
-                                <td colspan="6" class="text-center text-muted">Chọn một nhân viên để xem quá trình nội bộ.</td>
+                                <td colspan="6" class="text-center text-muted" th:text="#{vdp.detail.selectEmpFirst}">Chọn một nhân viên để xem quá trình nội bộ.</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" th:text="#{common.close}">Đóng</button>
             </div>
         </div>
     </div>
@@ -303,6 +305,30 @@
         var _vdp_pageBooted = false;
         var _vdp_selectedDeptCodes = [];
         var _vdp_detailModal = null;
+        var _vdp_i18n = {
+            empName:           /*[[#{vdp.card.empName}]]*/ 'Họ tên',
+            jobTitle:          /*[[#{vdp.card.jobTitle}]]*/ 'Chức danh',
+            job:               /*[[#{vdp.card.job}]]*/ 'Công việc',
+            empType:           /*[[#{vdp.card.empType}]]*/ 'Loại nhân viên',
+            costCode:          /*[[#{vdp.card.costCode}]]*/ 'Mã chi phí',
+            dept:              /*[[#{vdp.card.dept}]]*/ 'Trưởng phòng',
+            workDuration:      /*[[#{vdp.card.workDuration}]]*/ 'Thời gian làm việc',
+            dateStarted:       /*[[#{vdp.detail.dateStarted}]]*/ 'Ngày vào làm',
+            nationality:       /*[[#{vdp.card.nationality}]]*/ 'Quốc tịch',
+            status:            /*[[#{vdp.card.status}]]*/ 'Trạng thái',
+            dtSearch:          /*[[#{vdp.dt.search}]]*/ 'Lọc nhanh',
+            dtLengthMenu:      /*[[#{vdp.dt.lengthMenu}]]*/ 'Mỗi trang _MENU_ dữ liệu',
+            dtInfo:            /*[[#{vdp.dt.info}]]*/ 'Từ _START_ đến _END_/Tổng _TOTAL_ dữ liệu',
+            dtPrevious:        /*[[#{vdp.dt.previous}]]*/ 'Trang trước',
+            dtNext:            /*[[#{vdp.dt.next}]]*/ 'Trang sau',
+            noData:            /*[[#{vdp.msg.noData}]]*/ 'Không có dữ liệu',
+            loading:           /*[[#{vdp.msg.loading}]]*/ 'Đang tải dữ liệu...',
+            noInsideExp:       /*[[#{vdp.msg.noInsideExp}]]*/ 'Không có dữ liệu quá trình nội bộ.',
+            noPersonId:        /*[[#{vdp.msg.noPersonId}]]*/ 'Không lấy được PERSON_ID để xem quá trình nội bộ.',
+            loadInsideFailed:  /*[[#{vdp.msg.loadInsideFailed}]]*/ 'Tải dữ liệu quá trình nội bộ thất bại.',
+            loadInsideEmpFailed: /*[[#{vdp.msg.loadInsideEmpFailed}]]*/ 'Không tải được quá trình nội bộ của nhân viên.',
+            selectEmpFirst:    /*[[#{vdp.detail.selectEmpFirst}]]*/ 'Chọn một nhân viên để xem quá trình nội bộ.'
+        };
 
         function vdpInitDeptSelector() {
             if (typeof DeptTree === 'undefined') {
@@ -404,33 +430,33 @@
                 + '                <td class="vdp-photo-cell" rowspan="5">'
                 + '                    <div class="vdp-photo-box">' + vdpEscHtml(initials) + '</div>'
                 + '                </td>'
-                + '                <th class="vdp-card-label">Họ tên</th>'
+                + '                <th class="vdp-card-label">' + vdpEscHtml(_vdp_i18n.empName) + '</th>'
                 + '                <td class="vdp-card-value"><a href="javascript:void(0)" class="vdp-name-link">' + vdpEscHtml(row.localName || '') + '</a></td>'
-                + '                <th class="vdp-card-label">Chức danh</th>'
+                + '                <th class="vdp-card-label">' + vdpEscHtml(_vdp_i18n.jobTitle) + '</th>'
                 + '                <td class="vdp-card-value">' + vdpEscHtml(jobTitle) + '</td>'
                 + '            </tr>'
                 + '            <tr>'
-                + '                <th class="vdp-card-label">Công việc</th>'
+                + '                <th class="vdp-card-label">' + vdpEscHtml(_vdp_i18n.job) + '</th>'
                 + '                <td class="vdp-card-value">' + vdpEscHtml(row.mainBusiness || '') + '</td>'
-                + '                <th class="vdp-card-label">Loại nhân viên</th>'
+                + '                <th class="vdp-card-label">' + vdpEscHtml(_vdp_i18n.empType) + '</th>'
                 + '                <td class="vdp-card-value">' + vdpEscHtml(row.empTypeName || '') + '</td>'
                 + '            </tr>'
                 + '            <tr>'
-                + '                <th class="vdp-card-label">Mã chi phí</th>'
+                + '                <th class="vdp-card-label">' + vdpEscHtml(_vdp_i18n.costCode) + '</th>'
                 + '                <td class="vdp-card-value">' + vdpEscHtml(costRef) + '</td>'
-                + '                <th class="vdp-card-label">Trưởng phòng</th>'
+                + '                <th class="vdp-card-label">' + vdpEscHtml(_vdp_i18n.dept) + '</th>'
                 + '                <td class="vdp-card-value">' + vdpEscHtml(managerName) + '</td>'
                 + '            </tr>'
                 + '            <tr>'
-                + '                <th class="vdp-card-label">Thời gian làm việc</th>'
+                + '                <th class="vdp-card-label">' + vdpEscHtml(_vdp_i18n.workDuration) + '</th>'
                 + '                <td class="vdp-card-value">' + vdpEscHtml(workDuration) + '</td>'
-                + '                <th class="vdp-card-label">Ngày vào làm</th>'
+                + '                <th class="vdp-card-label">' + vdpEscHtml(_vdp_i18n.dateStarted) + '</th>'
                 + '                <td class="vdp-card-value">' + vdpEscHtml(row.dateStarted || '') + '</td>'
                 + '            </tr>'
                 + '            <tr>'
-                + '                <th class="vdp-card-label">Quốc tịch</th>'
+                + '                <th class="vdp-card-label">' + vdpEscHtml(_vdp_i18n.nationality) + '</th>'
                 + '                <td class="vdp-card-value">' + vdpEscHtml(row.nationalityName || '') + '</td>'
-                + '                <th class="vdp-card-label">Trạng thái</th>'
+                + '                <th class="vdp-card-label">' + vdpEscHtml(_vdp_i18n.status) + '</th>'
                 + '                <td class="vdp-card-value">' + vdpEscHtml(row.empOfficeName || '') + '</td>'
                 + '            </tr>'
                 + '        </tbody>'
@@ -461,13 +487,13 @@
 
         function vdpResetInsideExperience(message) {
             $('#vdp_insideExperienceBody').html(
-                '<tr><td colspan="6" class="text-center text-muted">' + vdpEscHtml(message || 'Không có dữ liệu') + '</td></tr>'
+                '<tr><td colspan="6" class="text-center text-muted">' + vdpEscHtml(message || _vdp_i18n.noData) + '</td></tr>'
             );
         }
 
         function vdpRenderInsideExperience(list) {
             if (!list || !list.length) {
-                vdpResetInsideExperience('Không có dữ liệu quá trình nội bộ.');
+                vdpResetInsideExperience(_vdp_i18n.noInsideExp);
                 return;
             }
 
@@ -487,11 +513,11 @@
 
         function vdpLoadInsideExperience(personId) {
             if (!personId) {
-                vdpResetInsideExperience('Không lấy được PERSON_ID để xem quá trình nội bộ.');
+                vdpResetInsideExperience(_vdp_i18n.noPersonId);
                 return;
             }
 
-            $('#vdp_insideExperienceBody').html('<tr><td colspan="6" class="text-center text-muted">Đang tải dữ liệu...</td></tr>');
+            $('#vdp_insideExperienceBody').html('<tr><td colspan="6" class="text-center text-muted">' + vdpEscHtml(_vdp_i18n.loading) + '</td></tr>');
             $.ajax({
                 url: '/ess/viewDept/api/manageEmpPositionInfo/insideExperience',
                 type: 'GET',
@@ -502,9 +528,9 @@
                     vdpRenderInsideExperience(res || []);
                 },
                 error: function () {
-                    vdpResetInsideExperience('Tải dữ liệu quá trình nội bộ thất bại.');
+                    vdpResetInsideExperience(_vdp_i18n.loadInsideFailed);
                     if (typeof toastr !== 'undefined') {
-                        toastr.error('Không tải được quá trình nội bộ của nhân viên.');
+                        toastr.error(_vdp_i18n.loadInsideEmpFailed);
                     }
                 }
             });
@@ -544,12 +570,12 @@
                     }
                 ],
                 language: {
-                    search: 'Lọc nhanh',
-                    lengthMenu: 'Mỗi trang _MENU_ dữ liệu',
-                    info: 'Từ _START_ đến _END_/Tổng _TOTAL_ dữ liệu',
+                    search: _vdp_i18n.dtSearch,
+                    lengthMenu: _vdp_i18n.dtLengthMenu,
+                    info: _vdp_i18n.dtInfo,
                     paginate: {
-                        previous: 'Trang trước',
-                        next: 'Trang sau'
+                        previous: _vdp_i18n.dtPrevious,
+                        next: _vdp_i18n.dtNext
                     }
                 },
                 ajax: {

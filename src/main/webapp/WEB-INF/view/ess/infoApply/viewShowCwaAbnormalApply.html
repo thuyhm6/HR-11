@@ -9,19 +9,19 @@
             <div class="card mb-2">
                 <div class="card-body py-2 px-3">
                     <div class="d-flex align-items-center gap-2 flex-wrap">
-                        <span class="fw-semibold small">Ngày bắt đầu</span>
+                        <span class="fw-semibold small" th:text="#{essCwa.startDate}">Ngày bắt đầu</span>
                         <input type="text" class="form-control form-control-sm js-daterangepicker"
                             id="sca_startDate"
                             data-drp-format="DD/MM/YYYY"
                             data-drp-auto-update-input="false"
                             autocomplete="off" style="width:130px;">
-                        <span class="fw-semibold small">Ngày kết thúc</span>
+                        <span class="fw-semibold small" th:text="#{essCwa.endDate}">Ngày kết thúc</span>
                         <input type="text" class="form-control form-control-sm js-daterangepicker"
                             id="sca_endDate"
                             data-drp-format="DD/MM/YYYY"
                             data-drp-auto-update-input="false"
                             autocomplete="off" style="width:130px;">
-                        <button class="btn btn-primary btn-sm" onclick="scaSearch()">Tra cứu</button>
+                        <button class="btn btn-primary btn-sm" onclick="scaSearch()" th:text="#{essCwa.search}">Tra cứu</button>
                     </div>
                 </div>
             </div>
@@ -30,7 +30,7 @@
             <div class="card mb-2">
                 <div class="card-body py-2 px-3">
                     <div class="d-flex align-items-center gap-2 flex-wrap">
-                        <span class="fw-semibold small">Vào:</span>
+                        <span class="fw-semibold small" th:text="#{essCwa.batchIn}">Vào:</span>
                         <input type="text" class="form-control form-control-sm js-daterangepicker"
                             id="sca_globalInDate"
                             data-drp-format="DD/MM/YYYY"
@@ -43,7 +43,7 @@
                         <input type="text" class="form-control form-control-sm" id="sca_globalInMi"
                             list="sca_minList" value="00" autocomplete="off" style="width:65px;"
                             oninput="scaClampMin(this)" onblur="scaFmtMin(this)">
-                        <span class="fw-semibold small ms-2">Ra:</span>
+                        <span class="fw-semibold small ms-2" th:text="#{essCwa.batchOut}">Ra:</span>
                         <input type="text" class="form-control form-control-sm js-daterangepicker"
                             id="sca_globalOutDate"
                             data-drp-format="DD/MM/YYYY"
@@ -56,26 +56,26 @@
                         <input type="text" class="form-control form-control-sm" id="sca_globalOutMi"
                             list="sca_minList" value="00" autocomplete="off" style="width:65px;"
                             oninput="scaClampMin(this)" onblur="scaFmtMin(this)">
-                        <button class="btn btn-secondary btn-sm ms-2" onclick="scaApplyAll()">Thực hiện tất cả</button>
-                        <button class="btn btn-success btn-sm ms-auto" onclick="scaSubmit()">Xin phép</button>
+                        <button class="btn btn-secondary btn-sm ms-2" onclick="scaApplyAll()" th:text="#{essCwa.applyAll}">Thực hiện tất cả</button>
+                        <button class="btn btn-success btn-sm ms-auto" onclick="scaSubmit()" th:text="#{essCwa.submit}">Xin phép</button>
                     </div>
                 </div>
             </div>
 
             <!-- Toolbar -->
             <div class="d-flex align-items-center gap-2 mb-2">
-                <span class="small">Lọc nhanh</span>
+                <span class="small" th:text="#{essCwa.quickFilter}">Lọc nhanh</span>
                 <input type="text" class="form-control form-control-sm" id="sca_filterInput"
                     style="max-width:160px;" oninput="scaQuickFilter(this.value)">
                 <div class="ms-auto d-flex align-items-center gap-2">
-                    <span class="small">Mỗi trang</span>
+                    <span class="small" th:text="#{essCwa.perPage}">Mỗi trang</span>
                     <select class="form-select form-select-sm" id="sca_pageSize" style="width:70px;"
                         onchange="scaChangePageSize(this.value)">
                         <option value="25">25</option>
                         <option value="50" selected>50</option>
                         <option value="100">100</option>
                     </select>
-                    <span class="small">Dữ liệu</span>
+                    <span class="small" th:text="#{essCwa.records}">Dữ liệu</span>
                 </div>
             </div>
 
@@ -90,17 +90,17 @@
                                     <th class="text-center" style="width:40px;">
                                         <input type="checkbox" id="sca_checkAll" onclick="scaToggleAll(this)">
                                     </th>
-                                    <th class="text-center" style="min-width:130px;">Phân loại</th>
-                                    <th class="text-center" style="min-width:110px;">Ngày công</th>
-                                    <th class="text-center" style="min-width:120px;">Thời gian quẹt thẻ</th>
-                                    <th class="text-center" style="min-width:310px; width:310px;">Thời gian</th>
-                                    <th class="text-center" style="min-width:160px;">Lý do</th>
-                                    <th class="text-center" style="min-width:200px;">Người duyệt</th>
+                                    <th class="text-center" style="min-width:130px;" th:text="#{essCwa.category}">Phân loại</th>
+                                    <th class="text-center" style="min-width:110px;" th:text="#{essCwa.workDate}">Ngày công</th>
+                                    <th class="text-center" style="min-width:120px;" th:text="#{essCwa.cardSwipe}">Thời gian quẹt thẻ</th>
+                                    <th class="text-center" style="min-width:310px; width:310px;" th:text="#{essCwa.timeInput}">Thời gian</th>
+                                    <th class="text-center" style="min-width:160px;" th:text="#{essCwa.reason}">Lý do</th>
+                                    <th class="text-center" style="min-width:200px;" th:text="#{essCwa.approver}">Người duyệt</th>
                                 </tr>
                             </thead>
                             <tbody id="sca_tableBody">
                                 <tr>
-                                    <td colspan="8" class="text-center text-muted py-3">Đang tải dữ liệu...</td>
+                                    <td colspan="8" class="text-center text-muted py-3" th:text="#{essCwa.loadingData}">Đang tải dữ liệu...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -155,6 +155,23 @@
         var _sca_personId    = '';
         var _sca_localName   = '';
         var _sca_approverStr = '';
+
+        /* i18n */
+        var _sca_i18n = {
+            loading       : /*[[#{essCwa.loading}]]*/ 'Đang tải...',
+            loadingData   : /*[[#{essCwa.loadingData}]]*/ 'Đang tải dữ liệu...',
+            noData        : /*[[#{essCwa.noData}]]*/ 'Không có dữ liệu',
+            loadError     : /*[[#{essCwa.loadError}]]*/ 'Lỗi tải dữ liệu',
+            selectRowAlert: /*[[#{essCwa.selectRowAlert}]]*/ 'Vui lòng chọn ít nhất một dòng để xin phép.',
+            fillTimeAlert : /*[[#{essCwa.fillTimeAlert}]]*/ 'Vui lòng nhập đầy đủ thời gian vào/ra cho tất cả dòng được chọn.',
+            applySuccess  : /*[[#{essCwa.applySuccess}]]*/ 'Xin phép thành công!',
+            applyFail     : /*[[#{essCwa.applyFail}]]*/ 'Xin phép thất bại!',
+            connectError  : /*[[#{essCwa.connectError}]]*/ 'Lỗi kết nối khi xin phép!',
+            showing       : /*[[#{essCwa.showing}]]*/ 'Hiển thị',
+            rows          : /*[[#{essCwa.rows}]]*/ 'dòng',
+            inLabel       : /*[[#{essCwa.inLabel}]]*/ 'Vào',
+            outLabel      : /*[[#{essCwa.outLabel}]]*/ 'Ra'
+        };
 
         function scaEscHtml(s) {
             if (s == null) return '';
@@ -233,7 +250,7 @@
 
         // ── Search ───────────────────────────────────────────────────────────
         window.scaSearch = function() {
-            $('#sca_tableBody').html('<tr><td colspan="8" class="text-center text-muted py-3">Đang tải...</td></tr>');
+            $('#sca_tableBody').html('<tr><td colspan="8" class="text-center text-muted py-3">' + scaEscHtml(_sca_i18n.loading) + '</td></tr>');
             $('#sca_checkAll').prop('checked', false);
             $.ajax({
                 url : '/ess/infoApply/api/myCwaAbnormal/list',
@@ -250,7 +267,7 @@
                     scaLoadApprovers();
                 },
                 error: function() {
-                    $('#sca_tableBody').html('<tr><td colspan="8" class="text-center text-danger py-3">Lỗi tải dữ liệu</td></tr>');
+                    $('#sca_tableBody').html('<tr><td colspan="8" class="text-center text-danger py-3">' + scaEscHtml(_sca_i18n.loadError) + '</td></tr>');
                 }
             });
         };
@@ -267,7 +284,7 @@
 
             var $tbody = $('#sca_tableBody');
             if (!page.length) {
-                $tbody.html('<tr><td colspan="8" class="text-center text-muted py-3">Không có dữ liệu</td></tr>');
+                $tbody.html('<tr><td colspan="8" class="text-center text-muted py-3">' + scaEscHtml(_sca_i18n.noData) + '</td></tr>');
             } else {
                 var html = '';
                 page.forEach(function(r, idx) {
@@ -294,12 +311,12 @@
                         + '<td>' + scaEscHtml(r.itemName || r.itemNo || '') + '</td>'
                         + '<td class="text-center">' + dateStr + '</td>'
                         + '<td class="text-center small">'
-                        +   '<div>Vào: ' + scaEscHtml(r.indoorTime  || '**:**') + '</div>'
-                        +   '<div>Ra:&nbsp; ' + scaEscHtml(r.outdoorTime || '**:**') + '</div>'
+                        +   '<div>' + scaEscHtml(_sca_i18n.inLabel) + ': ' + scaEscHtml(r.indoorTime  || '**:**') + '</div>'
+                        +   '<div>' + scaEscHtml(_sca_i18n.outLabel) + ':&nbsp; ' + scaEscHtml(r.outdoorTime || '**:**') + '</div>'
                         + '</td>'
                         + '<td>'
                         +   '<div class="d-flex align-items-center gap-1 mb-1">'
-                        +     '<span class="small flex-shrink-0" style="width:26px;">Vào</span>'
+                        +     '<span class="small flex-shrink-0" style="width:26px;">' + scaEscHtml(_sca_i18n.inLabel) + '</span>'
                         +     '<input type="text" class="form-control form-control-sm js-daterangepicker sca_inDate"'
                         +       ' id="sca_inDate_' + idx + '"'
                         +       ' data-drp-format="DD/MM/YYYY" data-drp-auto-update-input="false"'
@@ -313,7 +330,7 @@
                         +       ' oninput="scaClampMin(this)" onblur="scaFmtMin(this)">'
                         +   '</div>'
                         +   '<div class="d-flex align-items-center gap-1">'
-                        +     '<span class="small flex-shrink-0" style="width:26px;">Ra</span>'
+                        +     '<span class="small flex-shrink-0" style="width:26px;">' + scaEscHtml(_sca_i18n.outLabel) + '</span>'
                         +     '<input type="text" class="form-control form-control-sm js-daterangepicker sca_outDate"'
                         +       ' id="sca_outDate_' + idx + '"'
                         +       ' data-drp-format="DD/MM/YYYY" data-drp-auto-update-input="false"'
@@ -337,7 +354,7 @@
                 }
             }
 
-            $('#sca_pageInfo').text('Hiển thị ' + (total ? start + 1 : 0) + ' - ' + end + ' / ' + total + ' dòng');
+            $('#sca_pageInfo').text(_sca_i18n.showing + ' ' + (total ? start + 1 : 0) + ' - ' + end + ' / ' + total + ' ' + _sca_i18n.rows);
             scaRenderPagination(totalPg);
         }
 
@@ -407,7 +424,7 @@
         // ── Xin phép ─────────────────────────────────────────────────────────
         window.scaSubmit = function() {
             var $checked = $('.sca_rowCheck:checked');
-            if (!$checked.length) { alert('Vui lòng chọn ít nhất một dòng để xin phép.'); return; }
+            if (!$checked.length) { alert(_sca_i18n.selectRowAlert); return; }
 
             var payload = [];
             var valid   = true;
@@ -428,7 +445,7 @@
                 var remark   = $('#sca_remark_'  + idx).val()  || '';
 
                 if (!inDate || !outDate) {
-                    alert('Vui lòng nhập đầy đủ thời gian vào/ra cho tất cả dòng được chọn.');
+                    alert(_sca_i18n.fillTimeAlert);
                     valid = false;
                     return;
                 }
@@ -455,13 +472,13 @@
                 data       : JSON.stringify(payload),
                 success    : function(res) {
                     if (res && res.success) {
-                        toastr && toastr.success(res.message || 'Xin phép thành công!');
+                        toastr && toastr.success(res.message || _sca_i18n.applySuccess);
                         scaSearch();
                     } else {
-                        toastr && toastr.error(res && res.error ? res.error : 'Xin phép thất bại!');
+                        toastr && toastr.error(res && res.error ? res.error : _sca_i18n.applyFail);
                     }
                 },
-                error: function() { toastr && toastr.error('Lỗi kết nối khi xin phép!'); }
+                error: function() { toastr && toastr.error(_sca_i18n.connectError); }
             });
         };
 

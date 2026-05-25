@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/master :: master}">
 
 <head>
@@ -12,140 +12,81 @@
 
         <!-- Start here.... -->
         <div class="row">
-            <div class="col-xxl-5">
-                <div class="row">
-                    <div class="col-12">
-                        <div class="alert alert-primary text-truncate mb-3" role="alert">
-                            We regret to inform you that our server is currently experiencing technical difficulties.
-                        </div>
-                    </div>
-
-                    <div class="col-md-6">
-                        <div class="card overflow-hidden">
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-6">
-                                        <div class="avatar-md bg-soft-primary rounded">
-                                            <iconify-icon icon="solar:cart-5-bold-duotone"
-                                                class="avatar-title fs-32 text-primary"></iconify-icon>
-                                        </div>
-                                    </div> <!-- end col -->
-                                    <div class="col-6 text-end">
-                                        <p class="text-muted mb-0 text-truncate">Total Orders</p>
-                                        <h3 class="text-dark mt-1 mb-0">13, 647</h3>
-                                    </div> <!-- end col -->
-                                </div> <!-- end row-->
-                            </div> <!-- end card body -->
-                            <div class="card-footer py-2 bg-light bg-opacity-50">
-                                <div class="d-flex align-items-center justify-content-between">
-                                    <div>
-                                        <span class="text-success"> <i class="bx bxs-up-arrow fs-12"></i> 2.3%</span>
-                                        <span class="text-muted ms-1 fs-12">Last Week</span>
-                                    </div>
-                                    <a href="#!" class="text-reset fw-semibold fs-12">View More</a>
-                                </div>
-                            </div> <!-- end card body -->
-                        </div> <!-- end card -->
-                    </div> <!-- end col -->
-                    <div class="col-md-6">
-                        <div class="card overflow-hidden">
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-6">
-                                        <div class="avatar-md bg-soft-primary rounded">
-                                            <i class="bx bx-award avatar-title fs-24 text-primary"></i>
-                                        </div>
-                                    </div> <!-- end col -->
-                                    <div class="col-6 text-end">
-                                        <p class="text-muted mb-0 text-truncate">New Leads</p>
-                                        <h3 class="text-dark mt-1 mb-0">9, 526</h3>
-                                    </div> <!-- end col -->
-                                </div> <!-- end row-->
-                            </div> <!-- end card body -->
-                            <div class="card-footer py-2 bg-light bg-opacity-50">
-                                <div class="d-flex align-items-center justify-content-between">
-                                    <div>
-                                        <span class="text-success"> <i class="bx bxs-up-arrow fs-12"></i> 8.1%</span>
-                                        <span class="text-muted ms-1 fs-12">Last Month</span>
-                                    </div>
-                                    <a href="#!" class="text-reset fw-semibold fs-12">View More</a>
-                                </div>
-                            </div> <!-- end card body -->
-                        </div> <!-- end card -->
-                    </div> <!-- end col -->
-                    <div class="col-md-6">
-                        <div class="card overflow-hidden">
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-6">
-                                        <div class="avatar-md bg-soft-primary rounded">
-                                            <i class="bx bxs-backpack avatar-title fs-24 text-primary"></i>
-                                        </div>
-                                    </div> <!-- end col -->
-                                    <div class="col-6 text-end">
-                                        <p class="text-muted mb-0 text-truncate">Deals</p>
-                                        <h3 class="text-dark mt-1 mb-0">976</h3>
-                                    </div> <!-- end col -->
-                                </div> <!-- end row-->
-                            </div> <!-- end card body -->
-                            <div class="card-footer py-2 bg-light bg-opacity-50">
-                                <div class="d-flex align-items-center justify-content-between">
-                                    <div>
-                                        <span class="text-danger"> <i class="bx bxs-down-arrow fs-12"></i> 0.3%</span>
-                                        <span class="text-muted ms-1 fs-12">Last Month</span>
-                                    </div>
-                                    <a href="#!" class="text-reset fw-semibold fs-12">View More</a>
-                                </div>
-                            </div> <!-- end card body -->
-                        </div> <!-- end card -->
-                    </div> <!-- end col -->
-                    <div class="col-md-6">
-                        <div class="card overflow-hidden">
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-6">
-                                        <div class="avatar-md bg-soft-primary rounded">
-                                            <i class="bx bx-dollar-circle avatar-title text-primary fs-24"></i>
-                                        </div>
-                                    </div> <!-- end col -->
-                                    <div class="col-6 text-end">
-                                        <p class="text-muted mb-0 text-truncate">Booked Revenue</p>
-                                        <h3 class="text-dark mt-1 mb-0">$123.6k</h3>
-                                    </div> <!-- end col -->
-                                </div> <!-- end row-->
-                            </div> <!-- end card body -->
-                            <div class="card-footer py-2 bg-light bg-opacity-50">
-                                <div class="d-flex align-items-center justify-content-between">
-                                    <div>
-                                        <span class="text-danger"> <i class="bx bxs-down-arrow fs-12"></i> 10.6%</span>
-                                        <span class="text-muted ms-1 fs-12">Last Month</span>
-                                    </div>
-                                    <a href="#!" class="text-reset fw-semibold fs-12">View More</a>
-                                </div>
-                            </div> <!-- end card body -->
-                        </div> <!-- end card -->
-                    </div> <!-- end col -->
-                </div> <!-- end row -->
+            <div class="col-xxl-4">
+                <div class="d-flex justify-content-end align-items-center mb-2 mt-2 gap-2">
+                    <input type="text" id="db_fromDate"
+                           class="form-control form-control-sm js-daterangepicker"
+                           data-drp-format="DD/MM/YYYY"
+                           data-drp-trigger-change="true"
+                           autocomplete="off"
+                           style="width:120px;">
+                    <label for="db_toDate"class="col-form-label col-form-label-sm text-muted mb-0"> ~ </label>
+                    <input type="text" id="db_toDate"
+                           class="form-control form-control-sm js-daterangepicker"
+                           data-drp-format="DD/MM/YYYY"
+                           data-drp-trigger-change="true"
+                           autocomplete="off"
+                           style="width:120px;">
+                </div>
+                <table class="table table-hover table-nowrap table-centered m-0">
+                    <thead class="bg-light bg-opacity-50">
+                        <tr>
+                            <th class="text-muted ps-3" style="width: 60%" th:text="#{common.name}">Tên</th>
+                            <th class="text-muted" style="width: 20%" th:text="#{dashboard.col.quantity}">Số lượng</th>
+                            <th class="text-muted" style="width: 20%" th:text="#{common.status}">Trạng thái</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="ps-3">
+                                <a href="/ess/infoApplyAttendance/viewApplyAttendanceInfoList" class="text-muted"
+                                    data-tab="/ess/infoApplyAttendance/viewApplyAttendanceInfoList"
+                                    th:attr="data-title=#{dashboard.leave.title}"
+                                    th:text="#{dashboard.leave.detail}">Đơn nghỉ phép tháng này</a>
+                            </td>
+                            <td id="db_leaveCount">-</td>
+                            <td id="db_leaveStatus"></td>
+                        </tr>
+                        <tr>
+                            <td class="ps-3">
+                                <a href="/ess/infoApply/viewPOtApplyInfoList" class="text-muted"
+                                    data-tab="/ess/infoApply/viewPOtApplyInfoList"
+                                    th:attr="data-title=#{dashboard.ot.title}"
+                                    th:text="#{dashboard.ot.detail}">Đơn tăng ca tháng này</a>
+                            </td>
+                            <td id="db_otCount">-</td>
+                            <td id="db_otStatus"></td>
+                        </tr>
+                        <tr>
+                            <td class="ps-3">
+                                <a href="/ess/infoApply/viewShowCwaAbnormalApply" class="text-muted"
+                                    data-tab="/ess/infoApply/viewShowCwaAbnormalApply"
+                                    th:attr="data-title=#{dashboard.abnormal.title}"
+                                    th:text="#{dashboard.abnormal.detail}">Nghỉ bất thường tháng này</a>
+                            </td>
+                            <td id="db_abnormalCount">-</td>
+                            <td id="db_abnormalStatus"></td>
+                        </tr>
+                    </tbody>
+                </table>
             </div> <!-- end col -->
 
-            <div class="col-xxl-7">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h4 class="card-title">Performance</h4>
-                            <div>
-                                <button type="button" class="btn btn-sm btn-outline-light">ALL</button>
-                                <button type="button" class="btn btn-sm btn-outline-light">1M</button>
-                                <button type="button" class="btn btn-sm btn-outline-light">6M</button>
-                                <button type="button" class="btn btn-sm btn-outline-light active">1Y</button>
-                            </div>
-                        </div> <!-- end card-title-->
-
-                        <div dir="ltr">
-                            <div id="dash-performance-chart" class="apex-charts"></div>
-                        </div>
-                    </div> <!-- end card body -->
-                </div> <!-- end card -->
+            <div class="col-xxl-8">
+                <div class="card h-100 mb-0">
+                    <div class="card-header py-2 d-flex align-items-center gap-2">
+                        <h6 class="card-title flex-grow-1 mb-0" th:text="#{dashboard.chart.title}">Biểu đồ chấm công &amp; Tăng ca</h6>
+                        <span class="small text-muted" th:text="#{dashboard.chart.standardDate}">Ngày chuẩn:</span>
+                        <input type="text" id="db_standardDate"
+                               class="form-control form-control-sm js-daterangepicker"
+                               data-drp-format="DD/MM/YYYY"
+                               data-drp-trigger-change="true"
+                               autocomplete="off"
+                               style="width:120px;">
+                    </div>
+                    <div class="card-body p-2">
+                        <div id="db_attendanceOtChart"></div>
+                    </div>
+                </div>
             </div> <!-- end col -->
         </div> <!-- end row -->
 
@@ -192,41 +133,7 @@
                 </div> <!-- end card-->
             </div> <!-- end col -->
 
-            <div class="col-lg-4">
-                <div class="card card-height-100">
-                    <div class="card-header d-flex align-items-center justify-content-between gap-2">
-                        <h4 class="card-title flex-grow-1" th:text="#{dashboard.alerts.title}">Cảnh báo</h4>
-
-                        <a href="#" class="btn btn-sm btn-soft-primary" th:text="#{common.viewAll}">View All</a>
-                    </div>
-                    <div class="table-responsive">
-                        <table class="table table-hover table-nowrap table-centered m-0">
-                            <thead class="bg-light bg-opacity-50">
-                                <tr>
-                                    <th class="text-muted ps-3" style="width: 60%" th:text="#{common.name}">Tên</th>
-                                    <th class="text-muted" style="width: 20%" th:text="#{dashboard.col.quantity}">Số lượng</th>
-                                    <th class="text-muted" style="width: 20%" th:text="#{common.status}">Trạng thái</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td class="ps-3"><a href="/hrm/contractInfo/viewExpiredContract" class="text-muted"
-                                            data-tab="/hrm/contractInfo/viewExpiredContract"
-                                            th:attr="data-title=#{dashboard.contract.expiring}"
-                                            th:text="#{dashboard.contract.expiringDetail}">Hợp đồng sắp hết hạn (7 ngày tới)</a></td>
-                                    <td th:text="${expiringContractsCount}">0</td>
-                                    <td>
-                                        <span th:if="${expiringContractsCount > 0}" class="badge badge-soft-danger" th:text="#{dashboard.status.needAction}">Cần xử lý</span>
-                                        <span th:unless="${expiringContractsCount > 0}"
-                                            class="badge badge-soft-success" th:text="#{dashboard.status.stable}">Ổn định</span>
-                                    </td>
-                                </tr>
-
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div> <!-- end col -->
+            
 
             <div class="col-xl-4 d-none">
                 <div class="card">
@@ -304,202 +211,7 @@
             </div> <!-- end col-->
         </div> <!-- end row -->
 
-        <div class="row">
-            <div class="col">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center justify-content-between">
-                            <h4 class="card-title">
-                                Recent Orders
-                            </h4>
-
-                            <a href="#!" class="btn btn-sm btn-soft-primary">
-                                <i class="bx bx-plus me-1"></i>Create Order
-                            </a>
-                        </div>
-                    </div>
-                    <!-- end card body -->
-                    <div class="table-responsive table-centered">
-                        <table class="table mb-0">
-                            <thead class="bg-light bg-opacity-50">
-                                <tr>
-                                    <th class="ps-3">
-                                        Order ID.
-                                    </th>
-                                    <th>
-                                        Date
-                                    </th>
-                                    <th>
-                                        Product
-                                    </th>
-                                    <th>
-                                        Customer Name
-                                    </th>
-                                    <th>
-                                        Email ID
-                                    </th>
-                                    <th>
-                                        Phone No.
-                                    </th>
-                                    <th>
-                                        Address
-                                    </th>
-                                    <th>
-                                        Payment Type
-                                    </th>
-                                    <th>
-                                        Status
-                                    </th>
-                                </tr>
-                            </thead>
-                            <!-- end thead-->
-                            <tbody>
-                                <tr>
-                                    <td class="ps-3">
-                                        <a href="order-detail.html">#RB5625</a>
-                                    </td>
-                                    <td>29 April 2024</td>
-                                    <td>
-                                        <img src="assets/images/products/product-1(1).png" alt="product-1(1)"
-                                            class="img-fluid avatar-sm">
-                                    </td>
-                                    <td>
-                                        <a href="#!">Anna M. Hines</a>
-                                    </td>
-                                    <td>anna.hines@mail.com</td>
-                                    <td>(+1)-555-1564-261</td>
-                                    <td>Burr Ridge/Illinois</td>
-                                    <td>Credit Card</td>
-                                    <td>
-                                        <i class="bx bxs-circle text-success me-1"></i>Completed
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="ps-3">
-                                        <a href="order-detail.html">#RB9652</a>
-                                    </td>
-                                    <td>25 April 2024</td>
-                                    <td>
-                                        <img src="assets/images/products/product-4.png" alt="product-4"
-                                            class="img-fluid avatar-sm">
-                                    </td>
-                                    <td>
-                                        <a href="#!">Judith H. Fritsche</a>
-                                    </td>
-                                    <td>judith.fritsche.com</td>
-                                    <td>(+57)-305-5579-759</td>
-                                    <td>SULLIVAN/Kentucky</td>
-                                    <td>Credit Card</td>
-                                    <td>
-                                        <i class="bx bxs-circle text-success me-1"></i>Completed
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="ps-3">
-                                        <a href="order-detail.html">#RB5984</a>
-                                    </td>
-                                    <td>25 April 2024</td>
-                                    <td>
-                                        <img src="assets/images/products/product-5.png" alt="product-5"
-                                            class="img-fluid avatar-sm">
-                                    </td>
-                                    <td>
-                                        <a href="#!">Peter T. Smith</a>
-                                    </td>
-                                    <td>peter.smith@mail.com</td>
-                                    <td>(+33)-655-5187-93</td>
-                                    <td>Yreka/California</td>
-                                    <td>Pay Pal</td>
-                                    <td>
-                                        <i class="bx bxs-circle text-success me-1"></i>Completed
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="ps-3">
-                                        <a href="order-detail.html">#RB3625</a>
-                                    </td>
-                                    <td>21 April 2024</td>
-                                    <td>
-                                        <img src="assets/images/products/product-6.png" alt="product-6"
-                                            class="img-fluid avatar-sm">
-                                    </td>
-                                    <td>
-                                        <a href="#!">Emmanuel J. Delcid</a>
-                                    </td>
-                                    <td>
-                                        emmanuel.delicid@mail.com
-                                    </td>
-                                    <td>(+30)-693-5553-637</td>
-                                    <td>Atlanta/Georgia</td>
-                                    <td>Pay Pal</td>
-                                    <td>
-                                        <i class="bx bxs-circle text-primary me-1"></i>Processing
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="ps-3">
-                                        <a href="order-detail.html">#RB8652</a>
-                                    </td>
-                                    <td>18 April 2024</td>
-                                    <td>
-                                        <img src="assets/images/products/product-1(2).png" alt="product-1(2)"
-                                            class="img-fluid avatar-sm">
-                                    </td>
-                                    <td>
-                                        <a href="#!">William J. Cook</a>
-                                    </td>
-                                    <td>william.cook@mail.com</td>
-                                    <td>(+91)-855-5446-150</td>
-                                    <td>Rosenberg/Texas</td>
-                                    <td>Credit Card</td>
-                                    <td>
-                                        <i class="bx bxs-circle text-primary me-1"></i>Processing
-                                    </td>
-                                </tr>
-                            </tbody>
-                            <!-- end tbody -->
-                        </table>
-                        <!-- end table -->
-                    </div>
-                    <!-- table responsive -->
-
-                    <div class="card-footer border-top">
-                        <div class="row g-3">
-                            <div class="col-sm">
-                                <div class="text-muted">
-                                    Showing
-                                    <span class="fw-semibold">5</span>
-                                    of
-                                    <span class="fw-semibold">90,521</span>
-                                    orders
-                                </div>
-                            </div>
-
-                            <div class="col-sm-auto">
-                                <ul class="pagination m-0">
-                                    <li class="page-item">
-                                        <a href="#" class="page-link"><i class="bx bx-left-arrow-alt"></i></a>
-                                    </li>
-                                    <li class="page-item active">
-                                        <a href="#" class="page-link">1</a>
-                                    </li>
-                                    <li class="page-item">
-                                        <a href="#" class="page-link">2</a>
-                                    </li>
-                                    <li class="page-item">
-                                        <a href="#" class="page-link">3</a>
-                                    </li>
-                                    <li class="page-item">
-                                        <a href="#" class="page-link"><i class="bx bx-right-arrow-alt"></i></a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- end card -->
-            </div>
-            <!-- end col -->
+        
         <!-- Modal bắt buộc đổi mật khẩu -->
         <div th:if="${session.requirePasswordChange}" class="modal fade" id="forceChangePasswordModal"
             data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
@@ -656,7 +368,293 @@
             };
         </script>
 
-    </div> <!-- end content fragment -->
+    <script th:inline="javascript">
+        (function() {
+            var _db_i18n = {
+                registered : /*[[#{dashboard.status.registered}]]*/ 'Đã đăng ký',
+                stable     : /*[[#{dashboard.status.stable}]]*/ 'Ổn định',
+                attention  : /*[[#{dashboard.status.needAction}]]*/ 'Cần xử lý',
+                chartTitle : /*[[#{dashboard.chart.title}]]*/ 'Biểu đồ chấm công & Tăng ca',
+                attendance : /*[[#{dashboard.chart.attendance}]]*/ 'Chấm công (giờ)',
+                ot         : /*[[#{dashboard.chart.ot}]]*/ 'Tăng ca (giờ)',
+                noData     : /*[[#{dashboard.chart.noData}]]*/ 'Không có dữ liệu',
+                hours      : /*[[#{dashboard.chart.hours}]]*/ 'giờ'
+            };
+
+            var now = new Date();
+            var year = now.getFullYear();
+            var mon  = now.getMonth() + 1;
+
+            // Bảng thống kê: từ ngày 25 tháng trước đến 24 tháng này
+            var toMM       = String(mon).padStart(2, '0');
+            var initToDMY  = '24/' + toMM + '/' + year;
+            var fromYear   = (mon === 1) ? year - 1 : year;
+            var fromMon    = (mon === 1) ? 12 : mon - 1;
+            var fromMM     = String(fromMon).padStart(2, '0');
+            var initFromDMY = '25/' + fromMM + '/' + fromYear;
+
+            // Biểu đồ: ngày chuẩn mặc định = hôm nay
+            var initStdDMY = String(now.getDate()).padStart(2,'0') + '/' + toMM + '/' + year;
+
+            // ── Helpers ────────────────────────────────────────────────
+            function dbDmyToYmd(dmy) {
+                var p = dmy.split('/');
+                return p.length === 3 ? p[2] + '-' + p[1] + '-' + p[0] : '';
+            }
+
+            function dbcDmyToDate(dmy) {
+                var p = dmy.split('/');
+                return new Date(+p[2], +p[1] - 1, +p[0]);
+            }
+
+            function dbcDateToDmy(d) {
+                return String(d.getDate()).padStart(2,'0') + '/' +
+                       String(d.getMonth() + 1).padStart(2,'0') + '/' + d.getFullYear();
+            }
+
+            // ── Bảng thống kê ─────────────────────────────────────────
+            function dbSetCount(countId, statusId, count, isWarning) {
+                var el   = document.getElementById(countId);
+                var stEl = document.getElementById(statusId);
+                if (!el || !stEl) return;
+                el.textContent = count;
+                if (count > 0) {
+                    var cls = isWarning ? 'badge-soft-warning' : 'badge-soft-info';
+                    var txt = isWarning ? _db_i18n.attention : _db_i18n.registered;
+                    stEl.innerHTML = '<span class="badge ' + cls + '">' + txt + '</span>';
+                } else {
+                    stEl.innerHTML = '<span class="badge badge-soft-success">' + _db_i18n.stable + '</span>';
+                }
+            }
+
+            function dbLoadStats() {
+                var fDMY = $('#db_fromDate').val();
+                var tDMY = $('#db_toDate').val();
+                if (!fDMY || !tDMY) return;
+                var fYMD = dbDmyToYmd(fDMY);
+                var tYMD = dbDmyToYmd(tDMY);
+                $.ajax({
+                    url: '/ess/infoApplyAttendance/api/myLeaveApply/list', type: 'GET',
+                    data: { fromDate: fYMD, toDate: tYMD },
+                    success: function(r) { dbSetCount('db_leaveCount',    'db_leaveStatus',    (r||[]).length, false); },
+                    error:   function()  { var e = document.getElementById('db_leaveCount');    if (e) e.textContent = '?'; }
+                });
+                $.ajax({
+                    url: '/ess/infoApply/api/myOtApply/list', type: 'GET',
+                    data: { fromDate: fYMD, toDate: tYMD },
+                    success: function(r) { dbSetCount('db_otCount',       'db_otStatus',       (r||[]).length, false); },
+                    error:   function()  { var e = document.getElementById('db_otCount');       if (e) e.textContent = '?'; }
+                });
+                $.ajax({
+                    url: '/ess/infoApply/api/myCwaAbnormal/list', type: 'GET',
+                    data: { startDate: fDMY, endDate: tDMY },
+                    success: function(r) { dbSetCount('db_abnormalCount', 'db_abnormalStatus', (r||[]).length, true); },
+                    error:   function()  { var e = document.getElementById('db_abnormalCount'); if (e) e.textContent = '?'; }
+                });
+            }
+
+            // ── Biểu đồ chấm công & tăng ca ───────────────────────────
+            var _dbChart = null;
+
+            function dbcCalcRange(refDMY) {
+                var ref  = dbcDmyToDate(refDMY);
+                var y    = ref.getFullYear();
+                var m    = ref.getMonth(); // 0-based
+                var fy   = m === 0 ? y - 1 : y;
+                var fm   = m === 0 ? 11    : m - 1;
+                return {
+                    from: dbcDateToDmy(new Date(fy, fm, 25)),
+                    to  : dbcDateToDmy(new Date(y,  m,  24))
+                };
+            }
+
+            function dbcBuildLabels(fromDMY, toDMY) {
+                var from   = dbcDmyToDate(fromDMY);
+                var to     = dbcDmyToDate(toDMY);
+                var labels = [];
+                for (var d = new Date(from); d <= to; d.setDate(d.getDate() + 1)) {
+                    labels.push(d.getFullYear() + '/' +
+                                String(d.getMonth() + 1).padStart(2,'0') + '/' +
+                                String(d.getDate()).padStart(2,'0'));
+                }
+                return labels;
+            }
+
+            var _DBC_ABSENT_ITEMS = ['141443', '14015448'];
+            var _attDetailMap = {};
+            var _otDetailMap  = {};
+
+            // Chấm công: nếu ngày có ITEM_NO thuộc danh sách vắng thì giờ = 0
+            // Đồng thời xây dựng _attDetailMap để tooltip hiển thị ITEM_NAME + giờ
+            function dbcGroupAttendanceHours(rows, labels) {
+                var hoursMap  = {};
+                var absentMap = {};
+                _attDetailMap = {};
+                (rows || []).forEach(function(r) {
+                    var key = (r.arDateStr || '').replace(/-/g, '/');
+                    if (_DBC_ABSENT_ITEMS.indexOf(r.itemNo) !== -1) {
+                        absentMap[key] = true;
+                        if (!_attDetailMap[key]) _attDetailMap[key] = [];
+                        _attDetailMap[key].push({ name: r.itemName || r.itemNo, hours: parseFloat(r.workHour) || 0, absent: true });
+                    } else {
+                        hoursMap[key] = (hoursMap[key] || 0) + (parseFloat(r.workHour) || 0);
+                        if (!_attDetailMap[key]) _attDetailMap[key] = [];
+                        _attDetailMap[key].push({ name: r.itemName || r.itemNo, hours: parseFloat(r.workHour) || 0, absent: false });
+                    }
+                });
+                return labels.map(function(l) {
+                    if (absentMap[l]) return 0;
+                    return parseFloat((hoursMap[l] || 0).toFixed(2));
+                });
+            }
+
+            // Tăng ca: cộng toàn bộ giờ, xây dựng _otDetailMap để tooltip
+            function dbcGroupHours(rows, labels) {
+                var map = {};
+                _otDetailMap = {};
+                (rows || []).forEach(function(r) {
+                    var key = (r.arDateStr || '').replace(/-/g, '/');
+                    map[key] = (map[key] || 0) + (parseFloat(r.workHour) || 0);
+                    if (!_otDetailMap[key]) _otDetailMap[key] = [];
+                    _otDetailMap[key].push({ name: r.itemName || r.itemNo, hours: parseFloat(r.workHour) || 0 });
+                });
+                return labels.map(function(l) {
+                    return parseFloat((map[l] || 0).toFixed(2));
+                });
+            }
+
+            function dbcRenderChart(labels, attData, otData) {
+                var chartEl = document.getElementById('db_attendanceOtChart');
+                if (!chartEl) return;
+
+                var displayLabels = labels.map(function(l) {
+                    var p = l.split('/');
+                    return p[2] + '/' + p[1]; // DD/MM
+                });
+
+                var options = {
+                    series: [
+                        { name: _db_i18n.attendance, data: attData },
+                        { name: _db_i18n.ot,         data: otData  }
+                    ],
+                    chart: {
+                        type   : 'bar',
+                        height : 255,
+                        toolbar: { show: false },
+                        animations: { enabled: false }
+                    },
+                    plotOptions: {
+                        bar: { horizontal: false, columnWidth: '65%', borderRadius: 2 }
+                    },
+                    dataLabels: { enabled: false },
+                    xaxis: {
+                        categories: displayLabels,
+                        labels: {
+                            rotate    : -45,
+                            rotateAlways: true,
+                            style     : { fontSize: '10px' }
+                        },
+                        tickPlacement: 'on'
+                    },
+                    yaxis: {
+                        title      : { text: _db_i18n.hours, style: { fontSize: '11px' } },
+                        min        : 0,
+                        tickAmount : 4,
+                        labels     : { formatter: function(v) { return v % 1 === 0 ? v : v.toFixed(1); } }
+                    },
+                    colors : ['#4e73df', '#f6a623'],
+                    legend : { position: 'top', horizontalAlign: 'right', fontSize: '12px' },
+                    tooltip: {
+                        custom: function(opts) {
+                            var idx      = opts.dataPointIndex;
+                            var dateKey  = labels[idx];
+                            var dispDate = displayLabels[idx];
+                            var attList  = _attDetailMap[dateKey] || [];
+                            var otList   = _otDetailMap[dateKey]  || [];
+
+                            var h = '<div style="padding:8px 12px;min-width:160px;font-size:12px;">';
+                            h += '<div style="font-weight:600;margin-bottom:6px;">' + dispDate + '</div>';
+
+                            h += '<div style="color:#4e73df;font-weight:500;margin-bottom:2px;">' + _db_i18n.attendance + '</div>';
+                            if (attList.length) {
+                                attList.forEach(function(it) {
+                                    var style = it.absent ? 'color:#e74a3b;' : '';
+                                    h += '<div style="' + style + 'padding-left:8px;">' + it.name + ': <b>' + it.hours + '</b> ' + _db_i18n.hours + '</div>';
+                                });
+                            } else {
+                                h += '<div style="padding-left:8px;color:#aaa;">0 ' + _db_i18n.hours + '</div>';
+                            }
+
+                            h += '<div style="color:#f6a623;font-weight:500;margin-top:6px;margin-bottom:2px;">' + _db_i18n.ot + '</div>';
+                            if (otList.length) {
+                                otList.forEach(function(it) {
+                                    h += '<div style="padding-left:8px;">' + it.name + ': <b>' + it.hours + '</b> ' + _db_i18n.hours + '</div>';
+                                });
+                            } else {
+                                h += '<div style="padding-left:8px;color:#aaa;">0 ' + _db_i18n.hours + '</div>';
+                            }
+
+                            h += '</div>';
+                            return h;
+                        }
+                    },
+                    noData : {
+                        text           : _db_i18n.noData,
+                        align          : 'center',
+                        verticalAlign  : 'middle',
+                        style          : { fontSize: '13px', color: '#aaa' }
+                    },
+                    grid: { borderColor: '#f1f1f1' }
+                };
+
+                if (_dbChart) {
+                    _dbChart.updateOptions(options, true, false);
+                } else {
+                    _dbChart = new ApexCharts(chartEl, options);
+                    _dbChart.render();
+                }
+            }
+
+            function dbcLoadChart() {
+                var refDMY = $('#db_standardDate').val();
+                if (!refDMY) return;
+                var range  = dbcCalcRange(refDMY);
+                var labels = dbcBuildLabels(range.from, range.to);
+
+                var attRows = null, otRows = null;
+
+                function tryRender() {
+                    if (attRows === null || otRows === null) return;
+                    dbcRenderChart(labels, dbcGroupAttendanceHours(attRows, labels), dbcGroupHours(otRows, labels));
+                }
+
+                $.ajax({
+                    url : '/ess/infoApplyAttendance/api/attendancePersonal/list', type: 'GET',
+                    data: { startDate: range.from, endDate: range.to },
+                    success: function(r) { attRows = r || []; tryRender(); },
+                    error  : function()  { attRows = [];      tryRender(); }
+                });
+                $.ajax({
+                    url : '/ess/infoApply/api/personOt/list', type: 'GET',
+                    data: { startDate: range.from, endDate: range.to },
+                    success: function(r) { otRows = r || []; tryRender(); },
+                    error  : function()  { otRows = [];      tryRender(); }
+                });
+            }
+
+            // ── Khởi tạo ──────────────────────────────────────────────
+            $(document).ready(function() {
+                $('#db_fromDate').val(initFromDMY);
+                $('#db_toDate').val(initToDMY);
+                $('#db_standardDate').val(initStdDMY);
+                initDateRangePickers();
+                $('#db_fromDate, #db_toDate').on('change', dbLoadStats);
+                $('#db_standardDate').on('change', dbcLoadChart);
+                dbLoadStats();
+                dbcLoadChart();
+            });
+        })();
+    </script>
         <script>
             function changeLanguage(language) {
                 fetch('/api/multilingual/set-language', {
@@ -673,7 +671,7 @@
                 });
             }
         </script>
-    </template>
+    </div> <!-- end content fragment -->
 </body>
 
 </html>

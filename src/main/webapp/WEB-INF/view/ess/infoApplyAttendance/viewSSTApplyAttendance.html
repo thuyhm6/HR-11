@@ -15,20 +15,20 @@
                         </colgroup>
                         <tbody>
                             <tr>
-                                <th class="table-light text-center">Loại nghỉ phép</th>
+                                <th class="table-light text-center" th:text="#{sa.label.leaveType}">Loại nghỉ phép</th>
                                 <td>
                                     <div class="d-flex align-items-center flex-wrap gap-2">
                                         <select class="form-select form-select-sm" id="sa_leaveType"
                                             style="max-width:220px;"
                                             data-parent-code="21"
-                                            data-default-text="-- Chọn loại nghỉ --">
+                                            th:attr="data-default-text=#{sa.placeholder.leaveType}">
                                         </select>
                                         <span id="sa_vacInfo" class="text-muted small"></span>
                                     </div>
                                 </td>
                             </tr>
                             <tr>
-                                <th class="table-light text-center">Thời gian bắt đầu</th>
+                                <th class="table-light text-center" th:text="#{sa.label.startTime}">Thời gian bắt đầu</th>
                                 <td>
                                     <div class="d-flex align-items-center gap-1">
                                         <input type="text" class="form-control form-control-sm js-daterangepicker"
@@ -48,7 +48,7 @@
                                 </td>
                             </tr>
                             <tr>
-                                <th class="table-light text-center">Thời gian kết thúc</th>
+                                <th class="table-light text-center" th:text="#{sa.label.endTime}">Thời gian kết thúc</th>
                                 <td>
                                     <div class="d-flex align-items-center gap-1">
                                         <input type="text" class="form-control form-control-sm js-daterangepicker"
@@ -68,11 +68,11 @@
                                 </td>
                             </tr>
                             <tr>
-                                <th class="table-light text-center">Thời lượng</th>
+                                <th class="table-light text-center" th:text="#{sa.label.duration}">Thời lượng</th>
                                 <td><span id="sa_duration">-</span></td>
                             </tr>
                             <tr>
-                                <th class="table-light text-center">Lý do</th>
+                                <th class="table-light text-center" th:text="#{sa.label.reason}">Lý do</th>
                                 <td>
                                     <textarea class="form-control form-control-sm" id="sa_reason"
                                         rows="4" style="resize:vertical;"></textarea>
@@ -86,8 +86,10 @@
             <!-- Đính kèm file -->
             <div class="mb-3">
                 <div class="mb-2">
-                    <button type="button" class="btn btn-sm btn-secondary me-1" onclick="saInsertFile()">Chèn file</button>
-                    <button type="button" class="btn btn-sm btn-secondary" onclick="saDeleteSelectedFiles()">Xóa</button>
+                    <button type="button" class="btn btn-sm btn-secondary me-1" onclick="saInsertFile()"
+                        th:text="#{sa.btn.insertFile}">Chèn file</button>
+                    <button type="button" class="btn btn-sm btn-secondary" onclick="saDeleteSelectedFiles()"
+                        th:text="#{sa.btn.delete}">Xóa</button>
                     <input type="file" id="sa_fileInput" style="display:none;" multiple onchange="saOnFileSelected(this)">
                 </div>
                 <div class="table-responsive">
@@ -95,12 +97,12 @@
                         <thead class="table-light text-center">
                             <tr>
                                 <th style="width:40px;">V</th>
-                                <th>File</th>
+                                <th th:text="#{sa.col.file}">File</th>
                             </tr>
                         </thead>
                         <tbody id="sa_fileListBody">
                             <tr id="sa_fileListEmpty">
-                                <td colspan="2" class="text-center text-muted">Chưa có file đính kèm</td>
+                                <td colspan="2" class="text-center text-muted" th:text="#{sa.msg.noFile}">Chưa có file đính kèm</td>
                             </tr>
                         </tbody>
                     </table>
@@ -112,16 +114,16 @@
                 <table class="table table-bordered table-sm align-middle mb-0">
                     <thead class="table-light text-center">
                         <tr>
-                            <th style="width:50px;">STT</th>
-                            <th>Người duyệt</th>
-                            <th style="width:130px;">Mã nhân viên</th>
-                            <th>Phòng ban</th>
-                            <th>Chức danh</th>
+                            <th style="width:50px;" th:text="#{sa.col.stt}">STT</th>
+                            <th th:text="#{sa.col.approver}">Người duyệt</th>
+                            <th style="width:130px;" th:text="#{sa.col.empId}">Mã nhân viên</th>
+                            <th th:text="#{sa.col.dept}">Phòng ban</th>
+                            <th th:text="#{sa.col.position}">Chức danh</th>
                         </tr>
                     </thead>
                     <tbody id="sa_approvalBody">
                         <tr>
-                            <td colspan="5" class="text-center text-muted">Chọn loại nghỉ phép để xem người phê duyệt</td>
+                            <td colspan="5" class="text-center text-muted" th:text="#{sa.msg.selectLeaveTypeFirst}">Chọn loại nghỉ phép để xem người phê duyệt</td>
                         </tr>
                     </tbody>
                 </table>
@@ -129,7 +131,8 @@
 
             <!-- Nút xin phép -->
             <div class="text-end mb-3">
-                <button type="button" class="btn btn-primary" id="sa_submitBtn" onclick="saSubmit()">Xin phép</button>
+                <button type="button" class="btn btn-primary" id="sa_submitBtn" onclick="saSubmit()"
+                    th:text="#{sa.btn.submit}">Xin phép</button>
             </div>
 
         </div>
@@ -144,6 +147,33 @@
         var _sa_fileList = [];
         var _sa_pageBooted = false;
 
+        var _sa_i18n = {
+            calculating          : /*[[#{sa.msg.calculating}]]*/ 'Đang tính...',
+            loading              : /*[[#{sa.msg.loading}]]*/ 'Đang tải...',
+            noApprovalData       : /*[[#{sa.msg.noApprovalData}]]*/ 'Không có dữ liệu phê duyệt',
+            noApprover           : /*[[#{sa.msg.noApprover}]]*/ 'Không có người phê duyệt',
+            loadApproverFailed   : /*[[#{sa.msg.loadApproverFailed}]]*/ 'Lỗi tải người phê duyệt',
+            noFile               : /*[[#{sa.msg.noFile}]]*/ 'Chưa có file đính kèm',
+            selectFileToDelete   : /*[[#{sa.msg.selectFileToDelete}]]*/ 'Vui lòng chọn file cần xóa',
+            selectLeaveType      : /*[[#{sa.msg.selectLeaveType}]]*/ 'Vui lòng chọn loại nghỉ phép!',
+            enterStartTime       : /*[[#{sa.msg.enterStartTime}]]*/ 'Vui lòng nhập thời gian bắt đầu!',
+            enterEndTime         : /*[[#{sa.msg.enterEndTime}]]*/ 'Vui lòng nhập thời gian kết thúc!',
+            sending              : /*[[#{sa.msg.sending}]]*/ 'Đang gửi...',
+            submitSuccess        : /*[[#{sa.msg.submitSuccess}]]*/ 'Xin phép thành công!',
+            submitError          : /*[[#{sa.msg.submitError}]]*/ 'Lỗi khi gửi đơn!',
+            submitConnError      : /*[[#{sa.msg.submitConnError}]]*/ 'Lỗi kết nối khi gửi đơn!',
+            selectLeaveTypeFirst : /*[[#{sa.msg.selectLeaveTypeFirst}]]*/ 'Chọn loại nghỉ phép để xem người phê duyệt',
+            vacTotalYear         : /*[[#{sa.vac.totalYear}]]*/ 'Tổng phép năm:',
+            vacYearVac           : /*[[#{sa.vac.yearVac}]]*/ 'Tạo phép năm:',
+            vacLastYear          : /*[[#{sa.vac.lastYear}]]*/ 'Còn lại năm ngoái:',
+            vacSpecial           : /*[[#{sa.vac.special}]]*/ 'Đặc biệt:',
+            vacUsed              : /*[[#{sa.vac.used}]]*/ 'Số ngày đã sử dụng:',
+            vacRemain            : /*[[#{sa.vac.remain}]]*/ 'Số ngày còn lại:',
+            unitDays             : /*[[#{sa.unit.days}]]*/ 'Ngày',
+            unitHours            : /*[[#{sa.unit.hours}]]*/ 'Giờ',
+            btnSubmit            : /*[[#{sa.btn.submit}]]*/ 'Xin phép'
+        };
+
         function saEscHtml(v) {
             if (v == null || v === undefined) return '';
             return String(v)
@@ -157,12 +187,12 @@
         function saFormatVacInfo(d) {
             if (!d) return '';
             var f = function(v) { return (v != null && v !== '') ? v : '0'; };
-            return 'Tổng phép năm: ' + f(d.TOT_VAC_CNT) + '/  ' +
-                   'Tạo phép năm: ' + f(d.YEAR_VAC_CNT) + '/  ' +
-                   'Còn lại năm ngoái: ' + f(d.LAST_YEAR_VAC) + '/  ' +
-                   'Đặc biệt: ' + f(d.ADD_VAC) + '/  ' +
-                   'Số ngày đã sử dụng: ' + f(d.USE_VAC) + '/  ' +
-                   'Số ngày còn lại: ' + f(d.REMAIN_VAC);
+            return _sa_i18n.vacTotalYear + ' ' + f(d.TOT_VAC_CNT) + '/  ' +
+                   _sa_i18n.vacYearVac  + ' ' + f(d.YEAR_VAC_CNT) + '/  ' +
+                   _sa_i18n.vacLastYear + ' ' + f(d.LAST_YEAR_VAC) + '/  ' +
+                   _sa_i18n.vacSpecial  + ' ' + f(d.ADD_VAC)       + '/  ' +
+                   _sa_i18n.vacUsed     + ' ' + f(d.USE_VAC)       + '/  ' +
+                   _sa_i18n.vacRemain   + ' ' + f(d.REMAIN_VAC);
         }
 
         function saInitHourSelects() {
@@ -224,7 +254,7 @@
                     return;
                 }
 
-                $('#sa_duration').text('Đang tính...');
+                $('#sa_duration').text(_sa_i18n.calculating);
                 $.ajax({
                     url: '/ess/infoApplyAttendance/api/leaveLength',
                     type: 'GET',
@@ -239,8 +269,8 @@
                         var days  = Math.floor(leaveLen / dayHour);
                         var hours = leaveLen - days * dayHour;
                         var text  = '';
-                        if (days > 0)  text += days  + ' Ngày';
-                        if (hours > 0) text += (text ? ' ' : '') + hours + ' Giờ';
+                        if (days > 0)  text += days  + ' ' + _sa_i18n.unitDays;
+                        if (hours > 0) text += (text ? ' ' : '') + hours + ' ' + _sa_i18n.unitHours;
                         $('#sa_duration').text(text || '0');
                     },
                     error: function() { $('#sa_duration').text('-'); }
@@ -263,7 +293,7 @@
             if (!_sa_personId) return;
             var leaveTypeCode = $('#sa_leaveType').val() || '';
             var $tbody = $('#sa_approvalBody');
-            $tbody.html('<tr><td colspan="5" class="text-center text-muted">Đang tải...</td></tr>');
+            $tbody.html('<tr><td colspan="5" class="text-center text-muted">' + saEscHtml(_sa_i18n.loading) + '</td></tr>');
 
             $.post('/ar/attendanceMintenance/api/leaveApply/approvers', {
                 applyTypeNo: '21',
@@ -272,7 +302,7 @@
                 applyLength: '0'
             }, function(data) {
                 if (!data || !data.length) {
-                    $tbody.html('<tr><td colspan="5" class="text-center text-muted">Không có dữ liệu phê duyệt</td></tr>');
+                    $tbody.html('<tr><td colspan="5" class="text-center text-muted">' + saEscHtml(_sa_i18n.noApprovalData) + '</td></tr>');
                     return;
                 }
                 var html = '';
@@ -289,9 +319,9 @@
                         + '<td>' + saEscHtml(item.postionName || item.positionName || '') + '</td>'
                         + '</tr>';
                 });
-                $tbody.html(html || '<tr><td colspan="5" class="text-center text-muted">Không có người phê duyệt</td></tr>');
+                $tbody.html(html || '<tr><td colspan="5" class="text-center text-muted">' + saEscHtml(_sa_i18n.noApprover) + '</td></tr>');
             }).fail(function() {
-                $tbody.html('<tr><td colspan="5" class="text-center text-danger">Lỗi tải người phê duyệt</td></tr>');
+                $tbody.html('<tr><td colspan="5" class="text-center text-danger">' + saEscHtml(_sa_i18n.loadApproverFailed) + '</td></tr>');
             });
         }
 
@@ -316,7 +346,7 @@
         function saRenderFileList() {
             var $body = $('#sa_fileListBody');
             if (!_sa_fileList.length) {
-                $body.html('<tr id="sa_fileListEmpty"><td colspan="2" class="text-center text-muted">Chưa có file đính kèm</td></tr>');
+                $body.html('<tr id="sa_fileListEmpty"><td colspan="2" class="text-center text-muted">' + saEscHtml(_sa_i18n.noFile) + '</td></tr>');
                 return;
             }
             var html = '';
@@ -335,7 +365,7 @@
                 toRemove.push(parseInt($(this).attr('data-idx'), 10));
             });
             if (!toRemove.length) {
-                toastr && toastr.warning('Vui lòng chọn file cần xóa');
+                toastr && toastr.warning(_sa_i18n.selectFileToDelete);
                 return;
             }
             _sa_fileList = _sa_fileList.filter(function(_, i) { return toRemove.indexOf(i) === -1; });
@@ -353,12 +383,12 @@
 
         window.saSubmit = function() {
             var leaveTypeCode = $('#sa_leaveType').val();
-            if (!leaveTypeCode) { toastr && toastr.warning('Vui lòng chọn loại nghỉ phép!'); return; }
+            if (!leaveTypeCode) { toastr && toastr.warning(_sa_i18n.selectLeaveType); return; }
 
             var fromTime = saBuildDateTime('sa_fromDate', 'sa_fromHour', 'sa_fromMin');
             var toTime   = saBuildDateTime('sa_toDate',   'sa_toHour',   'sa_toMin');
-            if (!fromTime) { toastr && toastr.warning('Vui lòng nhập thời gian bắt đầu!'); return; }
-            if (!toTime)   { toastr && toastr.warning('Vui lòng nhập thời gian kết thúc!'); return; }
+            if (!fromTime) { toastr && toastr.warning(_sa_i18n.enterStartTime); return; }
+            if (!toTime)   { toastr && toastr.warning(_sa_i18n.enterEndTime);   return; }
 
             var payload = {
                 applyNo:       '',
@@ -373,7 +403,7 @@
 
             var $btn = $('#sa_submitBtn');
             var oHtml = $btn.html();
-            $btn.html('<i class="bx bx-loader bx-spin"></i> Đang gửi...').prop('disabled', true);
+            $btn.html('<i class="bx bx-loader bx-spin"></i> ' + saEscHtml(_sa_i18n.sending)).prop('disabled', true);
 
             $.ajax({
                 url: '/ar/attendanceMintenance/api/leaveApply/save',
@@ -383,15 +413,15 @@
                 success: function(res) {
                     $btn.html(oHtml).prop('disabled', false);
                     if (res && res.success) {
-                        toastr && toastr.success(res.message || 'Xin phép thành công!');
+                        toastr && toastr.success(res.message || _sa_i18n.submitSuccess);
                         saResetForm();
                     } else {
-                        toastr && toastr.error(res.error || 'Lỗi khi gửi đơn!');
+                        toastr && toastr.error(res.error || _sa_i18n.submitError);
                     }
                 },
                 error: function() {
                     $btn.html(oHtml).prop('disabled', false);
-                    toastr && toastr.error('Lỗi kết nối khi gửi đơn!');
+                    toastr && toastr.error(_sa_i18n.submitConnError);
                 }
             });
         };
@@ -407,7 +437,7 @@
             _sa_fileList = [];
             saRenderFileList();
             saCalcDuration();
-            $('#sa_approvalBody').html('<tr><td colspan="5" class="text-center text-muted">Chọn loại nghỉ phép để xem người phê duyệt</td></tr>');
+            $('#sa_approvalBody').html('<tr><td colspan="5" class="text-center text-muted">' + saEscHtml(_sa_i18n.selectLeaveTypeFirst) + '</td></tr>');
         }
 
         function saBootPage() {

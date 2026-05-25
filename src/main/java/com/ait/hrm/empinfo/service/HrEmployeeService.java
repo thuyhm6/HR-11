@@ -1,5 +1,6 @@
 package com.ait.hrm.empinfo.service;
 
+import com.ait.hrm.empinfo.dto.EmpMonthlyStatsDto;
 import com.ait.hrm.empinfo.dto.EmployeeSearchResponse;
 import com.ait.hrm.empinfo.model.HrEmployee;
 
@@ -132,4 +133,6 @@ public interface HrEmployeeService {
      * @return true nếu tồn tại
      */
     boolean existsByEmpId(String empId);
+
+    List<EmpMonthlyStatsDto> getEmpMonthlyStats();
 }

@@ -7,38 +7,44 @@
                 <div class="card-body">
                     <form id="vedr_searchForm" class="row gy-2 align-items-end">
                         <div class="col-md-3 d-flex align-items-center gap-2">
-                            <label class="form-label small text-muted mb-0 text-nowrap">Tên đánh giá</label>
+                            <label class="form-label small text-muted mb-0 text-nowrap"
+                                th:text="#{evs.manage.viewEvsDistributionRatePanel.search.evaluationName}">Tên đánh giá</label>
                             <select class="form-select form-select-sm" id="vedr_resumeSeq" style="max-width:240px;">
                             </select>
                         </div>
                         <div class="col-md-3 d-flex align-items-center gap-2">
-                            <label class="form-label small text-muted mb-0 text-nowrap">Loại</label>
+                            <label class="form-label small text-muted mb-0 text-nowrap"
+                                th:text="#{evs.manage.viewEvsDistributionRatePanel.search.type}">Loại</label>
                             <select class="form-select form-select-sm" id="vedr_scoreTypeSearch"
                                 style="max-width:180px;">
-                                <option value="">-- Tất cả --</option>
+                                <option value="" th:text="#{evs.manage.viewEvsDistributionRatePanel.search.allOption}">-- Tất cả --</option>
                                 <option value="CPNY">CPNY</option>
                                 <option value="DEPT">DEPT</option>
                                 <option value="EMP">EMP</option>
                             </select>
                         </div>
                         <div class="col-md-3 d-flex align-items-center gap-2">
-                            <label class="form-label small text-muted mb-0 text-nowrap">Trạng thái</label>
+                            <label class="form-label small text-muted mb-0 text-nowrap"
+                                th:text="#{evs.manage.viewEvsDistributionRatePanel.search.status}">Trạng thái</label>
                             <select class="form-select form-select-sm" id="vedr_activitySearch"
                                 style="max-width:160px;">
-                                <option value="">-- Tất cả --</option>
-                                <option value="1">Sử dụng</option>
-                                <option value="0">Không sử dụng</option>
+                                <option value="" th:text="#{evs.manage.viewEvsDistributionRatePanel.search.allOption}">-- Tất cả --</option>
+                                <option value="1" th:text="#{evs.manage.viewEvsDistributionRatePanel.search.active}">Sử dụng</option>
+                                <option value="0" th:text="#{evs.manage.viewEvsDistributionRatePanel.search.inactive}">Không sử dụng</option>
                             </select>
                         </div>
                         <div class="col-md-3 d-flex gap-2">
                             <button type="button" class="btn btn-primary btn-sm" onclick="vedrSearch()">
-                                <i class="bi bi-search"></i> Tra cứu
+                                <i class="bi bi-search"></i>
+                                <span th:text="#{evs.manage.viewEvsDistributionRatePanel.btn.search}">Tra cứu</span>
                             </button>
                             <button type="button" class="btn btn-secondary btn-sm" onclick="vedrClearSearch()">
-                                <i class="bi bi-x-circle"></i> Xóa lọc
+                                <i class="bi bi-x-circle"></i>
+                                <span th:text="#{evs.manage.viewEvsDistributionRatePanel.btn.clearFilter}">Xóa lọc</span>
                             </button>
                             <button type="button" class="btn btn-success btn-sm" onclick="vedrOpenAddModal()">
-                                <i class="bi bi-plus-circle"></i> Thêm mới
+                                <i class="bi bi-plus-circle"></i>
+                                <span th:text="#{evs.manage.viewEvsDistributionRatePanel.btn.addNew}">Thêm mới</span>
                             </button>
                         </div>
                     </form>
@@ -53,18 +59,24 @@
                             style="width:100%">
                             <thead class="table-light">
                                 <tr>
-                                    <th class="text-center" style="width:44px;">No.</th>
-                                    <th class="text-center" style="width:110px;">Loại</th>
-                                    <th class="text-center" style="width:80px;">NO</th>
-                                    <th style="width:160px;">Tên</th>
+                                    <th class="text-center" style="width:44px;"
+                                        th:text="#{evs.manage.viewEvsDistributionRatePanel.col.no}">No.</th>
+                                    <th class="text-center" style="width:110px;"
+                                        th:text="#{evs.manage.viewEvsDistributionRatePanel.col.type}">Loại</th>
+                                    <th class="text-center" style="width:80px;"
+                                        th:text="#{evs.manage.viewEvsDistributionRatePanel.col.orderNo}">NO</th>
+                                    <th style="width:160px;"
+                                        th:text="#{evs.manage.viewEvsDistributionRatePanel.col.name}">Tên</th>
                                     <th class="text-center" style="width:60px;">EX(A)</th>
                                     <th class="text-center" style="width:60px;">VG(B)</th>
                                     <th class="text-center" style="width:60px;">GD(C)</th>
                                     <th class="text-center" style="width:60px;">NI(D)</th>
                                     <th class="text-center" style="width:60px;">UN(E)</th>
                                     <th class="text-center" style="width:60px;">SUM</th>
-                                    <th class="text-center" style="width:90px;">Trạng thái</th>
-                                    <th class="text-center" style="width:70px;">Thao tác</th>
+                                    <th class="text-center" style="width:90px;"
+                                        th:text="#{evs.manage.viewEvsDistributionRatePanel.col.status}">Trạng thái</th>
+                                    <th class="text-center" style="width:70px;"
+                                        th:text="#{evs.manage.viewEvsDistributionRatePanel.col.action}">Thao tác</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
@@ -81,7 +93,8 @@
         <div class="modal-dialog modal-lg modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="vedr_modalTitle">Thêm mới tỷ lệ phân bổ</h5>
+                    <h5 class="modal-title" id="vedr_modalTitle"
+                        th:text="#{evs.manage.viewEvsDistributionRatePanel.modal.addTitle}">Thêm mới tỷ lệ phân bổ</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -97,31 +110,36 @@
                         <tbody>
                             <tr>
                                 <th class="table-light text-end pe-3">
-                                    Loại <span class="text-danger">*</span>
+                                    <span th:text="#{evs.manage.viewEvsDistributionRatePanel.modal.type}">Loại</span>
+                                    <span class="text-danger">*</span>
                                 </th>
                                 <td>
                                     <select class="form-select form-select-sm" id="vedr_scoreType">
-                                        <option value="">-- Chọn --</option>
+                                        <option value="" th:text="#{evs.manage.viewEvsDistributionRatePanel.modal.selectOption}">-- Chọn --</option>
                                         <option value="CPNY">CPNY</option>
                                         <option value="DEPT">DEPT</option>
                                         <option value="EMP">EMP</option>
                                     </select>
                                 </td>
-                                <th class="table-light text-end pe-3">Trạng thái</th>
+                                <th class="table-light text-end pe-3"
+                                    th:text="#{evs.manage.viewEvsDistributionRatePanel.modal.status}">Trạng thái</th>
                                 <td>
                                     <div class="form-check form-switch mt-1">
                                         <input class="form-check-input" type="checkbox" id="vedr_activity" value="1">
-                                        <label class="form-check-label small" for="vedr_activity">Sử dụng</label>
+                                        <label class="form-check-label small" for="vedr_activity"
+                                            th:text="#{evs.manage.viewEvsDistributionRatePanel.modal.activeLabel}">Sử dụng</label>
                                     </div>
                                 </td>
                             </tr>
                             <tr>
-                                <th class="table-light text-end pe-3">NO</th>
+                                <th class="table-light text-end pe-3"
+                                    th:text="#{evs.manage.viewEvsDistributionRatePanel.modal.orderNo}">NO</th>
                                 <td>
                                     <input type="text" class="form-control form-control-sm" id="vedr_no" maxlength="20">
                                 </td>
                                 <th class="table-light text-end pe-3">
-                                    Tên <span class="text-danger">*</span>
+                                    <span th:text="#{evs.manage.viewEvsDistributionRatePanel.modal.name}">Tên</span>
+                                    <span class="text-danger">*</span>
                                 </th>
                                 <td>
                                     <input type="text" class="form-control form-control-sm" id="vedr_name"
@@ -129,24 +147,28 @@
                                 </td>
                             </tr>
                             <tr>
-                                <th class="table-light text-end pe-3">Mã phòng ban</th>
+                                <th class="table-light text-end pe-3"
+                                    th:text="#{evs.manage.viewEvsDistributionRatePanel.modal.deptCode}">Mã phòng ban</th>
                                 <td>
                                     <input type="text" class="form-control form-control-sm" id="vedr_deptNo"
                                         maxlength="20">
                                 </td>
-                                <th class="table-light text-end pe-3">Tên phòng ban</th>
+                                <th class="table-light text-end pe-3"
+                                    th:text="#{evs.manage.viewEvsDistributionRatePanel.modal.deptName}">Tên phòng ban</th>
                                 <td>
                                     <input type="text" class="form-control form-control-sm" id="vedr_deptName"
                                         maxlength="60">
                                 </td>
                             </tr>
                             <tr>
-                                <th class="table-light text-end pe-3">Mã cấp bậc</th>
+                                <th class="table-light text-end pe-3"
+                                    th:text="#{evs.manage.viewEvsDistributionRatePanel.modal.gradeCode}">Mã cấp bậc</th>
                                 <td>
                                     <input type="text" class="form-control form-control-sm" id="vedr_postGradeNo"
                                         maxlength="20">
                                 </td>
-                                <th class="table-light text-end pe-3">Tên cấp bậc</th>
+                                <th class="table-light text-end pe-3"
+                                    th:text="#{evs.manage.viewEvsDistributionRatePanel.modal.gradeName}">Tên cấp bậc</th>
                                 <td>
                                     <input type="text" class="form-control form-control-sm" id="vedr_postGradeName"
                                         maxlength="60">
@@ -155,7 +177,7 @@
                             <tr>
                                 <th class="table-light text-end pe-3" colspan="4">
                                     <div class="d-flex justify-content-between align-items-center">
-                                        <span>Tỷ lệ phân bổ (EX + VG + GD + NI + UN = 100)</span>
+                                        <span th:text="#{evs.manage.viewEvsDistributionRatePanel.modal.ratioLabel}">Tỷ lệ phân bổ (EX + VG + GD + NI + UN = 100)</span>
                                         <span id="vedr_sumDisplay" class="badge fs-6 px-3 py-1 bg-secondary">SUM = 0</span>
                                     </div>
                                 </th>
@@ -186,13 +208,15 @@
                                 <td colspan="4">
                                     <div class="alert alert-danger py-1 mb-0 small">
                                         <i class="bi bi-exclamation-triangle-fill"></i>
-                                        Tổng tỷ lệ phân bổ phải bằng <strong>100</strong>.
-                                        Giá trị hiện tại: <strong id="vedr_sumWarningVal">0</strong>
+                                        <span th:text="#{evs.manage.viewEvsDistributionRatePanel.msg.sumWarning}">Tổng tỷ lệ phân bổ phải bằng</span>
+                                        <strong>100</strong>.
+                                        <strong id="vedr_sumWarningVal">0</strong>
                                     </div>
                                 </td>
                             </tr>
                             <tr id="vedr_auditRow" style="display:none;">
-                                <th class="table-light text-end pe-3">Thông tin cập nhật</th>
+                                <th class="table-light text-end pe-3"
+                                    th:text="#{evs.manage.viewEvsDistributionRatePanel.modal.auditInfo}">Thông tin cập nhật</th>
                                 <td colspan="3">
                                     <span id="vedr_auditDisplay" class="small text-muted"></span>
                                 </td>
@@ -201,9 +225,11 @@
                     </table>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"
+                        th:text="#{common.close}">Đóng</button>
                     <button type="button" class="btn btn-primary btn-sm" onclick="vedrSave()">
-                        <i class="bi bi-save"></i> Lưu
+                        <i class="bi bi-save"></i>
+                        <span th:text="#{common.save}">Lưu</span>
                     </button>
                 </div>
             </div>
@@ -215,16 +241,21 @@
         <div class="modal-dialog modal-sm">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Xác nhận xóa</h5>
+                    <h5 class="modal-title"
+                        th:text="#{evs.manage.viewEvsDistributionRatePanel.modal.deleteTitle}">Xác nhận xóa</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <p>Bạn có chắc muốn xóa tỷ lệ "<strong id="vedr_deleteName"></strong>"?</p>
+                    <p>
+                        <span id="vedr_deleteConfirmMsg"></span>
+                    </p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"
+                        th:text="#{common.cancel}">Hủy</button>
                     <button type="button" class="btn btn-danger btn-sm" onclick="vedrConfirmDelete()">
-                        <i class="bi bi-trash"></i> Xóa
+                        <i class="bi bi-trash"></i>
+                        <span th:text="#{common.delete}">Xóa</span>
                     </button>
                 </div>
             </div>
@@ -263,6 +294,22 @@
             var inst = window._vedr_inst[_vedr_tabId];
             function vedr$(sel) { return $('#' + _vedr_tabId).find(sel); }
 
+            var _vedr_i18n = {
+                addTitle:      /*[[#{evs.manage.viewEvsDistributionRatePanel.modal.addTitle}]]*/ 'Thêm mới tỷ lệ phân bổ',
+                editTitle:     /*[[#{evs.manage.viewEvsDistributionRatePanel.modal.editTitle}]]*/ 'Chỉnh sửa tỷ lệ phân bổ',
+                badgeActive:   /*[[#{evs.manage.viewEvsDistributionRatePanel.badge.active}]]*/ 'Sử dụng',
+                badgeInactive: /*[[#{evs.manage.viewEvsDistributionRatePanel.badge.inactive}]]*/ 'Không sử dụng',
+                loadError:     /*[[#{evs.manage.viewEvsDistributionRatePanel.msg.loadError}]]*/ 'Lỗi khi tải thông tin tỷ lệ phân bổ.',
+                selectType:    /*[[#{evs.manage.viewEvsDistributionRatePanel.msg.selectType}]]*/ 'Vui lòng chọn Loại.',
+                enterName:     /*[[#{evs.manage.viewEvsDistributionRatePanel.msg.enterName}]]*/ 'Vui lòng nhập Tên.',
+                sumError:      /*[[#{evs.manage.viewEvsDistributionRatePanel.msg.sumError}]]*/ 'Tổng tỷ lệ phân bổ (EX+VG+GD+NI+UN) phải bằng 100. Giá trị hiện tại:',
+                saveError:     /*[[#{evs.manage.viewEvsDistributionRatePanel.msg.saveError}]]*/ 'Lỗi khi lưu dữ liệu. Vui lòng thử lại.',
+                deleteError:   /*[[#{evs.manage.viewEvsDistributionRatePanel.msg.deleteError}]]*/ 'Lỗi khi xóa dữ liệu. Vui lòng thử lại.',
+                deleteConfirm: /*[[#{evs.manage.viewEvsDistributionRatePanel.modal.deleteConfirm}]]*/ 'Bạn có chắc muốn xóa tỷ lệ "{0}"?',
+                btnEdit:       /*[[#{evs.manage.viewEvsDistributionRatePanel.btn.edit}]]*/ 'Sửa',
+                btnDelete:     /*[[#{evs.manage.viewEvsDistributionRatePanel.btn.delete}]]*/ 'Xóa'
+            };
+
             // ── Tiện ích ─────────────────────────────────────────────────────────
             function vedrEsc(s) {
                 if (s == null) return '';
@@ -273,8 +320,8 @@
 
             function vedrActivityBadge(val) {
                 return (val === '1' || val === 1)
-                    ? '<span class="badge bg-success">Sử dụng</span>'
-                    : '<span class="badge bg-secondary">Không sử dụng</span>';
+                    ? '<span class="badge bg-success">' + vedrEsc(_vedr_i18n.badgeActive) + '</span>'
+                    : '<span class="badge bg-secondary">' + vedrEsc(_vedr_i18n.badgeInactive) + '</span>';
             }
 
             function vedrNum(val) { return (val != null && val !== '') ? val : 0; }
@@ -355,7 +402,7 @@
 
             // ── Modal thêm mới ───────────────────────────────────────────────────
             window.vedrOpenAddModal = function () {
-                vedr$('#vedr_modalTitle').text('Thêm mới tỷ lệ phân bổ');
+                vedr$('#vedr_modalTitle').text(_vedr_i18n.addTitle);
                 vedrResetForm();
                 inst.detailModal.show();
             };
@@ -367,7 +414,7 @@
                     type: 'GET',
                     success: function (r) {
                         if (!r) return;
-                        vedr$('#vedr_modalTitle').text('Chỉnh sửa tỷ lệ phân bổ');
+                        vedr$('#vedr_modalTitle').text(_vedr_i18n.editTitle);
                         vedr$('#vedr_seq').val(r.seq || '');
                         vedr$('#vedr_resumeSeqHidden').val(r.resumeSeq || '');
                         vedr$('#vedr_scoreType').val(r.scoreType || '');
@@ -393,7 +440,7 @@
                         inst.detailModal.show();
                     },
                     error: function () {
-                        alert('Lỗi khi tải thông tin tỷ lệ phân bổ.');
+                        alert(_vedr_i18n.loadError);
                     }
                 });
             };
@@ -402,19 +449,19 @@
             window.vedrSave = function () {
                 var scoreType = vedr$('#vedr_scoreType').val();
                 if (!scoreType) {
-                    alert('Vui lòng chọn Loại.');
+                    alert(_vedr_i18n.selectType);
                     vedr$('#vedr_scoreType').focus();
                     return;
                 }
                 var name = vedr$('#vedr_name').val().trim();
                 if (!name) {
-                    alert('Vui lòng nhập Tên.');
+                    alert(_vedr_i18n.enterName);
                     vedr$('#vedr_name').focus();
                     return;
                 }
                 var sum = vedrCalcSum();
                 if (Math.abs(sum - 100) >= 0.001) {
-                    alert('Tổng tỷ lệ phân bổ (EX+VG+GD+NI+UN) phải bằng 100. Giá trị hiện tại: ' + sum);
+                    alert(_vedr_i18n.sumError + ' ' + sum);
                     return;
                 }
                 var resumeSeq = vedr$('#vedr_resumeSeqHidden').val() || vedr$('#vedr_resumeSeq').val() || '';
@@ -446,7 +493,7 @@
                         if (inst.table) inst.table.ajax.reload();
                     },
                     error: function () {
-                        alert('Lỗi khi lưu dữ liệu. Vui lòng thử lại.');
+                        alert(_vedr_i18n.saveError);
                     }
                 });
             };
@@ -454,7 +501,8 @@
             // ── Xóa ─────────────────────────────────────────────────────────────
             window.vedrOpenDeleteModal = function (seq, name) {
                 inst.deleteSeq = seq;
-                vedr$('#vedr_deleteName').text(name || seq);
+                var msg = _vedr_i18n.deleteConfirm.replace('{0}', name || seq);
+                vedr$('#vedr_deleteConfirmMsg').text(msg);
                 inst.deleteModal.show();
             };
 
@@ -471,7 +519,7 @@
                         if (inst.table) inst.table.ajax.reload();
                     },
                     error: function () {
-                        alert('Lỗi khi xóa dữ liệu. Vui lòng thử lại.');
+                        alert(_vedr_i18n.deleteError);
                     }
                 });
             };
@@ -485,11 +533,9 @@
 
                 vedrLoadResumeList();
 
-                // Tự động tính SUM khi thay đổi bất kỳ ô điểm nào — scoped + namespaced
                 $(document).off('input.vedr_' + _vedr_tabId)
                     .on('input.vedr_' + _vedr_tabId, '#' + _vedr_tabId + ' .vedr-score-inp', vedrCalcSum);
 
-                // Khi chọn loại CPNY — scoped + namespaced
                 $(document).off('change.vedr_' + _vedr_tabId)
                     .on('change.vedr_' + _vedr_tabId, '#' + _vedr_tabId + ' #vedr_scoreType', function () {
                         if ($(this).val() === 'CPNY') {
@@ -549,10 +595,10 @@
                                 return '<div class="btn-group btn-group-sm">'
                                     + '<button class="btn btn-outline-primary py-0 px-1"'
                                     + ' onclick="event.stopPropagation(); vedrOpenEditModal(\'' + vedrEsc(row.seq) + '\')"'
-                                    + ' title="Sửa"><i class="bi bi-pencil"></i></button>'
+                                    + ' title="' + vedrEsc(_vedr_i18n.btnEdit) + '"><i class="bi bi-pencil"></i></button>'
                                     + '<button class="btn btn-outline-danger py-0 px-1"'
                                     + ' onclick="event.stopPropagation(); vedrOpenDeleteModal(\'' + vedrEsc(row.seq) + '\',\'' + vedrEsc(row.name) + '\')"'
-                                    + ' title="Xóa"><i class="bi bi-trash"></i></button>'
+                                    + ' title="' + vedrEsc(_vedr_i18n.btnDelete) + '"><i class="bi bi-trash"></i></button>'
                                     + '</div>';
                             }
                         }

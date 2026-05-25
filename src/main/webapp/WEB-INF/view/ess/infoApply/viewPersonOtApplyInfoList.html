@@ -11,22 +11,22 @@
                     <div class="row gy-3">
                         <div class="col-md-4">
                             <div class="border rounded p-2 h-100">
-                                <div class="small text-muted mb-2">Phân loại tăng ca</div>
+                                <div class="small text-muted mb-2" th:text="#{poai.field.otCategory}">Phân loại tăng ca</div>
                                 <select class="form-select form-select-sm" id="poai_itemNo">
-                                    <option value="">-- Tất cả --</option>
+                                    <option value="" th:text="#{poai.opt.all}">-- Tất cả --</option>
                                 </select>
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="border rounded p-2 h-100">
-                                <div class="small text-muted mb-2">Thời lượng (>=)</div>
+                                <div class="small text-muted mb-2" th:text="#{poai.field.durationGte}">Thời lượng (>=)</div>
                                 <input type="number" class="form-control form-control-sm" id="poai_minQuantity" min="0"
                                     step="0.5" style="max-width:140px;" placeholder="0">
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="border rounded p-2 h-100">
-                                <div class="small text-muted mb-2">Thời gian</div>
+                                <div class="small text-muted mb-2" th:text="#{poai.field.dateRange}">Thời gian</div>
                                 <div class="d-flex flex-wrap align-items-center gap-2">
                                     <input type="text" class="form-control form-control-sm js-daterangepicker"
                                         id="poai_startDate" data-drp-format="DD/MM/YYYY"
@@ -36,7 +36,7 @@
                                         id="poai_endDate" data-drp-format="DD/MM/YYYY"
                                         data-drp-auto-update-input="false" autocomplete="off" style="width:130px;">
                                     <button class="btn btn-primary btn-sm" onclick="poaiSearch()">
-                                        <i class="bi bi-search"></i> Tra cứu
+                                        <i class="bi bi-search"></i> <span th:text="#{poai.btn.search}">Tra cứu</span>
                                     </button>
                                 </div>
                             </div>
@@ -47,18 +47,18 @@
 
             <!-- Toolbar -->
             <div class="d-flex align-items-center gap-2 mb-2">
-                <span class="small">Lọc nhanh</span>
+                <span class="small" th:text="#{poai.label.quickFilter}">Lọc nhanh</span>
                 <input type="text" class="form-control form-control-sm" id="poai_filterInput" style="max-width:200px;"
                     oninput="poaiQuickFilter(this.value)">
                 <div class="ms-auto d-flex align-items-center gap-2">
-                    <span class="small">Mỗi trang</span>
+                    <span class="small" th:text="#{poai.label.perPage}">Mỗi trang</span>
                     <select class="form-select form-select-sm" id="poai_pageSize" style="width:70px;"
                         onchange="poaiChangePageSize(this.value)">
                         <option value="25">25</option>
                         <option value="50" selected>50</option>
                         <option value="100">100</option>
                     </select>
-                    <span class="small">Dữ liệu</span>
+                    <span class="small" th:text="#{poai.label.rows}">Dữ liệu</span>
                 </div>
             </div>
 
@@ -69,22 +69,22 @@
                         <table class="table table-bordered table-sm align-middle mb-0" id="poai_table">
                             <thead class="table-light">
                                 <tr>
-                                    <th class="text-center" style="width:36px;">NO</th>
-                                    <th class="text-center" style="min-width:100px;">Ngày</th>
-                                    <th class="text-center" style="min-width:55px;">Thứ</th>
-                                    <th class="text-center" style="min-width:120px;">Tăng ca</th>
-                                    <th class="text-center" style="min-width:110px;">Ca</th>
-                                    <th class="text-center" style="min-width:130px;">Thời gian làm việc</th>
-                                    <th class="text-center" style="min-width:65px;">Vào</th>
-                                    <th class="text-center" style="min-width:65px;">Ra</th>
-                                    <th class="text-center" style="min-width:160px;">Thời gian bắt đầu tăng ca</th>
-                                    <th class="text-center" style="min-width:160px;">Thời gian kết thúc</th>
-                                    <th class="text-center" style="min-width:110px;">Thời lượng tăng ca</th>
+                                    <th class="text-center" style="width:36px;" th:text="#{common.no.serial}">NO</th>
+                                    <th class="text-center" style="min-width:100px;" th:text="#{common.date}">Ngày</th>
+                                    <th class="text-center" style="min-width:55px;" th:text="#{poai.col.dayOfWeek}">Thứ</th>
+                                    <th class="text-center" style="min-width:120px;" th:text="#{poai.col.ot}">Tăng ca</th>
+                                    <th class="text-center" style="min-width:110px;" th:text="#{common.shift}">Ca</th>
+                                    <th class="text-center" style="min-width:130px;" th:text="#{poai.col.workTime}">Thời gian làm việc</th>
+                                    <th class="text-center" style="min-width:65px;" th:text="#{poai.col.checkIn}">Vào</th>
+                                    <th class="text-center" style="min-width:65px;" th:text="#{poai.col.checkOut}">Ra</th>
+                                    <th class="text-center" style="min-width:160px;" th:text="#{poai.col.otStartTime}">Thời gian bắt đầu tăng ca</th>
+                                    <th class="text-center" style="min-width:160px;" th:text="#{poai.col.otEndTime}">Thời gian kết thúc</th>
+                                    <th class="text-center" style="min-width:110px;" th:text="#{poai.col.otDuration}">Thời lượng tăng ca</th>
                                 </tr>
                             </thead>
                             <tbody id="poai_tableBody">
                                 <tr>
-                                    <td colspan="11" class="text-center text-muted py-3">Đang tải dữ liệu...</td>
+                                    <td colspan="11" class="text-center text-muted py-3" th:text="#{poai.msg.loading}">Đang tải dữ liệu...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -110,7 +110,11 @@
         var _poai_pageSize = 50;
         var _poai_currentPage = 1;
 
-        var _poai_weekdays = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+        var _poai_weekdays = (/*[[#{poai.weekdays}]]*/'CN,T2,T3,T4,T5,T6,T7').split(',');
+        var _poai_msgLoading  = /*[[#{poai.msg.loading}]]*/'Đang tải...';
+        var _poai_msgNoData   = /*[[#{poai.msg.noData}]]*/'Không có dữ liệu';
+        var _poai_msgLoadErr  = /*[[#{poai.msg.loadError}]]*/'Lỗi tải dữ liệu';
+        var _poai_msgPageInfo = /*[[#{poai.msg.pageInfo}]]*/'Hiển thị {0} - {1} / {2} dòng';
 
         function poaiEscHtml(s) {
             if (s == null) return '';
@@ -145,7 +149,7 @@
 
         // ── Search ───────────────────────────────────────────────────────────
         window.poaiSearch = function () {
-            $('#poai_tableBody').html('<tr><td colspan="11" class="text-center text-muted py-3">Đang tải...</td></tr>');
+            $('#poai_tableBody').html('<tr><td colspan="11" class="text-center text-muted py-3">' + poaiEscHtml(_poai_msgLoading) + '</td></tr>');
             $.ajax({
                 url: '/ess/infoApply/api/personOt/list',
                 type: 'GET',
@@ -162,7 +166,7 @@
                     poaiRenderPage();
                 },
                 error: function () {
-                    $('#poai_tableBody').html('<tr><td colspan="11" class="text-center text-danger py-3">Lỗi tải dữ liệu</td></tr>');
+                    $('#poai_tableBody').html('<tr><td colspan="11" class="text-center text-danger py-3">' + poaiEscHtml(_poai_msgLoadErr) + '</td></tr>');
                 }
             });
         };
@@ -179,7 +183,7 @@
 
             var $tbody = $('#poai_tableBody');
             if (!page.length) {
-                $tbody.html('<tr><td colspan="11" class="text-center text-muted py-3">Không có dữ liệu</td></tr>');
+                $tbody.html('<tr><td colspan="11" class="text-center text-muted py-3">' + poaiEscHtml(_poai_msgNoData) + '</td></tr>');
             } else {
                 var html = '';
                 page.forEach(function (r, idx) {
@@ -201,7 +205,11 @@
                 $tbody.html(html);
             }
 
-            $('#poai_pageInfo').text('Hiển thị ' + (total ? start + 1 : 0) + ' - ' + end + ' / ' + total + ' dòng');
+            var pageInfoText = _poai_msgPageInfo
+                .replace('{0}', total ? start + 1 : 0)
+                .replace('{1}', end)
+                .replace('{2}', total);
+            $('#poai_pageInfo').text(pageInfoText);
             poaiRenderPagination(totalPg);
         }
 

@@ -13,7 +13,8 @@
                             <input type="number" class="form-control form-control-sm" id="yuif_year"
                                 style="max-width:100px;" min="2000" max="2099" step="1">
                             <button class="btn btn-primary btn-sm" onclick="yuifSearch()">
-                                <i class="bi bi-search"></i> Tra cứu
+                                <i class="bi bi-search"></i>
+                                <span th:text="#{yuif.btn.search}">Tra cứu</span>
                             </button>
                         </div>
                     </div>
@@ -22,27 +23,27 @@
 
             <!-- Section 1: Thông tin nghỉ phép năm -->
             <div class="card mb-3">
-                <div class="card-header fw-semibold">Thông tin nghỉ phép năm</div>
+                <div class="card-header fw-semibold" th:text="#{yuif.section.vacInfo}">Thông tin nghỉ phép năm</div>
                 <div class="card-body p-0">
                     <div style="overflow-x:auto;">
                         <table class="table table-bordered table-sm align-middle mb-0" id="yuif_vacTable"
                             style="white-space:nowrap; width:max-content; min-width:100%;">
                             <thead class="table-light">
                                 <tr>
-                                    <th class="text-center" style="white-space:nowrap;">NO</th>
-                                    <th class="text-center" style="white-space:nowrap;">Ngày bắt đầu</th>
-                                    <th class="text-center" style="white-space:nowrap;">Ngày kết thúc</th>
-                                    <th class="text-center" style="white-space:nowrap;">Tổng phép năm</th>
-                                    <th class="text-center" style="white-space:nowrap;">Phép năm ngoài</th>
-                                    <th class="text-center" style="white-space:nowrap;">Đặc biệt</th>
-                                    <th class="text-center" style="white-space:nowrap;">Đã nghỉ</th>
-                                    <th class="text-center" style="white-space:nowrap;">Chờ duyệt</th>
-                                    <th class="text-center" style="white-space:nowrap;">Còn lại</th>
+                                    <th class="text-center" style="white-space:nowrap;" th:text="#{common.stt}">NO</th>
+                                    <th class="text-center" style="white-space:nowrap;" th:text="#{yuif.col.startDate}">Ngày bắt đầu</th>
+                                    <th class="text-center" style="white-space:nowrap;" th:text="#{yuif.col.endDate}">Ngày kết thúc</th>
+                                    <th class="text-center" style="white-space:nowrap;" th:text="#{yuif.col.totalVac}">Tổng phép năm</th>
+                                    <th class="text-center" style="white-space:nowrap;" th:text="#{yuif.col.lastYearVac}">Phép năm ngoài</th>
+                                    <th class="text-center" style="white-space:nowrap;" th:text="#{yuif.col.addVac}">Đặc biệt</th>
+                                    <th class="text-center" style="white-space:nowrap;" th:text="#{yuif.col.useVac}">Đã nghỉ</th>
+                                    <th class="text-center" style="white-space:nowrap;" th:text="#{yuif.col.pendingVac}">Chờ duyệt</th>
+                                    <th class="text-center" style="white-space:nowrap;" th:text="#{yuif.col.remainVac}">Còn lại</th>
                                 </tr>
                             </thead>
                             <tbody id="yuif_vacTableBody">
                                 <tr>
-                                    <td colspan="9" class="text-center text-muted py-3">Đang tải dữ liệu...</td>
+                                    <td colspan="9" class="text-center text-muted py-3" th:text="#{yuif.msg.loading}">Đang tải dữ liệu...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -52,19 +53,19 @@
 
             <!-- Section 2: Tình trạng sử dụng phép năm -->
             <div class="card">
-                <div class="card-header fw-semibold">Tình trạng sử dụng phép năm</div>
+                <div class="card-header fw-semibold" th:text="#{yuif.section.leaveUsage}">Tình trạng sử dụng phép năm</div>
                 <div class="card-body p-0">
                     <!-- Toolbar -->
                     <div class="d-flex align-items-center gap-2 px-3 pt-2 pb-1">
                         <div class="ms-auto d-flex align-items-center gap-2">
-                            <span class="small">Mỗi trang</span>
+                            <span class="small" th:text="#{yuif.label.perPage}">Mỗi trang</span>
                             <select class="form-select form-select-sm" id="yuif_pageSize" style="width:70px;"
                                 onchange="yuifChangePageSize(this.value)">
                                 <option value="25" selected>25</option>
                                 <option value="50">50</option>
                                 <option value="100">100</option>
                             </select>
-                            <span class="small">Dữ liệu</span>
+                            <span class="small" th:text="#{yuif.label.data}">Dữ liệu</span>
                         </div>
                     </div>
                     <div style="overflow-x:auto;">
@@ -72,18 +73,18 @@
                             style="white-space:nowrap; width:max-content; min-width:100%;">
                             <thead class="table-light">
                                 <tr>
-                                    <th class="text-center" style="white-space:nowrap;">NO</th>
-                                    <th class="text-center" style="white-space:nowrap;">Ngày bắt đầu</th>
-                                    <th class="text-center" style="white-space:nowrap;">Thời gian bắt đầu</th>
-                                    <th class="text-center" style="white-space:nowrap;">Ngày kết thúc</th>
-                                    <th class="text-center" style="white-space:nowrap;">Thời gian kết thúc</th>
-                                    <th class="text-center" style="white-space:nowrap;">Thời lượng</th>
-                                    <th class="text-center" style="white-space:nowrap;">Trạng thái duyệt</th>
+                                    <th class="text-center" style="white-space:nowrap;" th:text="#{common.stt}">NO</th>
+                                    <th class="text-center" style="white-space:nowrap;" th:text="#{yuif.col.startDate}">Ngày bắt đầu</th>
+                                    <th class="text-center" style="white-space:nowrap;" th:text="#{yuif.col.startTime}">Thời gian bắt đầu</th>
+                                    <th class="text-center" style="white-space:nowrap;" th:text="#{yuif.col.endDate}">Ngày kết thúc</th>
+                                    <th class="text-center" style="white-space:nowrap;" th:text="#{yuif.col.endTime}">Thời gian kết thúc</th>
+                                    <th class="text-center" style="white-space:nowrap;" th:text="#{yuif.col.duration}">Thời lượng</th>
+                                    <th class="text-center" style="white-space:nowrap;" th:text="#{yuif.col.approvalStatus}">Trạng thái duyệt</th>
                                 </tr>
                             </thead>
                             <tbody id="yuif_leaveTableBody">
                                 <tr>
-                                    <td colspan="7" class="text-center text-muted py-3">Đang tải dữ liệu...</td>
+                                    <td colspan="7" class="text-center text-muted py-3" th:text="#{yuif.msg.loading}">Đang tải dữ liệu...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -107,6 +108,14 @@
         var _yuif_currentPage = 1;
         var _yuif_pageSize = 25;
         var _yuif_pageBooted = false;
+        var _yuif_msg = {
+            loading:   /*[[#{yuif.msg.loading}]]*/ 'Đang tải...',
+            noData:    /*[[#{yuif.msg.noData}]]*/ 'Không có dữ liệu',
+            loadError: /*[[#{yuif.msg.loadError}]]*/ 'Lỗi tải dữ liệu',
+            showing:   /*[[#{yuif.msg.showing}]]*/ 'Hiển thị',
+            of:        /*[[#{yuif.msg.of}]]*/ '/',
+            rows:      /*[[#{yuif.msg.rows}]]*/ 'dòng'
+        };
 
         function yuifEscHtml(s) {
             if (s == null) return '';
@@ -123,7 +132,7 @@
             var year = $('#yuif_year').val() || '';
 
             $('#yuif_vacTableBody').html(
-                '<tr><td colspan="9" class="text-center text-muted py-3">Đang tải...</td></tr>');
+                '<tr><td colspan="9" class="text-center text-muted py-3">' + yuifEscHtml(_yuif_msg.loading) + '</td></tr>');
             $.ajax({
                 url: '/ess/viewDept/api/yearUseInfo/vacationRows',
                 type: 'GET',
@@ -131,12 +140,12 @@
                 success: function (rows) { yuifRenderVacTable(rows || []); },
                 error: function () {
                     $('#yuif_vacTableBody').html(
-                        '<tr><td colspan="9" class="text-center text-danger py-3">Lỗi tải dữ liệu</td></tr>');
+                        '<tr><td colspan="9" class="text-center text-danger py-3">' + yuifEscHtml(_yuif_msg.loadError) + '</td></tr>');
                 }
             });
 
             $('#yuif_leaveTableBody').html(
-                '<tr><td colspan="7" class="text-center text-muted py-3">Đang tải...</td></tr>');
+                '<tr><td colspan="7" class="text-center text-muted py-3">' + yuifEscHtml(_yuif_msg.loading) + '</td></tr>');
             $.ajax({
                 url: '/ess/viewDept/api/yearUseInfo/leaveUsage',
                 type: 'GET',
@@ -148,7 +157,7 @@
                 },
                 error: function () {
                     $('#yuif_leaveTableBody').html(
-                        '<tr><td colspan="7" class="text-center text-danger py-3">Lỗi tải dữ liệu</td></tr>');
+                        '<tr><td colspan="7" class="text-center text-danger py-3">' + yuifEscHtml(_yuif_msg.loadError) + '</td></tr>');
                 }
             });
         };
@@ -157,7 +166,7 @@
         function yuifRenderVacTable(rows) {
             if (!rows.length) {
                 $('#yuif_vacTableBody').html(
-                    '<tr><td colspan="9" class="text-center text-muted py-3">Không có dữ liệu</td></tr>');
+                    '<tr><td colspan="9" class="text-center text-muted py-3">' + yuifEscHtml(_yuif_msg.noData) + '</td></tr>');
                 return;
             }
             var html = '';
@@ -189,7 +198,7 @@
 
             if (!page.length) {
                 $('#yuif_leaveTableBody').html(
-                    '<tr><td colspan="7" class="text-center text-muted py-3">Không có dữ liệu</td></tr>');
+                    '<tr><td colspan="7" class="text-center text-muted py-3">' + yuifEscHtml(_yuif_msg.noData) + '</td></tr>');
             } else {
                 var html = '';
                 page.forEach(function (r, idx) {
@@ -207,7 +216,7 @@
             }
 
             $('#yuif_pageInfo').text(
-                'Hiển thị ' + (total ? start + 1 : 0) + ' - ' + end + ' / ' + total + ' dòng');
+                _yuif_msg.showing + ' ' + (total ? start + 1 : 0) + ' - ' + end + ' ' + _yuif_msg.of + ' ' + total + ' ' + _yuif_msg.rows);
             yuifRenderPagination(totalPg);
         }
 

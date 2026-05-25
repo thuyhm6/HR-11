@@ -783,6 +783,41 @@
         ORDER BY POSITION
     </select>
 
+    <!-- Thống kê nhân viên đang làm việc theo từng tháng trong năm hiện tại -->
+    <resultMap id="EmpMonthlyStatsResultMap" type="com.ait.hrm.empinfo.dto.EmpMonthlyStatsDto">
+        <result column="MONTH_NUM"        property="monthNum"/>
+        <result column="EMP_COUNT"        property="empCount"/>
+        <result column="NEW_JOINER_COUNT" property="newJoinerCount"/>
+    </resultMap>
+
+    <select id="selectEmpMonthlyStats" resultMap="EmpMonthlyStatsResultMap">
+        SELECT
+            m.MONTH_NUM,
+            (
+                SELECT COUNT(*)
+                FROM hr_employee e
+                WHERE e.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+                  AND TRUNC(e.DATE_STARTED) &lt;= m.MONTH_END
+                  AND (e.DATE_LEFT IS NULL OR TRUNC(e.DATE_LEFT) &gt; m.MONTH_END)
+            ) AS EMP_COUNT,
+            (
+                SELECT COUNT(*)
+                FROM hr_employee n
+                WHERE n.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+                  AND TRUNC(n.DATE_STARTED) &gt;= m.MONTH_START
+                  AND TRUNC(n.DATE_STARTED) &lt;= m.MONTH_END
+            ) AS NEW_JOINER_COUNT
+        FROM (
+            SELECT
+                LEVEL AS MONTH_NUM,
+                TRUNC(ADD_MONTHS(TRUNC(SYSDATE, 'YEAR'), LEVEL - 1), 'MM') AS MONTH_START,
+                LAST_DAY(ADD_MONTHS(TRUNC(SYSDATE, 'YEAR'), LEVEL - 1))    AS MONTH_END
+            FROM DUAL
+            CONNECT BY LEVEL &lt;= 12
+        ) m
+        ORDER BY m.MONTH_NUM
+    </select>
+
     <!-- Get employee statistics by department -->
     <select id="getEmployeeStatsByDept" resultType="java.util.Map">
         SELECT 

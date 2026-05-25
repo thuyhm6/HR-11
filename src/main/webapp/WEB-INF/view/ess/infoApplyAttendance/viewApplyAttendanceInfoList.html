@@ -17,23 +17,23 @@
                         </colgroup>
                         <tbody>
                             <tr>
-                                <th class="table-light text-center">Loại nghỉ phép</th>
+                                <th class="table-light text-center" th:text="#{al.label.leaveType}">Loại nghỉ phép</th>
                                 <td>
                                     <select class="form-select form-select-sm" id="al_leaveType"
                                         data-parent-code="21"
-                                        data-default-text="-- Tất cả --">
+                                        th:attr="data-default-text=#{al.select.allOption}">
                                     </select>
                                 </td>
-                                <th class="table-light text-center">Trạng thái duyệt</th>
+                                <th class="table-light text-center" th:text="#{al.label.affirmFlag}">Trạng thái duyệt</th>
                                 <td>
                                     <select class="form-select form-select-sm" id="al_affirmFlag"
                                         data-parent-code="14014304"
-                                        data-default-text="-- Tất cả --">
+                                        th:attr="data-default-text=#{al.select.allOption}">
                                     </select>
                                 </td>
                             </tr>
                             <tr>
-                                <th class="table-light text-center">Ngày công</th>
+                                <th class="table-light text-center" th:text="#{al.label.workDate}">Ngày công</th>
                                 <td colspan="3">
                                     <div class="d-flex align-items-center gap-2">
                                         <input type="text" class="form-control form-control-sm js-daterangepicker"
@@ -50,7 +50,8 @@
                                             autocomplete="off"
                                             style="width:130px;">
                                         <button class="btn btn-primary btn-sm" onclick="alSearch()">
-                                            <i class="bi bi-search"></i> Tra cứu
+                                            <i class="bi bi-search"></i>
+                                            <span th:text="#{al.btn.search}">Tra cứu</span>
                                         </button>
                                     </div>
                                 </td>
@@ -63,14 +64,18 @@
             <!-- Toolbar -->
             <div class="d-flex align-items-center gap-2 mb-2">
                 <input type="text" class="form-control form-control-sm" id="al_filterInput"
-                    placeholder="Lọc nhanh..." style="max-width:220px;"
+                    th:placeholder="#{al.placeholder.quickFilter}"
+                    placeholder="Lọc nhanh..."
+                    style="max-width:220px;"
                     oninput="alQuickFilter(this.value)">
                 <div class="ms-auto d-flex gap-2">
                     <button class="btn btn-danger btn-sm" onclick="alCancel()">
-                        <i class="bi bi-x-circle"></i> Hủy bỏ
+                        <i class="bi bi-x-circle"></i>
+                        <span th:text="#{al.btn.cancel}">Hủy bỏ</span>
                     </button>
                     <button class="btn btn-success btn-sm" onclick="alGoApply()">
-                        <i class="bi bi-plus-circle"></i> Xin nghỉ phép
+                        <i class="bi bi-plus-circle"></i>
+                        <span th:text="#{al.btn.applyLeave}">Xin nghỉ phép</span>
                     </button>
                 </div>
             </div>
@@ -86,23 +91,23 @@
                                         <input type="checkbox" id="al_checkAll" onclick="alToggleAll(this)">
                                     </th>
                                     <th class="text-center" style="width:36px;">NO</th>
-                                    <th class="text-center" style="min-width:130px;">Loại nghỉ phép</th>
-                                    <th class="text-center" style="min-width:110px;">Ngày xin phép</th>
-                                    <th class="text-center" style="min-width:110px;">Ngày bắt đầu</th>
-                                    <th class="text-center" style="min-width:90px;">Giờ bắt đầu</th>
-                                    <th class="text-center" style="min-width:110px;">Ngày kết thúc</th>
-                                    <th class="text-center" style="min-width:90px;">Giờ kết thúc</th>
-                                    <th class="text-center" style="min-width:110px;">Thời lượng</th>
-                                    <th class="text-center" style="min-width:160px;">Lý do</th>
-                                    <th class="text-center" style="min-width:120px;">Trạng thái</th>
-                                    <th class="text-center" style="min-width:160px;">Ý kiến nhân sự</th>
-                                    <th class="text-center" style="min-width:120px;">Xác nhận</th>
-                                    <th class="text-center" style="min-width:160px;">Người nhập</th>
+                                    <th class="text-center" style="min-width:130px;" th:text="#{al.col.leaveType}">Loại nghỉ phép</th>
+                                    <th class="text-center" style="min-width:110px;" th:text="#{al.col.applyDate}">Ngày xin phép</th>
+                                    <th class="text-center" style="min-width:110px;" th:text="#{al.col.fromDate}">Ngày bắt đầu</th>
+                                    <th class="text-center" style="min-width:90px;"  th:text="#{al.col.fromTime}">Giờ bắt đầu</th>
+                                    <th class="text-center" style="min-width:110px;" th:text="#{al.col.toDate}">Ngày kết thúc</th>
+                                    <th class="text-center" style="min-width:90px;"  th:text="#{al.col.toTime}">Giờ kết thúc</th>
+                                    <th class="text-center" style="min-width:110px;" th:text="#{al.col.duration}">Thời lượng</th>
+                                    <th class="text-center" style="min-width:160px;" th:text="#{al.col.reason}">Lý do</th>
+                                    <th class="text-center" style="min-width:120px;" th:text="#{al.col.status}">Trạng thái</th>
+                                    <th class="text-center" style="min-width:160px;" th:text="#{al.col.hrComment}">Ý kiến nhân sự</th>
+                                    <th class="text-center" style="min-width:120px;" th:text="#{al.col.confirm}">Xác nhận</th>
+                                    <th class="text-center" style="min-width:160px;" th:text="#{al.col.inputBy}">Người nhập</th>
                                 </tr>
                             </thead>
                             <tbody id="al_tableBody">
                                 <tr>
-                                    <td colspan="14" class="text-center text-muted py-3">Đang tải dữ liệu...</td>
+                                    <td colspan="14" class="text-center text-muted py-3" th:text="#{al.js.loadingData}">Đang tải dữ liệu...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -119,7 +124,7 @@
     <div class="modal-dialog modal-xl modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="al_applyDetailTitle">[Xin nghỉ phép]</h5>
+                <h5 class="modal-title" id="al_applyDetailTitle"></h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -127,11 +132,11 @@
                     <table class="table table-bordered table-sm align-middle mb-0">
                         <tbody>
                             <tr>
-                                <th class="table-light text-center" style="width:160px;">Tiêu đề</th>
+                                <th class="table-light text-center" style="width:160px;" th:text="#{al.modal.subjectLabel}">Tiêu đề</th>
                                 <td id="al_modalApplyTitle"></td>
                             </tr>
                             <tr>
-                                <th class="table-light text-center">Người xin phép</th>
+                                <th class="table-light text-center" th:text="#{al.modal.applicantLabel}">Người xin phép</th>
                                 <td id="al_modalApplicant"></td>
                             </tr>
                         </tbody>
@@ -142,49 +147,49 @@
                     <table class="table table-bordered table-sm align-middle mb-0">
                         <thead class="table-light text-center">
                             <tr>
-                                <th style="width:50px;">STT</th>
-                                <th style="width:90px;">Trình tự duyệt</th>
-                                <th style="width:110px;">Trạng thái duyệt</th>
-                                <th>Họ tên</th>
-                                <th>Ý kiến</th>
-                                <th style="width:170px;">Thời gian thực hiện</th>
-                                <th style="width:120px;">Phòng ban</th>
+                                <th style="width:50px;"  th:text="#{al.modal.stt}">STT</th>
+                                <th style="width:90px;"  th:text="#{al.modal.approvalSeq}">Trình tự duyệt</th>
+                                <th style="width:110px;" th:text="#{al.modal.approvalStatus}">Trạng thái duyệt</th>
+                                <th th:text="#{al.modal.fullName}">Họ tên</th>
+                                <th th:text="#{al.modal.comment}">Ý kiến</th>
+                                <th style="width:170px;" th:text="#{al.modal.actionTime}">Thời gian thực hiện</th>
+                                <th style="width:120px;" th:text="#{al.modal.department}">Phòng ban</th>
                             </tr>
                         </thead>
                         <tbody id="al_modalApprovalBody"></tbody>
                     </table>
                 </div>
 
-                <h6 class="fw-bold mb-2">Thông tin nhân viên</h6>
+                <h6 class="fw-bold mb-2" th:text="#{al.modal.empInfoTitle}">Thông tin nhân viên</h6>
                 <div class="table-responsive mb-4">
                     <table class="table table-bordered table-sm align-middle mb-0">
                         <tbody>
                             <tr>
-                                <th class="table-light text-center" style="width:100px;">Họ tên</th>
+                                <th class="table-light text-center" style="width:100px;" th:text="#{al.modal.empName}">Họ tên</th>
                                 <td id="al_modalEmpName"></td>
-                                <th class="table-light text-center" style="width:100px;">Mã nhân viên</th>
+                                <th class="table-light text-center" style="width:100px;" th:text="#{al.modal.empId}">Mã nhân viên</th>
                                 <td id="al_modalEmpId"></td>
                             </tr>
                             <tr>
-                                <th class="table-light text-center">Phòng ban</th>
+                                <th class="table-light text-center" th:text="#{al.modal.empDept}">Phòng ban</th>
                                 <td id="al_modalEmpDept"></td>
-                                <th class="table-light text-center">Chức vụ</th>
+                                <th class="table-light text-center" th:text="#{al.modal.empPost}">Chức vụ</th>
                                 <td id="al_modalEmpPost"></td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
 
-                <h6 class="fw-bold mb-2">Thông tin xin phép</h6>
+                <h6 class="fw-bold mb-2" th:text="#{al.modal.leaveInfoTitle}">Thông tin xin phép</h6>
                 <div class="table-responsive">
                     <table class="table table-bordered table-sm align-middle mb-0">
                         <thead class="table-light text-center">
                             <tr>
-                                <th>Loại nghỉ phép</th>
-                                <th style="width:170px;">Thời gian bắt đầu</th>
-                                <th style="width:170px;">Thời gian kết thúc</th>
-                                <th style="width:140px;">Thời lượng</th>
-                                <th>Lý do</th>
+                                <th th:text="#{al.modal.leaveType}">Loại nghỉ phép</th>
+                                <th style="width:170px;" th:text="#{al.modal.leaveFrom}">Thời gian bắt đầu</th>
+                                <th style="width:170px;" th:text="#{al.modal.leaveTo}">Thời gian kết thúc</th>
+                                <th style="width:140px;" th:text="#{al.modal.duration}">Thời lượng</th>
+                                <th th:text="#{al.modal.reason}">Lý do</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -200,7 +205,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" th:text="#{al.btn.close}">Đóng</button>
             </div>
         </div>
     </div>
@@ -212,6 +217,25 @@
         var _al_data = [];
         var _al_pageBooted = false;
         var _al_detailModal = null;
+
+        /* i18n */
+        var _al_i18n = {
+            loading          : /*[[#{al.js.loading}]]*/ 'Đang tải...',
+            loadingData      : /*[[#{al.js.loadingData}]]*/ 'Đang tải dữ liệu...',
+            noData           : /*[[#{al.js.noData}]]*/ 'Không có dữ liệu',
+            loadError        : /*[[#{al.js.loadError}]]*/ 'Lỗi tải dữ liệu',
+            loadDetailFail   : /*[[#{al.js.loadDetailFail}]]*/ 'Tải dữ liệu thất bại',
+            day              : /*[[#{al.js.day}]]*/ 'Ngày',
+            hour             : /*[[#{al.js.hour}]]*/ 'Giờ',
+            selectRowAlert   : /*[[#{al.js.selectRowAlert}]]*/ 'Vui lòng chọn ít nhất một dòng để hủy bỏ.',
+            cancelConfirm    : /*[[#{al.js.cancelConfirm}]]*/ 'Bạn có chắc muốn hủy bỏ {0} đơn xin nghỉ phép đã chọn?',
+            cancelSuccess    : /*[[#{al.js.cancelSuccess}]]*/ 'Hủy bỏ thành công.',
+            cancelFail       : /*[[#{al.js.cancelFail}]]*/ 'Hủy bỏ thất bại.',
+            cancelError      : /*[[#{al.js.cancelError}]]*/ 'Lỗi khi hủy bỏ đơn.',
+            noApprovalData   : /*[[#{al.js.noApprovalData}]]*/ 'Không có dữ liệu phê duyệt',
+            loadApprovalFail : /*[[#{al.js.loadApprovalFail}]]*/ 'Không tải được thông tin phê duyệt',
+            leaveApplyTitle  : /*[[#{al.btn.applyLeave}]]*/ 'Xin nghỉ phép'
+        };
 
         function alEscHtml(s) {
             if (s == null) return '';
@@ -230,8 +254,8 @@
             var days  = Math.floor(len / dh);
             var hours = len - days * dh;
             var text  = '';
-            if (days > 0)  text += days  + ' Ngày';
-            if (hours > 0) text += (text ? ' ' : '') + hours + ' Giờ';
+            if (days > 0)  text += days  + ' ' + _al_i18n.day;
+            if (hours > 0) text += (text ? ' ' : '') + hours + ' ' + _al_i18n.hour;
             return text || String(len);
         }
 
@@ -265,7 +289,7 @@
             };
 
             var $tbody = $('#al_tableBody');
-            $tbody.html('<tr><td colspan="14" class="text-center text-muted py-3">Đang tải...</td></tr>');
+            $tbody.html('<tr><td colspan="14" class="text-center text-muted py-3">' + alEscHtml(_al_i18n.loading) + '</td></tr>');
             $('#al_checkAll').prop('checked', false);
 
             $.ajax({
@@ -277,7 +301,7 @@
                     alRenderTable(_al_data);
                 },
                 error: function() {
-                    $tbody.html('<tr><td colspan="14" class="text-center text-danger py-3">Lỗi tải dữ liệu</td></tr>');
+                    $tbody.html('<tr><td colspan="14" class="text-center text-danger py-3">' + alEscHtml(_al_i18n.loadError) + '</td></tr>');
                 }
             });
         };
@@ -285,7 +309,7 @@
         function alRenderTable(rows) {
             var $tbody = $('#al_tableBody');
             if (!rows || !rows.length) {
-                $tbody.html('<tr><td colspan="14" class="text-center text-muted py-3">Không có dữ liệu</td></tr>');
+                $tbody.html('<tr><td colspan="14" class="text-center text-muted py-3">' + alEscHtml(_al_i18n.noData) + '</td></tr>');
                 return;
             }
             var html = '';
@@ -334,10 +358,11 @@
         window.alCancel = function() {
             var selected = $('.al_rowCheck:checked').map(function() { return this.value; }).get();
             if (!selected.length) {
-                alert('Vui lòng chọn ít nhất một dòng để hủy bỏ.');
+                alert(_al_i18n.selectRowAlert);
                 return;
             }
-            if (!confirm('Bạn có chắc muốn hủy bỏ ' + selected.length + ' đơn xin nghỉ phép đã chọn?')) return;
+            var confirmMsg = _al_i18n.cancelConfirm.replace('{0}', selected.length);
+            if (!confirm(confirmMsg)) return;
 
             $.ajax({
                 url        : '/ess/infoApplyAttendance/api/myLeaveApply/cancel',
@@ -346,19 +371,19 @@
                 data       : JSON.stringify(selected),
                 success    : function(res) {
                     if (res && res.success) {
-                        alert(res.message || 'Hủy bỏ thành công.');
+                        alert(res.message || _al_i18n.cancelSuccess);
                         alSearch();
                     } else {
-                        alert(res && res.error ? res.error : 'Hủy bỏ thất bại.');
+                        alert(res && res.error ? res.error : _al_i18n.cancelFail);
                     }
                 },
-                error: function() { alert('Lỗi khi hủy bỏ đơn.'); }
+                error: function() { alert(_al_i18n.cancelError); }
             });
         };
 
         window.alGoApply = function() {
             if (typeof tabSystem !== 'undefined') {
-                tabSystem.openTab('/ess/infoApplyAttendance/viewSSTApplyAttendance', 'Xin nghỉ phép');
+                tabSystem.openTab('/ess/infoApplyAttendance/viewSSTApplyAttendance', _al_i18n.leaveApplyTitle);
             } else {
                 location.href = '/ess/infoApplyAttendance/viewSSTApplyAttendance';
             }
@@ -389,12 +414,12 @@
             alSetText('#al_modalLeaveTo',    '');
             alSetText('#al_modalLeaveLength','');
             alSetText('#al_modalLeaveReason','');
-            $('#al_modalApprovalBody').html('<tr><td colspan="7" class="text-center text-muted">Đang tải dữ liệu...</td></tr>');
+            $('#al_modalApprovalBody').html('<tr><td colspan="7" class="text-center text-muted">' + alEscHtml(_al_i18n.loadingData) + '</td></tr>');
         }
 
         function alRenderApprovalRows(approvalList) {
             if (!approvalList || !approvalList.length) {
-                $('#al_modalApprovalBody').html('<tr><td colspan="7" class="text-center text-muted">Không có dữ liệu phê duyệt</td></tr>');
+                $('#al_modalApprovalBody').html('<tr><td colspan="7" class="text-center text-muted">' + alEscHtml(_al_i18n.noApprovalData) + '</td></tr>');
                 return;
             }
             var html = '';
@@ -419,7 +444,7 @@
             var employeeInfo = (data && data.employeeInfo) ? data.employeeInfo : leaveInfo;
             var approvalList = (data && data.approvalList) ? data.approvalList : [];
 
-            $('#al_applyDetailTitle').text('[' + (leaveInfo.leaveTypeName || 'Xin nghỉ phép') + ']');
+            $('#al_applyDetailTitle').text('[' + (leaveInfo.leaveTypeName || _al_i18n.leaveApplyTitle) + ']');
             alSetText('#al_modalApplyTitle', alBuildApplyTitle(leaveInfo));
             alSetText('#al_modalApplicant',  (employeeInfo.localName || '') + '/' + (employeeInfo.postGradeName || '') + '/' + (employeeInfo.deptName || ''));
             alSetText('#al_modalEmpName',    employeeInfo.localName    || '');
@@ -451,8 +476,8 @@
                     alRenderDetailData(res || {});
                 },
                 error: function() {
-                    $('#al_modalApprovalBody').html('<tr><td colspan="7" class="text-center text-danger">Tải dữ liệu thất bại</td></tr>');
-                    toastr && toastr.error('Không tải được thông tin phê duyệt');
+                    $('#al_modalApprovalBody').html('<tr><td colspan="7" class="text-center text-danger">' + alEscHtml(_al_i18n.loadDetailFail) + '</td></tr>');
+                    toastr && toastr.error(_al_i18n.loadApprovalFail);
                 }
             });
         };

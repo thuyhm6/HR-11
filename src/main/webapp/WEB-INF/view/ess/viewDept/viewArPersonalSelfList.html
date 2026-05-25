@@ -7,37 +7,37 @@
                     <!-- Điều kiện tìm kiếm -->
                     <form id="apsl_searchForm" class="d-flex align-items-end gap-3 mb-3 flex-wrap">
                         <div>
-                            <label for="apsl_startDate" class="form-label mb-1">Ngày bắt đầu</label>
+                            <label for="apsl_startDate" class="form-label mb-1" th:text="#{apsl.label.startDate}">Ngày bắt đầu</label>
                             <input type="text" class="form-control js-daterangepicker" id="apsl_startDate"
                                 data-drp-format="DD/MM/YYYY" data-drp-auto-update-input="false"
                                 autocomplete="off" placeholder="DD/MM/YYYY" style="width:145px;">
                         </div>
                         <div>
-                            <label for="apsl_endDate" class="form-label mb-1">Ngày kết thúc</label>
+                            <label for="apsl_endDate" class="form-label mb-1" th:text="#{apsl.label.endDate}">Ngày kết thúc</label>
                             <input type="text" class="form-control js-daterangepicker" id="apsl_endDate"
                                 data-drp-format="DD/MM/YYYY" data-drp-auto-update-input="false"
                                 autocomplete="off" placeholder="DD/MM/YYYY" style="width:145px;">
                         </div>
                         <div class="d-flex gap-2 pb-1">
                             <button type="button" class="btn btn-primary" onclick="apslSearch()">
-                                <i class="bx bx-search"></i> Tra cứu
+                                <i class="bx bx-search"></i> <span th:text="#{common.search}">Tra cứu</span>
                             </button>
                             <button type="button" class="btn btn-success" onclick="apslExportExcel()">
-                                <i class="bx bx-export"></i> Xuất Excel
+                                <i class="bx bx-export"></i> <span th:text="#{common.exportExcel}">Xuất Excel</span>
                             </button>
                         </div>
                     </form>
 
                     <!-- Thanh điều khiển trang -->
                     <div class="d-flex align-items-center gap-2 mb-2">
-                        <span class="small">Show</span>
+                        <span class="small" th:text="#{apsl.show}">Hiển thị</span>
                         <select class="form-select form-select-sm" id="apsl_pageSizeSelect"
                             style="width:70px;" onchange="apslChangePageSize(this.value)">
                             <option value="25">25</option>
                             <option value="50">50</option>
                             <option value="100">100</option>
                         </select>
-                        <span class="small">entries</span>
+                        <span class="small" th:text="#{apsl.entries}">mục</span>
                     </div>
 
                     <!-- Bảng pivot -->
@@ -67,7 +67,7 @@
     <div class="modal-dialog modal-xl modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header py-2">
-                <h5 class="modal-title" id="apsl_detailModalLabel">Chi tiết chấm công</h5>
+                <h5 class="modal-title" id="apsl_detailModalLabel" th:text="#{apsl.modal.title}">Chi tiết chấm công</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body p-2">
@@ -75,20 +75,20 @@
                     <table class="table table-bordered table-sm align-middle mb-0">
                         <thead class="table-light text-center">
                             <tr>
-                                <th style="width:50px;">N</th>
-                                <th style="width:110px;">Mã nhân viên</th>
-                                <th style="min-width:140px;">Họ tên</th>
-                                <th style="min-width:120px;">Ca</th>
-                                <th style="width:110px;">Ngày</th>
-                                <th style="min-width:150px;">Loại nghỉ phụ lục</th>
-                                <th style="width:130px;">Thời gian bắt đầu</th>
-                                <th style="width:130px;">Thời gian kết thúc</th>
-                                <th style="width:90px;">Thời lượng</th>
+                                <th style="width:50px;" th:text="#{common.stt}">STT</th>
+                                <th style="width:110px;" th:text="#{common.empId}">Mã nhân viên</th>
+                                <th style="min-width:140px;" th:text="#{common.empName}">Họ tên</th>
+                                <th style="min-width:120px;" th:text="#{apsl.detail.col.shift}">Ca</th>
+                                <th style="width:110px;" th:text="#{apsl.detail.col.date}">Ngày</th>
+                                <th style="min-width:150px;" th:text="#{apsl.detail.col.leaveType}">Loại nghỉ phụ lục</th>
+                                <th style="width:130px;" th:text="#{apsl.detail.col.startTime}">Thời gian bắt đầu</th>
+                                <th style="width:130px;" th:text="#{apsl.detail.col.endTime}">Thời gian kết thúc</th>
+                                <th style="width:90px;" th:text="#{apsl.detail.col.duration}">Thời lượng</th>
                             </tr>
                         </thead>
                         <tbody id="apsl_detailBody">
                             <tr>
-                                <td colspan="9" class="text-center text-muted">
+                                <td colspan="9" class="text-center text-muted" th:text="#{apsl.detail.hint}">
                                     Chọn vào từng con số để xem chi tiết.
                                 </td>
                             </tr>
@@ -98,7 +98,7 @@
             </div>
             <div class="modal-footer py-2">
                 <button type="button" class="btn btn-secondary btn-sm"
-                    data-bs-dismiss="modal">Đóng</button>
+                    data-bs-dismiss="modal" th:text="#{common.close}">Đóng</button>
             </div>
         </div>
     </div>
@@ -106,6 +106,21 @@
 
 <template id="fragmentScripts">
     <script th:inline="javascript">
+        var _apsl_msg = {
+            stt             : /*[[#{apsl.msg.stt}]]*/ 'STT',
+            empId           : /*[[#{apsl.msg.empId}]]*/ 'Mã NV',
+            empName         : /*[[#{apsl.msg.empName}]]*/ 'Họ tên',
+            deptName        : /*[[#{apsl.msg.deptName}]]*/ 'Phòng ban',
+            total           : /*[[#{apsl.msg.total}]]*/ 'Tổng',
+            noData          : /*[[#{apsl.msg.noData}]]*/ 'Không có dữ liệu',
+            loadFailed      : /*[[#{apsl.msg.loadFailed}]]*/ 'Không tải được dữ liệu tình hình chấm công.',
+            noDataExport    : /*[[#{apsl.msg.noDataExport}]]*/ 'Không có dữ liệu để xuất.',
+            loading         : /*[[#{apsl.msg.loading}]]*/ 'Đang tải...',
+            noDataDetail    : /*[[#{apsl.msg.noDataDetail}]]*/ 'Không có dữ liệu.',
+            loadDetailFailed: /*[[#{apsl.msg.loadDetailFailed}]]*/ 'Tải dữ liệu thất bại.',
+            modalTitle      : /*[[#{apsl.msg.modalTitle}]]*/ 'Chi tiết chấm công'
+        };
+
         var _apsl_items       = [];
         var _apsl_data        = [];   /* pivot rows */
         var _apsl_currentPage = 1;
@@ -160,11 +175,11 @@
         function apslRenderHeader() {
             var nw = 'style="white-space:nowrap;"';
             var html = '<tr>'
-                + '<th ' + nw + '>STT</th>'
-                + '<th ' + nw + '>Mã NV</th>'
-                + '<th ' + nw + '>Họ tên</th>'
-                + '<th ' + nw + '>Phòng ban</th>'
-                + '<th ' + nw + '>Tổng</th>';
+                + '<th ' + nw + '>' + apslEsc(_apsl_msg.stt)     + '</th>'
+                + '<th ' + nw + '>' + apslEsc(_apsl_msg.empId)    + '</th>'
+                + '<th ' + nw + '>' + apslEsc(_apsl_msg.empName)  + '</th>'
+                + '<th ' + nw + '>' + apslEsc(_apsl_msg.deptName) + '</th>'
+                + '<th ' + nw + '>' + apslEsc(_apsl_msg.total)    + '</th>';
             _apsl_items.forEach(function (itm) {
                 html += '<th ' + nw + '>' + apslEsc(itm.itemName) + '</th>';
             });
@@ -178,7 +193,7 @@
             var total = _apsl_data.length;
             if (!total) {
                 $('#apsl_tbody').html(
-                    '<tr><td colspan="' + cols + '" class="text-center text-muted">Không có dữ liệu</td></tr>'
+                    '<tr><td colspan="' + cols + '" class="text-center text-muted">' + apslEsc(_apsl_msg.noData) + '</td></tr>'
                 );
                 apslRenderFooter(0, 0, 0);
                 return;
@@ -289,7 +304,7 @@
                 },
                 error: function () {
                     if (typeof toastr !== 'undefined') {
-                        toastr.error('Không tải được dữ liệu tình hình chấm công.');
+                        toastr.error(_apsl_msg.loadFailed);
                     }
                 }
             });
@@ -298,7 +313,7 @@
         /* ── xuất Excel ── */
         window.apslExportExcel = function () {
             if (!_apsl_data.length) {
-                if (typeof toastr !== 'undefined') toastr.warning('Không có dữ liệu để xuất.');
+                if (typeof toastr !== 'undefined') toastr.warning(_apsl_msg.noDataExport);
                 return;
             }
             var html = '<html xmlns:o="urn:schemas-microsoft-com:office:office"'
@@ -306,7 +321,12 @@
                 + '<head><meta charset="UTF-8"></head><body><table border="1">';
 
             /* header */
-            html += '<tr><th>STT</th><th>Mã NV</th><th>Họ tên</th><th>Phòng ban</th><th>Tổng</th>';
+            html += '<tr>'
+                + '<th>' + _apsl_msg.stt     + '</th>'
+                + '<th>' + _apsl_msg.empId   + '</th>'
+                + '<th>' + _apsl_msg.empName + '</th>'
+                + '<th>' + _apsl_msg.deptName + '</th>'
+                + '<th>' + _apsl_msg.total   + '</th>';
             _apsl_items.forEach(function (itm) { html += '<th>' + itm.itemName + '</th>'; });
             html += '</tr>';
 
@@ -338,9 +358,9 @@
 
         /* ── modal chi tiết ── */
         function apslOpenDetail(personId, itemNo, itemName) {
-            $('#apsl_detailModalLabel').text(itemName || 'Chi tiết chấm công');
+            $('#apsl_detailModalLabel').text(itemName || _apsl_msg.modalTitle);
             $('#apsl_detailBody').html(
-                '<tr><td colspan="9" class="text-center text-muted">Đang tải...</td></tr>'
+                '<tr><td colspan="9" class="text-center text-muted">' + apslEsc(_apsl_msg.loading) + '</td></tr>'
             );
             if (_apsl_detailModal) { _apsl_detailModal.show(); }
 
@@ -356,7 +376,7 @@
                 success: function (data) {
                     if (!data || !data.length) {
                         $('#apsl_detailBody').html(
-                            '<tr><td colspan="9" class="text-center text-muted">Không có dữ liệu.</td></tr>'
+                            '<tr><td colspan="9" class="text-center text-muted">' + apslEsc(_apsl_msg.noDataDetail) + '</td></tr>'
                         );
                         return;
                     }
@@ -378,7 +398,7 @@
                 },
                 error: function () {
                     $('#apsl_detailBody').html(
-                        '<tr><td colspan="9" class="text-center text-danger">Tải dữ liệu thất bại.</td></tr>'
+                        '<tr><td colspan="9" class="text-center text-danger">' + apslEsc(_apsl_msg.loadDetailFailed) + '</td></tr>'
                     );
                 }
             });

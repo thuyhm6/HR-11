@@ -1,11 +1,15 @@
 package com.ait.evs.manage.controller;
 
 import com.ait.evs.manage.dto.EvsAffirmRuleDto;
+import com.ait.evs.manage.dto.EvsAffirmTarget1AbilityDto;
 import com.ait.evs.manage.dto.EvsAffirmTarget1Dto;
+import com.ait.evs.manage.dto.EvsAffirmTarget2AbilityDto;
 import com.ait.evs.manage.dto.EvsAffirmTarget2Dto;
 import com.ait.evs.manage.dto.EvsAffirmorSetupDto;
 import com.ait.evs.manage.dto.EvsConfirmTarget1Dto;
 import com.ait.evs.manage.dto.EvsEvsBySelfHtsvDto;
+import com.ait.evs.manage.dto.EvsEvsBySelfSSTAbilityDto;
+import com.ait.evs.manage.dto.EvsItemAbilityDto;
 import com.ait.evs.manage.dto.EvsFormulaDto;
 import com.ait.evs.manage.dto.EvsGradeDto;
 import com.ait.evs.manage.dto.EvsItemDto;
@@ -19,11 +23,14 @@ import com.ait.evs.manage.dto.EvsResultDto;
 import com.ait.evs.manage.dto.EvsScheduleDto;
 import com.ait.evs.manage.dto.EvsScoreDto;
 import com.ait.evs.manage.service.EvsAffirmRuleService;
+import com.ait.evs.manage.service.EvsAffirmTarget1AbilityService;
+import com.ait.evs.manage.service.EvsAffirmTarget2AbilityService;
 import com.ait.evs.manage.service.EvsAffirmTarget1Service;
 import com.ait.evs.manage.service.EvsAffirmTarget2Service;
 import com.ait.evs.manage.service.EvsAffirmorSetupService;
 import com.ait.evs.manage.service.EvsConfirmTarget1Service;
 import com.ait.evs.manage.service.EvsEvsBySelfHtsvService;
+import com.ait.evs.manage.service.EvsEvsBySelfSSTAbilityService;
 import com.ait.evs.manage.service.EvsFormulaService;
 import com.ait.evs.manage.service.EvsItemParamService;
 import com.ait.evs.manage.service.EvsItemService;
@@ -92,6 +99,15 @@ public class EvsManageController {
 
     @Autowired
     private EvsEvsBySelfHtsvService evsEvsBySelfHtsvService;
+
+    @Autowired
+    private EvsEvsBySelfSSTAbilityService evsEvsBySelfSSTAbilityService;
+
+    @Autowired
+    private EvsAffirmTarget1AbilityService evsAffirmTarget1AbilityService;
+
+    @Autowired
+    private EvsAffirmTarget2AbilityService evsAffirmTarget2AbilityService;
 
     @Autowired
     private EvsAffirmTarget1Service evsAffirmTarget1Service;
@@ -786,6 +802,34 @@ public class EvsManageController {
         }
     }
 
+    // ── Đánh giá năng lực bản thân SST (EVS_ITEM_SCORE.EVS_SCORE) ────────────────
+
+    @GetMapping("/viewEvsBySelfSSTAbility")
+    public String viewEvsBySelfSSTAbility() {
+        return "evs/manage/viewEvsBySelfSSTAbility";
+    }
+
+    @GetMapping("/api/evsBySelfSSTAbility/itemList")
+    @ResponseBody
+    public ResponseEntity<List<EvsItemAbilityDto>> getEvsBySelfSSTAbilityItemList(
+            @RequestParam(required = false) String resumeSeq) {
+        EvsEvsBySelfSSTAbilityDto params = new EvsEvsBySelfSSTAbilityDto();
+        params.setResumeSeq(resumeSeq);
+        return ResponseEntity.ok(evsEvsBySelfSSTAbilityService.getItemList(params));
+    }
+
+    @PostMapping("/api/evsBySelfSSTAbility/save")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> saveEvsBySelfSSTAbility(
+            @RequestBody EvsEvsBySelfSSTAbilityDto dto) {
+        try {
+            evsEvsBySelfSSTAbilityService.save(dto);
+            return ResponseEntity.ok(Map.of("success", true));
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
     // ── Đánh giá lần 1 (EVS_AFFIRM level 1 - nhập điểm + cấp đánh giá) ─────────
 
     @GetMapping("/viewAffirmTarget1")
@@ -897,6 +941,110 @@ public class EvsManageController {
     public ResponseEntity<Map<String, Object>> rejectAffirmTarget1Detail(@RequestBody EvsAffirmTarget1Dto dto) {
         try {
             evsAffirmTarget1Service.rejectDetail(dto);
+            return ResponseEntity.ok(Map.of("success", true));
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
+    // ── Đánh giá năng lực lần 1 (EVS_AFFIRM level 1 - dropdown năng lực) ────────
+
+    @GetMapping("/viewAffirmTarget1Ability")
+    public String viewAffirmTarget1Ability() {
+        return "evs/manage/viewAffirmTarget1Ability";
+    }
+
+    @GetMapping("/api/affirmTarget1Ability/itemList")
+    @ResponseBody
+    public ResponseEntity<List<EvsItemAbilityDto>> getAffirmTarget1AbilityItemList(
+            @RequestParam String evsObjectSeq) {
+        EvsAffirmTarget1AbilityDto params = new EvsAffirmTarget1AbilityDto();
+        params.setSeq(evsObjectSeq);
+        return ResponseEntity.ok(evsAffirmTarget1AbilityService.getItemList(params));
+    }
+
+    @PostMapping("/api/affirmTarget1Ability/saveDetail")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> saveAffirmTarget1AbilityDetail(
+            @RequestBody EvsAffirmTarget1AbilityDto dto) {
+        try {
+            evsAffirmTarget1AbilityService.saveDetail(dto);
+            return ResponseEntity.ok(Map.of("success", true));
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/api/affirmTarget1Ability/confirmDetail")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> confirmAffirmTarget1AbilityDetail(
+            @RequestBody EvsAffirmTarget1AbilityDto dto) {
+        try {
+            evsAffirmTarget1AbilityService.confirmDetail(dto);
+            return ResponseEntity.ok(Map.of("success", true));
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/api/affirmTarget1Ability/rejectDetail")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> rejectAffirmTarget1AbilityDetail(
+            @RequestBody EvsAffirmTarget1AbilityDto dto) {
+        try {
+            evsAffirmTarget1AbilityService.rejectDetail(dto);
+            return ResponseEntity.ok(Map.of("success", true));
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
+    // ── Đánh giá năng lực lần 2 (EVS_AFFIRM level 2 - dropdown năng lực) ────────
+
+    @GetMapping("/viewAffirmTarget2Ability")
+    public String viewAffirmTarget2Ability() {
+        return "evs/manage/viewAffirmTarget2Ability";
+    }
+
+    @GetMapping("/api/affirmTarget2Ability/itemList")
+    @ResponseBody
+    public ResponseEntity<List<EvsItemAbilityDto>> getAffirmTarget2AbilityItemList(
+            @RequestParam String evsObjectSeq) {
+        EvsAffirmTarget2AbilityDto params = new EvsAffirmTarget2AbilityDto();
+        params.setSeq(evsObjectSeq);
+        return ResponseEntity.ok(evsAffirmTarget2AbilityService.getItemList(params));
+    }
+
+    @PostMapping("/api/affirmTarget2Ability/saveDetail")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> saveAffirmTarget2AbilityDetail(
+            @RequestBody EvsAffirmTarget2AbilityDto dto) {
+        try {
+            evsAffirmTarget2AbilityService.saveDetail(dto);
+            return ResponseEntity.ok(Map.of("success", true));
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/api/affirmTarget2Ability/confirmDetail")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> confirmAffirmTarget2AbilityDetail(
+            @RequestBody EvsAffirmTarget2AbilityDto dto) {
+        try {
+            evsAffirmTarget2AbilityService.confirmDetail(dto);
+            return ResponseEntity.ok(Map.of("success", true));
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/api/affirmTarget2Ability/rejectDetail")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> rejectAffirmTarget2AbilityDetail(
+            @RequestBody EvsAffirmTarget2AbilityDto dto) {
+        try {
+            evsAffirmTarget2AbilityService.rejectDetail(dto);
             return ResponseEntity.ok(Map.of("success", true));
         } catch (Exception e) {
             return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
