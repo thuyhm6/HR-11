@@ -23,12 +23,8 @@ public class EssAttendanceExForBatchDto {
     private String updatedName;
     private String inDoorTime;
     private String outDoorTime;
-    private String shiftStartYear;
-    private String shiftStartHh;
-    private String shiftStartMi;
-    private String shiftEndYear;
-    private String shiftEndHh;
-    private String shiftEndMi;
+    private String shiftStartTime;
+    private String shiftEndTime;
     private String empId;
     private String localName;
     private String deptNo;

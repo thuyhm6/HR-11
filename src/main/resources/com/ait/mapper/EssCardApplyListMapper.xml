@@ -63,6 +63,31 @@
         ORDER BY EC.AR_DATE_STR DESC, EC.CREATE_DATE DESC, EC.APPLY_NO DESC
     </select>
 
+    <select id="countLockedByArDetail" resultType="int">
+        SELECT COUNT(1)
+        FROM AR_DETAIL_HTSV D
+        JOIN ESS_CARD_APPLY_TB ESS ON ESS.PERSON_ID = D.PERSON_ID
+        WHERE ESS.APPLY_NO IN
+        <foreach collection="applyNos" item="no" open="(" separator="," close=")">
+            #{no, jdbcType=VARCHAR}
+        </foreach>
+        AND TO_CHAR(ESS.APPLY_TIME, 'YYYY/MM/DD') = D.AR_DATE_STR
+        AND D.LOCK_YN = 'Y'
+    </select>
+
+    <select id="countLockedByDeptManage" resultType="int">
+        SELECT COUNT(1)
+        FROM AR_DEPARTMENT_MANAGE AD
+        JOIN HR_EMPLOYEE HE ON HE.DEPTNO = AD.DEPT_NO
+        JOIN ESS_CARD_APPLY_TB ESS ON ESS.PERSON_ID = HE.PERSON_ID
+        WHERE ESS.APPLY_NO IN
+        <foreach collection="applyNos" item="no" open="(" separator="," close=")">
+            #{no, jdbcType=VARCHAR}
+        </foreach>
+        AND TO_CHAR(ESS.APPLY_TIME, 'YYYY-MM-DD') = AD.LOCK_DATE
+        AND (AD.LOCK_ATTEN_EX_FLAG = '1' OR AD.LOCK_ATTEN_EX_NIGHT_FLAG = '1')
+    </select>
+
     <update id="cancelMyCardApplyList">
         UPDATE ESS_CARD_APPLY_TB
         SET ACTIVITY    = 0,

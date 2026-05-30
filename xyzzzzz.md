@@ -16,11 +16,13 @@ Trạng thái làm việc - EMP_OFFICE (dữ liệu lấy lấy thông qua data-
 
 <input type="text" class="form-control js-daterangepicker" data-drp-format="YYYY-MM-DD">
 
+sử dụng processingModal.html để hiển thị khi đang xử lý, tham khảo cách sử dụng ở viewPiciOtAffirmLBatchList.html
+
 
 url: '/ar/attendanceSettings/api/shift',
 url: '/sys/api/code/list?parentCodeNo=400223',
 
-sử dụng onclick="openEmployeeSearchPopup()"> như của educationSearch.html để tìm nhân viên.
+sử dụng onclick="openEmployeeSearchPopup()"> như của educationSearch.html để tìm nhân viên. $('#esm_empOffice').val('15119'); để truyền giá trị tìm kiếm mặc định
 
 sử dụng cách tìm kiếm Họ tên / Mã NV như của viewPaInputItemData.html để tìm nhân viên.
 
@@ -1889,3 +1891,232 @@ thì Thời gian bắt đầu sử dụng function get_ar_shift_start_time(#{per
 Thời gian kết thúc sử dụng function get_ar_shift_end_time(#{personId, jdbcType=VARCHAR}, #{applyOtDate, jdbcType=VARCHAR}, #{cpnyId, jdbcType=VARCHAR}) (function này khi get dữ liệu ra sẽ có định dạng là YYYY-MM-DD HH24:MI)
 
 Thời lượng sử dụng function GET_OT_LENGTH_SPC(#personId#,#cpnyId#,#applyOtDate#,GET_OT_TYPE_CODE(#{personId, jdbcType=VARCHAR}, #{cpnyId, jdbcType=VARCHAR}, #{applyOtDate, jdbcType=VARCHAR}, 0, 0),TO_CHAR(Thời gian bắt đầu, 'HH24:MI'), TO_CHAR(Thời gian kết thúc, 'HH24:MI'),#DEDUCT_YN#).
+
+Khi Lưu check thêm cho tôi 1 điều kiện, sử dụng câu lệnh SQL: SELECT AR_GET_LEAVE_CLASH('',#{personId, jdbcType=VARCHAR}, #{fromTime, jdbcType=VARCHAR}, #{toTime, jdbcType=VARCHAR}) FROM DUAL; 
+Nếu kết quả trả về là > 0 thì báo lỗi: "Trùng với chấm công trước đó, xin kiểm tra thời gian này đã xin phép hay chưa!"
+Nếu kết quả trả về = -1 thì báo lỗi: "Ngày công đã chốt, xin kiểm tra lại!"
+Nếu kết quả trả về = -2 thì báo lỗi: "Thời gian đã khóa, xin kiểm tra lại!"
+
+Khi Lưu thông tin tăng ca hãy kiểm tra việc có trùng hoặc chồng chéo với đơn tăng ca nào khác của nhân viên đó hay không, Kiểm tra Thời gian bắt đầu và Thời gian kết thúc của đơn đã tồn tại trước đó trong bảng ESS_APPLY_OT với điều kiện AFFIRM_FLAG NOT IN ('14014309','14014310') và CONFIRM_FLAG <> '2' và ACTIVITY = '1' thì báo lỗi: "Trùng với đơn tăng ca khác của nhân viên này vào cùng ngày, xin kiểm tra lại!"
+
+Khi Lưu check thêm cho tôi 1 điều kiện, sử dụng câu lệnh SQL: SELECT AR_GET_OT_CLASH('',#{personId, jdbcType=VARCHAR}, #{otFromTime, jdbcType=VARCHAR}, #{otToTime, jdbcType=VARCHAR}, '') FROM DUAL; 
+Nếu kết quả trả về là > 0 thì báo lỗi: "Trùng với tăng ca trước đó, xin kiểm tra thời gian này đã xin phép hay chưa!"
+Nếu kết quả trả về = -1 thì báo lỗi: "Ngày công đã chốt, xin kiểm tra lại!"
+Nếu kết quả trả về = -2 thì báo lỗi: "Thời gian đã khóa, xin kiểm tra lại!"
+Nếu kết quả trả về = -3 thì báo lỗi: "Bạn đã tăng ca quá thời gian quy định trong tháng, xin liên hệ phòng nhân sự!"
+Nếu kết quả trả về = -4 thì báo lỗi: "Đang trong thời gian mang thai hoặc nuôi con nhỏ. Không thể tăng ca!"
+
+Khi Lưu cùng lúc nhiều dòng cũng cần phải check trùng hoặc chồng chéo giờ Bắt đầu và kết thúc với những dòng khác trong cùng một lần lưu, Nếu có trùng thì báo lỗi: "Các dòng dữ liệu bị trùng nhau về thời gian, xin kiểm tra lại!"
+
+Thêm 2 cột Tổng tăng ca tháng này và Tổng tăng ca năm này, dữ liệu lấy ra dựa vào function GET_AR_OT_TOTAIL(replace(#{applyOtDate, jdbcType=VARCHAR},'-','/'), #{cpnyId, jdbcType=VARCHAR},#{personId, jdbcType=VARCHAR},'30') cho Tổng tăng ca tháng này và GET_AR_OT_TOTAIL(replace(#{applyOtDate, jdbcType=VARCHAR},'-','/'), #{cpnyId, jdbcType=VARCHAR},#{personId, jdbcType=VARCHAR},'200') cho Tổng tăng ca năm này. 2 cột này thêm sau cột Lý do và trước cột Trạng thái. khi chọn nhân viên hoặc ngày tăng ca thì sẽ tự động lấy dữ liệu và hiển thị ra 2 cột này để người dùng nắm được tổng số giờ tăng ca của nhân viên đó trong tháng và trong năm, từ đó có thể cân nhắc việc duyệt đơn tăng ca hay không.
+
+Khi Lưu check thêm cho tôi 1 điều kiện. nếu số giờ tăng ca của đơn này cộng với tổng số giờ tăng ca của nhân viên đó trong tháng vượt quá 40h thì sẽ báo lỗi: "Tổng số giờ tăng ca trong tháng vượt quá 40h, xin kiểm tra lại!". nếu người dùng xin nhiều đơn tăng ca thì sẽ lấy tổng số giờ tăng ca của tất cả các đơn tăng ca đó cộng với tổng số giờ tăng ca của nhân viên đó trong tháng để kiểm tra có vượt quá 40h hay không. Tương tụ nếu số giờ tăng ca của đơn này cộng với tổng số giờ tăng ca của nhân viên đó trong năm vượt quá 300h thì sẽ báo lỗi: "Tổng số giờ tăng ca trong năm vượt quá 300h, xin kiểm tra lại!". nếu người dùng xin nhiều đơn tăng ca thì sẽ lấy tổng số giờ tăng ca của tất cả các đơn tăng ca đó cộng với tổng số giờ tăng ca của nhân viên đó trong năm để kiểm tra có vượt quá 300h hay không.
+
+Khi mở tab viewSSTOtApplyInfo.html sẽ tự động điền luôn Ngày tăng ca - applyOtDate (dạng YYYY-MM-DD) sau đó điền vào các trường tương ứng như:
+Hình thức tăng ca sử dụng function GET_GLOBAL_NAME(GET_OT_TYPE_CODE(#{adminID, jdbcType=VARCHAR}, #{cpnyId, jdbcType=VARCHAR}, #{applyOtDate, jdbcType=VARCHAR}, 0, 0), #{lang, jdbcType=VARCHAR})
+
+Nếu GET_OT_TYPE_CODE(#{adminID, jdbcType=VARCHAR}, #{cpnyId, jdbcType=VARCHAR}, #{applyOtDate, jdbcType=VARCHAR}, 0, 0) = '32'
+thì Thời gian bắt đầu sử dụng function get_ar_shift_end_time(#{adminID, jdbcType=VARCHAR}, #{applyOtDate, jdbcType=VARCHAR}, #{cpnyId, jdbcType=VARCHAR}) (function này khi get dữ liệu ra sẽ có định dạng là YYYY-MM-DD HH24:MI)
+Thời gian kết thúc sử dụng function get_ar_shift_end_time(#{adminID, jdbcType=VARCHAR}, #{applyOtDate, jdbcType=VARCHAR}, #{cpnyId, jdbcType=VARCHAR}) + 2h (function này khi get dữ liệu ra sẽ có định dạng là YYYY-MM-DD HH24:MI)
+
+Nếu GET_OT_TYPE_CODE(#{adminID, jdbcType=VARCHAR}, #{cpnyId, jdbcType=VARCHAR}, #{applyOtDate, jdbcType=VARCHAR}, 0, 0) != '32'
+thì Thời gian bắt đầu sử dụng function get_ar_shift_start_time(#{adminID, jdbcType=VARCHAR}, #{applyOtDate, jdbcType=VARCHAR}, #{cpnyId, jdbcType=VARCHAR}) (function này khi get dữ liệu ra sẽ có định dạng là YYYY-MM-DD HH24:MI)
+Thời gian kết thúc sử dụng function get_ar_shift_end_time(#{adminID, jdbcType=VARCHAR}, #{applyOtDate, jdbcType=VARCHAR}, #{cpnyId, jdbcType=VARCHAR}) (function này khi get dữ liệu ra sẽ có định dạng là YYYY-MM-DD HH24:MI)
+CHỗ checkbox Báo cơm / Nghỉ ngời (30') chính là DEDUCT_YN, nếu checkbox này được tick thì sẽ truyền giá trị 1 vào function GET_OT_LENGTH_SPC, nếu không được tick thì sẽ truyền giá trị 0 vào function GET_OT_LENGTH_SPC.
+Thời lượng sử dụng function GET_OT_LENGTH_SPC(#adminID#,#cpnyId#,#applyOtDate#,GET_OT_TYPE_CODE(#{adminID, jdbcType=VARCHAR}, #{cpnyId, jdbcType=VARCHAR}, #{applyOtDate, jdbcType=VARCHAR}, 0, 0),TO_CHAR(Thời gian bắt đầu, 'HH24:MI'), TO_CHAR(Thời gian kết thúc, 'HH24:MI'),#DEDUCT_YN#).
+
+Chỉ khi nào Trạng thái đơn nghỉ phép - AFFIRM_FLAG, có các giá trị sau:
+14014308 - Đã duyệt
+14014307 - Đang duyệt
+14014306 - Gửi
+14014310 - Đã hủy. 
+Điều kiện tìm kiếm Trạng thái xác nhận - CONFIRM_FLAG, có các giá trị sau: 0 - Chưa xác nhận
+1 - Đã xác nhận
+2 - Từ chối.
+
+Ngoài ra, khi bấm Hủy bỏ, check 2 điều kiện SQL như sau:SELECT COUNT(1) FROM AR_DETAIL_HTSV D
+        JOIN ESS_LEAVE_APPLY_TB ESS ON ESS.PERSON_ID = D.PERSON_ID
+        WHERE ESS.APPLY_NO = #{applyNo, jdbcType=VARCHAR}
+        AND TO_CHAR(ESS.APPLY_TIME, 'YYYY/MM/DD') = D.AR_DATE_STR
+        AND D.LOCK_YN = 'Y';
+SELECT COUNT(1) FROM AR_DEPARTMENT_MANAGE AD
+        JOIN HR_EMPLOYEE HE ON HE.DEPTNO = AD.DEPTNO 
+        JOIN ESS_LEAVE_APPLY_TB ESS ON ESS.PERSON_ID = HE.PERSON_ID
+        WHERE ESS.APPLY_NO = #{applyNo, jdbcType=VARCHAR}
+        AND TO_CHAR(ESS.APPLY_TIME, 'YYYY-MM-DD') = AD.LOCK_DATE
+        AND (AD.LOCK_ATTEN_FLAG = '1' OR AD.LOCK_ATTEN_ANNUAL_FLAG  = '1' OR AD.LOCK_ATTEN_ANNUAL_NIGHT_FLAG  = '1' OR AD.LOCK_ATTEN_NIGHT_FLAG = '1'); nếu 1 trong 2 điều kiện trả về > 0 thì sẽ báo lỗi: "Đơn nghỉ phép này đã bị khóa, không thể hủy bỏ!".
+
+
+Ngoài ra, khi bấm Hủy bỏ, check 2 điều kiện SQL như sau:SELECT COUNT(1) FROM AR_DETAIL_HTSV D
+        JOIN ess_apply_ot ESS ON ESS.PERSON_ID = D.PERSON_ID
+        WHERE ESS.APPLY_NO = #{applyNo, jdbcType=VARCHAR}
+        AND TO_CHAR(ESS.OT_FROM_TIME, 'YYYY/MM/DD') = D.AR_DATE_STR
+        AND D.LOCK_YN = 'Y';
+SELECT COUNT(1) FROM AR_DEPARTMENT_MANAGE AD
+        JOIN HR_EMPLOYEE HE ON HE.DEPTNO = AD.DEPTNO 
+        JOIN ess_apply_ot ESS ON ESS.PERSON_ID = HE.PERSON_ID
+        WHERE ESS.APPLY_NO = #{applyNo, jdbcType=VARCHAR}
+        AND TO_CHAR(ESS.OT_FROM_TIME, 'YYYY-MM-DD') = AD.LOCK_DATE
+        AND (AD.LOCK_OT_FLAG = '1' OR AD.LOCK_OT_NIGHT_FLAG  = '1'); nếu 1 trong 2 điều kiện trả về > 0 thì sẽ báo lỗi: "Đơn nghỉ phép này đã bị khóa, không thể hủy bỏ!".
+
+
+        checkbox ali_rowCheck chỉ hiển thị khi đơn xin phép có Trạng thái đơn nghỉ phép - AFFIRM_FLAG, có 1 trong các giá trị sau:
+14014308 - Đã duyệt
+14014307 - Đang duyệt
+14014306 - Gửi. còn lại thì không hiện checkbox đối với dòng dữ liệu đó
+
+khi bấm Hủy bỏ, check 2 điều kiện SQL như sau:
+SELECT COUNT(1) FROM AR_DETAIL_HTSV D
+        JOIN ESS_CARD_APPLY_TB ESS ON ESS.PERSON_ID = D.PERSON_ID
+        WHERE ESS.APPLY_NO = #{applyNo, jdbcType=VARCHAR}
+        AND TO_CHAR(ESS.APPLY_TIME, 'YYYY/MM/DD') = D.AR_DATE_STR
+        AND D.LOCK_YN = 'Y';
+        
+SELECT * FROM AR_DEPARTMENT_MANAGE AD
+        JOIN HR_EMPLOYEE HE ON HE.DEPTNO = AD.DEPT_NO 
+        JOIN ESS_CARD_APPLY_TB ESS ON ESS.PERSON_ID = HE.PERSON_ID
+        WHERE ESS.APPLY_NO = #{applyNo, jdbcType=VARCHAR}
+        AND TO_CHAR(ESS.APPLY_TIME, 'YYYY-MM-DD') = AD.LOCK_DATE
+        AND (AD.LOCK_ATTEN_EX_FLAG = '1' OR AD.LOCK_ATTEN_EX_NIGHT_FLAG = '1'); nếu 1 trong 2 điều kiện trả về > 0 thì sẽ báo lỗi: "Đơn nghỉ phép này đã bị khóa, không thể hủy bỏ!".
+
+Khi Lưu check thêm cho tôi 1 điều kiện, sử dụng câu lệnh SQL: SELECT AR_GET_ATT_EX_CLASH(#{personId, jdbcType=VARCHAR}, #{arDateStr, jdbcType=VARCHAR}, #{cpnyId, jdbcType=VARCHAR}) FROM DUAL; 
+Nếu kết quả trả về = 1 thì báo lỗi: "Ngày công đã chốt, xin kiểm tra lại!"
+Nếu kết quả trả về = -2 thì báo lỗi: "Thời gian đã khóa, xin kiểm tra lại!"
+
+ Giống như viewApplyAttenanceManagentInfoList_new.html, hãy tạo cho tôi một file viewApplyAttenanceBatchInfoList.html - Xin nghỉ phép nằm trong module /ess/infoApplyAttendance. vì giao diện viewApplyAttenanceBatchInfoList là dùng cho người quản lý, vậy nên hãy sao chép lại giống như viewApplyAttenanceManagentInfoList_new.html, cả về giao diện và chức năng.
+
+
+  Giống như viewArOvertimeManagent_fast.html, hãy tạo cho tôi một file viewPiciOtAffirmLBatchList.html - Xin nghỉ phép nằm trong module /ess/infoApply. vì giao diện viewPiciOtAffirmLBatchList là dùng cho người quản lý, vậy nên hãy sao chép lại giống như viewArOvertimeManagent_fast.html, cả về giao diện và chức năng.
+
+    Giống như viewCheckAttencetanceExForBatchList.html, hãy tạo cho tôi một file viewCheckAttencetanceExForBatchList.html - Xin nghỉ phép nằm trong module /ess/infoApplyAttendance. vì giao diện viewCheckAttencetanceExForBatchList là dùng cho người quản lý, vậy nên hãy sao chép lại giống như viewCheckAttencetanceExForBatchList.html, cả về giao diện và chức năng.
+
+Dựa vào viewAttendanceExForBatchInfoList.html hãy tạo cho tôi một file viewCoordApplyAttendanceInfoList.html - Tra cứu chấm công nằm trong module /ess/infoApplyAttendance. Giao diện tham khảo hình ảnh. Dữ liệu lấy ra dựa vào câu lệnh SQL: SELECT HE.EMPID,
+       HE.LOCAL_NAME,
+       ESS.ITEM_NO ITEM_NO_NO,
+       GET_DEPT_NAME(HE.DEPTNO, #{lang, jdbcType=VARCHAR}) DEPT_NAME,
+       GET_GLOBAL_NAME(ESS.SHIFT_NO, #{lang, jdbcType=VARCHAR}) SHIFT_NAME,
+       HE.POST_GRADE_NO,
+       GET_GLOBAL_NAME(HE.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}) POST_GRADE_NAME,
+       GET_GLOBAL_NAME(ESS.ITEM_NO, #{lang, jdbcType=VARCHAR}) ITEM_NAME,
+       ESS.AR_DATE_STR,
+       TO_CHAR(ESS.FROM_TIME, 'YYYY/MM/DD HH24:MI') FROM_DATE,
+       TO_CHAR(ESS.TO_TIME, 'YYYY/MM/DD HH24:MI') TO_TIME,,
+       ESS.QUANTITY,
+       ESS.UNIT,
+       ESS.REMARK,
+       HE.EMPID,
+       GET_GLOBAL_NAME(ESS.STATUS_CODE, #{lang, jdbcType=VARCHAR}) STATUS_CODE,
+       GET_GLOBAL_NAME(ESS.ITEM_NO, #{lang, jdbcType=VARCHAR}) ITEM_NO,
+       ESS.REMARK,
+       ESS.LOCK_YN
+  FROM AR_DETAIL_HTSV ESS, HR_EMPLOYEE HE
+ WHERE ESS.PERSON_ID = HE.PERSON_ID
+   AND ESS.PERSON_ID NOT LIKE '111111%'
+   AND ESS.ITEM_NO NOT IN ('90000295',
+                           '90000296',
+                           '90000297',
+                           '90000298',
+                           '90000299',
+                           '90000300',
+                           '90000301')
+   AND ESS.AR_DATE_STR >= TO_DATE(#{startDate, jdbcType=VARCHAR}, 'YYYY/MM/DD')
+   AND ESS.AR_DATE_STR <= TO_DATE(#{endDate, jdbcType=VARCHAR}, 'YYYY/MM/DD')
+   AND EXISTS (SELECT B1.DEPTID
+          FROM HR_DEPARTMENT B1
+         WHERE B1.DEPTNO = HE.DEPTNO
+         START WITH B1.DEPTNO in
+                    (SELECT HRD.DEPTID
+                       FROM HR_DEPARTMENT HRD
+                      WHERE HRD.MANAGER_EMP_ID = #{adminID, jdbcType=VARCHAR})
+        CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+        UNION
+        SELECT AR_SUPERVISOR_INFO.DEPTNO
+          FROM AR_SUPERVISOR_INFO
+         WHERE AR_SUPERVISOR_INFO.DEPTNO = HE.DEPTNO
+           AND AR_SUPERVISOR_INFO.PERSON_ID = #{adminID, jdbcType=VARCHAR})
+ ORDER BY ESS.AR_DATE_STR ASC, ESS.CREATE_DATE DESC, HE.DEPTNO, HE.EMPID;
+ ĐỊnh dạng ngày tháng dạng YYYY/MM/DD. mặc định ban đầu lấy ngày bắt đầu là ngày trước 1 ngày hiện tại
+.
+
+
+Dựa vào viewCoordApplyAttendanceInfoList.html hãy tạo cho tôi một file viewCoordApplyOtInfoList.html - Tra cứu tăng ca nằm trong module /ess/infoApply. Giao diện tham khảo hình ảnh. Dữ liệu lấy ra dựa vào câu lệnh SQL: SELECT HE.EMPID,
+       HE.LOCAL_NAME,
+       ESS.ITEM_NO ITEM_NO_NO,
+       GET_DEPT_NAME(HE.DEPTNO, #{lang, jdbcType=VARCHAR}) DEPT_NAME,
+       GET_GLOBAL_NAME(ESS.SHIFT_NO, #{lang, jdbcType=VARCHAR}) SHIFT_NAME,
+       HE.POST_GRADE_NO,
+       GET_GLOBAL_NAME(HE.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}) POST_GRADE_NAME,
+       GET_GLOBAL_NAME(ESS.ITEM_NO, #{lang, jdbcType=VARCHAR}) ITEM_NAME,
+       ESS.AR_DATE_STR,
+       TO_CHAR(ESS.FROM_TIME, 'YYYY/MM/DD HH24:MI') FROM_DATE,
+       TO_CHAR(ESS.TO_TIME, 'YYYY/MM/DD HH24:MI') TO_TIME,,
+       ESS.QUANTITY,
+       ESS.UNIT,
+       ESS.REMARK,
+       HE.EMPID,
+       GET_GLOBAL_NAME(ESS.STATUS_CODE, #{lang, jdbcType=VARCHAR}) STATUS_CODE,
+       GET_GLOBAL_NAME(ESS.ITEM_NO, #{lang, jdbcType=VARCHAR}) ITEM_NO,
+       GET_AR_TIME_BY_CPNYID(ESS.PERSON_ID, ESS.AR_DATE_STR, 'IN', #{cpnyId, jdbcType=VARCHAR}) INDOOR_TIME,
+       GET_AR_TIME_BY_CPNYID(ESS.PERSON_ID, ESS.AR_DATE_STR, 'OUT', #{cpnyId, jdbcType=VARCHAR}) OUTDOOR_TIME
+  FROM AR_DETAIL_HTSV ESS, HR_EMPLOYEE HE
+ WHERE ESS.PERSON_ID = HE.PERSON_ID
+   AND ESS.PERSON_ID NOT LIKE '111111%'
+   AND ESS.ITEM_NO NOT IN ('90000295',
+                       '90000296',
+                       '90000297',
+                       '90000298',
+                       '90000299',
+                       '90000300',
+                       '90000301')
+   AND ESS.AR_DATE_STR >= TO_DATE(#{startDate, jdbcType=VARCHAR}, 'YYYY/MM/DD')
+   AND ESS.AR_DATE_STR <= TO_DATE(#{endDate, jdbcType=VARCHAR}, 'YYYY/MM/DD')
+   AND EXISTS (SELECT B1.DEPTID
+          FROM HR_DEPARTMENT B1
+         WHERE B1.DEPTNO = HE.DEPTNO
+         START WITH B1.DEPTNO in
+                    (SELECT HRD.DEPTID
+                       FROM HR_DEPARTMENT HRD
+                      WHERE HRD.MANAGER_EMP_ID = #{adminID, jdbcType=VARCHAR})
+        CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+        UNION
+        SELECT AR_SUPERVISOR_INFO.DEPTNO
+          FROM AR_SUPERVISOR_INFO
+         WHERE AR_SUPERVISOR_INFO.DEPTNO = HE.DEPTNO
+           AND AR_SUPERVISOR_INFO.PERSON_ID = #{adminID, jdbcType=VARCHAR})
+ ORDER BY ESS.AR_DATE_STR ASC, ESS.CREATE_DATE DESC, HE.DEPTNO, HE.EMPID;
+ ĐỊnh dạng ngày tháng dạng YYYY/MM/DD. mặc định ban đầu lấy ngày bắt đầu là ngày trước 1 ngày hiện tại.
+
+ Dựa vào viewCoordApplyAttendanceInfoList.html, hãy tạo cho tôi một file viewArPersonalList.html - Tình hình chấm công nằm trong module /ess/viewDept. Giao diện tham khảo hình ảnh. Dữ liệu lấy ra dựa vào bảng ar_emp_day_total với các trường tham khảo hình ảnh. định dạng ngày tháng dạng YYYY/MM/DD. mặc định ban đầu lấy ngày 25 tháng trước đến ngày 24 tháng này. bảng ar_emp_day_total chứa thông tin chấm công của từng nhân viên trong từng ngày. các trường liên quan đến chấm công như EARLY_LEAVE, ABSENTEEISM, PERSONAL_LEAVE, ... thực chất được lấy từ ITEM_ID tương ứng trong bảng ar_item, thoogn qua câu lệnh SQL: SELECT ITEM_ID FROM ar_item WHERE ITEM_ID IS NOT NULL AND ACTIVITY = 1. sau đó hiển thị ra tên của ITEM_ID đó thông qua function GET_GLOBAL_NAME(ITEM_ID, #{lang, jdbcType=VARCHAR}). hãy viết cấu lệnh tính tổng các cột của bảng ar_emp_day_total (danh sách tên cột được lấy từ ITEM_ID của bảng ar_item) với từng PERSON_ID, lấy dữ liệu dựa vào Ngày bắt đầu và ngày kết thúc mà người dùng chọn, sau đó join với bảng hr_employee để lấy ra tên nhân viên và phòng ban, đồng thời join với bảng ar_item để lấy ra tên của các loại chấm công (lấy ra danh sách các cột của ar_emp_day_total), cuối cùng hiển thị ra giao diện dưới dạng cột tương ứng với từng loại chấm công. Ngoài ra, cũng cần phải tính tổng số giờ làm việc của từng nhân viên trong khoảng thời gian đó thông qua 
+
+Giống như viewArPersonalList.html, hãy tạo cho tôi một file viewOtApplyPersonalList.html - Chi tiết tăng ca nằm trong module /ess/viewDept. giống như viewArPersonalList.html, chỉ khác prefix và itemGroup ở đây sẽ là '1433'
+
+
+Dựa vào viewSearchApplyOtInfoList.html hãy tạo cho tôi file viewArCardRecord.html - Lịch sử ra vào nằm trong module /ar/attendanceMintenance. Giao diện tham khảo hình ảnh. Dữ liệu lấy từ bảng AR_MAC_RECORDS_HTSV với các trường tham khảo hình ảnh, kết hợp với bảng HR_EMPLOYEE để lấy thông tin nhân viên. Định dạng ngày tháng dạng YYYY/MM/DD. mặc định ban đầu lấy ngày hiện tại. ở cột Nguồn dữ liệu sẽ hiển thị từ trường INSERT_BY của bảng AR_MAC_RECORDS_HTSV, với điều kiện nếu INSERT_BY = 'M' thì hiển thị là "Tự động", nếu INSERT_BY = 'A' thì hiển thị là "Xin phép", Cột Loại hiển thị dữ liệu từ trường DOOR_TYPE còn lại sẽ hiển thị là Thủ công. khi lấy dữ liệu thì gài thêm điều kiện cuối EXISTS (SELECT B1.DEPTID
+          FROM HR_DEPARTMENT B1
+         WHERE B1.DEPTNO = HE.DEPTNO
+         START WITH B1.DEPTNO in
+                    (SELECT HRD.DEPTID
+                       FROM HR_DEPARTMENT HRD
+                      WHERE HRD.MANAGER_EMP_ID = #{adminID, jdbcType=VARCHAR})
+        CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+        UNION
+        SELECT AR_SUPERVISOR_INFO.DEPTNO
+          FROM AR_SUPERVISOR_INFO
+         WHERE AR_SUPERVISOR_INFO.DEPTNO = HE.DEPTNO
+           AND AR_SUPERVISOR_INFO.PERSON_ID = #{adminID, jdbcType=VARCHAR})
+
+Thêm cho tôi nút Đọc dữ liệu quẹt thẻ, khi bấm vào sẽ kết nối với máy chủ chứa dữ liệu quẹt thẻ để lấy dữ liệu ra và hiển thị lên giao diện, đồng thời lưu dữ liệu đó vào bảng AR_MAC_RECORDS_HTSV. máy chủ có thông tin như sau: 
+driver = "com.microsoft.jdbc.sqlserver.SQLServerDriver";
+userName = "hrsystem";
+passwrod = "5tkatjd!";
+url = "jdbc:microsoft:sqlserver://10.43.7.249\\WISENETACS:1433;DatabaseName=WACS";
+thông qua cấu lệnh sql: sql =   " select P.EmployeeNo, p.FirstName,cr.ReaderIDX as ReaderCode ,CR.ReaderName, "
+							+ " DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()), E.OccuredDateTime) AS LocalDateTime, e.OccuredDateTime as UTCDateTime,"
+							+ "p.MiddleName, p.LastName, CR.DeviceType, CR.DeviceName "
+							+ " from ACS_CARDHOLDER_VIEW P join ACS_EVENT_ACCESS_VIEW E on P.PSNID = E.PSNId right "
+							+ " JOIN (SELECT DV.LoopID,dv.DeviceID,DV.DeviceType, DV.DeviceName,rd.ReaderIDX, rd.ReaderID, RD.ReaderName "
+							+ " FROM ACS_COMPANY_EXIT_READER_VIEW AR join ACS_DEVICE_DR_RD_VIEW RD "
+							+ " ON ar.ReaderId = rd.ReaderIDX join ACS_DEVICE_VIEW DV on dv.DeviceIDX = rd.DeviceIDX) CR "
+							+ " ON E.ControllerId = cr.LoopID and E.BoardNo = CR.DeviceID and E.IoIndex = CR.ReaderID "
+							+ " where DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()), E.OccuredDateTime) >= '"+ acr_fromDate +"' "
+							+ " and DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()), E.OccuredDateTime) <= '"+ acr_toDate +"' "; để lấy dữ liệu. với EmployeeNo là EMPID và CARD_NO, LocalDateTime là R_TIME, trong giá trị của ReaderName nếu có chứa "IN" thì ghi DOOR_TYPE là "IN", nếu có chứa "OUT" thì ghi DOOR_TYPE là "OUT", còn lại sẽ ghi DOOR_TYPE là "  ". sau khi lấy dữ liệu xong thì sẽ lưu vào bảng AR_MAC_RECORDS_HTSV với INSERT_BY = 'M'. khi lưu vào bảng AR_MAC_RECORDS_HTSV thì cần check trùng dữ liệu, nếu đã tồn tại dữ liệu có cùng EMPID, CARD_NO, R_TIME và DOOR_TYPE thì sẽ không lưu nữa để tránh bị trùng dữ liệu.

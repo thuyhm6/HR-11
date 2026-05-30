@@ -5,8 +5,11 @@ import com.ait.ar.attendanceMintenance.dto.EssLeaveApplyDto;
 import com.ait.ar.attendanceMintenance.service.EssLeaveApplyService;
 import com.ait.ess.infoApplyAttendance.dto.EssAttendanceExForBatchDto;
 import com.ait.ess.infoApplyAttendance.dto.EssAttendancePersonalInfoDto;
+import com.ait.ess.infoApplyAttendance.dto.EssCoordApplyAttendanceDto;
 import com.ait.ess.infoApplyAttendance.service.EssAttendanceExForBatchService;
 import com.ait.ess.infoApplyAttendance.service.EssAttendancePersonalInfoService;
+import com.ait.ess.infoApplyAttendance.service.EssCoordApplyAttendanceService;
+import com.ait.sy.sys.dto.DataTablesResponse;
 
 import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
@@ -33,6 +36,9 @@ public class EssInfoApplyAttendanceController {
 
     @Autowired
     private EssAttendancePersonalInfoService personalInfoService;
+
+    @Autowired
+    private EssCoordApplyAttendanceService coordApplyAttendanceService;
 
     @GetMapping("/viewSSTApplyAttendance")
     public String viewSSTApplyAttendance() {
@@ -182,6 +188,40 @@ public class EssInfoApplyAttendanceController {
     @ResponseBody
     public ResponseEntity<List<EssAttendancePersonalInfoDto>> getAttendanceItemList() {
         return ResponseEntity.ok(personalInfoService.getAttendanceItemList());
+    }
+
+    @GetMapping("/viewCoordApplyAttendanceInfoList")
+    public String viewCoordApplyAttendanceInfoList() {
+        return "ess/infoApplyAttendance/viewCoordApplyAttendanceInfoList";
+    }
+
+    @GetMapping("/api/coordApply/list")
+    @ResponseBody
+    public ResponseEntity<DataTablesResponse<EssCoordApplyAttendanceDto>> getCoordApplyAttendanceList(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String deptNos,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @RequestParam(required = false) String shiftNo,
+            @RequestParam(required = false) String itemNoSearch,
+            @RequestParam(required = false) String statusCode,
+            @RequestParam(required = false) String postFamily,
+            @RequestParam(defaultValue = "1") int draw,
+            @RequestParam(defaultValue = "0") int start,
+            @RequestParam(defaultValue = "25") int length) {
+        EssCoordApplyAttendanceDto dto = new EssCoordApplyAttendanceDto();
+        dto.setKeyword(keyword);
+        dto.setDeptNos(deptNos);
+        dto.setStartDate(startDate);
+        dto.setEndDate(endDate);
+        dto.setShiftNo(shiftNo);
+        dto.setItemNoSearch(itemNoSearch);
+        dto.setStatusCode(statusCode);
+        dto.setPostFamily(postFamily);
+        dto.setDraw(draw);
+        dto.setStart(start);
+        dto.setLength(length);
+        return ResponseEntity.ok(coordApplyAttendanceService.getPageList(dto));
     }
 
     @PostMapping("/api/attendanceEx/apply")

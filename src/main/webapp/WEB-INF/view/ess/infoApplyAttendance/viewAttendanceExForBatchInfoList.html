@@ -22,12 +22,12 @@
                         <div class="col-md-1">
                             <label for="ex_fromDate" class="form-label" th:text="#{ex.field.fromDate}">Ngày bắt đầu</label>
                             <input type="text" class="form-control js-daterangepicker" id="ex_fromDate"
-                                data-drp-format="DD/MM/YYYY" autocomplete="off">
+                                data-drp-format="YYYY/MM/DD" autocomplete="off">
                         </div>
                         <div class="col-md-1">
                             <label for="ex_toDate" class="form-label" th:text="#{ex.field.toDate}">Ngày kết thúc</label>
                             <input type="text" class="form-control js-daterangepicker" id="ex_toDate"
-                                data-drp-format="DD/MM/YYYY" autocomplete="off">
+                                data-drp-format="YYYY/MM/DD" autocomplete="off">
                         </div>
                         <div class="col-md-1">
                             <label for="ex_postFamily" class="form-label" th:text="#{ex.field.postFamily}">Nhóm nhân viên</label>
@@ -70,13 +70,13 @@
                         <div class="col-md-3">
                             <label for="ex_bulkInTime" class="form-label" th:text="#{ex.field.inTime}">Thời gian vào</label>
                             <input type="text" class="form-control js-daterangepicker" id="ex_bulkInTime"
-                                data-drp-format="DD/MM/YYYY HH:mm" data-drp-time="true" data-drp-24h="true"
+                                data-drp-format="YYYY/MM/DD HH:mm" data-drp-time="true" data-drp-24h="true"
                                 autocomplete="off">
                         </div>
                         <div class="col-md-3">
                             <label for="ex_bulkOutTime" class="form-label" th:text="#{ex.field.outTime}">Thời gian ra</label>
                             <input type="text" class="form-control js-daterangepicker" id="ex_bulkOutTime"
-                                data-drp-format="DD/MM/YYYY HH:mm" data-drp-time="true" data-drp-24h="true"
+                                data-drp-format="YYYY/MM/DD HH:mm" data-drp-time="true" data-drp-24h="true"
                                 autocomplete="off">
                         </div>
                         <div class="col-md-3">
@@ -146,7 +146,7 @@
             var d = String(dateObj.getDate()).padStart(2, '0');
             var m = String(dateObj.getMonth() + 1).padStart(2, '0');
             var y = dateObj.getFullYear();
-            return d + '/' + m + '/' + y;
+            return y + '/' + m + '/' + d;
         }
 
         function exInitDefaultDateRange() {
@@ -195,21 +195,6 @@
             });
         }
 
-        function exMergeDateTime(arDateStr, timeValue, fallback) {
-            if (fallback) {
-                return fallback;
-            }
-            var datePart = arDateStr || '';
-            var clockPart = timeValue || '';
-            if (!datePart || !clockPart) {
-                return '';
-            }
-            if (clockPart.indexOf('/') >= 0 || clockPart.indexOf('-') >= 0) {
-                return clockPart;
-            }
-            return datePart + ' ' + clockPart;
-        }
-
         function exNormalizeDateTimeValue(rawValue) {
             var value = (rawValue || '').trim().replace('T', ' ');
             if (!value) {
@@ -222,14 +207,17 @@
             var datePart = parts[0].replace(/\./g, '/');
             var timePart = parts[1];
 
+            // YYYY-MM-DD → YYYY/MM/DD
             if (/^\d{4}-\d{2}-\d{2}$/.test(datePart)) {
-                var ymd = datePart.split('-');
-                datePart = ymd[2] + '/' + ymd[1] + '/' + ymd[0];
-            } else if (/^\d{2}-\d{2}-\d{4}$/.test(datePart)) {
                 datePart = datePart.replace(/-/g, '/');
             }
+            // DD/MM/YYYY hoặc DD-MM-YYYY → YYYY/MM/DD
+            else if (/^\d{2}[\/\-]\d{2}[\/\-]\d{4}$/.test(datePart)) {
+                var dmyParts = datePart.split(/[\/\-]/);
+                datePart = dmyParts[2] + '/' + dmyParts[1] + '/' + dmyParts[0];
+            }
 
-            if (!/^\d{2}\/\d{2}\/\d{4}$/.test(datePart)) {
+            if (!/^\d{4}\/\d{2}\/\d{2}$/.test(datePart)) {
                 return '';
             }
 
@@ -547,21 +535,21 @@
                         data: null,
                         width: '200px',
                         render: function (data, type, row) {
-                            var inVal = exMergeDateTime(row.arDateStr, row.inDoorTime, row.fromDateTime);
-                            var outVal = exMergeDateTime(row.arDateStr, row.outDoorTime, row.toDateTime);
+                            var inVal = row.shiftStartTime || '';
+                            var outVal = row.shiftEndTime || '';
                             var keyToken = exGetRowToken(row);
                             return ''
                                 + '<div class="input-group input-group-sm mb-1">'
                                 + '<span class="input-group-text" style="width: 40px">' + _ex_i18n.labelIn + '</span>'
                                 + '<input type="text" class="form-control js-daterangepicker ex-in-time" '
                                 + 'data-row-key="' + exEscapeAttr(keyToken) + '" '
-                                + 'data-drp-format="DD/MM/YYYY HH:mm" data-drp-time="true" data-drp-24h="true" value="' + (inVal || '') + '">'
+                                + 'data-drp-format="YYYY/MM/DD HH:mm" data-drp-time="true" data-drp-24h="true" value="' + (inVal || '') + '">'
                                 + '</div>'
                                 + '<div class="input-group input-group-sm">'
                                 + '<span class="input-group-text" style="width: 40px">' + _ex_i18n.labelOut + '</span>'
                                 + '<input type="text" class="form-control js-daterangepicker ex-out-time" '
                                 + 'data-row-key="' + exEscapeAttr(keyToken) + '" '
-                                + 'data-drp-format="DD/MM/YYYY HH:mm" data-drp-time="true" data-drp-24h="true" value="' + (outVal || '') + '">'
+                                + 'data-drp-format="YYYY/MM/DD HH:mm" data-drp-time="true" data-drp-24h="true" value="' + (outVal || '') + '">'
                                 + '</div>';
                         }
                     },

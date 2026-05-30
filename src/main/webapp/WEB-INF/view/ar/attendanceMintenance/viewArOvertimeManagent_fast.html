@@ -4,15 +4,18 @@
             <div class="card">
                 <div class="card-body">
                     <form id="otf_searchForm" class="row g-3 mb-4">
-                        <div class="col-md-2">
-                            <label for="otf_searchEmpId" class="form-label" th:text="#{common.empId}">Mã nhân viên</label>
-                            <input type="text" class="form-control" id="otf_searchEmpId"
-                                th:placeholder="#{common.placeholder.enterEmpId}" placeholder="Nhập mã nhân viên">
-                        </div>
-                        <div class="col-md-2">
-                            <label for="otf_searchEmpName" class="form-label" th:text="#{common.empName}">Tên nhân viên</label>
-                            <input type="text" class="form-control" id="otf_searchEmpName"
-                                th:placeholder="#{common.placeholder.enterEmpName}" placeholder="Nhập tên nhân viên">
+                        <div class="col-md-3">
+                            <label for="otf_searchEmpKeyword" class="form-label" th:text="#{empSearch.field.keyword}">Mã nhân viên / Họ tên</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="otf_searchEmpKeyword"
+                                    th:placeholder="#{empSearch.placeholder.keyword}" placeholder="Nhập mã hoặc tên nhân viên"
+                                    onkeydown="if(event.key==='Enter'){event.preventDefault();otfOpenEmpSearch();}">
+                                <input type="hidden" id="otf_searchEmpId">
+                                <input type="hidden" id="otf_searchEmpName">
+                                <button class="btn btn-outline-secondary" type="button" onclick="otfOpenEmpSearch()" title="Tìm nhân viên">
+                                    <i class="bx bx-search"></i>
+                                </button>
+                            </div>
                         </div>
                         <div class="col-md-2">
                             <label for="otf_searchFromDate" class="form-label" th:text="#{common.fromDate}">Từ ngày</label>
@@ -55,6 +58,9 @@
                             <button type="button" class="btn btn-primary" onclick="otfSaveChecked()">
                                 <i class="bx bx-save"></i> <span th:text="#{common.save}">Lưu</span>
                             </button>
+                            <button type="button" class="btn btn-danger" onclick="otfCancelBatch()">
+                                <i class="bx bx-x-circle"></i> <span th:text="#{arOtf.cancelBatch}">Hủy bỏ</span>
+                            </button>
                             <button type="button" class="btn btn-info text-white" onclick="otfDownloadTemplate()">
                                 <i class="bx bx-download"></i> <span th:text="#{common.downloadTemplate}">Tải File Mẫu</span>
                             </button>
@@ -66,22 +72,24 @@
 
                     <div class="table-responsive">
                         <table id="otf_dataTable" class="table table-striped table-bordered table-hover"
-                            style="min-width: 1900px;">
+                            style="min-width: 2120px;">
                             <thead class="table-light text-center align-middle">
                                 <tr>
                                     <th><input type="checkbox" id="otf_checkAll" onclick="otfToggleCheckAll(this)"></th>
                                     <th>No</th>
-                                    <th th:text="#{common.empName}">Nhân viên</th>
+                                    <th style="width:250px;min-width:250px;max-width:250px;" th:text="#{common.empName}">Nhân viên</th>
                                     <th th:text="#{common.deptName}">Phòng ban</th>
                                     <th th:text="#{arOtf.otType}">Loại tăng ca</th>
-                                    <th th:text="#{arOtf.otDate}">Ngày tăng ca</th>
-                                    <th th:text="#{arOtf.fromHour}">Từ giờ</th>
-                                    <th th:text="#{arOtf.toHour}">Đến giờ</th>
+                                    <th style="width:120px;min-width:120px;max-width:120px;" th:text="#{arOtf.otDate}">Ngày tăng ca</th>
+                                    <th style="width:250px;min-width:150px;max-width:150px;" th:text="#{arOtf.fromHour}">Từ giờ</th>
+                                    <th style="width:150px;min-width:150px;max-width:150px;" th:text="#{arOtf.toHour}">Đến giờ</th>
                                     <th th:text="#{ps.col.indoorTime}">Giờ vào</th>
                                     <th th:text="#{ps.col.outdoorTime}">Giờ ra</th>
                                     <th th:text="#{common.hours}">Số giờ</th>
                                     <th th:text="#{impOt.deductYn}">Báo cơm / Nghỉ ngơi (30')</th>
-                                    <th th:text="#{common.reason}">Lý do</th>
+                                    <th style="width:250px;min-width:250px;max-width:250px;" th:text="#{common.reason}">Lý do</th>
+                                    <th th:text="#{arOtf.otTotalMonth}">Tổng tăng ca tháng này</th>
+                                    <th th:text="#{arOtf.otTotalYear}">Tổng tăng ca năm này</th>
                                     <th th:text="#{common.status}">Trạng thái</th>
                                     <th th:text="#{common.creator}">Người tạo</th>
                                     <th th:text="#{common.updater}">Người sửa</th>
@@ -116,6 +124,9 @@
             confirmCancelApply: /*[[#{arOtf.msg.confirmCancelApply}]]*/ 'Bạn có chắc chắn muốn hủy đơn tăng ca này không?',
             msgNotCheckCancel: /*[[#{arOtf.msg.notCheckCancel}]]*/ 'Vui lòng tích chọn ô hủy đơn trước khi thực hiện',
             cancelApplySuccess: /*[[#{arOtf.msg.cancelApplySuccess}]]*/ 'Hủy đơn tăng ca thành công',
+            confirmCancelBatch: /*[[#{arOtf.msg.confirmCancelBatch}]]*/ 'Bạn có chắc chắn muốn hủy {n} đơn tăng ca đã chọn không?',
+            cancelBatchSuccess: /*[[#{arOtf.msg.cancelBatchSuccess}]]*/ 'Đã hủy thành công {n} đơn tăng ca',
+            noCancelSelected: /*[[#{arOtf.msg.noCancelSelected}]]*/ 'Vui lòng chọn ít nhất một đơn tăng ca để hủy',
             confirmResubmit: /*[[#{arOtf.msg.confirmResubmit}]]*/ 'Đơn này đã được duyệt. Lưu sẽ xóa đơn hiện tại và tạo lại đơn mới. Bạn có muốn tiếp tục không?',
             resubmitSuccess: /*[[#{arOtf.msg.resubmitSuccess}]]*/ 'Đã lưu lại đơn tăng ca thành công',
             msgNoCheckedRows: 'Vui lòng chọn ít nhất một dòng để lưu',
@@ -191,23 +202,6 @@
                 datePart: parts[0],
                 timePart: parts[1]
             };
-        }
-
-        function otfComposeDateTimeValue(dateValue, timeValue) {
-            if (!timeValue) {
-                return '';
-            }
-
-            var normalized = otfNormalizeDateTimeValue(timeValue);
-            if (normalized) {
-                return normalized;
-            }
-
-            if (!dateValue || !/^\d{2}:\d{2}$/.test(String(timeValue).trim())) {
-                return '';
-            }
-
-            return dateValue + ' ' + String(timeValue).trim();
         }
 
         window.otfValidateMinutes = function (input) {
@@ -392,12 +386,16 @@
                     var fromVal = otfNormalizeDateTimeValue(data.otFromTime || '');
                     var toVal = otfNormalizeDateTimeValue(data.otToTime || '');
                     if (fromVal) {
-                        $tr.find('.otf-in-from').val(fromVal);
+                        var $fromInput = $tr.find('.otf-in-from');
+                        $fromInput.val(fromVal);
                         rowData.otFromTime = fromVal;
+                        if (typeof initDateRangePickers === 'function') initDateRangePickers($fromInput[0]);
                     }
                     if (toVal) {
-                        $tr.find('.otf-in-to').val(toVal);
+                        var $toInput = $tr.find('.otf-in-to');
+                        $toInput.val(toVal);
                         rowData.otToTime = toVal;
+                        if (typeof initDateRangePickers === 'function') initDateRangePickers($toInput[0]);
                     }
                     var applyHour = data.otApplyHour || '';
                     if (!applyHour && fromVal && toVal) {
@@ -405,6 +403,25 @@
                     }
                     $tr.find('.otf-apply-hour').text(applyHour || '');
                     rowData.otApplyHour = applyHour || '';
+                }
+            });
+        }
+
+        function otfFetchAndShowOtTotals($tr, personId, applyOtDate) {
+            if (!personId || !applyOtDate) return;
+            $.ajax({
+                url: '/ar/attendanceMintenance/api/overtime/ot-totals',
+                type: 'GET',
+                data: { personId: personId, applyOtDate: applyOtDate },
+                success: function (data) {
+                    if (!data) return;
+                    $tr.find('.otf-total-month').text(data.otTotalMonth || '');
+                    $tr.find('.otf-total-year').text(data.otTotalYear || '');
+                    var rowData = _otf_table ? _otf_table.row($tr).data() : null;
+                    if (rowData) {
+                        rowData.otTotalMonth = data.otTotalMonth || '';
+                        rowData.otTotalYear = data.otTotalYear || '';
+                    }
                 }
             });
         }
@@ -493,15 +510,18 @@
 
             $('#otf_dataTable tbody').on('change.otf', '.otf-in-date', function () {
                 var $tr = $(this).closest('tr');
+                var newDate = $(this).val();
                 var rowData = otfGetRowData($tr);
-                if (rowData && rowData.isNew) {
-                    var personId = ($tr.find('.otf-in-personid').val() || '').trim();
-                    if (personId) {
-                        otfAutoFillByEmp($tr, personId, $(this).val());
-                        return;
-                    }
+                var personId = ($tr.find('.otf-in-personid').val() || '').trim();
+                if (rowData && rowData.isNew && personId) {
+                    otfAutoFillByEmp($tr, personId, newDate);
+                    otfFetchAndShowOtTotals($tr, personId, newDate);
+                    return;
                 }
                 otfUpdateRowState($tr, true);
+                if (personId && newDate) {
+                    otfFetchAndShowOtTotals($tr, personId, newDate);
+                }
             });
 
             $('#otf_dataTable tbody').on('change.otf', '.otf-in-deduct', function () {
@@ -535,6 +555,7 @@
                 lengthChange: true,
                 pageLength: 25,
                 processing: true,
+                order: [],
                 columnDefs: [
                     { targets: 0, width: '30px', orderable: false },
                     { targets: 1, width: '15px' },
@@ -542,18 +563,20 @@
                     { targets: 3, width: '140px' },
                     { targets: 4, width: '100px' },
                     { targets: 5, width: '120px' },
-                    { targets: 6, width: '180px' },
-                    { targets: 7, width: '180px' },
+                    { targets: 6, width: '260px' },
+                    { targets: 7, width: '260px' },
                     { targets: 8, width: '80px' },
                     { targets: 9, width: '80px' },
                     { targets: 10, width: '60px' },
                     { targets: 11, width: '80px', orderable: false },
-                    { targets: 12, width: '220px' },
-                    { targets: 13, width: '120px' },
-                    { targets: 14, width: '100px' },
-                    { targets: 15, width: '100px' },
-                    { targets: 16, width: '180px' },
-                    { targets: 17, width: '130px' }
+                    { targets: 12, width: '320px' },
+                    { targets: 13, width: '110px', orderable: false },
+                    { targets: 14, width: '110px', orderable: false },
+                    { targets: 15, width: '120px' },
+                    { targets: 16, width: '100px' },
+                    { targets: 17, width: '100px' },
+                    { targets: 18, width: '180px' },
+                    { targets: 19, width: '130px' }
                 ],
                 fixedColumns: hasFixedColumns ? { leftColumns: 3 } : false,
                 initComplete: function () {
@@ -580,6 +603,12 @@
                         orderable: false,
                         className: 'text-center',
                         render: function (data, type, row) {
+                            if (!row.isNew) {
+                                var cancelableFlags = ['14014306', '14014307', '14014308'];
+                                if (cancelableFlags.indexOf(String(row.affirmFlag || '')) === -1) {
+                                    return '';
+                                }
+                            }
                             var checked = row.isNew ? ' checked' : '';
                             return '<input type="checkbox" class="otf-row-chk"' + checked + '>';
                         }
@@ -595,7 +624,7 @@
                         render: function (data, type, row) {
                             if (row.isNew) {
                                 return '<div class="input-group input-group-sm">'
-                                    + '<input type="text" class="form-control otf-in-empname" readonly placeholder="' + _otf_i18n.selectEmp + '">'
+                                    + '<input type="text" class="form-control otf-in-empname" placeholder="' + _otf_i18n.selectEmp + '" onkeydown="otfEmpInputKeydown(event,this)">'
                                     + '<input type="hidden" class="otf-in-personid">'
                                     + '<button class="btn btn-outline-secondary" type="button" onclick="otfPickEmp(this)"><i class="bx bx-search"></i></button>'
                                     + '</div>';
@@ -635,26 +664,24 @@
                     },
                     {
                         data: 'otFromTime',
-                        render: function (data, type, row) {
-                            var val = otfComposeDateTimeValue(row.applyOtDate, data || '');
+                        render: function (data) {
                             return '<input type="text" class="form-control form-control-sm otf-in-from js-daterangepicker" '
                                 + 'data-drp-format="YYYY-MM-DD HH:mm" data-drp-time="true" data-drp-24h="true" '
                                 + 'data-drp-time-increment="1" data-drp-trigger-change="true" '
                                 + 'data-drp-normalize="otfNormalizeDateTimePickerValue" '
                                 + 'data-drp-on-apply="otfHandleDateTimePickerApply" '
-                                + 'value="' + otfEscHtml(val) + '" placeholder="YYYY-MM-DD HH:mm">';
+                                + 'value="' + otfEscHtml(data || '') + '" placeholder="YYYY-MM-DD HH:mm">';
                         }
                     },
                     {
                         data: 'otToTime',
-                        render: function (data, type, row) {
-                            var val = otfComposeDateTimeValue(row.applyOtDate, data || '');
+                        render: function (data) {
                             return '<input type="text" class="form-control form-control-sm otf-in-to js-daterangepicker" '
                                 + 'data-drp-format="YYYY-MM-DD HH:mm" data-drp-time="true" data-drp-24h="true" '
                                 + 'data-drp-time-increment="1" data-drp-trigger-change="true" '
                                 + 'data-drp-normalize="otfNormalizeDateTimePickerValue" '
                                 + 'data-drp-on-apply="otfHandleDateTimePickerApply" '
-                                + 'value="' + otfEscHtml(val) + '" placeholder="YYYY-MM-DD HH:mm">';
+                                + 'value="' + otfEscHtml(data || '') + '" placeholder="YYYY-MM-DD HH:mm">';
                         }
                     },
                     {
@@ -687,6 +714,20 @@
                         data: 'applyOtRemark',
                         render: function (data) {
                             return '<input type="text" class="form-control form-control-sm otf-in-remark" value="' + otfEscHtml(data || '') + '">';
+                        }
+                    },
+                    {
+                        data: 'otTotalMonth',
+                        className: 'text-center align-middle',
+                        render: function (data) {
+                            return '<span class="otf-total-month">' + otfEscHtml(data || '') + '</span>';
+                        }
+                    },
+                    {
+                        data: 'otTotalYear',
+                        className: 'text-center align-middle',
+                        render: function (data) {
+                            return '<span class="otf-total-year">' + otfEscHtml(data || '') + '</span>';
                         }
                     },
                     {
@@ -769,8 +810,8 @@
                 empId: rowData.empId || '',
                 otTypeCode: $tr.find('.otf-in-type-code').val(),
                 applyOtDate: (timeInfo.fromParts && timeInfo.fromParts.datePart) || $tr.find('.otf-in-date').val(),
-                otFromTime: timeInfo.fromParts ? timeInfo.fromParts.timePart : '',
-                otToTime: timeInfo.toParts ? timeInfo.toParts.timePart : '',
+                otFromTime: timeInfo.fromDateTime || '',
+                otToTime: timeInfo.toDateTime || '',
                 otApplyHour: $tr.find('.otf-apply-hour').text() || otfCalcApplyHour(
                     (timeInfo.fromParts && timeInfo.fromParts.datePart) || $tr.find('.otf-in-date').val(),
                     timeInfo.fromDateTime,
@@ -838,6 +879,8 @@
                 outdoorTime: '',
                 otApplyHour: '',
                 applyOtRemark: '',
+                otTotalMonth: '',
+                otTotalYear: '',
                 affirmFlag: '',
                 affirmStr: '',
                 createdBy: '',
@@ -851,7 +894,22 @@
             }
         };
 
-        window.otfPickEmp = function (btn) {
+        window.otfOpenEmpSearch = function () {
+            var keyword = $('#otf_searchEmpKeyword').val();
+            EmployeeSearchModal.open(function (emp) {
+                $('#otf_searchEmpId').val(emp.empId);
+                $('#otf_searchEmpName').val(emp.localName);
+                $('#otf_searchEmpKeyword').val(emp.empId + ' - ' + emp.localName);
+            }, keyword);
+            $('#esm_empOffice').val('15119');
+        };
+
+        $('#otf_searchEmpKeyword').on('input', function () {
+            $('#otf_searchEmpId').val('');
+            $('#otf_searchEmpName').val('');
+        });
+
+        window.otfPickEmp = function (btn, keyword) {
             if (typeof EmployeeSearchModal !== 'undefined') {
                 EmployeeSearchModal.open(function (emp) {
                     var $tr = $(btn).closest('tr');
@@ -865,9 +923,23 @@
                     $tr.find('td').eq(3).text(emp.deptName || '');
                     var applyOtDate = $tr.find('.otf-in-date').val() || otfFormatDate(new Date());
                     otfAutoFillByEmp($tr, emp.personId, applyOtDate);
-                });
+                    otfFetchAndShowOtTotals($tr, emp.personId, applyOtDate);
+                }, keyword || '');
+                $('#esm_empOffice').val('15119');
             } else {
                 alert(_otf_i18n.noEmpComp);
+            }
+        };
+
+        window.otfEmpInputKeydown = function (e, input) {
+            if (e.key === 'Enter' || e.keyCode === 13) {
+                e.preventDefault();
+                var $input = $(input);
+                var keyword = $input.val().trim();
+                $input.closest('.input-group').find('button').each(function () {
+                    otfPickEmp(this, keyword);
+                    return false;
+                });
             }
         };
 
@@ -948,41 +1020,42 @@
             });
         };
 
-        window.otfToggleCancelBtn = function (chk) {
-            var $btn = $(chk).closest('td').find('.otf-cancel-btn');
-            $btn.prop('disabled', !$(chk).is(':checked'));
-        };
-
-        window.otfCancelLine = function (btn, applyNo) {
-            var $btn = $(btn);
-            var $chk = $btn.closest('td').find('.otf-cancel-chk');
-            if (!$chk.is(':checked')) {
-                toastr && toastr.warning(_otf_i18n.msgNotCheckCancel);
+        window.otfCancelBatch = function () {
+            if (!_otf_table) return;
+            var applyNos = [];
+            _otf_table.rows().every(function () {
+                var rowData = this.data();
+                var $row = $(this.node());
+                if ($row.find('.otf-row-chk').is(':checked') && rowData && rowData.applyNo && !rowData.isNew) {
+                    applyNos.push(rowData.applyNo);
+                }
+            });
+            if (applyNos.length === 0) {
+                toastr && toastr.warning(_otf_i18n.noCancelSelected);
                 return;
             }
-            if (!confirm(_otf_i18n.confirmCancelApply)) {
+            if (!confirm(_otf_i18n.confirmCancelBatch.replace('{n}', applyNos.length))) {
                 return;
             }
-            var originalHtml = $btn.html();
-            $btn.html('<i class="bx bx-loader bx-spin"></i>').prop('disabled', true);
+            ProcessingModal.show();
             $.ajax({
-                url: '/ar/attendanceMintenance/api/overtime/cancel',
+                url: '/ar/attendanceMintenance/api/overtime/cancel-batch',
                 type: 'POST',
                 contentType: 'application/json',
-                data: JSON.stringify({ applyNo: applyNo }),
+                data: JSON.stringify({ applyNos: applyNos }),
                 success: function (res) {
+                    ProcessingModal.hide();
                     if (res && res.success) {
-                        toastr && toastr.success(_otf_i18n.cancelApplySuccess);
+                        toastr && toastr.success(_otf_i18n.cancelBatchSuccess.replace('{n}', res.count || applyNos.length));
                         if (_otf_table) {
                             _otf_table.ajax.reload(null, false);
                         }
                     } else {
-                        $btn.html(originalHtml).prop('disabled', false);
                         toastr && toastr.error((res && res.error) || 'Lỗi khi hủy đơn');
                     }
                 },
                 error: function () {
-                    $btn.html(originalHtml).prop('disabled', false);
+                    ProcessingModal.hide();
                     toastr && toastr.error('Lỗi khi gửi yêu cầu hủy đơn');
                 }
             });
@@ -1004,6 +1077,26 @@
                 }).remove().draw(false);
             }
         };
+
+        function otfCheckBatchTimeOverlap(payloadItems) {
+            for (var i = 0; i < payloadItems.length; i++) {
+                for (var j = i + 1; j < payloadItems.length; j++) {
+                    var a = payloadItems[i].payload;
+                    var b = payloadItems[j].payload;
+                    if (a.personId !== b.personId) continue;
+                    if (!a.otFromTime || !a.otToTime || !b.otFromTime || !b.otToTime) continue;
+                    var aFrom = new Date(a.otFromTime.replace(' ', 'T') + ':00');
+                    var aTo   = new Date(a.otToTime.replace(' ', 'T') + ':00');
+                    var bFrom = new Date(b.otFromTime.replace(' ', 'T') + ':00');
+                    var bTo   = new Date(b.otToTime.replace(' ', 'T') + ':00');
+                    if (isNaN(aFrom.getTime()) || isNaN(aTo.getTime()) || isNaN(bFrom.getTime()) || isNaN(bTo.getTime())) continue;
+                    if (aTo <= aFrom) aTo.setDate(aTo.getDate() + 1);
+                    if (bTo <= bFrom) bTo.setDate(bTo.getDate() + 1);
+                    if (aFrom < bTo && bFrom < aTo) return true;
+                }
+            }
+            return false;
+        }
 
         window.otfSaveChecked = function () {
             var rows = [];
@@ -1037,57 +1130,87 @@
                 });
             }
 
-            var total = payloads.length;
-            var done = 0;
+            if (otfCheckBatchTimeOverlap(payloads)) {
+                toastr && toastr.error('Các dòng dữ liệu bị trùng nhau về thời gian, xin kiểm tra lại!');
+                return;
+            }
+
+            ProcessingModal.show();
+            var totalRows = payloads.length;
+            var saveItems = payloads.filter(function (item) { return !item.isResubmit; });
+            var resubmitItems = payloads.filter(function (item) { return item.isResubmit; });
+            var callsRemaining = (saveItems.length > 0 ? 1 : 0) + resubmitItems.length;
             var errors = [];
             var successNewRowIds = [];
 
-            payloads.forEach(function (item) {
-                var url = item.isResubmit
-                    ? '/ar/attendanceMintenance/api/overtime/resubmit'
-                    : '/ar/attendanceMintenance/api/overtime/save';
+            function onCallDone() {
+                callsRemaining--;
+                if (callsRemaining === 0) {
+                    otfFinalizeBatchSave(totalRows, errors, successNewRowIds);
+                }
+            }
 
+            if (saveItems.length > 0) {
+                var saveDtos = saveItems.map(function (item) { return item.payload; });
                 $.ajax({
-                    url: url,
+                    url: '/ar/attendanceMintenance/api/overtime/saveBatch',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(saveDtos),
+                    success: function (res) {
+                        if (res && res.success) {
+                            saveItems.forEach(function (item) {
+                                if (item.newRowId) successNewRowIds.push(item.newRowId);
+                            });
+                        } else {
+                            errors.push((res && res.error) || 'Lỗi lưu dữ liệu');
+                        }
+                        onCallDone();
+                    },
+                    error: function () {
+                        errors.push('Lỗi khi gửi dữ liệu');
+                        onCallDone();
+                    }
+                });
+            }
+
+            resubmitItems.forEach(function (item) {
+                $.ajax({
+                    url: '/ar/attendanceMintenance/api/overtime/resubmit',
                     type: 'POST',
                     contentType: 'application/json',
                     data: JSON.stringify(item.payload),
                     success: function (res) {
-                        done++;
                         if (res && res.success) {
-                            if (item.newRowId) {
-                                successNewRowIds.push(item.newRowId);
-                            }
+                            if (item.newRowId) successNewRowIds.push(item.newRowId);
                         } else {
                             errors.push((res && res.error) || 'Lỗi lưu dữ liệu');
                         }
-                        if (done === total) {
-                            otfFinalizeBatchSave(total, errors, successNewRowIds);
-                        }
+                        onCallDone();
                     },
                     error: function () {
-                        done++;
                         errors.push('Lỗi khi gửi dữ liệu');
-                        if (done === total) {
-                            otfFinalizeBatchSave(total, errors, successNewRowIds);
-                        }
+                        onCallDone();
                     }
                 });
             });
         };
 
         function otfFinalizeBatchSave(total, errors, successNewRowIds) {
+            ProcessingModal.hide();
             successNewRowIds.forEach(function (id) {
                 _otf_addedRows = _otf_addedRows.filter(function (r) { return r._newRowId !== id; });
             });
             if (errors.length > 0) {
-                toastr && toastr.error(_otf_i18n.saveBatchFailed);
+                errors.forEach(function (msg) {
+                    toastr && toastr.error(msg);
+                });
             } else {
                 var msg = _otf_i18n.saveBatchSuccess.replace('{n}', total);
                 toastr && toastr.success(msg);
-            }
-            if (_otf_table) {
-                _otf_table.ajax.reload(null, false);
+                if (_otf_table) {
+                    _otf_table.ajax.reload(null, false);
+                }
             }
         }
 

@@ -30,41 +30,15 @@
                             <tr>
                                 <th class="table-light text-center" th:text="#{sa.label.startTime}">Thời gian bắt đầu</th>
                                 <td>
-                                    <div class="d-flex align-items-center gap-1">
-                                        <input type="text" class="form-control form-control-sm js-daterangepicker"
-                                            id="sa_fromDate"
-                                            data-drp-format="DD/MM/YYYY"
-                                            data-drp-auto-update-input="false"
-                                            data-drp-on-apply="saOnDateApply"
-                                            autocomplete="off"
-                                            style="width:130px;"
-                                            onchange="saCalcDuration()">
-                                        <select class="form-select form-select-sm" id="sa_fromHour"
-                                            style="width:75px;" onchange="saCalcDuration()"></select>
-                                        <span>:</span>
-                                        <select class="form-select form-select-sm" id="sa_fromMin"
-                                            style="width:75px;" onchange="saCalcDuration()"></select>
-                                    </div>
+                                    <input type="datetime-local" class="form-control form-control-sm"
+                                        id="sa_fromTime" style="width:200px;" onchange="saCalcDuration()">
                                 </td>
                             </tr>
                             <tr>
                                 <th class="table-light text-center" th:text="#{sa.label.endTime}">Thời gian kết thúc</th>
                                 <td>
-                                    <div class="d-flex align-items-center gap-1">
-                                        <input type="text" class="form-control form-control-sm js-daterangepicker"
-                                            id="sa_toDate"
-                                            data-drp-format="DD/MM/YYYY"
-                                            data-drp-auto-update-input="false"
-                                            data-drp-on-apply="saOnDateApply"
-                                            autocomplete="off"
-                                            style="width:130px;"
-                                            onchange="saCalcDuration()">
-                                        <select class="form-select form-select-sm" id="sa_toHour"
-                                            style="width:75px;" onchange="saCalcDuration()"></select>
-                                        <span>:</span>
-                                        <select class="form-select form-select-sm" id="sa_toMin"
-                                            style="width:75px;" onchange="saCalcDuration()"></select>
-                                    </div>
+                                    <input type="datetime-local" class="form-control form-control-sm"
+                                        id="sa_toTime" style="width:200px;" onchange="saCalcDuration()">
                                 </td>
                             </tr>
                             <tr>
@@ -83,7 +57,7 @@
                 </div>
             </div>
 
-            <!-- Đính kèm file -->
+            <!-- Đính kèm file
             <div class="mb-3">
                 <div class="mb-2">
                     <button type="button" class="btn btn-sm btn-secondary me-1" onclick="saInsertFile()"
@@ -107,7 +81,7 @@
                         </tbody>
                     </table>
                 </div>
-            </div>
+            </div> -->
 
             <!-- Danh sách người phê duyệt -->
             <div class="table-responsive mb-3">
@@ -195,59 +169,26 @@
                    _sa_i18n.vacRemain   + ' ' + f(d.REMAIN_VAC);
         }
 
-        function saInitHourSelects() {
-            var hourOpts = '';
-            for (var h = 0; h < 24; h++) {
-                var hh = (h < 10 ? '0' : '') + h;
-                hourOpts += '<option value="' + hh + '">' + hh + '</option>';
+        function saSetDateTimeVal($input, value) {
+            $input.val(value);
+            var picker = $input.data('daterangepicker');
+            if (picker && window.moment) {
+                var m = window.moment(value, 'YYYY-MM-DD HH:mm', true);
+                if (m.isValid()) {
+                    picker.setStartDate(m);
+                    picker.setEndDate(m);
+                }
             }
-            var minOpts = '';
-            [0, 15, 30, 45].forEach(function(m) {
-                var mm = (m < 10 ? '0' : '') + m;
-                minOpts += '<option value="' + mm + '">' + mm + '</option>';
-            });
-            $('#sa_fromHour, #sa_toHour').html(hourOpts);
-            $('#sa_fromMin, #sa_toMin').html(minOpts);
-            $('#sa_fromHour').val('08');
-            $('#sa_toHour').val('17');
-        }
-
-        function saInitDateDefaults() {
-            var today = new Date();
-            var dd = String(today.getDate()).padStart(2, '0');
-            var mm = String(today.getMonth() + 1).padStart(2, '0');
-            var yyyy = today.getFullYear();
-            var todayStr = dd + '/' + mm + '/' + yyyy;
-            $('#sa_fromDate').val(todayStr);
-            $('#sa_toDate').val(todayStr);
-            if ($('#sa_fromDate').data('daterangepicker')) {
-                $('#sa_fromDate').data('daterangepicker').setStartDate(todayStr);
-            }
-            if ($('#sa_toDate').data('daterangepicker')) {
-                $('#sa_toDate').data('daterangepicker').setStartDate(todayStr);
-            }
-        }
-
-        // Convert DD/MM/YYYY to YYYY-MM-DD HH:mm
-        function saConvertToApiDateTime(dateStr, hourVal, minVal) {
-            if (!dateStr) return '';
-            var p = dateStr.split('/');
-            if (p.length !== 3) return '';
-            return p[2] + '-' + p[1] + '-' + p[0] + ' ' + (hourVal || '00') + ':' + (minVal || '00');
         }
 
         var _sa_calcTimer = null;
-
-        window.saOnDateApply = function() {
-            saCalcDuration();
-        };
 
         window.saCalcDuration = function() {
             clearTimeout(_sa_calcTimer);
             _sa_calcTimer = setTimeout(function() {
                 var leaveTypeCode = $('#sa_leaveType').val();
-                var fromDt = saConvertToApiDateTime($('#sa_fromDate').val(), $('#sa_fromHour').val(), $('#sa_fromMin').val());
-                var toDt   = saConvertToApiDateTime($('#sa_toDate').val(),   $('#sa_toHour').val(),   $('#sa_toMin').val());
+                var fromDt = ($('#sa_fromTime').val() || '');
+                var toDt   = ($('#sa_toTime').val()   || '');
 
                 if (!fromDt || !toDt || !leaveTypeCode) {
                     $('#sa_duration').text('-');
@@ -372,21 +313,12 @@
             saRenderFileList();
         };
 
-        function saBuildDateTime(dateInputId, hourId, minId) {
-            var dateStr = $('#' + dateInputId).val();
-            var parts = dateStr ? dateStr.split('/') : [];
-            if (parts.length !== 3) return '';
-            return parts[2] + '-' + parts[1] + '-' + parts[0]
-                + ' ' + ($('#' + hourId).val() || '00')
-                + ':' + ($('#' + minId).val() || '00');
-        }
-
         window.saSubmit = function() {
             var leaveTypeCode = $('#sa_leaveType').val();
             if (!leaveTypeCode) { toastr && toastr.warning(_sa_i18n.selectLeaveType); return; }
 
-            var fromTime = saBuildDateTime('sa_fromDate', 'sa_fromHour', 'sa_fromMin');
-            var toTime   = saBuildDateTime('sa_toDate',   'sa_toHour',   'sa_toMin');
+            var fromTime = ($('#sa_fromTime').val() || '');
+            var toTime   = ($('#sa_toTime').val()   || '');
             if (!fromTime) { toastr && toastr.warning(_sa_i18n.enterStartTime); return; }
             if (!toTime)   { toastr && toastr.warning(_sa_i18n.enterEndTime);   return; }
 
@@ -429,10 +361,12 @@
         function saResetForm() {
             $('#sa_leaveType').val('');
             $('#sa_vacInfo').text('');
-            saInitDateDefaults();
-            $('#sa_fromHour').val('08');
-            $('#sa_toHour').val('17');
-            $('#sa_fromMin, #sa_toMin').val('00');
+            var now = new Date();
+            var ryyyy = now.getFullYear();
+            var rmm = String(now.getMonth() + 1).padStart(2, '0');
+            var rdd = String(now.getDate()).padStart(2, '0');
+            saSetDateTimeVal($('#sa_fromTime'), ryyyy + '-' + rmm + '-' + rdd + ' 08:00');
+            saSetDateTimeVal($('#sa_toTime'),   ryyyy + '-' + rmm + '-' + rdd + ' 17:00');
             $('#sa_reason').val('');
             _sa_fileList = [];
             saRenderFileList();
@@ -449,12 +383,13 @@
             _sa_pageBooted = true;
 
             loadEssEmpInfoCard();
-            saInitHourSelects();
 
-            if (typeof initDateRangePickers === 'function') {
-                initDateRangePickers('#sa_pageWrapper');
-            }
-            saInitDateDefaults();
+            var now = new Date();
+            var byyyy = now.getFullYear();
+            var bmm = String(now.getMonth() + 1).padStart(2, '0');
+            var bdd = String(now.getDate()).padStart(2, '0');
+            saSetDateTimeVal($('#sa_fromTime'), byyyy + '-' + bmm + '-' + bdd + ' 08:00');
+            saSetDateTimeVal($('#sa_toTime'),   byyyy + '-' + bmm + '-' + bdd + ' 17:00');
             saCalcDuration();
 
             $.ajax({

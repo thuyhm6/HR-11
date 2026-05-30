@@ -29,3 +29,4 @@ sy0000	\assets\images\icon\system.png
 /ess/infoApplyLeave/viewCheckAttencetanceExForBatchList đổi thành /ess/infoApplyAttendance/viewCheckAttencetanceExForBatchList
 
 bảng ESS_OT_APPLY_TB_EXCEL_TEMP đổi UPLOAD_DATE thành date
+

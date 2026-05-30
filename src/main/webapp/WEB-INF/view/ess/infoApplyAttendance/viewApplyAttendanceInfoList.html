@@ -312,14 +312,18 @@
                 $tbody.html('<tr><td colspan="14" class="text-center text-muted py-3">' + alEscHtml(_al_i18n.noData) + '</td></tr>');
                 return;
             }
+            var _al_cancelableFlags = ['14014306', '14014307', '14014308'];
             var html = '';
             rows.forEach(function(r, idx) {
                 var duration = alFormatDuration(r.applyLength, r.dayHours);
                 var inputBy  = alEscHtml((r.createdBy || '') + (r.createdIp ? ' ' + r.createdIp : ''));
+                var checkboxCell = _al_cancelableFlags.indexOf(String(r.affirmFlag)) !== -1
+                    ? '<td class="text-center" onclick="event.stopPropagation()"><input type="checkbox" class="al_rowCheck" value="' + alEscHtml(r.applyNo) + '"></td>'
+                    : '<td></td>';
                 html += '<tr data-apply-no="' + alEscHtml(r.applyNo) + '" style="cursor:pointer;" onclick="alOpenDetail(event,\'' + alEscHtml(r.applyNo) + '\',\'' + alEscHtml(r.leaveTypeCode || '') + '\')">'
-                    + '<td class="text-center" onclick="event.stopPropagation()"><input type="checkbox" class="al_rowCheck" value="' + alEscHtml(r.applyNo) + '"></td>'
+                    + checkboxCell
                     + '<td class="text-center">' + (idx + 1) + '</td>'
-                    + '<td>' + alEscHtml(r.leaveTypeName || r.leaveTypeCode || '') + '</td>'
+                    + '<td> <a href="javascript:void(0)" onclick="alOpenDetail(event,\'' + alEscHtml(r.applyNo) + '\',\'' + alEscHtml(r.leaveTypeCode || '') + '\')">' + alEscHtml(r.leaveTypeName || r.leaveTypeCode || '') + '</a></td>'
                     + '<td class="text-center">' + alEscHtml(r.applyDate || '') + '</td>'
                     + '<td class="text-center">' + alEscHtml(r.leaveFromDate || '') + '</td>'
                     + '<td class="text-center">' + alEscHtml(r.leaveFromTimeOnly || '') + '</td>'

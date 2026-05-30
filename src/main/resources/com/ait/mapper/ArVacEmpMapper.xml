@@ -256,6 +256,9 @@
         <if test="deptNos != null and deptNos != ''">
             AND INSTR(',' || #{deptNos, jdbcType=VARCHAR} || ',', ',' || HE.DEPTNO || ',') &gt; 0
         </if>
+        <if test="empOffice != null and empOffice != ''">
+            AND HE.EMP_OFFICE = #{empOffice, jdbcType=VARCHAR}
+        </if>
         ORDER BY HE.DEPTNO, HE.EMPID
     </select>
 </mapper>

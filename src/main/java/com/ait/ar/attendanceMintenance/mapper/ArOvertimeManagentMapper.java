@@ -46,4 +46,10 @@ public interface ArOvertimeManagentMapper {
     void deleteOvertimeApplyByApplyNo(@Param("applyNo") String applyNo);
 
     void deleteApplyResultByApplyNo(@Param("applyNo") String applyNo);
+
+    int countOverlapOt(ArOvertimeManagentDto dto);
+
+    int checkOtClash(ArOvertimeManagentDto dto);
+
+    ArOvertimeManagentDto selectOtTotals(ArOvertimeManagentDto dto);
 }

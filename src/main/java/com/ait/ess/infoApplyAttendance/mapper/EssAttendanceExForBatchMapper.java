@@ -22,4 +22,7 @@ public interface EssAttendanceExForBatchMapper {
     Long getNextCardApplyNo();
 
     int insertCardApply(EssAttendanceExForBatchDto params);
+
+    Integer checkAttExClash(@Param("personId") String personId,
+                            @Param("arDateStr") String arDateStr);
 }

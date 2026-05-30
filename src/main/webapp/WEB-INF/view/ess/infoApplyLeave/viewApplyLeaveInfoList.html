@@ -270,7 +270,9 @@
                     html += '<tr style="cursor:pointer;" onclick="aliOpenDetail(event,\'' + applyNo + '\',\'' + itemNo + '\')">'
                         + '<td class="text-center">' + rowNo + '</td>'
                         + '<td class="text-center" onclick="event.stopPropagation()">'
-                        +   '<input type="checkbox" class="ali_rowCheck" value="' + applyNo + '">'
+                        +   (['14014306','14014307','14014308'].indexOf(String(r.affirmFlag)) !== -1
+                                ? '<input type="checkbox" class="ali_rowCheck" value="' + applyNo + '">'
+                                : '')
                         + '</td>'
                         + '<td class="text-center">' + aliEscHtml(r.arDateStr || '') + '</td>'
                         + '<td><a href="javascript:void(0)" onclick="event.stopPropagation();aliOpenDetail(event,\'' + applyNo + '\',\'' + itemNo + '\')">'

@@ -49,6 +49,16 @@ public class EssCardApplyListServiceImpl implements EssCardApplyListService {
     @Transactional
     public int cancelMyList(List<String> applyNos) {
         if (applyNos == null || applyNos.isEmpty()) return 0;
+        int lockedDetail = mapper.countLockedByArDetail(applyNos);
+        log.debug("countLockedByArDetail={}", lockedDetail);
+        if (lockedDetail > 0) {
+            throw new IllegalStateException("essLeave.error.locked");
+        }
+        int lockedDept = mapper.countLockedByDeptManage(applyNos);
+        log.debug("countLockedByDeptManage={}", lockedDept);
+        if (lockedDept > 0) {
+            throw new IllegalStateException("essLeave.error.locked");
+        }
         return mapper.cancelMyCardApplyList(applyNos);
     }
 

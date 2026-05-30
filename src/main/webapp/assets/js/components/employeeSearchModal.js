@@ -140,6 +140,12 @@ window.EmployeeSearchModal = {
         if (!this.dataTable) {
             this.initDataTable();
         }
+        // Tự động chọn ngay nếu chỉ có đúng 1 kết quả
+        if (employees && employees.length === 1) {
+            var emp = employees[0];
+            this.selectEmployee(emp.personId, emp.empId, emp.localName, emp.deptNo || emp.deptName, emp.position);
+            return;
+        }
         this.dataTable.clear().rows.add(employees).draw();
     },
 

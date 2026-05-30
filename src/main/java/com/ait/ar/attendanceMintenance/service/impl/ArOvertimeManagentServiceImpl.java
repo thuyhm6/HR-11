@@ -14,13 +14,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.time.Duration;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -174,7 +171,30 @@ public class ArOvertimeManagentServiceImpl implements ArOvertimeManagentService 
         }
         dto.setOtTypeNo(OT_TYPE_NO);
         dto.setAffirmFlag(APPLY_AFFIRM_FLAG);
-        dto.setOtApplyHour(resolveApplyHour(dto));
+        dto.setOtApplyHour(dto.getOtApplyHour());
+
+        // Kiểm tra giới hạn giờ tăng ca trong tháng và năm
+        validateOtHourLimits(personId, applyOtDate, dto.getOtApplyHour());
+
+        // Kiểm tra trùng/chồng chéo với đơn tăng ca khác
+        int overlapCount = mapper.countOverlapOt(dto);
+        if (overlapCount > 0) {
+            throw new IllegalArgumentException("Trùng với đơn tăng ca khác của nhân viên này vào cùng ngày, xin kiểm tra lại!");
+        }
+
+        // Kiểm tra điều kiện tăng ca qua hàm AR_GET_OT_CLASH
+        int clashResult = mapper.checkOtClash(dto);
+        if (clashResult > 0) {
+            throw new IllegalArgumentException("Trùng với tăng ca trước đó, xin kiểm tra thời gian này đã xin phép hay chưa!");
+        } else if (clashResult == -1) {
+            throw new IllegalArgumentException("Ngày công đã chốt, xin kiểm tra lại!");
+        } else if (clashResult == -2) {
+            throw new IllegalArgumentException("Thời gian đã khóa, xin kiểm tra lại!");
+        } else if (clashResult == -3) {
+            throw new IllegalArgumentException("Bạn đã tăng ca quá thời gian quy định trong tháng, xin liên hệ phòng nhân sự!");
+        } else if (clashResult == -4) {
+            throw new IllegalArgumentException("Đang trong thời gian mang thai hoặc nuôi con nhỏ. Không thể tăng ca!");
+        }
 
         // 1. Insert/Update thủ tục Leave Apply
         boolean isNew = safeString(dto.getApplyNo()).isEmpty() || "0".equals(safeString(dto.getApplyNo()));
@@ -302,6 +322,23 @@ public class ArOvertimeManagentServiceImpl implements ArOvertimeManagentService 
 
     @Override
     @Transactional
+    public Map<String, Object> cancelBatchOvertimeApply(List<String> applyNos) {
+        if (applyNos == null || applyNos.isEmpty()) {
+            throw new IllegalArgumentException("Danh sách đơn tăng ca không hợp lệ.");
+        }
+        int count = 0;
+        for (String applyNo : applyNos) {
+            cancelOvertimeApply(applyNo);
+            count++;
+        }
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", true);
+        result.put("count", count);
+        return result;
+    }
+
+    @Override
+    @Transactional
     public void resubmitOvertimeApply(ArOvertimeManagentDto dto) {
         if (dto == null) {
             throw new IllegalArgumentException("Dữ liệu tăng ca không hợp lệ.");
@@ -321,11 +358,87 @@ public class ArOvertimeManagentServiceImpl implements ArOvertimeManagentService 
         save(dto);
     }
 
+    @Override
+    @Transactional
+    public void saveBatch(List<ArOvertimeManagentDto> dtos) {
+        if (dtos == null || dtos.isEmpty()) return;
+
+        // Gom nhóm theo personId → yearMonth để tính tổng giờ batch
+        Map<String, Map<String, Double>> personMonthHours = new LinkedHashMap<>();
+        Map<String, Map<String, String>> personMonthDate = new LinkedHashMap<>();
+        Map<String, Map<String, Double>> personYearHours = new LinkedHashMap<>();
+        Map<String, Map<String, String>> personYearDate = new LinkedHashMap<>();
+
+        for (ArOvertimeManagentDto dto : dtos) {
+            String personId = safeString(dto.getPersonId());
+            String date = normalizeDate(safeString(dto.getApplyOtDate()));
+            if (personId.isEmpty() || date.length() < 7) continue;
+
+            double hours = parseHours(dto.getOtApplyHour());
+            String yearMonth = date.substring(0, 7);
+            String year = date.substring(0, 4);
+
+            personMonthHours.computeIfAbsent(personId, k -> new LinkedHashMap<>()).merge(yearMonth, hours, Double::sum);
+            personMonthDate.computeIfAbsent(personId, k -> new LinkedHashMap<>()).putIfAbsent(yearMonth, date);
+            personYearHours.computeIfAbsent(personId, k -> new LinkedHashMap<>()).merge(year, hours, Double::sum);
+            personYearDate.computeIfAbsent(personId, k -> new LinkedHashMap<>()).putIfAbsent(year, date);
+        }
+
+        // Kiểm tra giới hạn tháng (40h)
+        for (Map.Entry<String, Map<String, Double>> personEntry : personMonthHours.entrySet()) {
+            String personId = personEntry.getKey();
+            for (Map.Entry<String, Double> monthEntry : personEntry.getValue().entrySet()) {
+                double batchHours = monthEntry.getValue();
+                String sampleDate = personMonthDate.get(personId).get(monthEntry.getKey());
+                ArOvertimeManagentDto totals = getOtTotals(personId, sampleDate);
+                if (batchHours + parseHours(totals.getOtTotalMonth()) > 40.0) {
+                    throw new IllegalArgumentException("Tổng số giờ tăng ca trong tháng vượt quá 40h, xin kiểm tra lại!");
+                }
+            }
+        }
+
+        // Kiểm tra giới hạn năm (300h)
+        for (Map.Entry<String, Map<String, Double>> personEntry : personYearHours.entrySet()) {
+            String personId = personEntry.getKey();
+            for (Map.Entry<String, Double> yearEntry : personEntry.getValue().entrySet()) {
+                double batchHours = yearEntry.getValue();
+                String sampleDate = personYearDate.get(personId).get(yearEntry.getKey());
+                ArOvertimeManagentDto totals = getOtTotals(personId, sampleDate);
+                if (batchHours + parseHours(totals.getOtTotalYear()) > 300.0) {
+                    throw new IllegalArgumentException("Tổng số giờ tăng ca trong năm vượt quá 300h, xin kiểm tra lại!");
+                }
+            }
+        }
+
+        for (ArOvertimeManagentDto dto : dtos) {
+            save(dto);
+        }
+    }
+
+    @Override
+    public ArOvertimeManagentDto getOtTotals(String personId, String applyOtDate) {
+        String safePersonId = safeString(personId);
+        String safeDate = normalizeDate(safeString(applyOtDate));
+        if (safePersonId.isEmpty() || safeDate.isEmpty()) {
+            return new ArOvertimeManagentDto();
+        }
+        try {
+            ArOvertimeManagentDto dto = new ArOvertimeManagentDto();
+            dto.setPersonId(safePersonId);
+            dto.setApplyOtDate(safeDate);
+            ArOvertimeManagentDto result = mapper.selectOtTotals(dto);
+            return result != null ? result : new ArOvertimeManagentDto();
+        } catch (Exception e) {
+            log.warn("Lấy tổng tăng ca thất bại person={}, date={}: {}", safePersonId, safeDate, e.getMessage());
+            return new ArOvertimeManagentDto();
+        }
+    }
+
     private String buildLastName(ArOvertimeManagentDto dto) {
         String localName = safeString(dto.getLocalName());
         String labelName = localName.isEmpty() ? safeString(dto.getEmpId()) : localName;
-        String fromDateTime = dto.getApplyOtDate() + " " + dto.getOtFromTime();
-        String toDateTime = buildToDateTime(dto.getApplyOtDate(), dto.getOtFromTime(), dto.getOtToTime());
+        String fromDateTime = dto.getOtFromTime();
+        String toDateTime = dto.getOtToTime();
         return "OverTime Apply(" + labelName + ")[Date: " + fromDateTime + " ~ " + toDateTime + "]";
     }
 
@@ -342,49 +455,6 @@ public class ArOvertimeManagentServiceImpl implements ArOvertimeManagentService 
                 && !safeString(dto.getApplyOtDate()).isEmpty()
                 && !safeString(dto.getOtFromTime()).isEmpty()
                 && !safeString(dto.getOtToTime()).isEmpty();
-    }
-
-    private String resolveApplyHour(ArOvertimeManagentDto dto) {
-        String currentValue = safeString(dto.getOtApplyHour());
-        if (!currentValue.isEmpty()) {
-            return currentValue;
-        }
-        try {
-            LocalDateTime fromDateTime = LocalDateTime.parse(dto.getApplyOtDate() + " " + dto.getOtFromTime(),
-                    DATE_TIME_FORMAT);
-            LocalDateTime toDateTime = LocalDateTime.parse(
-                    buildToDateTime(dto.getApplyOtDate(), dto.getOtFromTime(), dto.getOtToTime()), DATE_TIME_FORMAT);
-            long minutes = Duration.between(fromDateTime, toDateTime).toMinutes();
-            if (minutes < 0) {
-                throw new IllegalArgumentException("Thời gian kết thúc phải lớn hơn thời gian bắt đầu.");
-            }
-            return BigDecimal.valueOf(minutes)
-                    .divide(BigDecimal.valueOf(60), 2, RoundingMode.HALF_UP)
-                    .stripTrailingZeros()
-                    .toPlainString();
-        } catch (RuntimeException ex) {
-            if (!currentValue.isEmpty()) {
-                return currentValue;
-            }
-            throw new IllegalArgumentException("Không tính được số giờ tăng ca.");
-        }
-    }
-
-    private String buildToDateTime(String applyOtDate, String otFromTime, String otToTime) {
-        LocalDateTime fromDateTime = LocalDateTime.parse(applyOtDate + " " + otFromTime, DATE_TIME_FORMAT);
-        LocalDateTime toDateTime = LocalDateTime.parse(applyOtDate + " " + otToTime, DATE_TIME_FORMAT);
-        if (toDateTime.isBefore(fromDateTime)) {
-            toDateTime = toDateTime.plusDays(1);
-        }
-        return toDateTime.format(DATE_TIME_FORMAT);
-    }
-
-    private String sanitizeSql(String affirmSql) {
-        String trimmed = affirmSql.trim();
-        if (trimmed.endsWith(";")) {
-            return trimmed.substring(0, trimmed.length() - 1);
-        }
-        return trimmed;
     }
 
     private boolean isProcedureErrorMessage(String message) {
@@ -408,5 +478,24 @@ public class ArOvertimeManagentServiceImpl implements ArOvertimeManagentService 
 
     private String safeString(Object value) {
         return value == null ? "" : value.toString().trim();
+    }
+
+    private double parseHours(String hours) {
+        try {
+            return Double.parseDouble(safeString(hours));
+        } catch (NumberFormatException e) {
+            return 0.0;
+        }
+    }
+
+    private void validateOtHourLimits(String personId, String applyOtDate, String otApplyHour) {
+        double currentHours = parseHours(otApplyHour);
+        ArOvertimeManagentDto totals = getOtTotals(personId, applyOtDate);
+        if (currentHours + parseHours(totals.getOtTotalMonth()) > 40.0) {
+            throw new IllegalArgumentException("Tổng số giờ tăng ca trong tháng vượt quá 40h, xin kiểm tra lại!");
+        }
+        if (currentHours + parseHours(totals.getOtTotalYear()) > 300.0) {
+            throw new IllegalArgumentException("Tổng số giờ tăng ca trong năm vượt quá 300h, xin kiểm tra lại!");
+        }
     }
 }

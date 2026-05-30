@@ -7,6 +7,7 @@ import java.util.Map;
 
 public interface EssOtApplyService {
     Map<String, Object> getOtDateInfo(String applyDate);
+    Map<String, Object> getOtDuration(String applyOtDate, String otFromTime, String otToTime, String deductYn);
     List<EssOtApplyListDto> getMyOtApplyList(EssOtApplyListDto dto);
     int cancelMyOtApplyList(List<String> applyNos);
 }

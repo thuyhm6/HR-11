@@ -4,24 +4,24 @@
             <div class="card">
                 <div class="card-body">
                     <form id="ve_searchForm" class="row g-3 mb-4">
-                        <div class="col-md-4">
+                        <div class="col-md-2">
                             <label for="ve_keyword" class="form-label">Mã nhân viên / Họ tên</label>
                             <input type="text" class="form-control" id="ve_keyword" placeholder="Nhập mã hoặc họ tên">
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-2">
                             <label for="ve_deptNo" class="form-label">Phòng ban</label>
                             <input type="text" class="form-control" id="ve_deptNo" placeholder="Chọn phòng ban"
                                 readonly>
                         </div>
                         <div class="col-md-2">
+                            <label for="ve_empOffice" class="form-label">Trạng thái làm việc</label>
+                            <select class="form-select" id="ve_empOffice" data-parent-code="15118"
+                                data-default-text="-- Tất cả --" data-default-value="15119"></select>
+                        </div>
+                        <div class="col-md-2">
                             <label class="form-label">Năm phép</label>
                             <input type="text" class="form-control" id="ve_vacIdDisplay" readonly>
                             <input type="hidden" id="ve_vacId">
-                        </div>
-                        <div class="col-md-2 d-flex align-items-end">
-                            <span class="badge bg-info-subtle text-info border border-info-subtle w-100 py-2">
-                                Dữ liệu mặc định theo năm hiện tại
-                            </span>
                         </div>
                         <div class="col-md-12 d-flex align-items-end gap-2 flex-wrap">
                             <button type="button" class="btn btn-primary" onclick="veSearchData()">
@@ -124,6 +124,7 @@
                         d.keyword = $('#ve_keyword').val();
                         d.deptNos = (_ve_selectedDeptCodes || []).join(',');
                         d.vacId = $('#ve_vacId').val();
+                        d.empOffice = $('#ve_empOffice').val();
                     }
                 },
                 initComplete: function () {
@@ -140,8 +141,8 @@
                     },
                     { data: 'empId', width: '45px', className: 'text-center' },
                     { data: 'localName', width: '55px' },
-                    { data: 'deptName', width: '55px' },
-                    { data: 'postGradeName' },
+                    { data: 'deptName', width: '105px' },
+                    { data: 'postGradeName',width: '55px'  },
                     { data: 'totVacCnt', className: 'text-end' },
                     { data: 'lastYearVac', className: 'text-end' },
                     { data: 'addVac', className: 'text-end' },
@@ -196,6 +197,7 @@
             $('#ve_deptNo').val('');
             _ve_selectedDeptCodes = [];
             $('.auth-dept-chk-global').prop('checked', false).trigger('change');
+            $('#ve_empOffice').val('15119').trigger('change');
             veInitDefaultYear();
             if (_ve_table) {
                 _ve_table.ajax.reload();

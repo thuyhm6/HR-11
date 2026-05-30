@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -49,4 +51,7 @@ public class ArOvertimeManagentDto extends EmployeeNameDto {
     private String toDate;
     private String indoorTime;
     private String outdoorTime;
+    private String otTotalMonth;
+    private String otTotalYear;
+    private List<String> applyNos;
 }

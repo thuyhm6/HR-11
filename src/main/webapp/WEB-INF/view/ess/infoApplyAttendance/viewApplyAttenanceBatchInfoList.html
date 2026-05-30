@@ -188,7 +188,6 @@
                     var dayHours = (res && (res.DAY_HOURS !== undefined ? res.DAY_HOURS : res.dayHours)) || 0;
                     var rowData = _ab_table && _ab_table.row($tr).data();
                     if (rowData) { rowData.applyLength = length; rowData.dayHours = dayHours; }
-                    // col 9: Số giờ (Chk=0,No=1,NV=2,Phòng=3,Phép=4,Ca=5,Loại=6,TGbắt=7,TGkết=8,Sốgiờ=9)
                     $tr.find('td').eq(9).text(abFormatDuration(length, dayHours));
                 },
                 error: function (err) {
@@ -296,7 +295,25 @@
                 lengthChange: true,
                 pageLength: 25,
                 processing: true,
-                fixedColumns: hasFixedColumns ? { leftColumns: 4 } : false,
+                columnDefs: [
+                    { targets: 0, width: '30px', orderable: false },
+                    { targets: 1, width: '15px' },
+                    { targets: 2, width: '180px' },
+                    { targets: 3, width: '140px' },
+                    { targets: 4, width: '40px' },
+                    { targets: 5, width: '120px' },
+                    { targets: 6, width: '200px' },
+                    { targets: 7, width: '120px' },
+                    { targets: 8, width: '120px' },
+                    { targets: 9, width: '40px' },
+                    { targets: 10, width: '220px' },
+                    { targets: 11, width: '120px' },
+                    { targets: 12, width: '100px' },
+                    { targets: 13, width: '100px' },
+                    { targets: 14, width: '160px' },
+                    { targets: 15, width: '40px' }
+                ],
+                fixedColumns: hasFixedColumns ? { leftColumns: 2 } : false,
                 initComplete: function () {
                     this.api().columns.adjust();
                     abInitInputPlugins('#ab_dataTable_wrapper');
@@ -345,7 +362,7 @@
                         render: function (data, type, row) {
                             if (row.isNew) {
                                 return '<div class="input-group input-group-sm">'
-                                    + '<input type="text" class="form-control ab-in-empname" readonly placeholder="Chọn NV...">'
+                                    + '<input type="text" class="form-control ab-in-empname" placeholder="Chọn NV..." onkeydown="abEmpInputKeydown(event,this)">'
                                     + '<input type="hidden" class="ab-in-personid">'
                                     + '<button class="btn btn-outline-secondary" type="button" onclick="abPickEmp(this)"><i class="bx bx-search"></i></button>'
                                     + '</div>';
@@ -492,7 +509,7 @@
         };
 
         window.abAddEmptyRow = function () {
-            _ab_addedRows.unshift({
+            var newRow = {
                 isNew: true,
                 applyNo: '',
                 empId: '',
@@ -509,8 +526,12 @@
                 affirmStr: '',
                 createdBy: '',
                 updatedBy: ''
-            });
-            if (_ab_table) _ab_table.ajax.reload(null, false);
+            };
+            _ab_addedRows.unshift(newRow);
+            if (_ab_table) {
+                var currentData = _ab_table.data().toArray();
+                _ab_table.clear().rows.add([newRow].concat(currentData)).draw();
+            }
         };
 
         window.abDownloadTemplate = function () {
@@ -530,7 +551,7 @@
             });
         };
 
-        window.abPickEmp = function (btn) {
+        window.abPickEmp = function (btn, keyword) {
             if (typeof EmployeeSearchModal !== 'undefined') {
                 EmployeeSearchModal.open(function (emp) {
                     var $tr = $(btn).closest('tr');
@@ -553,11 +574,15 @@
                             $tr.find('td').eq(5).text(rowData.shiftName);
                             if (res.START_TIME || res.startTime) {
                                 rowData.leaveFromTime = res.START_TIME || res.startTime;
-                                $tr.find('.ab-in-from').val(rowData.leaveFromTime);
+                                var $fromInput = $tr.find('.ab-in-from');
+                                $fromInput.val(rowData.leaveFromTime);
+                                if (typeof initDateRangePickers === 'function') initDateRangePickers($fromInput[0]);
                             }
                             if (res.END_TIME || res.endTime) {
                                 rowData.leaveToTime = res.END_TIME || res.endTime;
-                                $tr.find('.ab-in-to').val(rowData.leaveToTime);
+                                var $toInput = $tr.find('.ab-in-to');
+                                $toInput.val(rowData.leaveToTime);
+                                if (typeof initDateRangePickers === 'function') initDateRangePickers($toInput[0]);
                             }
                             var leaveTypeCode = $tr.find('.ab-in-type').val() || '';
                             abFetchAndShowAffirmors($tr, rowData, emp.personId, leaveTypeCode);
@@ -566,10 +591,22 @@
                             console.error('[abPickEmp] empDefaultInfo failed', err);
                         }
                     });
-                });
+                }, keyword || '');
                 $('#esm_empOffice').val('15119');
             } else {
                 alert('Chưa có component tìm nhân viên.');
+            }
+        };
+
+        window.abEmpInputKeydown = function (e, input) {
+            if (e.key === 'Enter' || e.keyCode === 13) {
+                e.preventDefault();
+                var $input = $(input);
+                var keyword = $input.val().trim();
+                $input.closest('.input-group').find('button').each(function () {
+                    abPickEmp(this, keyword);
+                    return false;
+                });
             }
         };
 
@@ -605,7 +642,7 @@
             var $tr = $(btn).closest('tr');
             var rowData = _ab_table.row($tr).data();
             _ab_addedRows = _ab_addedRows.filter(function (r) { return r !== rowData; });
-            _ab_table.ajax.reload(null, false);
+            _ab_table.rows(function (idx, data) { return data === rowData; }).remove().draw(false);
         };
 
         window.abSaveAllNewRows = function () {
@@ -663,6 +700,30 @@
             if (!newRows.length && !resubmitRows.length) {
                 toastr && toastr.info('Không có dòng mới và không có đơn đã duyệt nào được chọn để lưu!');
                 return;
+            }
+
+            var allSaveRows = newRows.map(function (r) {
+                return { personId: r.personId, fromTime: r.leaveFromTime, toTime: r.leaveToTime };
+            }).concat(resubmitRows.map(function (r) {
+                return { personId: r.personId, fromTime: r.leaveFromTime, toTime: r.leaveToTime };
+            }));
+            for (var _i = 0; _i < allSaveRows.length; _i++) {
+                for (var _j = _i + 1; _j < allSaveRows.length; _j++) {
+                    var _a = allSaveRows[_i], _b = allSaveRows[_j];
+                    if (_a.personId !== _b.personId) continue;
+                    if (!_a.fromTime || !_a.toTime || !_b.fromTime || !_b.toTime) continue;
+                    var _aFrom = new Date(_a.fromTime.replace(' ', 'T') + ':00');
+                    var _aTo   = new Date(_a.toTime.replace(' ', 'T') + ':00');
+                    var _bFrom = new Date(_b.fromTime.replace(' ', 'T') + ':00');
+                    var _bTo   = new Date(_b.toTime.replace(' ', 'T') + ':00');
+                    if (isNaN(_aFrom.getTime()) || isNaN(_aTo.getTime()) || isNaN(_bFrom.getTime()) || isNaN(_bTo.getTime())) continue;
+                    if (_aTo <= _aFrom) _aTo.setDate(_aTo.getDate() + 1);
+                    if (_bTo <= _bFrom) _bTo.setDate(_bTo.getDate() + 1);
+                    if (_aFrom < _bTo && _bFrom < _aTo) {
+                        toastr && toastr.error('Các dòng dữ liệu bị trùng nhau về thời gian, xin kiểm tra lại!');
+                        return;
+                    }
+                }
             }
 
             if (resubmitRows.length > 0) {

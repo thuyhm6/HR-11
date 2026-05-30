@@ -2,6 +2,7 @@ package com.ait.ess.infoApplyLeave.controller;
 
 import com.ait.ess.infoApplyLeave.dto.EssCardApplyListDto;
 import com.ait.ess.infoApplyLeave.service.EssCardApplyListService;
+import com.ait.util.I18nUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,6 +51,10 @@ public class EssInfoApplyLeaveController {
             response.put("success", true);
             response.put("count", count);
             response.put("message", "Hủy bỏ thành công " + count + " dòng.");
+        } catch (IllegalStateException e) {
+            log.warn("Cancel blocked: {}", e.getMessage());
+            response.put("success", false);
+            response.put("error", I18nUtil.getMessage(e.getMessage()));
         } catch (Exception e) {
             log.error("Failed to cancel card apply list", e);
             response.put("success", false);

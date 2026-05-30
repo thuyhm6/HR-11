@@ -76,4 +76,8 @@ public interface EssLeaveApplyMapper {
 
     void deleteLeaveApplyByApplyNo(@Param("applyNo") String applyNo);
 
+    int countLockedByArDetailHtsv(@Param("applyNos") List<String> applyNos);
+
+    int countLockedByArDeptManage(@Param("applyNos") List<String> applyNos);
+
 }

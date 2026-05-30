@@ -3,6 +3,8 @@ package com.ait.ar.attendanceMintenance.controller;
 import com.ait.ar.attendanceMintenance.dto.ArOvertimeImportTempDto;
 import com.ait.ar.attendanceMintenance.dto.ArOvertimeManagentDto;
 import com.ait.ar.attendanceMintenance.service.ArOvertimeManagentService;
+import com.ait.sy.syAffirm.dto.SyAffirmEmailDto;
+import com.ait.sy.syAffirm.service.SyAffirmEmailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +29,9 @@ public class ArOvertimeManagentController {
 
     @Autowired
     private ArOvertimeManagentService service;
+
+    @Autowired
+    private SyAffirmEmailService affirmorService;
 
     @GetMapping("/viewArOvertimeManagent_fast")
     public String view() {
@@ -74,6 +79,30 @@ public class ArOvertimeManagentController {
         return ResponseEntity.ok(service.getAutoFillOtInfo(dto));
     }
 
+    @GetMapping("/api/overtime/affirmorsPreview")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> getAffirmorsPreview(
+            @RequestParam String personId) {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            List<SyAffirmEmailDto> list = affirmorService.findAffirmorList("31", personId, "", "8");
+            String affirmStr = "";
+            if (list != null && !list.isEmpty()) {
+                StringBuilder sb = new StringBuilder();
+                for (SyAffirmEmailDto dto : list) {
+                    if (sb.length() > 0) sb.append(" → ");
+                    sb.append(dto.getLocalName() != null ? dto.getLocalName() : "");
+                }
+                affirmStr = sb.toString();
+            }
+            result.put("affirmStr", affirmStr);
+        } catch (Exception e) {
+            log.error("getAffirmorsPreview overtime error personId={}", personId, e);
+            result.put("affirmStr", "");
+        }
+        return ResponseEntity.ok(result);
+    }
+
     @GetMapping("/api/overtime/default-info")
     @ResponseBody
     public ResponseEntity<ArOvertimeManagentDto> getDefaultOtInfo(
@@ -116,6 +145,24 @@ public class ArOvertimeManagentController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/api/overtime/saveBatch")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> saveBatch(@RequestBody List<ArOvertimeManagentDto> dtos) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            service.saveBatch(dtos);
+            response.put("success", true);
+            response.put("message", "Lưu thành công");
+        } catch (Exception e) {
+            log.error("Failed to save batch overtime data", e);
+            response.put("success", false);
+            response.put("error", e.getMessage() == null || e.getMessage().isBlank()
+                    ? "Lỗi hệ thống khi lưu tăng ca."
+                    : e.getMessage());
+        }
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping("/api/overtime/save")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> save(@RequestBody ArOvertimeManagentDto dto) {
@@ -152,6 +199,14 @@ public class ArOvertimeManagentController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/api/overtime/ot-totals")
+    @ResponseBody
+    public ResponseEntity<ArOvertimeManagentDto> getOtTotals(
+            @RequestParam(name = "personId", required = false) String personId,
+            @RequestParam(name = "applyOtDate", required = false) String applyOtDate) {
+        return ResponseEntity.ok(service.getOtTotals(personId, applyOtDate));
+    }
+
     @PostMapping("/api/overtime/cancel")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> cancel(@RequestBody ArOvertimeManagentDto dto) {
@@ -162,6 +217,23 @@ public class ArOvertimeManagentController {
             response.put("message", "Hủy đơn thành công");
         } catch (Exception e) {
             log.error("Failed to cancel overtime apply", e);
+            response.put("success", false);
+            response.put("error", e.getMessage() == null || e.getMessage().isBlank()
+                    ? "Lỗi hệ thống khi hủy đơn tăng ca."
+                    : e.getMessage());
+        }
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/api/overtime/cancel-batch")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> cancelBatch(@RequestBody ArOvertimeManagentDto dto) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            Map<String, Object> result = service.cancelBatchOvertimeApply(dto.getApplyNos());
+            response.putAll(result);
+        } catch (Exception e) {
+            log.error("Failed to batch cancel overtime applies", e);
             response.put("success", false);
             response.put("error", e.getMessage() == null || e.getMessage().isBlank()
                     ? "Lỗi hệ thống khi hủy đơn tăng ca."

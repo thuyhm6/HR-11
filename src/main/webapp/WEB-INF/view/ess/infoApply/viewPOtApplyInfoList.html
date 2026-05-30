@@ -315,7 +315,7 @@
                     var otType   = poiEscHtml(r.otTypeCode || '');
                     html += '<tr style="cursor:pointer;" onclick="poiOpenDetail(event,\'' + applyNo + '\',\'' + otType + '\')">'
                         + '<td class="text-center">' + rowNo + '</td>'
-                        + '<td class="text-center" onclick="event.stopPropagation()"><input type="checkbox" class="poi_rowCheck" value="' + applyNo + '"></td>'
+                        + '<td class="text-center" onclick="event.stopPropagation()">' + (['14014306','14014307','14014308'].indexOf(r.affirmFlag) >= 0 ? '<input type="checkbox" class="poi_rowCheck" value="' + applyNo + '">' : '') + '</td>'
                         + '<td><a href="javascript:void(0)" onclick="event.stopPropagation();poiOpenDetail(event,\'' + applyNo + '\',\'' + otType + '\')">'
                             + poiEscHtml(r.otTypeName || r.otTypeCode || '') + '</a></td>'
                         + '<td class="text-center">' + poiEscHtml(r.applyOtDate || '') + '</td>'

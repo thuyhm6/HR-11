@@ -37,6 +37,17 @@ public class EssOtApplyServiceImpl implements EssOtApplyService {
     }
 
     @Override
+    public Map<String, Object> getOtDuration(String applyOtDate, String otFromTime, String otToTime, String deductYn) {
+        try {
+            Map<String, Object> result = mapper.selectOtDuration(applyOtDate, otFromTime, otToTime, deductYn);
+            return result != null ? result : new HashMap<>();
+        } catch (Exception e) {
+            log.error("Failed to get OT duration for applyOtDate={}", applyOtDate, e);
+            return new HashMap<>();
+        }
+    }
+
+    @Override
     public List<EssOtApplyListDto> getMyOtApplyList(EssOtApplyListDto dto) {
         List<EssOtApplyListDto> result = mapper.selectMyOtApplyList(dto);
         return result != null ? result : Collections.emptyList();
@@ -46,6 +57,17 @@ public class EssOtApplyServiceImpl implements EssOtApplyService {
     @Transactional
     public int cancelMyOtApplyList(List<String> applyNos) {
         if (applyNos == null || applyNos.isEmpty()) return 0;
+        try {
+            int lockedCount = mapper.countLockedOtApply(applyNos);
+            if (lockedCount > 0) {
+                throw new RuntimeException("Đơn nghỉ phép này đã bị khóa, không thể hủy bỏ!");
+            }
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Failed to check lock status for applyNos={}", applyNos, e);
+            throw new RuntimeException("Lỗi kiểm tra trạng thái khóa.", e);
+        }
         return mapper.cancelMyOtApplyList(applyNos);
     }
 }

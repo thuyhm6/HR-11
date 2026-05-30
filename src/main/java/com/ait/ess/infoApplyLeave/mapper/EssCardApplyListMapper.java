@@ -10,4 +10,6 @@ import java.util.List;
 public interface EssCardApplyListMapper {
     List<EssCardApplyListDto> selectMyCardApplyList(EssCardApplyListDto dto);
     int cancelMyCardApplyList(@Param("applyNos") List<String> applyNos);
+    int countLockedByArDetail(@Param("applyNos") List<String> applyNos);
+    int countLockedByDeptManage(@Param("applyNos") List<String> applyNos);
 }

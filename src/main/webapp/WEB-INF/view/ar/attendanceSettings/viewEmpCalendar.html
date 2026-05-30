@@ -128,6 +128,20 @@
            =========================== */
 
         var _ecal_initialized = false;
+        var _ecal_sysMode     = (typeof sysMode !== 'undefined' && sysMode) ? sysMode : 'ess';
+
+        /* Chặn click bằng CSS ngay lập tức khi không phải hrm mode */
+        (function () {
+            if (_ecal_sysMode !== 'hrm') {
+                var s = document.getElementById('ecal-no-click-css') || document.createElement('style');
+                s.id  = 'ecal-no-click-css';
+                s.textContent = '#ecal_gridWrap .ccal-day{pointer-events:none!important;cursor:default!important;}';
+                if (!s.parentNode) document.head.appendChild(s);
+            } else {
+                var old = document.getElementById('ecal-no-click-css');
+                if (old) old.parentNode.removeChild(old);
+            }
+        })();
 
         /* ---  inject CSS nếu chưa có (dùng chung ccal-* class) --- */
         (function () {

@@ -21,7 +21,7 @@
                                 <td>
                                     <input type="text" class="form-control form-control-sm js-daterangepicker"
                                         id="soa_applyDate"
-                                        data-drp-format="DD/MM/YYYY"
+                                        data-drp-format="YYYY-MM-DD"
                                         data-drp-auto-update-input="false"
                                         data-drp-on-apply="soaOnDateApply"
                                         autocomplete="off"
@@ -33,21 +33,15 @@
                                 </td>
                             </tr>
                             <tr>
-                                <th class="table-light text-center" th:text="#{essOt.timeRange}">Thời gian</th>
-                                <td>
-                                    <div class="d-flex align-items-center gap-1">
-                                        <select class="form-select form-select-sm" id="soa_fromHour"
-                                            style="width:75px;" onchange="soaCalcDuration()"></select>
-                                        <span>:</span>
-                                        <select class="form-select form-select-sm" id="soa_fromMin"
-                                            style="width:75px;" onchange="soaCalcDuration()"></select>
-                                        <span>~</span>
-                                        <select class="form-select form-select-sm" id="soa_toHour"
-                                            style="width:75px;" onchange="soaCalcDuration()"></select>
-                                        <span>:</span>
-                                        <select class="form-select form-select-sm" id="soa_toMin"
-                                            style="width:75px;" onchange="soaCalcDuration()"></select>
-                                    </div>
+                                <th class="table-light text-center" th:text="#{essOt.otStartTimeLabel}">Thời gian bắt đầu tăng ca</th>
+                                <td class="d-flex align-items-center gap-2">
+                                    <input type="datetime-local" class="form-control form-control-sm"
+                                        id="soa_otFromTime" style="width:200px;"
+                                        data-drp-trigger-change="true" onchange="soaCalcDuration()">
+                                    ~
+                                    <input type="datetime-local" class="form-control form-control-sm"
+                                        id="soa_otToTime" style="width:200px;"
+                                        data-drp-trigger-change="true" onchange="soaCalcDuration()">
                                 </td>
                                 <th class="table-light text-center" th:text="#{essOt.otType}">Hình thức tăng ca</th>
                                 <td>
@@ -56,45 +50,26 @@
                                 </td>
                             </tr>
                             <tr>
-                                <th class="table-light text-center" th:text="#{essOt.shift}">Ca</th>
-                                <td id="soa_shiftName">--</td>
-                                <th class="table-light text-center" th:text="#{essOt.workTime}">Thời gian làm việc</th>
-                                <td id="soa_workTime">--</td>
-                            </tr>
-                            <tr>
                                 <th class="table-light text-center" th:text="#{essOt.inOutTime}">Thời gian vào ra</th>
                                 <td>
                                     <span class="small" th:text="#{essOt.inTime}">Thời gian vào: </span><span id="soa_indoorTime" class="fw-semibold">**:**</span><br>
                                     <span class="small" th:text="#{essOt.outTime}">Thời gian ra: </span><span id="soa_outdoorTime" class="fw-semibold">**:**</span>
                                 </td>
-                                <th class="table-light text-center" th:text="#{essOt.overnight}">Qua đêm</th>
+                                <th class="table-light text-center" th:text="#{essOt.shift}">Ca</th>
                                 <td>
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="soa_overnight"
-                                            id="soa_overnightY" value="Y" onchange="soaCalcDuration()">
-                                        <label class="form-check-label" for="soa_overnightY" th:text="#{essOt.yes}">Có</label>
-                                    </div>
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="soa_overnight"
-                                            id="soa_overnightN" value="N" checked onchange="soaCalcDuration()">
-                                        <label class="form-check-label" for="soa_overnightN" th:text="#{essOt.no}">Không</label>
-                                    </div>
+                                    <span id="soa_shiftName" class="small text-muted">--</span>
+                                    <span id="soa_workTime" class="small text-muted">--</span>
                                 </td>
                             </tr>
                             <tr>
-                                <th class="table-light text-center">Thời lượng</th>
+                                <th class="table-light text-center" th:text="#{essOt.duration}">Thời lượng</th>
                                 <td id="soa_duration">--</td>
-                                <th class="table-light text-center">Bảo cơm / Nghỉ ngơi (30')</th>
+                                <th class="table-light text-center" th:text="#{essOt.mealBreak}">Bảo cơm / Nghỉ ngơi (30')</th>
                                 <td>
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="soa_meal"
-                                            id="soa_mealY" value="Y">
-                                        <label class="form-check-label" for="soa_mealY">Có</label>
-                                    </div>
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="soa_meal"
-                                            id="soa_mealN" value="N" checked>
-                                        <label class="form-check-label" for="soa_mealN">Không</label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox"
+                                            id="soa_mealCheck" onchange="soaCalcDuration()">
+                                        <label class="form-check-label" for="soa_mealCheck" th:text="#{essOt.yes}">Có</label>
                                     </div>
                                 </td>
                             </tr>
@@ -148,6 +123,14 @@
         var _soa_empId     = '';
         var _soa_pageBooted = false;
 
+        var _soa_otTotalMonth     = 0;
+        var _soa_otTotalYear      = 0;
+        var _soa_otLimitMonth     = 40;
+        var _soa_otLimitYear      = 300;
+        var _soa_otLimitEnabled   = false;
+        var _soa_otLimit100Enabled = false;
+        var _soa_otLength         = 0; // lưu kết quả GET_OT_LENGTH_SPC từ backend
+
         function soaEscHtml(v) {
             if (v == null) return '';
             return String(v)
@@ -158,73 +141,61 @@
                 .replace(/'/g, '&#39;');
         }
 
-        // ── Khởi tạo select giờ / phút ──────────────────────────────────────
-        function soaInitTimeSelects() {
-            var hOpts = '';
-            for (var h = 0; h < 24; h++) {
-                var hh = (h < 10 ? '0' : '') + h;
-                hOpts += '<option value="' + hh + '">' + hh + '</option>';
-            }
-            var mOpts = '';
-            [0, 15, 30, 45].forEach(function(m) {
-                var mm = (m < 10 ? '0' : '') + m;
-                mOpts += '<option value="' + mm + '">' + mm + '</option>';
-            });
-            $('#soa_fromHour, #soa_toHour').html(hOpts);
-            $('#soa_fromMin,  #soa_toMin' ).html(mOpts);
-            $('#soa_fromHour').val('17');
-            $('#soa_toHour'  ).val('19');
+        // ── Trích xuất HH:MI từ chuỗi "YYYY-MM-DD HH:MI" hoặc "HH:MI" ──────
+        function soaExtractTime(dtStr) {
+            if (!dtStr) return '';
+            var idx = dtStr.indexOf(' ');
+            return idx > -1 ? dtStr.substring(idx + 1) : dtStr;
         }
 
-        // ── Tính thời lượng ──────────────────────────────────────────────────
+        // ── Set value cho input daterangepicker và sync picker state ─────────
+        function soaSetPickerVal(selector, value) {
+            var $input = $(selector);
+            $input.val(value || '');
+            var picker = $input.data('daterangepicker');
+            if (!picker || !value) return;
+            var m = moment(value, 'YYYY-MM-DD HH:mm');
+            if (m.isValid()) {
+                picker.setStartDate(m);
+                picker.setEndDate(m);
+            }
+        }
+
+        // ── Tính thời lượng qua backend GET_OT_LENGTH_SPC ───────────────────
         function soaCalcDuration() {
-            var fH = parseInt($('#soa_fromHour').val(), 10);
-            var fM = parseInt($('#soa_fromMin' ).val(), 10);
-            var tH = parseInt($('#soa_toHour'  ).val(), 10);
-            var tM = parseInt($('#soa_toMin'   ).val(), 10);
-            if (isNaN(fH) || isNaN(fM) || isNaN(tH) || isNaN(tM)) {
-                $('#soa_duration').text('--'); return;
+            var dateApi = $('#soa_applyDate').val();
+            var fromVal = $('#soa_otFromTime').val();
+            var toVal   = $('#soa_otToTime').val();
+            if (!dateApi || !fromVal || !toVal) {
+                _soa_otLength = 0;
+                $('#soa_duration').text('--');
+                return;
             }
-            var fromMin = fH * 60 + fM;
-            var toMin   = tH * 60 + tM;
-            var overnight = $('input[name="soa_overnight"]:checked').val() === 'Y';
-            if (toMin <= fromMin) {
-                if (overnight) { toMin += 1440; }
-                else           { $('#soa_duration').text('--'); return; }
-            }
-            var diffMin = toMin - fromMin;
-            // Trừ nghỉ ngơi 30' nếu chọn Có
-            if ($('input[name="soa_meal"]:checked').val() === 'Y') {
-                diffMin = Math.max(0, diffMin - 30);
-            }
-            var hours = Math.floor(diffMin / 60);
-            var mins  = diffMin % 60;
-            var text  = '';
-            if (hours > 0) text += hours + ' Tiếng';
-            if (mins  > 0) text += (text ? ' ' : '') + mins + ' Phút';
-            $('#soa_duration').text(text || '0 Tiếng');
-        }
-
-        // ── Lấy giờ dưới dạng HH:MM ─────────────────────────────────────────
-        function soaGetFromTime() {
-            return $('#soa_fromHour').val() + ':' + $('#soa_fromMin').val();
-        }
-        function soaGetToTime() {
-            return $('#soa_toHour').val() + ':' + $('#soa_toMin').val();
-        }
-
-        // ── Convert DD/MM/YYYY → YYYY-MM-DD ─────────────────────────────────
-        function soaConvertDate(val) {
-            if (!val) return '';
-            var p = val.split('/');
-            if (p.length !== 3) return val;
-            return p[2] + '-' + p[1] + '-' + p[0];
+            var deductYn = $('#soa_mealCheck').prop('checked') ? '1' : '0';
+            $.ajax({
+                url : '/ess/infoApply/api/otDuration',
+                type: 'GET',
+                data: {
+                    applyOtDate: dateApi,
+                    otFromTime : fromVal,
+                    otToTime   : toVal,
+                    deductYn   : deductYn
+                },
+                success: function(d) {
+                    var len = d && d.OT_LENGTH != null ? parseFloat(d.OT_LENGTH) : 0;
+                    _soa_otLength = isNaN(len) ? 0 : len;
+                    $('#soa_duration').text(_soa_otLength > 0 ? _soa_otLength + ' h' : '--');
+                },
+                error: function() {
+                    _soa_otLength = 0;
+                    $('#soa_duration').text('--');
+                }
+            });
         }
 
         // ── Callback datepicker ──────────────────────────────────────────────
         window.soaOnDateApply = function() {
-            var raw = $('#soa_applyDate').val();
-            var dateApi = soaConvertDate(raw);
+            var dateApi = $('#soa_applyDate').val();
             if (!dateApi) return;
             soaLoadDateInfo(dateApi);
             soaLoadApprovers(dateApi);
@@ -232,12 +203,12 @@
 
         // ── Load thông tin ngày tăng ca ──────────────────────────────────────
         function soaLoadDateInfo(dateApi) {
-            $('#soa_shiftName' ).text('Đang tải...');
-            $('#soa_workTime'  ).text('');
-            $('#soa_indoorTime' ).text('**:**');
-            $('#soa_outdoorTime').text('**:**');
+            $('#soa_shiftName'   ).text('Đang tải...');
+            $('#soa_workTime'    ).text('');
+            $('#soa_indoorTime'  ).text('**:**');
+            $('#soa_outdoorTime' ).text('**:**');
             $('#soa_dateTypeName').text('...');
-            $('#soa_otStats').text('...');
+            $('#soa_otStats'     ).text('...');
             $('#soa_dateTypeCode').val('');
 
             $.ajax({
@@ -247,39 +218,59 @@
                 success: function(d) {
                     if (!d) { soaClearDateInfo(); return; }
 
-                    // Ca làm việc & giờ làm
+                    // Ca làm việc
                     $('#soa_shiftName').text(d.SHIFT_NAME || '--');
-                    var start = d.SHIFT_START_TIME || '';
-                    var end   = d.SHIFT_END_TIME   || '';
-                    $('#soa_workTime').text(start && end ? start + '~' + end : '--');
+                    var shiftStartDisp = soaExtractTime(d.SHIFT_START_TIME || '');
+                    var shiftEndDisp   = soaExtractTime(d.SHIFT_END_TIME   || '');
+                    $('#soa_workTime').text(shiftStartDisp && shiftEndDisp ? shiftStartDisp + '~' + shiftEndDisp : '--');
 
                     // Giờ vào / ra thực tế
                     $('#soa_indoorTime' ).text(d.INDOOR_TIME  || '**:**');
                     $('#soa_outdoorTime').text(d.OUTDOOR_TIME || '**:**');
 
-                    // Hình thức tăng ca
-                    $('#soa_dateTypeName').text(d.DATE_TYPE_NAME || '--');
-                    $('#soa_dateTypeCode').val(d.DATE_TYPE || '');
+                    // Hình thức tăng ca (dùng GET_OT_TYPE_CODE)
+                    var otTypeCode = String(d.OT_TYPE_CODE || '');
+                    $('#soa_dateTypeName').text(d.OT_TYPE_NAME || '--');
+                    $('#soa_dateTypeCode').val(otTypeCode);
 
-                    // Set giờ mặc định bắt đầu/kết thúc tăng ca
-                    if (d.SHIFT_END_TIME) {
-                        var p = d.SHIFT_END_TIME.split(':');
-                        if (p.length === 2) { $('#soa_fromHour').val(p[0]); $('#soa_fromMin').val(p[1]); }
-                    }
-                    if (d.SHIFT_END_TIME_2) {
-                        var p2 = d.SHIFT_END_TIME_2.split(':');
-                        if (p2.length === 2) { $('#soa_toHour').val(p2[0]); $('#soa_toMin').val(p2[1]); }
+                    // Set datetime tăng ca theo loại OT
+                    if (otTypeCode === '32') {
+                        // Nghỉ lễ / cuối tuần: bắt đầu từ giờ kết thúc ca, kết thúc = + 2h
+                        if (d.SHIFT_END_TIME) {
+                            soaSetPickerVal('#soa_otFromTime', d.SHIFT_END_TIME);
+                            var fromDt = new Date(d.SHIFT_END_TIME);
+                            if (!isNaN(fromDt)) {
+                                fromDt.setHours(fromDt.getHours() + 2);
+                                var toStr = fromDt.getFullYear() + '-'
+                                    + String(fromDt.getMonth() + 1).padStart(2, '0') + '-'
+                                    + String(fromDt.getDate()).padStart(2, '0') + ' '
+                                    + String(fromDt.getHours()).padStart(2, '0') + ':'
+                                    + String(fromDt.getMinutes()).padStart(2, '0');
+                                soaSetPickerVal('#soa_otToTime', toStr);
+                            }
+                        }
+                    } else {
+                        // Các loại khác: bắt đầu từ đầu ca, kết thúc ở cuối ca
+                        if (d.SHIFT_START_TIME) soaSetPickerVal('#soa_otFromTime', d.SHIFT_START_TIME);
+                        if (d.SHIFT_END_TIME)   soaSetPickerVal('#soa_otToTime',   d.SHIFT_END_TIME);
                     }
 
                     // Thống kê tăng ca
-                    var lim  = d.OT_LIMIT     || '30';
-                    var lim2 = d.OT_LIMIT_100 || '200';
-                    var html = 'Tháng này: ' + soaFmt(d.OT_TOTAIL_MONTH) + 'h'
-                             + '&nbsp;&nbsp;Ngày thường: ' + soaFmt(d.WEEKDAY_OT_TOTAIL) + 'h'
-                             + '&nbsp;&nbsp;Tối đa: ' + lim + 'h'
-                             + '<br>Năm nay: ' + soaFmt(d.OT_TOTAIL) + 'h'
-                             + '&nbsp;&nbsp;Tối đa: ' + lim2 + 'h';
-                    $('#soa_otStats').html(html);
+                    _soa_otTotalMonth      = parseFloat(d.OT_TOTAIL_MONTH) || 0;
+                    _soa_otTotalYear       = parseFloat(d.OT_TOTAIL)       || 0;
+                    _soa_otLimitEnabled    = String(d.OT_LIMIT)     === '1';
+                    _soa_otLimit100Enabled = String(d.OT_LIMIT_100) === '1';
+
+                    var monthInfo = 'Tháng này: ' + soaFmt(d.OT_TOTAIL_MONTH) + 'h'
+                        + '&nbsp;&nbsp;Ngày thường: ' + soaFmt(d.WEEKDAY_OT_TOTAIL) + 'h'
+                        + (_soa_otLimitEnabled
+                            ? '&nbsp;&nbsp;Tối đa: ' + _soa_otLimitMonth + 'h <span class="text-danger">(có giới hạn)</span>'
+                            : '&nbsp;&nbsp;<span class="text-success">(không giới hạn tháng)</span>');
+                    var yearInfo = 'Năm nay: ' + soaFmt(d.OT_TOTAIL) + 'h'
+                        + (_soa_otLimit100Enabled
+                            ? '&nbsp;&nbsp;Tối đa: ' + _soa_otLimitYear + 'h <span class="text-danger">(có giới hạn)</span>'
+                            : '&nbsp;&nbsp;<span class="text-success">(không giới hạn năm)</span>');
+                    $('#soa_otStats').html(monthInfo + '<br>' + yearInfo);
 
                     soaCalcDuration();
                 },
@@ -290,13 +281,18 @@
         function soaFmt(v) { return (v == null || v === '') ? '0' : v; }
 
         function soaClearDateInfo() {
-            $('#soa_shiftName'  ).text('--');
-            $('#soa_workTime'   ).text('--');
-            $('#soa_indoorTime' ).text('**:**');
-            $('#soa_outdoorTime').text('**:**');
+            $('#soa_shiftName'   ).text('--');
+            $('#soa_workTime'    ).text('--');
+            $('#soa_indoorTime'  ).text('**:**');
+            $('#soa_outdoorTime' ).text('**:**');
             $('#soa_dateTypeName').text('--');
             $('#soa_dateTypeCode').val('');
-            $('#soa_otStats').text('--');
+            $('#soa_otStats'     ).text('--');
+            _soa_otTotalMonth      = 0;
+            _soa_otTotalYear       = 0;
+            _soa_otLimitEnabled    = false;
+            _soa_otLimit100Enabled = false;
+            _soa_otLength          = 0;
         }
 
         // ── Load người phê duyệt ─────────────────────────────────────────────
@@ -307,12 +303,10 @@
             $tbody.html('<tr><td colspan="5" class="text-center text-muted">Đang tải...</td></tr>');
 
             // Tính số giờ xin tăng ca để truyền vào approvers
-            var fH = parseInt($('#soa_fromHour').val(), 10) || 0;
-            var fM = parseInt($('#soa_fromMin' ).val(), 10) || 0;
-            var tH = parseInt($('#soa_toHour'  ).val(), 10) || 0;
-            var tM = parseInt($('#soa_toMin'   ).val(), 10) || 0;
-            var diff = ((tH * 60 + tM) - (fH * 60 + fM)) / 60;
-            if (diff <= 0) diff = 0;
+            var fromDt = new Date($('#soa_otFromTime').val());
+            var toDt   = new Date($('#soa_otToTime').val());
+            var diff = (!isNaN(fromDt) && !isNaN(toDt) && toDt > fromDt)
+                ? (toDt - fromDt) / 3600000 : 0;
 
             $.post('/ar/attendanceMintenance/api/leaveApply/approvers', {
                 applyTypeNo  : '31',
@@ -345,29 +339,48 @@
 
         // ── Submit ───────────────────────────────────────────────────────────
         window.soaSubmit = function() {
-            var raw = $('#soa_applyDate').val();
-            var dateApi = soaConvertDate(raw);
-            if (!dateApi)        { toastr && toastr.warning('Vui lòng chọn ngày tăng ca.'); return; }
-            if (!_soa_personId)  { toastr && toastr.warning('Chưa tải thông tin nhân viên.'); return; }
+            var dateApi  = $('#soa_applyDate').val();
+            var fromVal  = $('#soa_otFromTime').val(); // YYYY-MM-DDTHH:MM
+            var toVal    = $('#soa_otToTime').val();   // YYYY-MM-DDTHH:MM
+            if (!dateApi)              { toastr && toastr.warning('Vui lòng chọn ngày tăng ca.'); return; }
+            if (!_soa_personId)        { toastr && toastr.warning('Chưa tải thông tin nhân viên.'); return; }
+            if (!fromVal || !toVal)    { toastr && toastr.warning('Vui lòng nhập thời gian tăng ca.'); return; }
 
-            var fromTime = soaGetFromTime();
-            var toTime   = soaGetToTime();
-            if (!fromTime || !toTime) { toastr && toastr.warning('Vui lòng nhập thời gian tăng ca.'); return; }
+            var fromDt  = new Date(fromVal);
+            var toDt    = new Date(toVal);
+            if (isNaN(fromDt) || isNaN(toDt) || toDt <= fromDt) {
+                toastr && toastr.warning('Thời gian kết thúc phải sau thời gian bắt đầu.');
+                return;
+            }
+
+            // Chuyển sang "YYYY-MM-DD HH:MM" gửi lên server
+            var fromTime = fromVal;
+            var toTime   = toVal;
 
             var durationText = $('#soa_duration').text();
             if (!durationText || durationText === '--') { toastr && toastr.warning('Thời lượng không hợp lệ.'); return; }
 
-            // Tính số giờ thập phân
-            var fH = parseInt($('#soa_fromHour').val(), 10) || 0;
-            var fM = parseInt($('#soa_fromMin' ).val(), 10) || 0;
-            var tH = parseInt($('#soa_toHour'  ).val(), 10) || 0;
-            var tM = parseInt($('#soa_toMin'   ).val(), 10) || 0;
-            var overnight = $('input[name="soa_overnight"]:checked').val() === 'Y';
-            var toMinTotal = tH * 60 + tM;
-            if (toMinTotal <= fH * 60 + fM && overnight) toMinTotal += 1440;
-            var diffMin = toMinTotal - (fH * 60 + fM);
-            if ($('input[name="soa_meal"]:checked').val() === 'Y') diffMin = Math.max(0, diffMin - 30);
-            var otApplyHour = (diffMin / 60).toFixed(2).replace(/\.00$/, '').replace(/(\.\d*[1-9])0$/, '$1');
+            var otTypeCode = $('#soa_dateTypeCode').val() || '';
+            if (!otTypeCode) { toastr && toastr.warning('Chưa xác định loại tăng ca. Vui lòng chọn lại ngày tăng ca.'); return; }
+
+            var otApplyHour = _soa_otLength > 0 ? String(_soa_otLength) : '0';
+            if (!otApplyHour || parseFloat(otApplyHour) <= 0) {
+                toastr && toastr.warning('Số giờ tăng ca phải lớn hơn 0.');
+                return;
+            }
+            var applyHourNum = parseFloat(otApplyHour) || 0;
+            if (_soa_otLimitEnabled && (applyHourNum + _soa_otTotalMonth > _soa_otLimitMonth)) {
+                toastr && toastr.warning(
+                    'Tổng tăng ca tháng này sẽ là ' + (applyHourNum + _soa_otTotalMonth).toFixed(1) + 'h, vượt quá giới hạn ' + _soa_otLimitMonth + 'h!'
+                );
+                return;
+            }
+            if (_soa_otLimit100Enabled && (applyHourNum + _soa_otTotalYear > _soa_otLimitYear)) {
+                toastr && toastr.warning(
+                    'Tổng tăng ca năm nay sẽ là ' + (applyHourNum + _soa_otTotalYear).toFixed(1) + 'h, vượt quá giới hạn ' + _soa_otLimitYear + 'h!'
+                );
+                return;
+            }
 
             var payload = {
                 applyNo      : '',
@@ -381,7 +394,7 @@
                 otToTime     : toTime,
                 otApplyHour  : otApplyHour,
                 applyOtRemark: $('#soa_reason').val() || '',
-                deductYn     : $('input[name="soa_meal"]:checked').val() === 'Y' ? '1' : '0'
+                deductYn     : $('#soa_mealCheck').prop('checked') ? '1' : '0'
             };
 
             var $btn  = $('#soa_submitBtn');
@@ -411,11 +424,10 @@
 
         function soaResetForm() {
             $('#soa_applyDate').val('');
+            $('#soa_otFromTime').val('');
+            $('#soa_otToTime').val('');
             $('#soa_reason').val('');
-            $('#soa_overnightN').prop('checked', true);
-            $('#soa_mealN').prop('checked', true);
-            $('#soa_fromHour').val('17'); $('#soa_fromMin').val('00');
-            $('#soa_toHour'  ).val('19'); $('#soa_toMin'  ).val('00');
+            $('#soa_mealCheck').prop('checked', false);
             soaClearDateInfo();
             soaCalcDuration();
             $('#soa_approvalBody').html('<tr><td colspan="5" class="text-center text-muted">Chọn ngày tăng ca để xem người phê duyệt</td></tr>');
@@ -428,20 +440,18 @@
             _soa_pageBooted = true;
 
             loadEssEmpInfoCard();
-            soaInitTimeSelects();
 
             if (typeof initDateRangePickers === 'function') {
                 initDateRangePickers('#soa_pageWrapper');
             }
 
-            // Set ngày mặc định = hôm nay
+            // Set ngày mặc định = hôm nay (YYYY-MM-DD)
             var now  = new Date();
             var dd   = String(now.getDate()).padStart(2, '0');
             var mm   = String(now.getMonth() + 1).padStart(2, '0');
             var yyyy = now.getFullYear();
-            var todayDisplay = dd + '/' + mm + '/' + yyyy;
-            var todayApi     = yyyy + '-' + mm + '-' + dd;
-            $('#soa_applyDate').val(todayDisplay);
+            var todayApi = yyyy + '-' + mm + '-' + dd;
+            $('#soa_applyDate').val(todayApi);
 
             // Load thông tin nhân viên để lấy personId
             $.ajax({

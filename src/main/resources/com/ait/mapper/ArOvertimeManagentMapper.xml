@@ -50,6 +50,8 @@
         <result column="DETAIL_TO_DATE_TIME" property="detailToDateTime" />
         <result column="INDOOR_TIME" property="indoorTime" />
         <result column="OUTDOOR_TIME" property="outdoorTime" />
+        <result column="OT_TOTAL_MONTH" property="otTotalMonth" />
+        <result column="OT_TOTAL_YEAR" property="otTotalYear" />
     </resultMap>
 
     <resultMap id="ArOvertimeDefaultResultMap" type="com.ait.ar.attendanceMintenance.dto.ArOvertimeManagentDto">
@@ -136,78 +138,96 @@
 
     <select id="selectList" resultMap="ArOvertimeManagentResultMap"
             parameterType="com.ait.ar.attendanceMintenance.dto.ArOvertimeManagentDto">
+        WITH FILTERED_OT AS (
+            SELECT /*+ materialize */
+                A.APPLY_NO, A.PERSON_ID, A.APPLY_OT_DATE, A.OT_FROM_TIME, A.OT_TO_TIME,
+                A.APPLY_OT_REMARK, A.OT_TYPE_NO, A.OT_TYPE_CODE, A.OT_APPLY_HOUR,
+                A.AFFIRM_FLAG, A.CONFIRM_FLAG, A.CREATE_DATE, A.CREATED_BY, A.CREATED_IP,
+                A.UPDATE_DATE, A.UPDATED_BY, A.UPDATED_IP, A.ACTIVITY, A.APPLY_TIME,
+                A.CONFIRM_DATE, A.CONFIRM_BY, A.CONFIRM_IP, A.CPNY_ID, A.BATCH_YN,
+                A.BATCH_NO, A.DEDUCT_YN, A.SPECIAL_YN, A.OFFSET_YN, A.ADJUST_YN,
+                E.EMPID, E.LOCAL_NAME, E.DEPTNO AS DEPT_NO, E.POST_GRADE_NO
+            FROM ESS_APPLY_OT A
+            INNER JOIN HR_EMPLOYEE E ON E.PERSON_ID = A.PERSON_ID
+            WHERE A.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+            <if test="empId != null and empId != ''">
+                AND UPPER(E.EMPID) LIKE '%' || UPPER(#{empId, jdbcType=VARCHAR}) || '%'
+            </if>
+            <if test="localName != null and localName != ''">
+                AND UPPER(E.LOCAL_NAME) LIKE '%' || UPPER(#{localName, jdbcType=VARCHAR}) || '%'
+            </if>
+            <if test="fromDate != null and fromDate != ''">
+                AND A.APPLY_OT_DATE &gt;= TO_DATE(#{fromDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')
+            </if>
+            <if test="toDate != null and toDate != ''">
+                AND A.APPLY_OT_DATE &lt; TO_DATE(#{toDate, jdbcType=VARCHAR}, 'YYYY-MM-DD') + 1
+            </if>
+            <if test="affirmFlag != null and affirmFlag != ''">
+                AND TO_CHAR(A.AFFIRM_FLAG) = #{affirmFlag, jdbcType=VARCHAR}
+            </if>
+            <if test="confirmFlag != null and confirmFlag != ''">
+                AND TO_CHAR(A.CONFIRM_FLAG) = #{confirmFlag, jdbcType=VARCHAR}
+            </if>
+        ),
+        AFFIRM_AGG_DATA AS (
+            SELECT 
+                S.APPLY_NO,
+                LISTAGG('&lt;p&gt;' || S.AFFIRM_LEVEL || '. ' || NVL(HE.EMPID, '') || ' - ' || NVL(HE.LOCAL_NAME, '') || '&lt;/p&gt;', '')
+                       WITHIN GROUP (ORDER BY S.AFFIRM_LEVEL) AS AFFIRM_STR
+            FROM SY_AFFIRM_EMAIL S
+            LEFT JOIN HR_EMPLOYEE HE ON S.AFFIRM_PERSON_ID = HE.PERSON_ID
+            WHERE S.AFFIRM_LEVEL &gt; 0
+              AND S.APPLY_NO IN (SELECT APPLY_NO FROM FILTERED_OT)
+            GROUP BY S.APPLY_NO
+        )
         SELECT
-            TO_CHAR(A.APPLY_NO) AS APPLY_NO,
-            A.PERSON_ID,
-            E.EMPID,
-            E.LOCAL_NAME,
-            E.DEPTNO AS DEPT_NO,
-            GET_DEPT_NAME(E.DEPTNO, #{lang, jdbcType=VARCHAR}) AS DEPT_NAME,
-            E.POST_GRADE_NO,
-            GET_GLOBAL_NAME(E.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}) AS POST_GRADE_NAME,
-            TO_CHAR(A.APPLY_OT_DATE, 'YYYY-MM-DD') AS APPLY_OT_DATE,
-            TO_CHAR(A.OT_FROM_TIME, 'HH24:MI') AS OT_FROM_TIME,
-            TO_CHAR(A.OT_TO_TIME, 'HH24:MI') AS OT_TO_TIME,
-            A.APPLY_OT_REMARK,
-            A.OT_TYPE_NO,
-            A.OT_TYPE_CODE,
-            GET_GLOBAL_NAME(A.OT_TYPE_CODE, #{lang, jdbcType=VARCHAR}) AS OT_TYPE_NAME,
-            TO_CHAR(A.OT_APPLY_HOUR) AS OT_APPLY_HOUR,
-            TO_CHAR(A.AFFIRM_FLAG) AS AFFIRM_FLAG,
-            GET_GLOBAL_NAME(A.AFFIRM_FLAG, #{lang, jdbcType=VARCHAR}) AS AFFIRM_FLAG_NAME,
-            TO_CHAR(A.CONFIRM_FLAG) AS CONFIRM_FLAG,
-            TO_CHAR(A.CREATE_DATE, 'YYYY-MM-DD HH24:MI:SS') AS CREATE_DATE,
-            GET_UPDATED_INFO(A.CREATED_BY) AS CREATED_BY,
-            A.CREATED_IP,
-            TO_CHAR(A.UPDATE_DATE, 'YYYY-MM-DD HH24:MI:SS') AS UPDATE_DATE,
-            GET_UPDATED_INFO(A.UPDATED_BY) AS UPDATED_BY,
-            A.UPDATED_IP,
-            TO_CHAR(A.ACTIVITY) AS ACTIVITY,
-            TO_CHAR(A.APPLY_TIME, 'YYYY-MM-DD HH24:MI:SS') AS APPLY_TIME,
-            TO_CHAR(A.CONFIRM_DATE, 'YYYY-MM-DD HH24:MI:SS') AS CONFIRM_DATE,
-            A.CONFIRM_BY,
-            A.CONFIRM_IP,
-            A.CPNY_ID,
-            TO_CHAR(A.BATCH_YN) AS BATCH_YN,
-            TO_CHAR(A.BATCH_NO) AS BATCH_NO,
-            TO_CHAR(A.DEDUCT_YN) AS DEDUCT_YN,
-            TO_CHAR(A.SPECIAL_YN) AS SPECIAL_YN,
-            TO_CHAR(A.OFFSET_YN) AS OFFSET_YN,
-            TO_CHAR(A.ADJUST_YN) AS ADJUST_YN,
-            TO_CHAR(A.OT_FROM_TIME, 'YYYY-MM-DD HH24:MI') AS DETAIL_FROM_DATE_TIME,
-            TO_CHAR(A.OT_TO_TIME, 'YYYY-MM-DD HH24:MI') AS DETAIL_TO_DATE_TIME,
-            GET_AR_MAC_TIME(A.PERSON_ID, TO_CHAR(A.APPLY_OT_DATE, 'YYYY-MM-DD'), 'IN') AS INDOOR_TIME,
-            GET_AR_MAC_TIME(A.PERSON_ID, TO_CHAR(A.APPLY_OT_DATE, 'YYYY-MM-DD'), 'OUT') AS OUTDOOR_TIME,
-            (
-                SELECT LISTAGG('&lt;p&gt;' || S.AFFIRM_LEVEL || '. ' || NVL(HE.EMPID, '') || ' - ' || NVL(HE.LOCAL_NAME, '') || '&lt;/p&gt;', '')
-                       WITHIN GROUP (ORDER BY S.AFFIRM_LEVEL)
-                FROM SY_AFFIRM_EMAIL S
-                LEFT JOIN HR_EMPLOYEE HE ON S.AFFIRM_PERSON_ID = HE.PERSON_ID
-                WHERE TO_CHAR(S.APPLY_NO) = TO_CHAR(A.APPLY_NO)
-                  AND S.AFFIRM_LEVEL &gt; 0
-            ) AS AFFIRM_STR
-        FROM ESS_APPLY_OT A
-        INNER JOIN HR_EMPLOYEE E ON E.PERSON_ID = A.PERSON_ID
-        WHERE A.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
-        <if test="empId != null and empId != ''">
-            AND UPPER(E.EMPID) LIKE '%' || UPPER(#{empId, jdbcType=VARCHAR}) || '%'
-        </if>
-        <if test="localName != null and localName != ''">
-            AND UPPER(E.LOCAL_NAME) LIKE '%' || UPPER(#{localName, jdbcType=VARCHAR}) || '%'
-        </if>
-        <if test="fromDate != null and fromDate != ''">
-            AND A.APPLY_OT_DATE &gt;= TO_DATE(#{fromDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')
-        </if>
-        <if test="toDate != null and toDate != ''">
-            AND A.APPLY_OT_DATE &lt; TO_DATE(#{toDate, jdbcType=VARCHAR}, 'YYYY-MM-DD') + 1
-        </if>
-        <if test="affirmFlag != null and affirmFlag != ''">
-            AND TO_CHAR(A.AFFIRM_FLAG) = #{affirmFlag, jdbcType=VARCHAR}
-        </if>
-        <if test="confirmFlag != null and confirmFlag != ''">
-            AND TO_CHAR(A.CONFIRM_FLAG) = #{confirmFlag, jdbcType=VARCHAR}
-        </if>
-        ORDER BY A.CREATE_DATE DESC, E.EMPID
+            B.APPLY_NO AS APPLY_NO,
+            B.PERSON_ID,
+            B.EMPID,
+            B.LOCAL_NAME,
+            B.DEPT_NO,
+            GET_DEPT_NAME(B.DEPT_NO, #{lang, jdbcType=VARCHAR}) AS DEPT_NAME,
+            B.POST_GRADE_NO,
+            GET_GLOBAL_NAME(B.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}) AS POST_GRADE_NAME,
+            TO_CHAR(B.APPLY_OT_DATE, 'YYYY-MM-DD') AS APPLY_OT_DATE,
+            TO_CHAR(B.OT_FROM_TIME, 'YYYY-MM-DD HH24:MI') AS OT_FROM_TIME,
+            TO_CHAR(B.OT_TO_TIME, 'YYYY-MM-DD HH24:MI') AS OT_TO_TIME,
+            B.APPLY_OT_REMARK,
+            B.OT_TYPE_NO,
+            B.OT_TYPE_CODE,
+            GET_GLOBAL_NAME(B.OT_TYPE_CODE, #{lang, jdbcType=VARCHAR}) AS OT_TYPE_NAME,
+            TO_CHAR(B.OT_APPLY_HOUR) AS OT_APPLY_HOUR,
+            TO_CHAR(B.AFFIRM_FLAG) AS AFFIRM_FLAG,
+            GET_GLOBAL_NAME(B.AFFIRM_FLAG, #{lang, jdbcType=VARCHAR}) AS AFFIRM_FLAG_NAME,
+            TO_CHAR(B.CONFIRM_FLAG) AS CONFIRM_FLAG,
+            TO_CHAR(B.CREATE_DATE, 'YYYY-MM-DD HH24:MI:SS') AS CREATE_DATE,
+            GET_UPDATED_INFO(B.CREATED_BY) AS CREATED_BY,
+            B.CREATED_IP,
+            TO_CHAR(B.UPDATE_DATE, 'YYYY-MM-DD HH24:MI:SS') AS UPDATE_DATE,
+            GET_UPDATED_INFO(B.UPDATED_BY) AS UPDATED_BY,
+            B.UPDATED_IP,
+            B.ACTIVITY AS ACTIVITY,
+            TO_CHAR(B.APPLY_TIME, 'YYYY-MM-DD HH24:MI:SS') AS APPLY_TIME,
+            TO_CHAR(B.CONFIRM_DATE, 'YYYY-MM-DD HH24:MI:SS') AS CONFIRM_DATE,
+            B.CONFIRM_BY,
+            B.CONFIRM_IP,
+            B.CPNY_ID,
+            B.BATCH_YN AS BATCH_YN,
+            B.BATCH_NO AS BATCH_NO,
+            B.DEDUCT_YN AS DEDUCT_YN,
+            B.SPECIAL_YN AS SPECIAL_YN,
+            B.OFFSET_YN AS OFFSET_YN,
+            B.ADJUST_YN AS ADJUST_YN,
+            TO_CHAR(B.OT_FROM_TIME, 'YYYY-MM-DD HH24:MI') AS DETAIL_FROM_DATE_TIME,
+            TO_CHAR(B.OT_TO_TIME, 'YYYY-MM-DD HH24:MI') AS DETAIL_TO_DATE_TIME,
+            GET_AR_MAC_TIME(B.PERSON_ID, TO_CHAR(B.APPLY_OT_DATE, 'YYYY-MM-DD'), 'IN') AS INDOOR_TIME,
+            GET_AR_MAC_TIME(B.PERSON_ID, TO_CHAR(B.APPLY_OT_DATE, 'YYYY-MM-DD'), 'OUT') AS OUTDOOR_TIME,
+            GET_AR_OT_TOTAIL(TO_CHAR(B.APPLY_OT_DATE, 'YYYY/MM/DD'), B.CPNY_ID, B.PERSON_ID, '30') AS OT_TOTAL_MONTH,
+            GET_AR_OT_TOTAIL(TO_CHAR(B.APPLY_OT_DATE, 'YYYY/MM/DD'), B.CPNY_ID, B.PERSON_ID, '200') AS OT_TOTAL_YEAR,
+            AGG.AFFIRM_STR
+        FROM FILTERED_OT B
+        LEFT JOIN AFFIRM_AGG_DATA AGG ON B.APPLY_NO = AGG.APPLY_NO
+        ORDER BY B.CREATE_DATE DESC, B.EMPID
     </select>
 
     <select id="selectDetail" resultMap="ArOvertimeManagentResultMap">
@@ -221,8 +241,8 @@
             E.POST_GRADE_NO,
             GET_GLOBAL_NAME(E.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}) AS POST_GRADE_NAME,
             TO_CHAR(A.APPLY_OT_DATE, 'YYYY-MM-DD') AS APPLY_OT_DATE,
-            TO_CHAR(A.OT_FROM_TIME, 'HH24:MI') AS OT_FROM_TIME,
-            TO_CHAR(A.OT_TO_TIME, 'HH24:MI') AS OT_TO_TIME,
+            TO_CHAR(A.OT_FROM_TIME, 'YYYY-MM-DD HH24:MI') AS OT_FROM_TIME,
+            TO_CHAR(A.OT_TO_TIME, 'YYYY-MM-DD HH24:MI') AS OT_TO_TIME,
             A.APPLY_OT_REMARK,
             A.OT_TYPE_NO,
             A.OT_TYPE_CODE,
@@ -428,8 +448,8 @@
                     #{cpnyId, jdbcType=VARCHAR},
                     REPLACE(#{applyOtDate, jdbcType=VARCHAR}, '-', '/'),
                     OT.OT_TYPE_CODE,
-                    SUBSTR(OT.FROM_DT, 12),
-                    SUBSTR(OT.TO_DT, 12),
+                    OT.FROM_DT,
+                    OT.TO_DT,
                     #{deductYn, jdbcType=VARCHAR}
                 )
                 ELSE NULL
@@ -541,12 +561,8 @@
             #{applyNo, jdbcType=VARCHAR},
             #{personId, jdbcType=VARCHAR},
             TO_DATE(#{applyOtDate, jdbcType=VARCHAR}, 'YYYY-MM-DD'),
-            COMPOSE_DATE(TO_DATE(#{applyOtDate, jdbcType=VARCHAR}, 'YYYY-MM-DD'), #{otFromTime, jdbcType=VARCHAR}),
-            CASE
-                WHEN #{otToTime, jdbcType=VARCHAR} &lt; #{otFromTime, jdbcType=VARCHAR}
-                    THEN COMPOSE_DATE(TO_DATE(#{applyOtDate, jdbcType=VARCHAR}, 'YYYY-MM-DD') + 1, #{otToTime, jdbcType=VARCHAR})
-                ELSE COMPOSE_DATE(TO_DATE(#{applyOtDate, jdbcType=VARCHAR}, 'YYYY-MM-DD'), #{otToTime, jdbcType=VARCHAR})
-            END,
+            TO_DATE(#{otFromTime, jdbcType=VARCHAR}, 'YYYY-MM-DD HH24:MI'),
+            TO_DATE(#{otToTime, jdbcType=VARCHAR}, 'YYYY-MM-DD HH24:MI'),
             #{applyOtRemark, jdbcType=VARCHAR},
             #{otTypeNo, jdbcType=VARCHAR},
             #{otTypeCode, jdbcType=VARCHAR},
@@ -571,12 +587,8 @@
         UPDATE ESS_APPLY_OT
         SET PERSON_ID = #{personId, jdbcType=VARCHAR},
             APPLY_OT_DATE = TO_DATE(#{applyOtDate, jdbcType=VARCHAR}, 'YYYY-MM-DD'),
-            OT_FROM_TIME = COMPOSE_DATE(TO_DATE(#{applyOtDate, jdbcType=VARCHAR}, 'YYYY-MM-DD'), #{otFromTime, jdbcType=VARCHAR}),
-            OT_TO_TIME = CASE
-                WHEN #{otToTime, jdbcType=VARCHAR} &lt; #{otFromTime, jdbcType=VARCHAR}
-                    THEN COMPOSE_DATE(TO_DATE(#{applyOtDate, jdbcType=VARCHAR}, 'YYYY-MM-DD') + 1, #{otToTime, jdbcType=VARCHAR})
-                ELSE COMPOSE_DATE(TO_DATE(#{applyOtDate, jdbcType=VARCHAR}, 'YYYY-MM-DD'), #{otToTime, jdbcType=VARCHAR})
-            END,
+            OT_FROM_TIME = TO_DATE(#{otFromTime, jdbcType=VARCHAR}, 'YYYY-MM-DD HH24:MI'),
+            OT_TO_TIME = TO_DATE(#{otToTime, jdbcType=VARCHAR}, 'YYYY-MM-DD HH24:MI'),
             APPLY_OT_REMARK = #{applyOtRemark, jdbcType=VARCHAR},
             OT_TYPE_NO = #{otTypeNo, jdbcType=VARCHAR},
             OT_TYPE_CODE = #{otTypeCode, jdbcType=VARCHAR},
@@ -654,5 +666,45 @@
     <delete id="deleteApplyResultByApplyNo">
         DELETE FROM AR_APPLY_RESULT WHERE APPLY_NO = #{applyNo, jdbcType=VARCHAR}
     </delete>
+
+    <select id="checkOtClash" resultType="int"
+            parameterType="com.ait.ar.attendanceMintenance.dto.ArOvertimeManagentDto">
+        SELECT AR_GET_OT_CLASH(
+            '',
+            #{personId, jdbcType=VARCHAR},
+            #{otFromTime, jdbcType=VARCHAR},
+            #{otToTime, jdbcType=VARCHAR},
+            ''
+        ) FROM DUAL
+    </select>
+
+    <resultMap id="ArOtTotalsResultMap" type="com.ait.ar.attendanceMintenance.dto.ArOvertimeManagentDto">
+        <result column="OT_TOTAL_MONTH" property="otTotalMonth" />
+        <result column="OT_TOTAL_YEAR" property="otTotalYear" />
+    </resultMap>
+
+    <select id="selectOtTotals" resultMap="ArOtTotalsResultMap"
+            parameterType="com.ait.ar.attendanceMintenance.dto.ArOvertimeManagentDto">
+        SELECT
+            GET_AR_OT_TOTAIL(REPLACE(#{applyOtDate, jdbcType=VARCHAR}, '-', '/'), #{cpnyId, jdbcType=VARCHAR}, #{personId, jdbcType=VARCHAR}, '30') AS OT_TOTAL_MONTH,
+            GET_AR_OT_TOTAIL(REPLACE(#{applyOtDate, jdbcType=VARCHAR}, '-', '/'), #{cpnyId, jdbcType=VARCHAR}, #{personId, jdbcType=VARCHAR}, '200') AS OT_TOTAL_YEAR
+        FROM DUAL
+    </select>
+
+    <select id="countOverlapOt" resultType="int"
+            parameterType="com.ait.ar.attendanceMintenance.dto.ArOvertimeManagentDto">
+        SELECT COUNT(1)
+        FROM ESS_APPLY_OT
+        WHERE PERSON_ID = #{personId, jdbcType=VARCHAR}
+          AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+          AND AFFIRM_FLAG NOT IN ('14014309', '14014310')
+          AND TO_CHAR(CONFIRM_FLAG) &lt;&gt; '2'
+          AND ACTIVITY = 1
+          AND OT_FROM_TIME &lt; TO_DATE(#{otToTime, jdbcType=VARCHAR}, 'YYYY-MM-DD HH24:MI')
+          AND OT_TO_TIME &gt; TO_DATE(#{otFromTime, jdbcType=VARCHAR}, 'YYYY-MM-DD HH24:MI')
+          <if test="applyNo != null and applyNo != '' and applyNo != '0'">
+            AND APPLY_NO &lt;&gt; #{applyNo, jdbcType=VARCHAR}
+          </if>
+    </select>
 
 </mapper>

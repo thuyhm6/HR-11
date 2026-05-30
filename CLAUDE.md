@@ -2,6 +2,7 @@
 2. Phong cách: Trả lời ngắn gọn, tập trung vào giải pháp kỹ thuật.
 3. Code: Giữ nguyên thuật ngữ tiếng Anh chuyên ngành (ví dụ: function, class, variable). Khi tạo một file giao diện html mới thì cần tránh việc trùng lặp id của các phần tử trong file html đã có. sử dụng tên viết tắt của file html đó để làm tiền tố cho id.  Nếu cần thiết phải trùng id thì phải giải thích rõ lý do tại sao lại cần trùng id đó. Tạo file html cần tuân thủ đa ngôn ngữ, tránh việc hardcode text hiển thị trong file html, thay vào đó sử dụng các key để lấy text hiển thị từ file message.properties, nếu text đã có trong file message.properties thì không cần tạo thêm key. hiển thị mặc định ở trong file HTML là tiếng Việt.
 4. Ưu tiên việc tái sử dụng code đã có, tránh việc viết lại code đã tồn tại. Nếu cần phải viết lại code đã tồn tại thì phải giải thích rõ lý do tại sao cần phải viết lại code đó.
+4. Định dạng ngày tháng dạng YYYY/MM/DD. hoặc YYYY/MM/DD HH24:MI tùy theo ngữ cảnh sử dụng.
 # When modifying code
 - Giải thích ngắn gọn trước khi sửa nhiều file
 - Sau khi sửa phải:

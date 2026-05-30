@@ -1,5 +1,7 @@
 package com.ait.ess.viewDept.controller;
 
+import com.ait.ess.viewDept.dto.ArPersonalListDetailDto;
+import com.ait.ess.viewDept.dto.ArPersonalListDto;
 import com.ait.ess.viewDept.dto.ArPersonalSelfDetailDto;
 import com.ait.ess.viewDept.dto.ArPersonalSelfDto;
 import com.ait.ess.viewDept.dto.ManageEvsResultEmpDto;
@@ -9,6 +11,7 @@ import com.ait.ess.viewDept.dto.OtApplyPersonalSelfDetailDto;
 import com.ait.ess.viewDept.dto.OtApplyPersonalSelfDto;
 import com.ait.ess.viewDept.dto.YearUseLeaveUsageDto;
 import com.ait.ess.viewDept.dto.YearUseVacationDto;
+import com.ait.ess.viewDept.service.ArPersonalListService;
 import com.ait.ess.viewDept.service.ArPersonalSelfService;
 import com.ait.ess.viewDept.service.ManageEvsResultEmpService;
 import com.ait.ess.viewDept.service.ManageEmpPositionInfoService;
@@ -23,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/ess/viewDept")
@@ -42,6 +46,9 @@ public class EssViewDeptController {
 
     @Autowired
     private YearUseInfoService yearUseInfoService;
+
+    @Autowired
+    private ArPersonalListService arPersonalListService;
 
     @GetMapping("/viewEmpCalendar")
     public String viewEmpCalendar() {
@@ -209,5 +216,57 @@ public class EssViewDeptController {
     public ResponseEntity<List<YearUseLeaveUsageDto>> getYearUseLeaveUsage(
             @RequestParam(required = false) String year) {
         return ResponseEntity.ok(yearUseInfoService.getLeaveUsageList(year));
+    }
+
+    @GetMapping("/viewArPersonalList")
+    public String viewArPersonalList() {
+        return "ess/viewDept/viewArPersonalList";
+    }
+
+    @GetMapping("/viewOtApplyPersonalList")
+    public String viewOtApplyPersonalList() {
+        return "ess/viewDept/viewOtApplyPersonalList";
+    }
+
+    @GetMapping("/api/arPersonalList/items")
+    @ResponseBody
+    public ResponseEntity<List<ArPersonalListDto>> getArPersonalListItems(@RequestParam(required = false) String itemGroup) {
+        ArPersonalListDto params = new ArPersonalListDto();
+        params.setItemGroup(itemGroup);
+        return ResponseEntity.ok(arPersonalListService.getItemList(params));
+    }
+
+    @GetMapping("/api/arPersonalList/detail")
+    @ResponseBody
+    public ResponseEntity<List<ArPersonalListDetailDto>> getArPersonalListDetail(
+            @RequestParam String personId,
+            @RequestParam String itemId,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate) {
+        ArPersonalListDetailDto params = new ArPersonalListDetailDto();
+        params.setPersonId(personId);
+        params.setItemId(itemId);
+        params.setStartDate(startDate);
+        params.setEndDate(endDate);
+        return ResponseEntity.ok(arPersonalListService.getDetailList(params));
+    }
+
+    @GetMapping("/api/arPersonalList/summary")
+    @ResponseBody
+    public ResponseEntity<List<Map<String, Object>>> getArPersonalListSummary(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String deptNos,
+            @RequestParam(required = false) String empTypeCode,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @RequestParam(required = false) String itemGroup) {
+        ArPersonalListDto params = new ArPersonalListDto();
+        params.setKeyword(keyword);
+        params.setDeptNos(deptNos);
+        params.setEmpTypeCode(empTypeCode);
+        params.setStartDate(startDate);
+        params.setEndDate(endDate);
+        params.setItemGroup(itemGroup);
+        return ResponseEntity.ok(arPersonalListService.getSummaryList(params));
     }
 }

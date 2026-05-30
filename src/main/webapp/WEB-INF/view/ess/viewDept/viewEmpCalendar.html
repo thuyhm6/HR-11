@@ -57,6 +57,22 @@
         <span class="ccal-legend-item"><span class="ccal-legend-dot ccal-lg-today"></span> <span th:text="#{esscal.legend.today}">Hôm nay</span></span>
     </div>
 
+    <!-- ===== Modal Chi Tiết Ngày (chỉ hiện khi sysMode != 'ess') ===== -->
+    <div class="modal fade" id="esscal_dayModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header py-2">
+                    <h6 class="modal-title mb-0" id="esscal_dayModalTitle" th:text="#{esscal.modal.dayDetail}">Chi tiết ngày</h6>
+                    <button class="btn-close btn-sm" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body py-2" id="esscal_dayModalBody"></div>
+                <div class="modal-footer py-2">
+                    <button class="btn btn-sm btn-secondary" data-bs-dismiss="modal" th:text="#{button.close}">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <template id="fragmentScripts">
@@ -68,6 +84,22 @@
 
         var _esscal_initialized = false;
         var _esscal_personId    = '';
+        /* Đọc từ window.sysMode (do topbar set khi load dashboard), fallback 'ess' */
+        var _esscal_sysMode     = (typeof sysMode !== 'undefined' && sysMode) ? sysMode : 'ess';
+        var _esscal_recordMap   = {};
+
+        /* Chặn click bằng CSS ngay lập tức — không thể bypass dù onclick có trên element */
+        (function () {
+            if (_esscal_sysMode !== 'hrm') {
+                var s = document.getElementById('esscal-no-click-css') || document.createElement('style');
+                s.id  = 'esscal-no-click-css';
+                s.textContent = '#esscal_gridWrap .ccal-day{pointer-events:none!important;cursor:default!important;}';
+                if (!s.parentNode) document.head.appendChild(s);
+            } else {
+                var old = document.getElementById('esscal-no-click-css');
+                if (old) old.parentNode.removeChild(old);
+            }
+        })();
 
         var _esscal_i18n = {
             loading:       /*[[#{esscal.msg.loading}]]*/ 'Đang tải...',
@@ -183,6 +215,11 @@
                 $('#esscal_body').html('<div style="padding:20px;text-align:center;color:#64748b;">' + esscalEsc(_esscal_i18n.noCalData) + '</div>');
                 return;
             }
+            _esscal_recordMap = {};
+            records.forEach(function (r) {
+                var k = (r.ddateStr || r.ddateFormatted || '').replace(/-/g, '/');
+                _esscal_recordMap[k] = r;
+            });
 
             var today    = new Date();
             var todayKey = today.getFullYear()
@@ -239,7 +276,10 @@
                     ? '<div class="ccal-remark" title="' + esscalEsc(rec.remark) + '">— ' + esscalEsc(rec.remark) + '</div>'
                     : '';
 
-                html += '<div class="' + cls + '">';
+                var clickable = (_esscal_sysMode === 'hrm');
+                var dayAttrs = ' data-datestr="' + key + '"'
+                    + (clickable ? ' onclick="esscalDayClick(this)" style="cursor:pointer;"' : '');
+                html += '<div class="' + cls + '"' + dayAttrs + '>';
                 html += '<div class="ccal-day-top"><span class="' + numCls + '">' + day + '-' + dMon + '</span>' + statusHtml + '</div>';
                 html += '<div class="ccal-tags">' + tags + '</div>';
                 html += remarkHtml;
@@ -255,6 +295,33 @@
             html += '</div>';
             $('#esscal_body').html(html);
         }
+
+        /* ===================== DAY CLICK (chỉ khi sysMode != 'ess') ===================== */
+        window.esscalDayClick = function (el) {
+            if (_esscal_sysMode !== 'hrm') return;
+            var dateStr = el.getAttribute('data-datestr');
+            var rec     = _esscal_recordMap[dateStr] || {};
+            var parts   = (dateStr || '').split('/');
+            var display = parts.length === 3 ? (parts[2] + '/' + parts[1] + '/' + parts[0]) : dateStr;
+
+            var isRest = rec.workdayflag == 0;
+            var isStat = rec.statutoryFlag == 1;
+            var status = isStat ? _esscal_i18n.statusHoliday : isRest ? _esscal_i18n.statusRest : _esscal_i18n.statusWork;
+            var shift  = rec.shiftName || rec.shiftNo || _esscal_i18n.adminShift;
+            var remark = rec.remark || '';
+            var typeid = rec.typeidName || '';
+
+            var body = '<table class="table table-sm table-borderless mb-0" style="font-size:.82rem;">'
+                + '<tr><th style="width:90px;color:#64748b;">Ngày</th><td><strong>' + esscalEsc(display) + '</strong></td></tr>'
+                + '<tr><th style="color:#64748b;">Trạng thái</th><td>' + esscalEsc(status) + '</td></tr>'
+                + '<tr><th style="color:#64748b;">Ca làm việc</th><td>' + esscalEsc(shift) + '</td></tr>'
+                + (typeid ? '<tr><th style="color:#64748b;">Loại</th><td>' + esscalEsc(typeid) + '</td></tr>' : '')
+                + (remark ? '<tr><th style="color:#64748b;">Ghi chú</th><td><em>' + esscalEsc(remark) + '</em></td></tr>' : '')
+                + '</table>';
+
+            $('#esscal_dayModalBody').html(body);
+            new bootstrap.Modal(document.getElementById('esscal_dayModal')).show();
+        };
 
         /* ===================== INIT ===================== */
         $(document).ready(function () {

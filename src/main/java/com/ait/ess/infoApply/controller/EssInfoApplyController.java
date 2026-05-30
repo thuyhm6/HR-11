@@ -1,11 +1,14 @@
 package com.ait.ess.infoApply.controller;
 
 import com.ait.ess.infoApply.dto.EssCwaAbnormalDto;
+import com.ait.ess.infoApply.dto.EssCoordApplyOtInfoDto;
 import com.ait.ess.infoApply.dto.EssOtApplyListDto;
 import com.ait.ess.infoApply.dto.EssPersonOtInfoDto;
 import com.ait.ess.infoApply.service.EssCwaAbnormalService;
+import com.ait.ess.infoApply.service.EssCoordApplyOtInfoService;
 import com.ait.ess.infoApply.service.EssOtApplyService;
 import com.ait.ess.infoApply.service.EssPersonOtInfoService;
+import com.ait.sy.sys.dto.DataTablesResponse;
 import com.ait.sy.syAffirm.dto.SyAffirmEmailDto;
 import com.ait.sy.syAffirm.service.SyAffirmEmailService;
 import org.slf4j.Logger;
@@ -35,6 +38,9 @@ public class EssInfoApplyController {
     private EssPersonOtInfoService essPersonOtInfoService;
 
     @Autowired
+    private EssCoordApplyOtInfoService essCoordApplyOtInfoService;
+
+    @Autowired
     private SyAffirmEmailService syAffirmEmailService;
 
     @GetMapping("/viewSSTOtApplyInfo")
@@ -52,6 +58,16 @@ public class EssInfoApplyController {
     public ResponseEntity<Map<String, Object>> getOtDateInfo(
             @RequestParam String applyDate) {
         return ResponseEntity.ok(essOtApplyService.getOtDateInfo(applyDate));
+    }
+
+    @GetMapping("/api/otDuration")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> getOtDuration(
+            @RequestParam String applyOtDate,
+            @RequestParam String otFromTime,
+            @RequestParam String otToTime,
+            @RequestParam(defaultValue = "0") String deductYn) {
+        return ResponseEntity.ok(essOtApplyService.getOtDuration(applyOtDate, otFromTime, otToTime, deductYn));
     }
 
     @GetMapping("/api/myOtApply/list")
@@ -114,6 +130,11 @@ public class EssInfoApplyController {
         return ResponseEntity.ok(essPersonOtInfoService.getOtItemList());
     }
 
+    @GetMapping("/viewPiciOtAffirmLBatchList")
+    public String viewPiciOtAffirmLBatchList() {
+        return "ess/infoApply/viewPiciOtAffirmLBatchList";
+    }
+
     @GetMapping("/viewApprovalEmail")
     public String viewApprovalEmail() {
         return "ess/infoApply/viewApprovalEmail";
@@ -172,6 +193,46 @@ public class EssInfoApplyController {
     @ResponseBody
     public ResponseEntity<List<SyAffirmEmailDto>> getNoticeedEmailList(SyAffirmEmailDto dto) {
         return ResponseEntity.ok(syAffirmEmailService.getNoticeedEmailList(dto));
+    }
+
+    @GetMapping("/viewCoordApplyOtInfoList")
+    public String viewCoordApplyOtInfoList() {
+        return "ess/infoApply/viewCoordApplyOtInfoList";
+    }
+
+    @GetMapping("/api/coordOt/list")
+    @ResponseBody
+    public ResponseEntity<DataTablesResponse<EssCoordApplyOtInfoDto>> getCoordApplyOtList(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String deptNos,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @RequestParam(required = false) String shiftNo,
+            @RequestParam(required = false) String itemNoSearch,
+            @RequestParam(required = false) String statusCode,
+            @RequestParam(required = false) String postFamily,
+            @RequestParam(defaultValue = "1") int draw,
+            @RequestParam(defaultValue = "0") int start,
+            @RequestParam(defaultValue = "25") int length) {
+        EssCoordApplyOtInfoDto dto = new EssCoordApplyOtInfoDto();
+        dto.setKeyword(keyword);
+        dto.setDeptNos(deptNos);
+        dto.setStartDate(startDate);
+        dto.setEndDate(endDate);
+        dto.setShiftNo(shiftNo);
+        dto.setItemNoSearch(itemNoSearch);
+        dto.setStatusCode(statusCode);
+        dto.setPostFamily(postFamily);
+        dto.setDraw(draw);
+        dto.setStart(start);
+        dto.setLength(length);
+        return ResponseEntity.ok(essCoordApplyOtInfoService.getPageList(dto));
+    }
+
+    @GetMapping("/api/coordOt/items")
+    @ResponseBody
+    public ResponseEntity<List<EssCoordApplyOtInfoDto>> getCoordOtItemList() {
+        return ResponseEntity.ok(essCoordApplyOtInfoService.getOtItemList());
     }
 
     @GetMapping("/viewShowCwaAbnormalApply")

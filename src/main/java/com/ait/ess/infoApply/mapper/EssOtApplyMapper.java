@@ -12,7 +12,15 @@ public interface EssOtApplyMapper {
 
     Map<String, Object> selectOtDateInfo(@Param("applyDate") String applyDate);
 
+    Map<String, Object> selectOtDuration(
+            @Param("applyOtDate") String applyOtDate,
+            @Param("otFromTime") String otFromTime,
+            @Param("otToTime") String otToTime,
+            @Param("deductYn") String deductYn);
+
     List<EssOtApplyListDto> selectMyOtApplyList(EssOtApplyListDto dto);
+
+    int countLockedOtApply(@Param("applyNos") List<String> applyNos);
 
     int cancelMyOtApplyList(@Param("applyNos") List<String> applyNos);
 }

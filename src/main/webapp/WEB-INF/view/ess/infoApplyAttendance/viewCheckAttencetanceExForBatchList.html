@@ -18,12 +18,12 @@
                         <div class="col-md-2">
                             <label for="ck_fromDate" class="form-label" th:text="#{ck.label.fromDate}">Ngày bắt đầu</label>
                             <input type="text" class="form-control js-daterangepicker" id="ck_fromDate"
-                                data-drp-format="DD/MM/YYYY" autocomplete="off">
+                                data-drp-format="YYYY/MM/DD" autocomplete="off">
                         </div>
                         <div class="col-md-2">
                             <label for="ck_toDate" class="form-label" th:text="#{ck.label.toDate}">Ngày kết thúc</label>
                             <input type="text" class="form-control js-daterangepicker" id="ck_toDate"
-                                data-drp-format="DD/MM/YYYY" autocomplete="off">
+                                data-drp-format="YYYY/MM/DD" autocomplete="off">
                         </div>
                         <div class="col-md-2">
                             <label for="ck_postFamily" class="form-label" th:text="#{ck.label.postFamily}">Nhóm nhân viên</label>
@@ -111,13 +111,13 @@
             var d = String(dateObj.getDate()).padStart(2, '0');
             var m = String(dateObj.getMonth() + 1).padStart(2, '0');
             var y = dateObj.getFullYear();
-            return d + '/' + m + '/' + y;
+            return y + '/' + m + '/' + d;
         }
 
         function ckInitDefaultDateRange() {
             var today = new Date();
-            var firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-            var lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+            var firstDay = new Date(today.getFullYear(), today.getMonth() - 1, 25);
+            var lastDay = new Date(today.getFullYear(), today.getMonth(), 24);
             var fromValue = ckFormatDate(firstDay);
             var toValue = ckFormatDate(lastDay);
             $('#ck_fromDate').val(fromValue);

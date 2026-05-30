@@ -213,6 +213,12 @@ public class EssLeaveApplyServiceImpl implements EssLeaveApplyService {
     @Transactional
     public int cancelMyLeaveApplyList(List<String> applyNos) {
         if (applyNos == null || applyNos.isEmpty()) return 0;
+        log.info("cancelMyLeaveApplyList checking lock for applyNos={}", applyNos);
+        int lockedByDetail = essLeaveApplymapper.countLockedByArDetailHtsv(applyNos);
+        int lockedByDept   = essLeaveApplymapper.countLockedByArDeptManage(applyNos);
+        if (lockedByDetail > 0 || lockedByDept > 0) {
+            throw new IllegalStateException("Đơn nghỉ phép này đã bị khóa, không thể hủy bỏ!");
+        }
         return essLeaveApplymapper.cancelMyLeaveApplyList(applyNos);
     }
 

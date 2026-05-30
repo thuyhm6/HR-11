@@ -154,6 +154,13 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
+
+        <!-- SQL Server JDBC Driver (đọc dữ liệu quẹt thẻ từ máy chủ WISENETACS) -->
+        <dependency>
+            <groupId>com.microsoft.sqlserver</groupId>
+            <artifactId>mssql-jdbc</artifactId>
+            <version>12.4.2.jre11</version>
+        </dependency>
     </dependencies>
 
     <build>

@@ -133,6 +133,15 @@ public class EssAttendanceExForBatchServiceImpl implements EssAttendanceExForBat
                 throw new IllegalArgumentException("Thiếu dữ liệu bắt buộc của dòng xin phép.");
             }
 
+            Integer clashResult = mapper.checkAttExClash(personId, arDateStr);
+            if (clashResult != null) {
+                if (clashResult == 1) {
+                    throw new IllegalStateException("Ngày công đã chốt, xin kiểm tra lại!");
+                } else if (clashResult == -2) {
+                    throw new IllegalStateException("Thời gian đã khóa, xin kiểm tra lại!");
+                }
+            }
+
             if (applyNo == null) {
                 throw new IllegalStateException("Không lấy được APPLY_NO.");
             }

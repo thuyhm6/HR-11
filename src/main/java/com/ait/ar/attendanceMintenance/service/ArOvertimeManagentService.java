@@ -22,7 +22,13 @@ public interface ArOvertimeManagentService {
 
     void save(ArOvertimeManagentDto dto);
 
+    void saveBatch(List<ArOvertimeManagentDto> dtos);
+
     void cancelOvertimeApply(String applyNo);
 
+    Map<String, Object> cancelBatchOvertimeApply(List<String> applyNos);
+
     void resubmitOvertimeApply(ArOvertimeManagentDto dto);
+
+    ArOvertimeManagentDto getOtTotals(String personId, String applyOtDate);
 }

@@ -211,6 +211,7 @@ public class HomeController {
         model.addAttribute("title", title);
         model.addAttribute("message", "Chào mừng " + currentHrUser.getEmployeeName() + " đến với hệ thống HR!");
         model.addAttribute("expiringContractsCount", expiringContractsCount);
+        model.addAttribute("sysMode", "ess");
 
         return "login/dashboard";
     }

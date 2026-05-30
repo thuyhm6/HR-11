@@ -52,4 +52,5 @@ public class ArVacEmpDto extends EmployeeNameDto {
 
     private String keyword;
     private String deptNos;
+    private String empOffice;
 }

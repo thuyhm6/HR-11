@@ -18,12 +18,8 @@
         <result column="UPDATED_NAME" property="updatedName" />
         <result column="INDOOR_TIME" property="inDoorTime" />
         <result column="OUTDOOR_TIME" property="outDoorTime" />
-        <result column="SHIFT_START_YEAR" property="shiftStartYear" />
-        <result column="SHIFT_START_HH" property="shiftStartHh" />
-        <result column="SHIFT_START_MI" property="shiftStartMi" />
-        <result column="SHIFT_END_YEAR" property="shiftEndYear" />
-        <result column="SHIFT_END_HH" property="shiftEndHh" />
-        <result column="SHIFT_END_MI" property="shiftEndMi" />
+        <result column="SHIFT_START_TIME" property="shiftStartTime" />
+        <result column="SHIFT_END_TIME" property="shiftEndTime" />
         <result column="EMPID" property="empId" />
         <result column="LOCAL_NAME" property="localName" />
         <result column="DEPTNO" property="deptNo" />
@@ -94,27 +90,23 @@
             parameterType="com.ait.ess.infoApplyAttendance.dto.EssAttendanceExForBatchDto"
             resultMap="DtoResultMap">
         SELECT
-            TO_CHAR(TO_DATE(EC.AR_DATE_STR,'YYYY/MM/DD'),'DD/MM/YYYY') AS AR_DATE_STR,
-            TO_CHAR(TO_DATE(REPLACE(EC.AR_DATE_STR,'/','.'),'YYYY.MM.DD'),'DD.MM.YYYY') AS DATE_STR,
+            EC.AR_DATE_STR AS AR_DATE_STR,
+            EC.AR_DATE_STR  AS DATE_STR,
             EC.PK_NO AS APPLY_NO,
             EC.PERSON_ID,
-            TO_CHAR(EC.FROM_TIME,'DD-MM-YYYY HH24:MI') AS FROM_DATE,
-            TO_CHAR(EC.TO_TIME,'DD-MM-YYYY HH24:MI') AS TO_DATE,
+            TO_CHAR(EC.FROM_TIME,'YYYY/MM/DD HH24:MI') AS FROM_DATE,
+            TO_CHAR(EC.TO_TIME,'YYYY/MM/DD HH24:MI') AS TO_DATE,
             TO_CHAR(EC.QUANTITY) AS WORK_HOUR,
             EC.ITEM_NO,
             GET_GLOBAL_NAME(EC.ITEM_NO,#{lang, jdbcType=VARCHAR}) AS ITEM_NO_NAME,
-            TO_CHAR(EC.CREATE_DATE,'DD-MM-YYYY') AS CREATE_DATE,
+            TO_CHAR(EC.CREATE_DATE,'YYYY/MM/DD') AS CREATE_DATE,
             GET_LOCAL_NAME_BY_PERSONID(EC.CREATED_BY,#{cpnyId, jdbcType=VARCHAR}) AS CREATED_NAME,
-            TO_CHAR(EC.UPDATE_DATE,'DD-MM-YYYY') AS UPDATE_DATE,
+            TO_CHAR(EC.UPDATE_DATE,'YYYY/MM/DD') AS UPDATE_DATE,
             GET_LOCAL_NAME_BY_PERSONID(EC.UPDATED_BY,#{cpnyId, jdbcType=VARCHAR}) AS UPDATED_NAME,
             GET_AR_MAC_TIME(EC.PERSON_ID,EC.AR_DATE_STR,'IN') AS INDOOR_TIME,
             GET_AR_MAC_TIME(EC.PERSON_ID,EC.AR_DATE_STR,'OUT') AS OUTDOOR_TIME,
-            TO_CHAR(TO_DATE(GET_AR_SHIFT_START_TIME(EC.PERSON_ID,EC.AR_DATE_STR,#{cpnyId, jdbcType=VARCHAR}),'YYYY/MM/DD HH24:MI'),'DD/MM/YYYY') AS SHIFT_START_YEAR,
-            TO_CHAR(TO_DATE(GET_AR_SHIFT_START_TIME(EC.PERSON_ID,EC.AR_DATE_STR,#{cpnyId, jdbcType=VARCHAR}),'YYYY/MM/DD HH24:MI'),'HH24') AS SHIFT_START_HH,
-            TO_CHAR(TO_DATE(GET_AR_SHIFT_START_TIME(EC.PERSON_ID,EC.AR_DATE_STR,#{cpnyId, jdbcType=VARCHAR}),'YYYY/MM/DD HH24:MI'),'MI') AS SHIFT_START_MI,
-            TO_CHAR(TO_DATE(GET_AR_SHIFT_END_TIME(EC.PERSON_ID,EC.AR_DATE_STR,#{cpnyId, jdbcType=VARCHAR}),'YYYY/MM/DD HH24:MI'),'DD/MM/YYYY') AS SHIFT_END_YEAR,
-            TO_CHAR(TO_DATE(GET_AR_SHIFT_END_TIME(EC.PERSON_ID,EC.AR_DATE_STR,#{cpnyId, jdbcType=VARCHAR}),'YYYY/MM/DD HH24:MI'),'HH24') AS SHIFT_END_HH,
-            TO_CHAR(TO_DATE(GET_AR_SHIFT_END_TIME(EC.PERSON_ID,EC.AR_DATE_STR,#{cpnyId, jdbcType=VARCHAR}),'YYYY/MM/DD HH24:MI'),'MI') AS SHIFT_END_MI,
+            GET_AR_SHIFT_START_TIME(EC.PERSON_ID,EC.AR_DATE_STR,#{cpnyId, jdbcType=VARCHAR}) AS SHIFT_START_TIME,
+            GET_AR_SHIFT_END_TIME(EC.PERSON_ID,EC.AR_DATE_STR,#{cpnyId, jdbcType=VARCHAR}) AS SHIFT_END_TIME,
             HR.EMPID,
             HR.LOCAL_NAME,
             HR.DEPTNO,
@@ -169,10 +161,10 @@
             AND INSTR(',' || #{deptNos, jdbcType=VARCHAR} || ',', ',' || HR.DEPTNO || ',') &gt; 0
         </if>
         <if test="fromDate != null and fromDate != ''">
-            AND EC.AR_DATE_STR &gt;= TO_CHAR(TO_DATE(#{fromDate, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY/MM/DD')
+            AND EC.AR_DATE_STR &gt;= #{fromDate, jdbcType=VARCHAR}
         </if>
         <if test="toDate != null and toDate != ''">
-            AND EC.AR_DATE_STR &lt;= TO_CHAR(TO_DATE(#{toDate, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY/MM/DD')
+            AND EC.AR_DATE_STR &lt;= #{toDate, jdbcType=VARCHAR}
         </if>
         <if test="postFamily != null and postFamily != ''">
             AND HR.POST_FAMILY = #{postFamily, jdbcType=VARCHAR}
@@ -191,17 +183,17 @@
             resultMap="DtoResultMap">
         SELECT
             EC.APPLY_NO,
-            TO_CHAR(TO_DATE(EC.AR_DATE_STR, 'YYYY/MM/DD'), 'DD/MM/YYYY') AS AR_DATE_STR,
-            TO_CHAR(TO_DATE(REPLACE(EC.AR_DATE_STR, '/', '.'), 'YYYY.MM.DD'), 'DD.MM.YYYY') AS DATE_STR,
+            EC.AR_DATE_STR AS AR_DATE_STR,
+            EC.AR_DATE_STR AS DATE_STR,
             EC.PERSON_ID,
-            TO_CHAR(EC.FROM_TIME, 'DD/MM/YYYY HH24:MI') AS FROM_DATE,
-            TO_CHAR(EC.TO_TIME, 'DD/MM/YYYY HH24:MI') AS TO_DATE,
+            TO_CHAR(EC.FROM_TIME, 'YYYY/MM/DD HH24:MI') AS FROM_DATE,
+            TO_CHAR(EC.TO_TIME, 'YYYY/MM/DD HH24:MI') AS TO_DATE,
             TO_CHAR(EC.WORK_HOUR) AS WORK_HOUR,
             EC.ITEM_NO,
             GET_GLOBAL_NAME(EC.ITEM_NO, #{lang, jdbcType=VARCHAR}) AS ITEM_NO_NAME,
-            TO_CHAR(EC.CREATE_DATE, 'DD/MM/YYYY') AS CREATE_DATE,
+            TO_CHAR(EC.CREATE_DATE, 'YYYY/MM/DD') AS CREATE_DATE,
             GET_LOCAL_NAME_BY_PERSONID(EC.CREATED_BY, #{cpnyId, jdbcType=VARCHAR}) AS CREATED_NAME,
-            TO_CHAR(EC.UPDATE_DATE, 'DD/MM/YYYY') AS UPDATE_DATE,
+            TO_CHAR(EC.UPDATE_DATE, 'YYYY/MM/DD') AS UPDATE_DATE,
             GET_LOCAL_NAME_BY_PERSONID(EC.UPDATED_BY, #{cpnyId, jdbcType=VARCHAR}) AS UPDATED_NAME,
             HR.EMPID,
             HR.LOCAL_NAME,
@@ -247,10 +239,10 @@
             AND INSTR(',' || #{deptNos, jdbcType=VARCHAR} || ',', ',' || HR.DEPTNO || ',') &gt; 0
         </if>
         <if test="fromDate != null and fromDate != ''">
-            AND EC.AR_DATE_STR &gt;= TO_CHAR(TO_DATE(#{fromDate, jdbcType=VARCHAR}, 'DD/MM/YYYY'), 'YYYY/MM/DD')
+            AND EC.AR_DATE_STR &gt;= #{fromDate, jdbcType=VARCHAR}
         </if>
         <if test="toDate != null and toDate != ''">
-            AND EC.AR_DATE_STR &lt;= TO_CHAR(TO_DATE(#{toDate, jdbcType=VARCHAR}, 'DD/MM/YYYY'), 'YYYY/MM/DD')
+            AND EC.AR_DATE_STR &lt;= #{toDate, jdbcType=VARCHAR}
         </if>
         <if test="postFamily != null and postFamily != ''">
             AND HR.POST_FAMILY = #{postFamily, jdbcType=VARCHAR}
@@ -384,6 +376,10 @@
         ORDER BY TO_NUMBER(T.AFFIRM_LEVEL)
     </select>
 
+    <select id="checkAttExClash" resultType="java.lang.Integer">
+        SELECT AR_GET_ATT_EX_CLASH(#{personId, jdbcType=VARCHAR}, #{arDateStr, jdbcType=VARCHAR}, #{cpnyId, jdbcType=VARCHAR}) FROM DUAL
+    </select>
+
     <select id="getNextCardApplyNo" resultType="java.lang.Long">
         SELECT AR_MAC_RECORDS_APPLY_SEQ.NEXTVAL FROM DUAL
     </select>
@@ -419,15 +415,15 @@
             AR_MAC_RECORDS_APPLY_SEQ.NEXTVAL,
             '14014306',
             #{itemNo, jdbcType=VARCHAR},
-            TO_CHAR(TO_DATE(#{arDateStr, jdbcType=VARCHAR}, 'DD/MM/YYYY'), 'YYYY/MM/DD'),
-            TO_DATE(#{fromDateTime, jdbcType=VARCHAR}, 'DD/MM/YYYY HH24:MI'),
-            TO_DATE(#{toDateTime, jdbcType=VARCHAR}, 'DD/MM/YYYY HH24:MI'),
+            #{arDateStr, jdbcType=VARCHAR},
+            TO_DATE(#{fromDateTime, jdbcType=VARCHAR}, 'YYYY/MM/DD HH24:MI'),
+            TO_DATE(#{toDateTime, jdbcType=VARCHAR}, 'YYYY/MM/DD HH24:MI'),
             SYSDATE,
             #{adminID, jdbcType=VARCHAR},
             1,
             SYSDATE,
-            TO_DATE(#{fromDateTime, jdbcType=VARCHAR}, 'DD/MM/YYYY HH24:MI'),
-            TO_DATE(#{toDateTime, jdbcType=VARCHAR}, 'DD/MM/YYYY HH24:MI'),
+            TO_DATE(#{fromDateTime, jdbcType=VARCHAR}, 'YYYY/MM/DD HH24:MI'),
+            TO_DATE(#{toDateTime, jdbcType=VARCHAR}, 'YYYY/MM/DD HH24:MI'),
             #{workHour, jdbcType=VARCHAR},
             #{adminIP, jdbcType=VARCHAR},
             ESS_APPLY_SEQ.NEXTVAL,
