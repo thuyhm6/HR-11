@@ -5,6 +5,7 @@ setlocal EnableDelayedExpansion
 :: ====================================================
 ::   HR-11 Build & Deploy Script
 ::   Ho tro: Tomcat 10.x va JEUS 8.5
+::   Ca hai deu dung exploded-war (target/exploded-war)
 ::
 ::   Cach dung:
 ::     deploy-jeus.bat               -> Chi build, khong deploy
@@ -22,18 +23,18 @@ setlocal EnableDelayedExpansion
 set JAVA_HOME_JDK21=C:\Program Files\Java\jdk-21.0.10
 
 :: --- Database ---
-set DB_URL=jdbc:oracle:thin:@//14.225.17.145:1521/orcl
+set DB_URL=jdbc:oracle:thin:@//10.42.200.55:1526/HTSVHR
 set DB_USERNAME=HTSV_HR
-set DB_PASSWORD=htsvhrdb
+set DB_PASSWORD=`1q2w3a4s
 set PHOTO_UPLOAD_PATH=D:/source/VHR/HTSV_HR/resources/photo/HTSV
 set SESSION_COOKIE_SECURE=false
 
 :: --- Tomcat 10.x ---
-set TOMCAT_HOME=C:\apache-tomcat-10.1.x
-set TOMCAT_APP_NAME=HR-11
+set TOMCAT_HOME=C:\apache-tomcat-10.1.55
+set TOMCAT_APP_NAME=ROOT
 
 :: --- JEUS 8.5 ---
-set JEUS_HOME=C:\tmaxsoft\jeus8
+set JEUS_HOME=D:\JEUS
 set JEUS_APP_NAME=HR-11
 set JEUS_CONTEXT_PATH=/HR-11
 set JEUS_SERVER_HOST=localhost
@@ -123,10 +124,10 @@ if /i "%DEPLOY_MODE%"=="jeus"   goto :DEPLOY_JEUS
 
 
 :: ====================================================
-::   DEPLOY: TOMCAT 10.x
+::   DEPLOY: TOMCAT 10.x (dung exploded-war)
 :: ====================================================
 :DEPLOY_TOMCAT
-echo  [3/3] Deploy len Tomcat...
+echo  [3/3] Deploy len Tomcat (exploded-war)...
 echo.
 
 :: Kiem tra thu muc Tomcat
@@ -137,9 +138,10 @@ if not exist "%TOMCAT_HOME%" (
     exit /b 1
 )
 
-:: Kiem tra file WAR
-if not exist "%WAR_FILE%" (
-    echo  [LOI] Khong tim thay WAR: %WAR_FILE%
+:: Kiem tra exploded-war
+if not exist "%EXPLODED_WAR%\WEB-INF" (
+    echo  [LOI] Khong tim thay exploded-war: %EXPLODED_WAR%
+    echo        WEB-INF khong ton tai - kiem tra lai ket qua build.
     pause
     exit /b 1
 )
@@ -165,7 +167,7 @@ timeout /t 4 /nobreak >nul
 echo  [OK] Da gui lenh shutdown.
 echo.
 
-:: Xoa ban deploy cu
+:: Xoa ban deploy cu (thu muc va WAR cu neu con)
 echo  -- Xoa ban deploy cu...
 if exist "%TOMCAT_HOME%\webapps\%TOMCAT_APP_NAME%\" (
     rmdir /s /q "%TOMCAT_HOME%\webapps\%TOMCAT_APP_NAME%"
@@ -178,15 +180,16 @@ if exist "%TOMCAT_HOME%\webapps\%TOMCAT_APP_NAME%.war" (
 echo  [OK] Da xoa ban cu.
 echo.
 
-:: Copy WAR moi
-echo  -- Copy WAR moi vao webapps...
-copy /y "%WAR_FILE%" "%TOMCAT_HOME%\webapps\%TOMCAT_APP_NAME%.war" >nul
-if %ERRORLEVEL% NEQ 0 (
-    echo  [LOI] Copy WAR that bai!
+:: Copy exploded-war vao webapps/HR-11/
+echo  -- Dang copy exploded-war vao webapps\%TOMCAT_APP_NAME%\...
+robocopy "%EXPLODED_WAR%" "%TOMCAT_HOME%\webapps\%TOMCAT_APP_NAME%" /E /IS /IT /NFL /NDL /NJH /NJS
+if %ERRORLEVEL% GEQ 8 (
+    echo.
+    echo  [LOI] Robocopy that bai! ERRORLEVEL=%ERRORLEVEL%
     pause
     exit /b 1
 )
-echo  [OK] Copy thanh cong: %TOMCAT_HOME%\webapps\%TOMCAT_APP_NAME%.war
+echo  [OK] Copy thanh cong: %TOMCAT_HOME%\webapps\%TOMCAT_APP_NAME%\
 echo.
 
 :: Khoi dong Tomcat
@@ -300,11 +303,11 @@ echo  ================================================
 echo    BUILD THANH CONG - Khong deploy
 echo  ================================================
 echo.
-echo    WAR file (cho Tomcat) :
-echo      %WAR_FILE%
-echo.
-echo    Exploded WAR (cho JEUS):
+echo    Exploded WAR (cho ca Tomcat va JEUS):
 echo      %EXPLODED_WAR%
+echo.
+echo    WAR file (phu, khong dung de deploy):
+echo      %WAR_FILE%
 echo.
 echo    De deploy:
 echo      deploy-jeus.bat tomcat   -^> Deploy len Tomcat 10.x

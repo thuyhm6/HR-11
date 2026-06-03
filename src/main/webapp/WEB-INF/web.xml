@@ -1,38 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<web-app xmlns="http://java.sun.com/xml/ns/javaee"
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
-         http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
-         version="3.0">
+         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee
+         https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
+         version="6.0">
 
     <display-name>HR-11 Application</display-name>
     <description>Human Resources Management System</description>
 
     <!--
-        Spring Boot WAR deploy on JEUS 7.0:
-        - SpringBootServletInitializer (Hr11Application.java) tự đăng ký DispatcherServlet
-        - Không cần ContextLoaderListener, DispatcherServlet hay contextConfigLocation ở đây
-        - application.properties + @Configuration classes xử lý toàn bộ cấu hình
-        - JEUS 7.0 hỗ trợ Servlet 3.0 (Java EE 6), dùng schema http://java.sun.com/xml/ns/javaee
+        Spring Boot 3.x WAR deploy on Tomcat 10.x / JEUS 8.5+:
+        - Namespace Jakarta EE 10 (Servlet 6.0) - khong dung javax namespace cu
+        - SpringBootServletInitializer (Hr11Application.java) tu dang ky DispatcherServlet
+        - Khong can ContextLoaderListener, DispatcherServlet o day
+        - application.properties + @Configuration classes xu ly toan bo cau hinh
     -->
-
-    <!-- Character Encoding Filter -->
-    <filter>
-        <filter-name>characterEncodingFilter</filter-name>
-        <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
-        <init-param>
-            <param-name>encoding</param-name>
-            <param-value>UTF-8</param-value>
-        </init-param>
-        <init-param>
-            <param-name>forceEncoding</param-name>
-            <param-value>true</param-value>
-        </init-param>
-    </filter>
-    <filter-mapping>
-        <filter-name>characterEncodingFilter</filter-name>
-        <url-pattern>/*</url-pattern>
-    </filter-mapping>
 
     <!-- Session Configuration -->
     <session-config>
