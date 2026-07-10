@@ -12,13 +12,41 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
+            position: relative;
             min-height: 100vh;
             display: flex;
             align-items: stretch;
+            background: #d05800;
+        }
+
+        /* Ảnh nền làm mờ để làm nổi bật khung đăng nhập */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url('/assets/images/hanwha_vision_backgroud.png');
+            background-size: cover;
+            background-position: center;
+            filter: blur(10px);
+            transform: scale(1.1);
+            z-index: -2;
+        }
+
+        /* Lớp phủ gradient cam để đồng bộ tông màu thương hiệu và tăng độ tương phản */
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
             background:
-                radial-gradient(ellipse at 20% 30%, rgba(255,200,120,0.55) 0%, transparent 55%),
-                radial-gradient(ellipse at 80% 75%, rgba(140,40,0,0.45) 0%, transparent 55%),
-                radial-gradient(ellipse at 55% 50%, #f4731f 0%, #d05800 100%);
+                radial-gradient(ellipse at 20% 30%, rgba(255,200,120,0.45) 0%, transparent 55%),
+                radial-gradient(ellipse at 80% 75%, rgba(140,40,0,0.55) 0%, transparent 55%),
+                rgba(208,88,0,0.35);
+            z-index: -1;
+        }
+
+        .login-wrapper {
+            position: relative;
+            z-index: 1;
         }
 
         .login-wrapper {
