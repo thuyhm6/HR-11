@@ -20,6 +20,11 @@ public class HrPunishmentServiceImpl implements HrPunishmentService {
         return hrPunishmentMapper.searchPunishment(empId, localName, punishCode);
     }
 
+     @Override
+    public List<HrPunishment> getByPersonId(String personId) {
+        return hrPunishmentMapper.getByPersonId(personId);
+    }
+
     @Override
     public HrPunishment getById(Long punishNo) {
         return hrPunishmentMapper.getById(punishNo);

@@ -1,0 +1,10 @@
+2026-07-07 01:19:53.577 WARN  [o.s.b.a.s.s.UserDetailsServiceAutoConfiguration] 
+
+Using generated security password: 953bb3c7-a1f7-455e-8ceb-3883e5b49f6b
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+2026-07-07 01:20:42.063 WARN  [o.s.w.s.m.m.a.ExceptionHandlerExceptionResolver] Resolved [org.springframework.web.servlet.resource.NoResourceFoundException: No static resource plugin/bootstrap/js/bootstrap.bundle.min.js.]
+2026-07-07 01:20:54.276 WARN  [i.m.c.instrument.MeterRegistry] This Gauge has been already registered (MeterId{name='system.memory.usage.percent', tags=[]}), the registration will be ignored. Note that subsequent logs will be logged at debug level.
+2026-07-07 01:23:42.386 WARN  [o.s.w.s.m.m.a.ExceptionHandlerExceptionResolver] Resolved [org.springframework.web.servlet.resource.NoResourceFoundException: No static resource css/bootstrap.min.css.map.]
+2026-07-07 01:27:22.957 WARN  [o.s.w.s.m.m.a.ExceptionHandlerExceptionResolver] Resolved [org.springframework.web.servlet.resource.NoResourceFoundException: No static resource plugin/bootstrap/js/bootstrap.bundle.min.js.]
