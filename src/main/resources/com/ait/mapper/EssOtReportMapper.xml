@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ait.ess.infoApply.mapper.EssOtReportMapper">
+
+    <resultMap id="EssOtReportResultMap" type="com.ait.ess.infoApply.dto.EssOtReportDto">
+        <result property="empId"                       column="EMPID"                          jdbcType="VARCHAR"/>
+        <result property="localName"                    column="LOCAL_NAME"                      jdbcType="VARCHAR"/>
+        <result property="deptName"                      column="DEPT_NAME"                        jdbcType="VARCHAR"/>
+        <result property="totalOtMonth"                  column="TOTAL_OT_MONTH"                   jdbcType="DECIMAL"/>
+        <result property="preMonthlyTotalQty"             column="PRE_MONTHLY_TOTAL_QTY"             jdbcType="DECIMAL"/>
+        <result property="totalOtYear"                   column="TOTAL_OT_YEAR"                    jdbcType="DECIMAL"/>
+        <result property="otRegular150Month"              column="REGULAR_150_MONTH"              jdbcType="DECIMAL"/>
+        <result property="otRegular200Month"              column="REGULAR_200_MONTH"              jdbcType="DECIMAL"/>
+        <result property="otRegular210Month"              column="REGULAR_210_MONTH"              jdbcType="DECIMAL"/>
+        <result property="otWeekend200Month"              column="WEEKEND_200_MONTH"              jdbcType="DECIMAL"/>
+        <result property="otWeekend270Month"              column="WEEKEND_270_MONTH"              jdbcType="DECIMAL"/>
+        <result property="otHoliday300Month"              column="HOLIDAY_300_MONTH"              jdbcType="DECIMAL"/>
+        <result property="otHoliday390Month"              column="HOLIDAY_390_MONTH"              jdbcType="DECIMAL"/>
+        <result property="otRegular150ExcessOfficial"     column="REGULAR_150_EXCESS_OFFICIAL"    jdbcType="DECIMAL"/>
+        <result property="otRegular200ExcessOfficial"     column="REGULAR_200_EXCESS_OFFICIAL"    jdbcType="DECIMAL"/>
+        <result property="otRegular210ExcessOfficial"     column="REGULAR_210_EXCESS_OFFICIAL"    jdbcType="DECIMAL"/>
+        <result property="otWeekend200ExcessOfficial"     column="WEEKEND_200_EXCESS_OFFICIAL"    jdbcType="DECIMAL"/>
+        <result property="otWeekend270ExcessOfficial"     column="WEEKEND_270_EXCESS_OFFICIAL"    jdbcType="DECIMAL"/>
+        <result property="otHoliday300ExcessOfficial"     column="HOLIDAY_300_EXCESS_OFFICIAL"    jdbcType="DECIMAL"/>
+        <result property="otHoliday390ExcessOfficial"     column="HOLIDAY_390_EXCESS_OFFICIAL"    jdbcType="DECIMAL"/>
+        <result property="otRegular150ExcessProbation"    column="REGULAR_150_EXCESS_PROBATION"   jdbcType="DECIMAL"/>
+        <result property="otRegular200ExcessProbation"    column="REGULAR_200_EXCESS_PROBATION"   jdbcType="DECIMAL"/>
+        <result property="otRegular210ExcessProbation"    column="REGULAR_210_EXCESS_PROBATION"   jdbcType="DECIMAL"/>
+        <result property="otWeekend200ExcessProbation"    column="WEEKEND_200_EXCESS_PROBATION"   jdbcType="DECIMAL"/>
+        <result property="otWeekend270ExcessProbation"    column="WEEKEND_270_EXCESS_PROBATION"   jdbcType="DECIMAL"/>
+        <result property="otHoliday300ExcessProbation"    column="HOLIDAY_300_EXCESS_PROBATION"   jdbcType="DECIMAL"/>
+        <result property="otHoliday390ExcessProbation"    column="HOLIDAY_390_EXCESS_PROBATION"   jdbcType="DECIMAL"/>
+    </resultMap>
+
+    <!--
+        Danh sách DEPTNO mà admin đang đăng nhập được phép xem, tính SẴN 1 LẦN (không tương quan
+        với H/V). Trước đây đặt trong EXISTS + CONNECT BY có điều kiện "B1.DEPTNO = H.DEPTNO" nên
+        bị tương quan với bảng ngoài - Oracle phải duyệt lại cây phân cấp phòng ban cho từng dòng
+        (FILTER), rất chậm khi HR_EMPLOYEE/V_HR_OT_REPORT nhiều dòng. Tách ra inline view độc lập
+        rồi JOIN bằng H.DEPTNO = ACC.DEPTNO để Oracle chỉ duyệt CONNECT BY đúng 1 lần và hash-join
+        phần còn lại.
+    -->
+    <sql id="accessibleDeptJoin">
+        (
+            SELECT B1.DEPTNO
+            FROM HR_DEPARTMENT B1
+            START WITH B1.DEPTNO IN (
+                SELECT HRD.DEPTID
+                FROM HR_DEPARTMENT HRD
+                WHERE HRD.MANAGER_EMP_ID = #{adminID, jdbcType=VARCHAR}
+            )
+            CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+            UNION
+            SELECT ASI.DEPTNO
+            FROM AR_SUPERVISOR_INFO ASI
+            WHERE ASI.PERSON_ID = #{adminID, jdbcType=VARCHAR}
+        ) ACC
+    </sql>
+
+    <!-- Ô nhập trên UI là MMYYYY, nhưng V.AR_MONTH_STR lưu dạng YYYYMM nên khi ghép tham số
+         truyền xuống phải đảo lại thành year + month (VD: nhập 072026 -> arMonth = 202607). -->
+    <sql id="filterCondition">
+        <bind name="arMonth" value="year + month"/>
+        V.PERSON_ID = H.PERSON_ID
+        AND H.DEPTNO = ACC.DEPTNO
+        AND H.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+        AND H.EMPID NOT LIKE '111111%'
+        AND V.AR_MONTH_STR = #{arMonth, jdbcType=VARCHAR}
+        <if test="keyword != null and keyword != ''">
+            AND (
+                UPPER(H.EMPID) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%'
+                OR CONVERTTOUNSIGN(UPPER(H.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{keyword, jdbcType=VARCHAR})) || '%'
+            )
+        </if>
+        <if test="deptNos != null and deptNos != ''">
+            AND INSTR(',' || #{deptNos, jdbcType=VARCHAR} || ',', ',' || H.DEPTNO || ',') &gt; 0
+        </if>
+    </sql>
+
+    <sql id="selectColumns">
+        H.EMPID                                    AS EMPID,
+        H.LOCAL_NAME                                AS LOCAL_NAME,
+        GET_DEPT_NAME(H.DEPTNO, #{lang, jdbcType=VARCHAR}) AS DEPT_NAME,
+        NVL(V.TOTAL_OT_MONTH, 0)                    AS TOTAL_OT_MONTH,
+        NVL(V.PRE_MONTHLY_TOTAL_QTY, 0)             AS PRE_MONTHLY_TOTAL_QTY,
+        NVL(V.TOTAL_OT_YEAR, 0)                     AS TOTAL_OT_YEAR,
+        NVL(V.REGULAR_150_MONTH, 0)              AS REGULAR_150_MONTH,
+        NVL(V.REGULAR_200_MONTH, 0)              AS REGULAR_200_MONTH,
+        NVL(V.REGULAR_210_MONTH, 0)              AS REGULAR_210_MONTH,
+        NVL(V.WEEKEND_200_MONTH, 0)              AS WEEKEND_200_MONTH,
+        NVL(V.WEEKEND_270_MONTH, 0)              AS WEEKEND_270_MONTH,
+        NVL(V.HOLIDAY_300_MONTH, 0)              AS HOLIDAY_300_MONTH,
+        NVL(V.HOLIDAY_390_MONTH, 0)              AS HOLIDAY_390_MONTH,
+        NVL(V.REGULAR_150_EXCESS_OFFICIAL, 0)    AS REGULAR_150_EXCESS_OFFICIAL,
+        NVL(V.REGULAR_200_EXCESS_OFFICIAL, 0)    AS REGULAR_200_EXCESS_OFFICIAL,
+        NVL(V.REGULAR_210_EXCESS_OFFICIAL, 0)    AS REGULAR_210_EXCESS_OFFICIAL,
+        NVL(V.WEEKEND_200_EXCESS_OFFICIAL, 0)    AS WEEKEND_200_EXCESS_OFFICIAL,
+        NVL(V.WEEKEND_270_EXCESS_OFFICIAL, 0)    AS WEEKEND_270_EXCESS_OFFICIAL,
+        NVL(V.HOLIDAY_300_EXCESS_OFFICIAL, 0)    AS HOLIDAY_300_EXCESS_OFFICIAL,
+        NVL(V.HOLIDAY_390_EXCESS_OFFICIAL, 0)    AS HOLIDAY_390_EXCESS_OFFICIAL,
+        NVL(V.REGULAR_150_EXCESS_PROBATION, 0)   AS REGULAR_150_EXCESS_PROBATION,
+        NVL(V.REGULAR_200_EXCESS_PROBATION, 0)   AS REGULAR_200_EXCESS_PROBATION,
+        NVL(V.REGULAR_210_EXCESS_PROBATION, 0)   AS REGULAR_210_EXCESS_PROBATION,
+        NVL(V.WEEKEND_200_EXCESS_PROBATION, 0)   AS WEEKEND_200_EXCESS_PROBATION,
+        NVL(V.WEEKEND_270_EXCESS_PROBATION, 0)   AS WEEKEND_270_EXCESS_PROBATION,
+        NVL(V.HOLIDAY_300_EXCESS_PROBATION, 0)   AS HOLIDAY_300_EXCESS_PROBATION,
+        NVL(V.HOLIDAY_390_EXCESS_PROBATION, 0)   AS HOLIDAY_390_EXCESS_PROBATION
+    </sql>
+
+    <!-- ===== Đếm danh sách (dùng cho phân trang) ===== -->
+    <select id="countList" parameterType="com.ait.ess.infoApply.dto.EssOtReportDto" resultType="int">
+        SELECT COUNT(*)
+        FROM V_HR_OT_REPORT V, HR_EMPLOYEE H, <include refid="accessibleDeptJoin"/>
+        WHERE <include refid="filterCondition"/>
+    </select>
+
+    <!-- ===== Danh sách báo cáo tăng ca có phân trang ===== -->
+    <select id="selectListPage" parameterType="com.ait.ess.infoApply.dto.EssOtReportDto" resultMap="EssOtReportResultMap">
+        SELECT * FROM (
+            SELECT INNER_Q.*, ROWNUM AS RN FROM (
+                SELECT <include refid="selectColumns"/>
+                FROM V_HR_OT_REPORT V, HR_EMPLOYEE H, <include refid="accessibleDeptJoin"/>
+                WHERE <include refid="filterCondition"/>
+                ORDER BY H.EMPID ASC
+            ) INNER_Q
+            WHERE ROWNUM &lt;= #{start, jdbcType=INTEGER} + #{length, jdbcType=INTEGER}
+        ) WHERE RN &gt; #{start, jdbcType=INTEGER}
+    </select>
+
+    <!-- ===== Danh sách đầy đủ (không phân trang) dùng để điền file mẫu Excel (jx:forEach) =====
+         Trả về Map với key là tên cột SQL (VD EMPID, TOTAL_OT_MONTH...) để khớp trực tiếp với các biểu
+         thức ${reports.FIELD} trong file mẫu templates/1_OtReport.xlsx, không dùng resultMap vì đích đến
+         không phải DTO/POJO. -->
+    <select id="selectExportReport" parameterType="com.ait.ess.infoApply.dto.EssOtReportDto" resultType="java.util.LinkedHashMap">
+        SELECT <include refid="selectColumns"/>
+        FROM V_HR_OT_REPORT V, HR_EMPLOYEE H, <include refid="accessibleDeptJoin"/>
+        WHERE <include refid="filterCondition"/>
+        ORDER BY H.EMPID ASC
+    </select>
+
+</mapper>

@@ -3,14 +3,17 @@ package com.ait.ess.infoApply.controller;
 import com.ait.ess.infoApply.dto.EssCwaAbnormalDto;
 import com.ait.ess.infoApply.dto.EssCoordApplyOtInfoDto;
 import com.ait.ess.infoApply.dto.EssOtApplyListDto;
+import com.ait.ess.infoApply.dto.EssOtReportDto;
 import com.ait.ess.infoApply.dto.EssPersonOtInfoDto;
 import com.ait.ess.infoApply.service.EssCwaAbnormalService;
 import com.ait.ess.infoApply.service.EssCoordApplyOtInfoService;
 import com.ait.ess.infoApply.service.EssOtApplyService;
+import com.ait.ess.infoApply.service.EssOtReportService;
 import com.ait.ess.infoApply.service.EssPersonOtInfoService;
 import com.ait.sy.sys.dto.DataTablesResponse;
 import com.ait.sy.syAffirm.dto.SyAffirmEmailDto;
 import com.ait.sy.syAffirm.service.SyAffirmEmailService;
+import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +46,9 @@ public class EssInfoApplyController {
 
     @Autowired
     private SyAffirmEmailService syAffirmEmailService;
+
+    @Autowired
+    private EssOtReportService essOtReportService;
 
     @GetMapping("/viewSSTOtApplyInfo")
     public String viewSSTOtApplyInfo() {
@@ -249,5 +256,21 @@ public class EssInfoApplyController {
         dto.setStartDate(startDate);
         dto.setEndDate(endDate);
         return ResponseEntity.ok(essCwaAbnormalService.getMyList(dto));
+    }
+
+    @GetMapping("/viewOtReport")
+    public String viewOtReport() {
+        return "ess/infoApply/viewOtReport";
+    }
+
+    @GetMapping("/api/otReport/list")
+    @ResponseBody
+    public DataTablesResponse<EssOtReportDto> getOtReportList(EssOtReportDto params) {
+        return essOtReportService.getPageList(params);
+    }
+
+    @GetMapping("/api/otReport/export")
+    public void exportOtReport(EssOtReportDto params, HttpServletResponse response) throws IOException {
+        essOtReportService.exportReport(params, response);
     }
 }

@@ -58,12 +58,14 @@
                                 <tr>
                                     <th th:text="#{common.stt}">STT</th>
                                     <th th:text="#{attSearch.workDate}">Ngày công</th>
+                                    <th th:text="#{attSearch.dateTypeReal}">Loại ngày công</th>
                                     <th th:text="#{common.empId}">Mã nhân viên</th>
                                     <th th:text="#{common.empName}">Tên nhân viên</th>
                                     <th th:text="#{common.deptName}">Phòng ban</th>
                                     <th th:text="#{attSearch.position}">Chức vụ</th>
                                     <th th:text="#{attSearch.empGroup}">Nhóm nhân viên</th>
                                     <th th:text="#{attSearch.shiftType}">Ca làm việc</th>
+                                    
                                     <th th:text="#{applyOt.otType}">Loại tăng ca</th>
                                     <th th:text="#{attSearch.fromTime}">Từ thời gian</th>
                                     <th th:text="#{attSearch.toTime}">Đến thời gian</th>
@@ -200,6 +202,7 @@
                         }
                     },
                     { data: 'arDateStr', className: 'text-center' },
+                    { data: 'dateTypeRealName', className: 'text-center' },
                     { data: 'empId', className: 'text-center' },
                     { data: 'localName' },
                     { data: 'deptName' },

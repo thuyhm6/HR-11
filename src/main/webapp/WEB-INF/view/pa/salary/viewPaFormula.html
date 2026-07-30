@@ -1,4 +1,8 @@
 <style>
+    #vpf_table {
+        table-layout: fixed;
+        width: 100% !important;
+    }
     .vpf-cell-wrap {
         white-space: normal !important;
         word-break: break-word;
@@ -42,15 +46,14 @@
                                style="width:100%; cursor:pointer;">
                             <thead class="table-light">
                                 <tr>
+                                    <th class="text-center" style="width:40px;" th:text="#{pa.formula.no}">STT</th>
                                     <th class="text-center" style="width:36px;">
                                         <input type="checkbox" id="vpf_checkAll">
                                     </th>
-                                    <th class="text-center" style="width:40px;"
-                                        th:text="#{pa.formula.no}">STT</th>
                                     <th class="text-center" style="width:130px;"
                                         th:text="#{pa.formula.conditionSeq}">Trình tự tính</th>
-                                    <th th:text="#{pa.formula.condition}">Điều kiện</th>
-                                    <th th:text="#{pa.formula.formular}">Công thức</th>
+                                    <th style="width:37.5%;" th:text="#{pa.formula.condition}">Điều kiện</th>
+                                    <th style="width:37.5%;" th:text="#{pa.formula.formular}">Công thức</th>
                                     <th style="width:180px;" th:text="#{pa.formula.description}">Mô tả</th>
                                 </tr>
                             </thead>
@@ -207,8 +210,6 @@
 
             vpf_table = $('#vpf_table').DataTable({
                 destroy: true,
-                scrollY: 'calc(100vh - 360px)',
-                scrollCollapse: true,
                 paging: true,
                 searching: false,
                 lengthChange: true,
@@ -217,12 +218,13 @@
                 processing: true,
                 serverSide: true,
                 autoWidth: false,
-                scrollX: true,
                 columnDefs: [
                     { targets: 0, width: '36px',  className: 'text-center', orderable: false },
                     { targets: 1, width: '40px',  className: 'text-center', orderable: false },
                     { targets: 2, width: '130px', className: 'text-center', orderable: false },
-                    { targets: [3, 4, 5], className: 'vpf-cell-wrap' }
+                    { targets: 3, width: '37.5%', className: 'vpf-cell-wrap' },
+                    { targets: 4, width: '37.5%', className: 'vpf-cell-wrap' },
+                    { targets: 5, className: 'vpf-cell-wrap' }
                 ],
                 ajax: {
                     url: '/pa/salary/formula/api/list',
@@ -232,17 +234,18 @@
                     }
                 },
                 columns: [
+                    
+                    {
+                        data: null,
+                        render: function (data, type, row, meta) {
+                            return meta.settings._iDisplayStart + meta.row + 1;
+                        }
+                    },
                     {
                         data: null,
                         render: function (data, type, row) {
                             return '<input type="checkbox" class="vpf_rowCheck"'
                                 + ' data-formularno="' + row.formularNo + '">';
-                        }
-                    },
-                    {
-                        data: null,
-                        render: function (data, type, row, meta) {
-                            return meta.settings._iDisplayStart + meta.row + 1;
                         }
                     },
                     {
@@ -259,15 +262,15 @@
                                 upBtn = '<button type="button"'
                                     + ' class="btn btn-sm p-0 px-1 border-0 text-success vpf_btnUp"'
                                     + ' data-formularno="' + row.formularNo + '"'
-                                    + ' data-itemno="' + row.itemNo + '" title="Lên">'
-                                    + '<i class="bi bi-arrow-up-circle-fill fs-6"></i></button>';
+                                    + ' data-itemno="' + row.itemNo + '" title="Lên"'
+                                    + ' style="font-size:1rem; line-height:1;">&#9650;</button>';
                             }
                             if (row.minSeq == null || data !== row.minSeq) {
                                 downBtn = '<button type="button"'
                                     + ' class="btn btn-sm p-0 px-1 border-0 text-primary vpf_btnDown"'
                                     + ' data-formularno="' + row.formularNo + '"'
-                                    + ' data-itemno="' + row.itemNo + '" title="Xuống">'
-                                    + '<i class="bi bi-arrow-down-circle-fill fs-6"></i></button>';
+                                    + ' data-itemno="' + row.itemNo + '" title="Xuống"'
+                                    + ' style="font-size:1rem; line-height:1;">&#9660;</button>';
                             }
                             return '<span class="me-1">' + seqVal + '</span>' + upBtn + downBtn;
                         }

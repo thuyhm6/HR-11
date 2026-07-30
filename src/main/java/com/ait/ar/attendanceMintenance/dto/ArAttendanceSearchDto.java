@@ -32,6 +32,8 @@ public class ArAttendanceSearchDto {
     private String shiftName;
     private String statusCode;
     private String statusName;
+    private String dateTypeReal;
+    private String dateTypeRealName;
     private String remark;
 
     private String createDate;

@@ -1,0 +1,271 @@
+<div th:fragment="content">
+    <div class="row">
+        <div class="col-12">
+            <!-- Form tìm kiếm -->
+            <div class="card mb-3">
+                <div class="card-body">
+                    <form id="vor_searchForm" class="row g-3 align-items-end">
+                        <div class="col-md-2">
+                            <label for="vor_month" class="form-label" th:text="#{common.month}">Tháng</label>
+                            <input type="text" class="form-control js-daterangepicker" id="vor_month"
+                                data-drp-format="MMYYYY" autocomplete="off" placeholder="MMYYYY">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="vor_keyword" class="form-label" th:text="#{essDept.keyword}">Mã nhân viên / Họ tên</label>
+                            <input type="text" class="form-control" id="vor_keyword"
+                                th:placeholder="#{vdp.search.empKeyword.placeholder}" placeholder="Nhập mã hoặc họ tên">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="vor_deptNo" class="form-label" th:text="#{common.deptName}">Phòng ban</label>
+                            <input type="text" class="form-control" id="vor_deptNo"
+                                th:placeholder="#{vdp.search.dept.placeholder}" placeholder="Chọn phòng ban" readonly>
+                        </div>
+
+                        <div class="col-12 d-flex gap-2 flex-wrap">
+                            <button type="button" class="btn btn-primary" onclick="vorSearchData()">
+                                <i class="bx bx-search"></i> <span th:text="#{essDept.search}">Tra cứu</span>
+                            </button>
+                            <button type="button" class="btn btn-success" onclick="vorExportReport()">
+                                <i class="bx bx-export"></i> <span th:text="#{ess.viewMonthDetailList.btnExport}">XUẤT BÁO CÁO</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Danh sách báo cáo tăng ca -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+                        <span class="fw-bold">
+                            <span th:text="#{common.total}">Total</span>:<span id="vor_totalCount">0</span>
+                        </span>
+                    </div>
+                    <div class="dt-table-wrapper">
+                        <table id="vor_dataTable" class="table table-striped table-bordered table-hover text-nowrap">
+                            <thead class="table-light text-center align-middle">
+                                <tr>
+                                    <th rowspan="3" th:text="#{common.stt}">STT</th>
+                                    <th rowspan="3" th:text="#{common.empId}">Mã nhân viên</th>
+                                    <th rowspan="3" th:text="#{common.empName}">Tên nhân viên</th>
+                                    <th rowspan="3" th:text="#{common.deptName}">Bộ phận</th>
+                                    <th rowspan="3" th:text="#{ess.viewOtReport.totalOtMonth.b}">Tổng tăng ca tháng</th>
+                                    <th rowspan="3" th:text="#{ess.viewOtReport.preMonthlyTotalQty.b}">Tổng tăng ca tháng trước</th>
+                                    <th rowspan="3" th:text="#{ess.viewOtReport.totalOtYear.b}">Tổng tăng ca năm</th>
+                                    <th rowspan="3" th:text="#{ess.viewArPersonalYearList.WORKDAYOT150_HOURS.b}">Tăng ca ngày thường 150%</th>
+                                    <th rowspan="3" th:text="#{ess.viewArPersonalYearList.WORKDAYOT200_HOURS.b}">Tăng ca ngày thường 200%</th>
+                                    <th rowspan="3" th:text="#{ess.viewArPersonalYearList.WORKDAYOT210_HOURS.b}">Tăng ca ngày thường 210%</th>
+                                    <th rowspan="3" th:text="#{ess.viewArPersonalYearList.WEEKLYOT200_HOURS.b}">Tăng ca cuối tuần 200%</th>
+                                    <th rowspan="3" th:text="#{ess.viewArPersonalYearList.WEEKLYOT270_HOURS.b}">Tăng ca cuối tuần 270%</th>
+                                    <th rowspan="3" th:text="#{ess.viewArPersonalYearList.HOLIDAYOT300_HOURS.b}">Tăng ca ngày Lễ 300%</th>
+                                    <th rowspan="3" th:text="#{ess.viewArPersonalYearList.HOLIDAYOT390_HOURS.b}">Tăng ca ngày Lễ 390%</th>
+                                    <th colspan="14" th:text="#{ess.viewOtReport.excessOt.b}">Tăng ca vượt</th>
+                                </tr>
+                                <tr>
+                                    <th colspan="7" th:text="#{ess.viewArPersonalYearList.REGULAR_DAYS.b}">Chính thức</th>
+                                    <th colspan="7" th:text="#{ess.viewArPersonalYearList.PROBATION_DAYS.b}">Thử việc</th>
+                                </tr>
+                                <tr>
+                                    <th th:text="#{ess.viewArPersonalYearList.WORKDAYOT150_HOURS.b}">Tăng ca ngày thường 150%</th>
+                                    <th th:text="#{ess.viewArPersonalYearList.WORKDAYOT200_HOURS.b}">Tăng ca ngày thường 200%</th>
+                                    <th th:text="#{ess.viewArPersonalYearList.WORKDAYOT210_HOURS.b}">Tăng ca ngày thường 210%</th>
+                                    <th th:text="#{ess.viewArPersonalYearList.WEEKLYOT200_HOURS.b}">Tăng ca cuối tuần 200%</th>
+                                    <th th:text="#{ess.viewArPersonalYearList.WEEKLYOT270_HOURS.b}">Tăng ca cuối tuần 270%</th>
+                                    <th th:text="#{ess.viewArPersonalYearList.HOLIDAYOT300_HOURS.b}">Tăng ca ngày Lễ 300%</th>
+                                    <th th:text="#{ess.viewArPersonalYearList.HOLIDAYOT390_HOURS.b}">Tăng ca ngày Lễ 390%</th>
+                                    <th th:text="#{ess.viewArPersonalYearList.WORKDAYOT150_HOURS.b}">Tăng ca ngày thường 150%</th>
+                                    <th th:text="#{ess.viewArPersonalYearList.WORKDAYOT200_HOURS.b}">Tăng ca ngày thường 200%</th>
+                                    <th th:text="#{ess.viewArPersonalYearList.WORKDAYOT210_HOURS.b}">Tăng ca ngày thường 210%</th>
+                                    <th th:text="#{ess.viewArPersonalYearList.WEEKLYOT200_HOURS.b}">Tăng ca cuối tuần 200%</th>
+                                    <th th:text="#{ess.viewArPersonalYearList.WEEKLYOT270_HOURS.b}">Tăng ca cuối tuần 270%</th>
+                                    <th th:text="#{ess.viewArPersonalYearList.HOLIDAYOT300_HOURS.b}">Tăng ca ngày Lễ 300%</th>
+                                    <th th:text="#{ess.viewArPersonalYearList.HOLIDAYOT390_HOURS.b}">Tăng ca ngày Lễ 390%</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<template id="fragmentScripts">
+    <script th:inline="javascript">
+        var _vor_table = null;
+        var _vor_pageBooted = false;
+        var _vor_hasSearched = false;
+        var _vor_selectedDeptCodes = [];
+        var _vor_msg = {
+            loadFailed: /*[[#{ess.viewMonthDetailList.msg.loadFailed}]]*/ 'Tải dữ liệu thất bại'
+        };
+
+        /* ── Khởi tạo bộ chọn phòng ban ── */
+        function vorInitDeptSelector() {
+            if (typeof DeptTree === 'undefined') return;
+            DeptTree.init('#vor_deptNo', function (selectedCodes) {
+                _vor_selectedDeptCodes = selectedCodes || [];
+            });
+        }
+
+        /* ── Tách giá trị MMYYYY của ô Tháng thành month/year gửi lên server ── */
+        function vorParseMonthYear() {
+            var raw = ($('#vor_month').val() || '').trim();
+            if (raw.length !== 6) {
+                return { month: '', year: '' };
+            }
+            return { month: raw.substring(0, 2), year: raw.substring(2, 6) };
+        }
+
+        /* ── Thu thập tham số tìm kiếm ── */
+        function vorGetSearchParams() {
+            var my = vorParseMonthYear();
+            return {
+                month:   my.month,
+                year:    my.year,
+                keyword: $('#vor_keyword').val(),
+                deptNos: (_vor_selectedDeptCodes || []).join(',')
+            };
+        }
+
+        /* ── Khởi tạo DataTable server-side ── */
+        function vorInitTable() {
+            _vor_table = $('#vor_dataTable').DataTable({
+                destroy:      true,
+                serverSide:   true,
+                paging:       true,
+                ordering:     false,
+                searching:    false,
+                lengthChange: true,
+                pageLength:   25,
+                processing:   true,
+                autoWidth:    false,
+                scrollX:      true,
+                scrollCollapse: true,
+                columnDefs: [
+                    { targets: '_all', width: '100px' },
+                    { targets: 0,  width: '50px' },
+                    { targets: 1,  width: '100px' },
+                    { targets: 2,  width: '160px' },
+                    { targets: 3,  width: '160px' },
+                    { targets: 4,  width: '110px' },
+                    { targets: 5,  width: '110px' },
+                    { targets: 6,  width: '110px' }
+                ],
+                initComplete: function () {
+                    this.api().columns.adjust();
+                },
+                drawCallback: function () {
+                    this.api().columns.adjust();
+                },
+                ajax: function (data, callback) {
+                    if (!_vor_hasSearched) {
+                        $('#vor_totalCount').text(0);
+                        callback({ draw: data.draw, recordsTotal: 0, recordsFiltered: 0, data: [] });
+                        return;
+                    }
+                    var p = vorGetSearchParams();
+                    $.ajax({
+                        url:  '/ess/infoApply/api/otReport/list',
+                        type: 'GET',
+                        data: $.extend({}, data, { month: p.month, year: p.year, keyword: p.keyword, deptNos: p.deptNos }),
+                        success: function (json) {
+                            $('#vor_totalCount').text(json.recordsTotal || 0);
+                            callback({ draw: json.draw, recordsTotal: json.recordsTotal, recordsFiltered: json.recordsFiltered, data: json.data || [] });
+                        },
+                        error: function () {
+                            if (typeof toastr !== 'undefined') toastr.error(_vor_msg.loadFailed);
+                            callback({ draw: data.draw, recordsTotal: 0, recordsFiltered: 0, data: [] });
+                        }
+                    });
+                },
+                columns: [
+                    {
+                        data: null, className: 'text-center',
+                        render: function (data, type, row, meta) {
+                            return meta.settings._iDisplayStart + meta.row + 1;
+                        }
+                    },
+                    { data: 'empId',   className: 'text-center' },
+                    {
+                        data: 'localName',
+                        render: function (data, type) {
+                            if (type !== 'display') return data;
+                            var v = data || '';
+                            return '<span title="' + $('<div>').text(v).html() + '">' + $('<div>').text(v).html() + '</span>';
+                        }
+                    },
+                    {
+                        data: 'deptName',
+                        render: function (data, type) {
+                            if (type !== 'display') return data;
+                            var v = data || '';
+                            return '<span title="' + $('<div>').text(v).html() + '">' + $('<div>').text(v).html() + '</span>';
+                        }
+                    },
+                    { data: 'totalOtMonth',                className: 'text-end' },
+                    { data: 'preMonthlyTotalQty',          className: 'text-end' },
+                    { data: 'totalOtYear',                 className: 'text-end' },
+                    { data: 'otRegular150Month',           className: 'text-end' },
+                    { data: 'otRegular200Month',           className: 'text-end' },
+                    { data: 'otRegular210Month',           className: 'text-end' },
+                    { data: 'otWeekend200Month',           className: 'text-end' },
+                    { data: 'otWeekend270Month',           className: 'text-end' },
+                    { data: 'otHoliday300Month',           className: 'text-end' },
+                    { data: 'otHoliday390Month',           className: 'text-end' },
+                    { data: 'otRegular150ExcessOfficial',  className: 'text-end' },
+                    { data: 'otRegular200ExcessOfficial',  className: 'text-end' },
+                    { data: 'otRegular210ExcessOfficial',  className: 'text-end' },
+                    { data: 'otWeekend200ExcessOfficial',  className: 'text-end' },
+                    { data: 'otWeekend270ExcessOfficial',  className: 'text-end' },
+                    { data: 'otHoliday300ExcessOfficial',  className: 'text-end' },
+                    { data: 'otHoliday390ExcessOfficial',  className: 'text-end' },
+                    { data: 'otRegular150ExcessProbation', className: 'text-end' },
+                    { data: 'otRegular200ExcessProbation', className: 'text-end' },
+                    { data: 'otRegular210ExcessProbation', className: 'text-end' },
+                    { data: 'otWeekend200ExcessProbation', className: 'text-end' },
+                    { data: 'otWeekend270ExcessProbation', className: 'text-end' },
+                    { data: 'otHoliday300ExcessProbation', className: 'text-end' },
+                    { data: 'otHoliday390ExcessProbation', className: 'text-end' }
+                ]
+            });
+        }
+
+        /* ── Khởi động trang ── */
+        function vorBootPage() {
+            if (_vor_pageBooted) return;
+            if (!document.getElementById('vor_dataTable')) {
+                setTimeout(vorBootPage, 30);
+                return;
+            }
+            _vor_pageBooted = true;
+            vorInitDeptSelector();
+            if (!$('#vor_month').val()) {
+                $('#vor_month').val(moment().format('MMYYYY'));
+            }
+            if (typeof initDateRangePickers === 'function') initDateRangePickers('#vor_searchForm');
+            vorInitTable();
+        }
+
+        window.vorSearchData = function () {
+            _vor_hasSearched = true;
+            if (_vor_table) _vor_table.ajax.reload();
+        };
+
+        /* ── Xuất báo cáo tăng ca ra file Excel theo tham số tìm kiếm hiện tại ── */
+        window.vorExportReport = function () {
+            var params = vorGetSearchParams();
+            window.location.href = '/ess/infoApply/api/otReport/export?' + $.param(params);
+        };
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', vorBootPage);
+        }
+        if (typeof $ !== 'undefined') {
+            $(document).ready(vorBootPage);
+        } else {
+            vorBootPage();
+        }
+    </script>
+</template>

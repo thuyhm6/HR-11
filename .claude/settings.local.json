@@ -28,7 +28,17 @@
       "Bash(Get-Content \"d:\\\\Java\\\\WorkSpace\\\\New_HR\\\\HR-11-codex\\\\src\\\\main\\\\java\\\\com\\\\ait\\\\evs\\\\manage\\\\controller\\\\EvsManageController.java\")",
       "Bash(Measure-Object -Line)",
       "Bash(dir \"d:\\\\Java\\\\WorkSpace\\\\New_HR\\\\HR-11-codex\\\\src\\\\main\\\\webapp\\\\WEB-INF\\\\view\" /AD /B)",
-      "PowerShell(\\(Get-Content \"d:\\\\Java\\\\WorkSpace\\\\New_HR\\\\HR-11-codex\\\\src\\\\main\\\\resources\\\\messages_vi_VN.properties\"\\).Count)"
+      "PowerShell(\\(Get-Content \"d:\\\\Java\\\\WorkSpace\\\\New_HR\\\\HR-11-codex\\\\src\\\\main\\\\resources\\\\messages_vi_VN.properties\"\\).Count)",
+      "Bash(javap -p -v \"src/main/webapp/WEB-INF/classes/com/ait/sy/sys/controller/AuthController.class\")",
+      "Bash(jps -l)",
+      "Bash(perl -v)",
+      "Bash(awk -F: '{print $1}')",
+      "Bash(/c/Users/ADMIN/AppData/Local/Programs/Python/Python313/python -c ' *)",
+      "Bash(awk 'NR<=480 && /EMP_TYPE_CODE/')",
+      "Bash(git diff *)",
+      "Read(//tmp/**)",
+      "Bash(mvn -q -o compile)",
+      "Bash(echo \"EXIT_CODE=$?\")"
     ],
     "additionalDirectories": [
       "d:\\Java\\WorkSpace\\New_HR\\HR-11-codex\\src\\main\\resources"

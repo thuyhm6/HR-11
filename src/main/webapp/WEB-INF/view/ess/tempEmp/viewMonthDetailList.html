@@ -36,13 +36,13 @@
                         <div class="col-md-3">
                             <label for="vmdl_reportType" class="form-label" th:text="#{ess.viewMonthDetailList.reportType}">Loại báo cáo</label>
                             <select class="form-select" id="vmdl_reportType">
-                                <option value="" th:text="#{ess.viewMonthDetailList.reportType.select}">LỰA CHỌN</option>
-                                <option value="314" th:text="#{ess.viewMonthDetailList.reportType.salary}">Công tính lương</option>
-                                <option value="3294" th:text="#{ess.viewMonthDetailList.reportType.bonus13th}">Công tính thưởng tháng 13</option>
+                                <!-- <option value="" th:text="#{ess.viewMonthDetailList.reportType.select}">LỰA CHỌN</option> -->
+                                <option value="305" th:text="#{ess.viewMonthDetailList.reportType.salary}">Công tính lương</option>
+                                <!-- <option value="3294" th:text="#{ess.viewMonthDetailList.reportType.bonus13th}">Công tính thưởng tháng 13</option>
                                 <option value="3293" th:text="#{ess.viewMonthDetailList.reportType.referralBonus}">Công tính thưởng giới thiệu 01.11.2025</option>
                                 <option value="3292" th:text="#{ess.viewMonthDetailList.reportType.workDuration}">Công thời lượng đi làm trong tháng</option>
                                 <option value="3291" th:text="#{ess.viewMonthDetailList.reportType.workOtPrint}">Công + Tăng ca tháng (Print)</option>
-                                <option value="3296" th:text="#{ess.viewMonthDetailList.reportType.diligence}">Công tính chuyên cần 01.03.2026</option>
+                                <option value="3296" th:text="#{ess.viewMonthDetailList.reportType.diligence}">Công tính chuyên cần 01.03.2026</option> -->
                             </select>
                         </div>
 
@@ -50,14 +50,14 @@
                             <button type="button" class="btn btn-primary" onclick="vmdlSearchData()">
                                 <i class="bx bx-search"></i> <span th:text="#{essDept.search}">Tra cứu</span>
                             </button>
-                            <button type="button" class="btn btn-outline-secondary" onclick="vmdlQuickExport('306')"
+                            <!-- <button type="button" class="btn btn-outline-secondary" onclick="vmdlQuickExport('306')"
                                 th:text="#{ess.viewMonthDetailList.quickReport.totalOt}">(Print)Total OT</button>
                             <button type="button" class="btn btn-outline-secondary" onclick="vmdlQuickExport('3277')"
                                 th:text="#{ess.viewMonthDetailList.quickReport.attPrint}">Month attendance (Print)</button>
                             <button type="button" class="btn btn-outline-secondary" onclick="vmdlQuickExport('3286')"
                                 th:text="#{ess.viewMonthDetailList.quickReport.otOver}">Month OT Over</button>
                             <button type="button" class="btn btn-outline-secondary" onclick="vmdlQuickExport('3289')"
-                                th:text="#{ess.viewMonthDetailList.quickReport.attTotalDay}">Month Att Total Day</button>
+                                th:text="#{ess.viewMonthDetailList.quickReport.attTotalDay}">Month Att Total Day</button> -->
                             <button type="button" class="btn btn-success" onclick="vmdlExportReport()">
                                 <i class="bx bx-export"></i> <span th:text="#{ess.viewMonthDetailList.btnExport}">XUẤT BÁO CÁO</span>
                             </button>

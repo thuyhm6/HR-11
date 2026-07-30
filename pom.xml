@@ -216,6 +216,7 @@
                     <source>21</source>
                     <target>21</target>
                     <release>21</release>
+                    <parameters>true</parameters>
                     <!-- Cáº¥u hÃ¬nh output directory cho compiled classes -->
                     <outputDirectory>src/main/webapp/WEB-INF/classes</outputDirectory>
                     <annotationProcessorPaths>
