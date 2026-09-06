@@ -100,7 +100,6 @@ java -jar target/HR-11-0.0.1-SNAPSHOT.war
 ### Core Spring Dependencies
 
 - `spring-boot-starter-web-3.5.5.jar`
-- `spring-boot-starter-thymeleaf-3.5.5.jar`
 - `spring-boot-starter-tomcat-3.5.5.jar`
 
 ### Database Dependencies
@@ -113,7 +112,6 @@ java -jar target/HR-11-0.0.1-SNAPSHOT.war
 
 - `lombok-1.x.x.jar`
 - `jackson-databind-2.x.x.jar`
-- `thymeleaf-spring6-3.x.x.jar`
 
 ## 🔍 Logging Configuration
 

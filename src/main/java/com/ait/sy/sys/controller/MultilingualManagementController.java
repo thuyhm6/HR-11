@@ -7,7 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpSession;
@@ -27,34 +26,6 @@ public class MultilingualManagementController {
 
     @Autowired
     private MultilingualUtil multilingualUtil;
-
-    /**
-     * Trang quản lý đa ngôn ngữ chính
-     */
-    @GetMapping("/management")
-    public String managementPage(Model model, HttpSession session) {
-        // Lấy ngôn ngữ hiện tại
-        String currentLanguage = multilingualUtil.getCurrentLanguage();
-
-        // Lấy danh sách mã code gốc (không có cha) để hiển thị trong sidebar
-        List<SyCode> rootCodes = multilingualService.getAllCodes().stream()
-                .filter(code -> code.getParentCodeNo() == null || code.getParentCodeNo().isEmpty())
-                .collect(java.util.stream.Collectors.toList());
-
-        // Lấy danh sách ngôn ngữ có sẵn
-        List<String> availableLanguages = multilingualService.getAvailableLanguages();
-
-        // Lấy danh sách mã số có đa ngôn ngữ
-        List<String> availableNos = multilingualService.getAvailableNos();
-
-        model.addAttribute("currentLanguage", currentLanguage);
-        model.addAttribute("rootCodes", rootCodes);
-        model.addAttribute("availableLanguages", availableLanguages);
-        model.addAttribute("availableNos", availableNos);
-        model.addAttribute("title", "Quản lý đa ngôn ngữ - HR System");
-
-        return "multilingual/management";
-    }
 
     /**
      * Lấy dữ liệu đa ngôn ngữ theo mã số (generic)
@@ -184,24 +155,6 @@ public class MultilingualManagementController {
                 "codeInfo", syCode,
                 "contents", contents,
                 "success", true);
-    }
-
-    /**
-     * Trang demo đa ngôn ngữ
-     */
-    @GetMapping("/demo")
-    public String demoPage(Model model, HttpSession session) {
-        // Lấy ngôn ngữ hiện tại
-        String currentLanguage = multilingualUtil.getCurrentLanguage();
-
-        // Lấy danh sách ngôn ngữ có sẵn
-        List<String> availableLanguages = multilingualService.getAvailableLanguages();
-
-        model.addAttribute("currentLanguage", currentLanguage);
-        model.addAttribute("availableLanguages", availableLanguages);
-        model.addAttribute("title", "Demo Đa ngôn ngữ - HR System");
-
-        return "multilingual/demo";
     }
 
     /**

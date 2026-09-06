@@ -223,11 +223,6 @@ public class ArAttendanceSearchController {
         return ResponseEntity.ok(arCardRecordService.importFromDevice(fromDate, toDate));
     }
 
-    @GetMapping("/viewImportExcelTempMacRecordsList")
-    public String viewImportExcelTempMacRecordsList() {
-        return "ar/attendanceMintenance/viewImportExcelTempMacRecordsList";
-    }
-
     @PostMapping("/api/macRecordTemp/uploadExcel")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> uploadMacRecordExcel(@RequestParam("file") MultipartFile file, HttpSession session) {

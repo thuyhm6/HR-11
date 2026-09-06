@@ -36,11 +36,6 @@ public class ArOvertimeManagentController {
     // Trang Thymeleaf viewArOvertimeManagent_fast.html đã được thay bằng Angular route /ot-apply-batch-info
     // (dùng chung component/API với /ess/infoApply/viewPiciOtAffirmLBatchList)
 
-    @GetMapping("/viewImportOtTempList")
-    public String viewImportOtTempList() {
-        return "ar/attendanceMintenance/viewImportOtTempList";
-    }
-
     @GetMapping("/api/overtime/list")
     @ResponseBody
     public ResponseEntity<List<ArOvertimeManagentDto>> getList(

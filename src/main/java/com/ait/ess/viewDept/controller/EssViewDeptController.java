@@ -361,14 +361,6 @@ public class EssViewDeptController {
     // ==================== Hồ sơ nhân viên (viewPersonalInfoEss) ====================
 
     /**
-     * Mở giao diện Hồ sơ nhân viên (quản lý/HR xem và cập nhật hồ sơ của nhân viên khác)
-     */
-    @GetMapping("/viewPersonalInfoEss")
-    public String viewPersonalInfoEss() {
-        return "ess/viewDept/viewPersonalInfoEss";
-    }
-
-    /**
      * API: Lấy thông tin hồ sơ. Nếu không truyền personId, mặc định lấy theo nhân viên đang đăng nhập
      * (PERSON_ID lưu trong session, tham chiếu từ SY_USER khi đăng nhập).
      */

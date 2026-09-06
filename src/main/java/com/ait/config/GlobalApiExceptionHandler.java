@@ -31,7 +31,7 @@ public class GlobalApiExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    public Object handleUnexpectedException(Exception ex, HttpServletRequest request) {
+    public ResponseEntity<Map<String, Object>> handleUnexpectedException(Exception ex, HttpServletRequest request) {
         String uri = request.getRequestURI();
 
         if (isClientAbort(ex)) {
@@ -41,12 +41,9 @@ public class GlobalApiExceptionHandler {
 
         log.error("Unhandled exception for uri={}", uri, ex);
 
-        // Keep API responses sanitized even when a controller misses try/catch.
-        if (uri != null && uri.contains("/api/")) {
-            return ResponseEntity.status(500).body(Map.of("error", "Loi he thong. Vui long thu lai."));
-        }
-
-        return "error/500";
+        // Toàn bộ frontend giờ là Angular SPA (không còn view Thymeleaf để render lỗi) nên luôn
+        // trả JSON sanitized, kể cả với các route không thuộc /api/.
+        return ResponseEntity.status(500).body(Map.of("error", "Loi he thong. Vui long thu lai."));
     }
 
     private boolean isClientAbort(Throwable ex) {

@@ -87,14 +87,11 @@ public class SecurityConfig implements WebMvcConfigurer {
                 .formLogin(AbstractHttpConfigurer::disable)
                 .logout(AbstractHttpConfigurer::disable)
                 .csrf(csrf -> csrf
-                        // Angular SPA không có trang Thymeleaf để đọc token CSRF từ thẻ <meta> như các
-                        // trang jQuery cũ (xem setupCsrfForAjaxAndForms() trong layout/master.html) -
-                        // chuyển sang lưu token vào cookie "XSRF-TOKEN" đọc được bằng JS (mặc định của
+                        // Angular SPA lưu token vào cookie "XSRF-TOKEN" đọc được bằng JS (mặc định của
                         // CookieCsrfTokenRepository, đúng quy ước Angular HttpClient mong đợi), và dùng
                         // CsrfTokenRequestAttributeHandler (thay vì Xor mặc định) để token được resolve
                         // ngay từ request đầu tiên, đảm bảo cookie đã có trước khi Angular gọi API ghi
-                        // dữ liệu đầu tiên. Trang Thymeleaf cũ vẫn hoạt động bình thường vì đọc
-                        // token/tên header động qua ${_csrf.token}/${_csrf.headerName}, không hardcode.
+                        // dữ liệu đầu tiên.
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                         .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
                         .ignoringRequestMatchers(

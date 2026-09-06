@@ -5,12 +5,17 @@ setlocal EnableDelayedExpansion
 :: ====================================================
 ::   HR-11 Build & Deploy Script
 ::   Ho tro: Tomcat 10.x va JEUS 8.5
-::   Ca hai deu dung exploded-war (target/exploded-war)
+::   Build = npm run build (Angular) + mvn package (Spring Boot)
+::   Ca hai deu dung exploded-war (target/exploded-war) - da co san
+::   Angular ben trong (WEB-INF/classes/static/ng-app), copy sang
+::   server nao cung chay duoc ngay, KHONG can cai Node.js tren server.
 ::
 ::   Cach dung:
-::     deploy-jeus.bat               -> Chi build, khong deploy
-::     deploy-jeus.bat tomcat        -> Build + deploy len Tomcat 10.x
-::     deploy-jeus.bat jeus          -> Build + deploy len JEUS 8.5
+::     deploy-jeus.bat               -> Build (Angular + Maven), khong deploy
+::                                       -> chi can copy target/exploded-war
+::                                          sang server roi start Tomcat/JEUS
+::     deploy-jeus.bat tomcat        -> Build + deploy len Tomcat 10.x (may hien tai)
+::     deploy-jeus.bat jeus          -> Build + copy sang thu muc JEUS (may hien tai)
 :: ====================================================
 
 
@@ -78,7 +83,7 @@ exit /b 1
 ::   BUOC 1: Kiem tra JDK 21
 :: ====================================================
 :CHECK_JDK
-echo  [1/3] Kiem tra JDK 21...
+echo  [1/4] Kiem tra JDK 21...
 if not exist "%JAVA_HOME_JDK21%\bin\java.exe" (
     echo.
     echo  [LOI] Khong tim thay JDK 21 tai:
@@ -100,10 +105,48 @@ echo.
 
 
 :: ====================================================
-::   BUOC 2: Maven Build
+::   BUOC 2: Build Angular Frontend (frontend-ng)
+:: ====================================================
+:BUILD_ANGULAR
+echo  [2/4] Dang build Angular frontend (frontend-ng)...
+where npm >nul 2>&1
+if %ERRORLEVEL% NEQ 0 (
+    echo.
+    echo  [LOI] Khong tim thay npm. Can cai Node.js tren MAY BUILD nay
+    echo        ^(khong can cai tren server Tomcat/JEUS^).
+    pause
+    exit /b 1
+)
+
+pushd "%PROJECT_DIR%frontend-ng"
+if not exist "node_modules" (
+    echo  -- Chua co node_modules, dang chay npm install...
+    call npm install
+    if !ERRORLEVEL! NEQ 0 (
+        echo  [LOI] npm install that bai.
+        popd
+        pause
+        exit /b 1
+    )
+)
+echo  -- Dang chay npm run build...
+call npm run build
+if !ERRORLEVEL! NEQ 0 (
+    echo  [LOI] Build Angular THAT BAI. Xem log loi o tren.
+    popd
+    pause
+    exit /b 1
+)
+popd
+echo  [OK] Build Angular thanh cong -^> src\main\resources\static\ng-app
+echo.
+
+
+:: ====================================================
+::   BUOC 3: Maven Build
 :: ====================================================
 :BUILD
-echo  [2/3] Dang build (mvn clean package -DskipTests)...
+echo  [3/4] Dang build (mvn clean package -DskipTests)...
 echo.
 call "%MVN%" clean package -DskipTests
 if %ERRORLEVEL% NEQ 0 (
@@ -127,7 +170,7 @@ if /i "%DEPLOY_MODE%"=="jeus"   goto :DEPLOY_JEUS
 ::   DEPLOY: TOMCAT 10.x (dung exploded-war)
 :: ====================================================
 :DEPLOY_TOMCAT
-echo  [3/3] Deploy len Tomcat (exploded-war)...
+echo  [4/4] Deploy len Tomcat (exploded-war)...
 echo.
 
 :: Kiem tra thu muc Tomcat
@@ -217,7 +260,7 @@ exit /b 0
 ::   DEPLOY: JEUS 8.5
 :: ====================================================
 :DEPLOY_JEUS
-echo  [3/3] Deploy len JEUS 8.5...
+echo  [4/4] Deploy len JEUS 8.5...
 echo.
 
 :: Kiem tra thu muc JEUS

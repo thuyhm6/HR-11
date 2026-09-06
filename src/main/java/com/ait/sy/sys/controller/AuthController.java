@@ -18,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -266,24 +265,6 @@ public class AuthController {
     }
 
     /**
-     * Trang chủ sau khi đăng nhập
-     */
-    @GetMapping("/home")
-    public String homePage(Model model, HttpSession session) {
-        // Lấy thông tin user từ session (đã được kiểm tra bởi interceptor)
-        HrUserInfo currentHrUser = (HrUserInfo) session.getAttribute("currentHrUser");
-        UserPermissionInfo permissionInfo = (UserPermissionInfo) session.getAttribute("currentPermissionInfo");
-
-        // Thêm thông tin user vào model
-        model.addAttribute("currentHrUser", currentHrUser);
-        model.addAttribute("permissionInfo", permissionInfo);
-        model.addAttribute("title", "Trang chủ - HR System");
-        model.addAttribute("message", "Chào mừng " + currentHrUser.getEmployeeName() + " đến với hệ thống HR!");
-
-        return "login/home";
-    }
-
-    /**
      * Đăng xuất
      */
     @GetMapping("/logout")
@@ -297,44 +278,6 @@ public class AuthController {
 
         redirectAttributes.addFlashAttribute("success", "Đăng xuất thành công!");
         return "redirect:/login";
-    }
-
-    /**
-     * Trang thông tin cá nhân
-     */
-    @GetMapping("/profile")
-    public String profilePage(Model model, HttpSession session) {
-        // Lấy thông tin user từ session (đã được kiểm tra bởi interceptor)
-        HrUserInfo currentHrUser = (HrUserInfo) session.getAttribute("currentHrUser");
-        UserPermissionInfo permissionInfo = (UserPermissionInfo) session.getAttribute("currentPermissionInfo");
-
-        model.addAttribute("currentHrUser", currentHrUser);
-        model.addAttribute("permissionInfo", permissionInfo);
-        model.addAttribute("title", "Thông tin cá nhân");
-
-        return "login/profile";
-    }
-
-    /**
-     * Trang quản lý phân quyền (chỉ admin)
-     */
-    @GetMapping("/permissions")
-    public String permissionsPage(Model model, HttpSession session) {
-        // Lấy thông tin user từ session (đã được kiểm tra bởi interceptor)
-        HrUserInfo currentHrUser = (HrUserInfo) session.getAttribute("currentHrUser");
-        UserPermissionInfo permissionInfo = (UserPermissionInfo) session.getAttribute("currentPermissionInfo");
-
-        // Kiểm tra quyền admin
-        if (!permissionInfo.isAdmin()) {
-            model.addAttribute("error", "Bạn không có quyền truy cập trang này");
-            return "error/403";
-        }
-
-        model.addAttribute("currentHrUser", currentHrUser);
-        model.addAttribute("permissionInfo", permissionInfo);
-        model.addAttribute("title", "Quản lý phân quyền");
-
-        return "admin/permissions";
     }
 
     /**

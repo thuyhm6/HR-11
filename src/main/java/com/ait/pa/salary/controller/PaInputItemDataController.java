@@ -139,11 +139,6 @@ public class PaInputItemDataController {
         }
     }
 
-    @GetMapping("/viewImportExcelTempPaParamList")
-    public String viewImportExcelTempPaParamList() {
-        return "pa/salary/viewImportExcelTempPaParamList";
-    }
-
     @PostMapping("/inputItemData/api/importExcel")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> importExcel(
