@@ -26,14 +26,6 @@ public class HrmApproveController {
     private EssFileMapper essFileMapper;
 
     /**
-     * Trang danh sách phê duyệt thay đổi thông tin cá nhân nhân viên
-     */
-    @GetMapping("/viewEssApplyInfo")
-    public String viewEssApplyInfo() {
-        return "hrm/approve/viewEssApplyInfo";
-    }
-
-    /**
      * API: Lấy danh sách phân trang các yêu cầu thay đổi (cho manager)
      */
     @GetMapping("/api/applyList")

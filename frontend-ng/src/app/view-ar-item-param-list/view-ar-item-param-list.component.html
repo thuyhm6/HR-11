@@ -1,0 +1,258 @@
+<div class="row">
+  <div class="col-12">
+    <!-- Điều kiện tìm kiếm - đứng im khi cuộn (xem .sticky-filter-card trong styles.css) -->
+    <nz-card class="mb-3 sticky-filter-card">
+      <form class="row g-3" (ngSubmit)="search()">
+        <div class="col-md-4">
+          <label class="form-label">{{ 'arItemParam.itemCode' | translate:'Hạng mục' }}</label>
+          <nz-select class="w-100" [(ngModel)]="searchItemNo" name="vaipSearchItemNo"
+                     nzAllowClear nzShowSearch [nzPlaceHolder]="'arItemParam.searchPlaceholder' | translate:'Nhập mã hạng mục hoặc tên'">
+            <nz-option *ngFor="let opt of itemOptions()" [nzValue]="opt.itemNo" [nzLabel]="itemLabel(opt)"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-8 d-flex align-items-end gap-2 flex-wrap">
+          <button nz-button nzType="primary" type="submit">
+            <i class="bx bx-search"></i> {{ 'common.search' | translate:'Tìm kiếm' }}
+          </button>
+          <button nz-button type="button" (click)="clearSearch()">
+            <i class="bx bx-x"></i> {{ 'common.clearFilter' | translate:'Xóa lọc' }}
+          </button>
+        </div>
+        <div class="col-12 d-flex gap-2 flex-wrap">
+          <button nz-button nzType="primary" type="button" (click)="openAddModal()">
+            <i class="bx bx-plus"></i> {{ 'common.addNew' | translate:'Thêm mới' }}
+          </button>
+          <button nz-button nzType="default" type="button" class="vaip-btn-export" (click)="exportExcel()">
+            <i class="bx bx-export"></i> {{ 'essDept.exportExcel' | translate:'Xuất excel' }}
+          </button>
+        </div>
+      </form>
+    </nz-card>
+
+    <nz-card>
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+      <!-- nzWidth khai báo cho từng cột để đồng bộ độ rộng header/body khi dùng nzScroll. -->
+      <nz-table [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="25" [nzShowSizeChanger]="true"
+                [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="vaipTotalTpl"
+                [nzScroll]="{ x: '2400px', y: 'calc(100vh - 420px)' }" #vaipTable>
+        <thead>
+          <tr>
+            <th class="text-center" nzWidth="60px">{{ 'common.stt' | translate:'STT' }}</th>
+            <th nzWidth="110px">{{ 'arItemParam.paramCode' | translate:'Mã tham số' }}</th>
+            <th nzWidth="110px">{{ 'arItemParam.itemCode' | translate:'Mã hạng mục' }}</th>
+            <th nzWidth="180px">{{ 'arItemParam.itemName' | translate:'Tên hạng mục' }}</th>
+            <th nzWidth="100px">{{ 'ar.viewitemparameter.title.unit' | translate:'Đơn vị' }}</th>
+            <th nzWidth="110px">{{ 'ar.viewitemparameter.title.zumingcheng' | translate:'Nhóm hiệu' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'ar.viewitemparameter.title.zuixiaozhi' | translate:'Giới hạn tối thiểu' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'ar.viewitemparameter.title.zuidazhi' | translate:'Giới hạn tối đa' }}</th>
+            <th nzWidth="150px">{{ 'arItemParam.dependItem' | translate:'Hạng mục phụ thuộc' }}</th>
+            <th nzWidth="150px">{{ 'arItemParam.replaceItem' | translate:'Hạng mục thay thế' }}</th>
+            <th class="text-center" nzWidth="130px">{{ 'ar.viewitemparameter.title.cankaoshuaka' | translate:'Tham chiếu quẹt thẻ' }}</th>
+            <th class="text-center" nzWidth="130px">{{ 'ar.viewitemparameter.title.dakakaishibiaozhi' | translate:'Cờ bắt đầu quẹt' }}</th>
+            <th class="text-center" nzWidth="150px">{{ 'ar.viewitemparameter.title.dakakaishipianyi' | translate:'Quẹt bắt đầu bù trừ' }}</th>
+            <th class="text-center" nzWidth="150px">{{ 'ar.viewitemparameter.title.dakakaishipianyifangxiang' | translate:'Chiều bù trừ bắt đầu' }}</th>
+            <th class="text-center" nzWidth="130px">{{ 'ar.viewitemparameter.title.dakajieshubiaozhi' | translate:'Cờ kết thúc quẹt' }}</th>
+            <th class="text-center" nzWidth="150px">{{ 'ar.viewitemparameter.title.dakajieshupianyi' | translate:'Quẹt kết thúc bù trừ' }}</th>
+            <th class="text-center" nzWidth="150px">{{ 'ar.viewitemparameter.title.dakajieshupianyifangxiang' | translate:'Chiều bù trừ kết thúc' }}</th>
+            <th nzWidth="180px">{{ 'arItemParam.hrPolicyNote' | translate:'Chính sách nhân sự' }}</th>
+            <th class="text-center" nzWidth="90px">{{ 'common.sortOrder' | translate:'Sắp xếp' }}</th>
+            <th class="text-center" nzWidth="120px">{{ 'common.status' | translate:'Trạng thái' }}</th>
+            <th class="text-center" nzWidth="90px">{{ 'common.action' | translate:'Thao tác' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!loading() && rows().length === 0">
+            <td colspan="20" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+          </tr>
+          <tr *ngFor="let row of vaipTable.data; let i = index">
+            <td class="text-center">{{ i + 1 }}</td>
+            <td [attr.title]="row.arParamNo || null">{{ row.arParamNo }}</td>
+            <td [attr.title]="row.itemNo || null">{{ row.itemNo }}</td>
+            <td [attr.title]="row.itemNameVi || null">{{ row.itemNameVi }}</td>
+            <td [attr.title]="row.unit || null">{{ row.unit }}</td>
+            <td [attr.title]="row.groupNo || null">{{ row.groupNo }}</td>
+            <td class="text-center">{{ row.minValue }}</td>
+            <td class="text-center">{{ row.maxValue }}</td>
+            <td [attr.title]="row.dependItem || null">{{ row.dependItem }}</td>
+            <td [attr.title]="row.replaceItem || null">{{ row.replaceItem }}</td>
+            <td class="text-center">{{ row.cardFlag === 1 ? ('common.yes' | translate:'Có') : ('common.no' | translate:'Không') }}</td>
+            <td class="text-center">{{ row.cardFromFlag === 1 ? ('common.yes' | translate:'Có') : ('common.no' | translate:'Không') }}</td>
+            <td class="text-center">{{ row.cardFromOffset }}</td>
+            <td class="text-center">{{ row.cardFromRelation }}</td>
+            <td class="text-center">{{ row.cardToFlag === 1 ? ('common.yes' | translate:'Có') : ('common.no' | translate:'Không') }}</td>
+            <td class="text-center">{{ row.cardToOffset }}</td>
+            <td class="text-center">{{ row.cardToRelation }}</td>
+            <td [attr.title]="row.detailContent || null">{{ row.detailContent }}</td>
+            <td class="text-center">{{ row.orderno }}</td>
+            <td class="text-center">
+              <nz-tag [nzColor]="row.activity === 1 ? 'success' : 'default'">
+                {{ row.activity === 1 ? ('common.active' | translate:'Hoạt động') : ('common.inactive' | translate:'Ngừng') }}
+              </nz-tag>
+            </td>
+            <td class="text-center">
+              <button nz-button nzType="text" nzSize="small" [title]="'common.edit' | translate:'Sửa'" (click)="openEditModal(row)">
+                <i class="bx bx-edit text-warning"></i>
+              </button>
+              <button nz-button nzType="text" nzSize="small" [title]="'common.delete' | translate:'Xóa'" (click)="openDeleteConfirm(row)">
+                <i class="bx bx-trash text-danger"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+        <ng-template #vaipTotalTpl let-total>
+          {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+        </ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>
+
+<!-- Modal Thêm mới / Cập nhật -->
+<nz-modal [nzVisible]="modalVisible()" [nzTitle]="modalTitle()" nzWidth="900px"
+          (nzOnCancel)="closeModal()" (nzOnOk)="saveForm()" [nzOkLoading]="saving()"
+          [nzOkText]="'common.save' | translate:'Lưu'" [nzCancelText]="'common.close' | translate:'Đóng'">
+  <ng-container *nzModalContent>
+    <h6 class="mb-3 text-primary border-bottom pb-2">{{ 'arItemParam.basicSection' | translate:'Thông tin cơ bản' }}</h6>
+    <div class="row g-3 mb-4">
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'arItemParam.itemCode' | translate:'Thuộc hạng mục' }} <span class="text-danger">*</span></label>
+        <nz-select class="w-100" [(ngModel)]="form.itemNo" name="vaipFormItemNo" nzShowSearch
+                   [nzPlaceHolder]="'common.placeholder.select' | translate:'-- Chọn --'">
+          <nz-option *ngFor="let opt of itemOptions()" [nzValue]="opt.itemNo" [nzLabel]="itemLabel(opt)"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'ar.viewitemparameter.title.zumingcheng' | translate:'Nhóm hiệu' }}</label>
+        <input nz-input [(ngModel)]="form.groupNo" name="vaipFormGroupNo">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-semibold">{{ 'ar.viewitemparameter.title.unit' | translate:'Đơn vị' }}</label>
+        <input nz-input [(ngModel)]="form.unit" name="vaipFormUnit">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-semibold">{{ 'arItemParam.unitValue' | translate:'Giá trị đơn vị' }}</label>
+        <nz-input-number class="w-100" [(ngModel)]="form.unitValue" name="vaipFormUnitValue"></nz-input-number>
+      </div>
+      <div class="col-md-4"></div>
+      <div class="col-md-4">
+        <label class="form-label fw-semibold">{{ 'ar.viewitemparameter.title.zuixiaozhi' | translate:'Giá trị tối thiểu' }}</label>
+        <nz-input-number class="w-100" [(ngModel)]="form.minValue" name="vaipFormMinValue"></nz-input-number>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-semibold">{{ 'ar.viewitemparameter.title.zuidazhi' | translate:'Giá trị tối đa' }}</label>
+        <nz-input-number class="w-100" [(ngModel)]="form.maxValue" name="vaipFormMaxValue"></nz-input-number>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'arItemParam.dependItem' | translate:'Hạng mục phụ thuộc' }}</label>
+        <input nz-input [(ngModel)]="form.dependItem" name="vaipFormDependItem">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'arItemParam.replaceItem' | translate:'Hạng mục thay thế' }}</label>
+        <input nz-input [(ngModel)]="form.replaceItem" name="vaipFormReplaceItem">
+      </div>
+    </div>
+
+    <h6 class="mb-3 text-primary border-bottom pb-2">{{ 'arItemParam.cardSection' | translate:'Thông tin quẹt thẻ' }}</h6>
+    <div class="row g-3 mb-4">
+      <div class="col-md-4">
+        <label class="form-label fw-semibold d-block">{{ 'ar.viewitemparameter.title.cankaoshuaka' | translate:'Tham chiếu quẹt thẻ' }}</label>
+        <nz-select class="w-100" [(ngModel)]="form.cardFlag" name="vaipFormCardFlag">
+          <nz-option [nzValue]="1" [nzLabel]="'common.yes' | translate:'Có'"></nz-option>
+          <nz-option [nzValue]="0" [nzLabel]="'common.no' | translate:'Không'"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-semibold d-block">{{ 'ar.viewitemparameter.title.dakakaishibiaozhi' | translate:'Cờ bắt đầu quẹt' }}</label>
+        <nz-select class="w-100" [(ngModel)]="form.cardFromFlag" name="vaipFormCardFromFlag">
+          <nz-option [nzValue]="1" [nzLabel]="'common.yes' | translate:'Có'"></nz-option>
+          <nz-option [nzValue]="0" [nzLabel]="'common.no' | translate:'Không'"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-semibold d-block">{{ 'ar.viewitemparameter.title.dakajieshubiaozhi' | translate:'Cờ kết thúc quẹt' }}</label>
+        <nz-select class="w-100" [(ngModel)]="form.cardToFlag" name="vaipFormCardToFlag">
+          <nz-option [nzValue]="1" [nzLabel]="'common.yes' | translate:'Có'"></nz-option>
+          <nz-option [nzValue]="0" [nzLabel]="'common.no' | translate:'Không'"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-semibold">{{ 'ar.viewitemparameter.title.dakakaishipianyi' | translate:'Quẹt bắt đầu bù trừ' }}</label>
+        <nz-input-number class="w-100" [(ngModel)]="form.cardFromOffset" name="vaipFormCardFromOffset"></nz-input-number>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-semibold d-block">{{ 'ar.viewitemparameter.title.dakakaishipianyifangxiang' | translate:'Chiều bù trừ bắt đầu' }}</label>
+        <nz-select class="w-100" [(ngModel)]="form.cardFromRelation" name="vaipFormCardFromRelation" nzAllowClear>
+          <nz-option *ngFor="let r of relationOptions" [nzValue]="r.value" [nzLabel]="i18n.t(r.key, r.fallback)"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-md-4"></div>
+      <div class="col-md-4">
+        <label class="form-label fw-semibold">{{ 'ar.viewitemparameter.title.dakajieshupianyi' | translate:'Quẹt kết thúc bù trừ' }}</label>
+        <nz-input-number class="w-100" [(ngModel)]="form.cardToOffset" name="vaipFormCardToOffset"></nz-input-number>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-semibold d-block">{{ 'ar.viewitemparameter.title.dakajieshupianyifangxiang' | translate:'Chiều bù trừ kết thúc' }}</label>
+        <nz-select class="w-100" [(ngModel)]="form.cardToRelation" name="vaipFormCardToRelation" nzAllowClear>
+          <nz-option *ngFor="let r of relationOptions" [nzValue]="r.value" [nzLabel]="i18n.t(r.key, r.fallback)"></nz-option>
+        </nz-select>
+      </div>
+    </div>
+
+    <h6 class="mb-3 text-primary border-bottom pb-2">{{ 'arItemParam.applySection' | translate:'Thông tin áp dụng' }}</h6>
+    <div class="row g-3">
+      <div class="col-md-4">
+        <label class="form-label fw-semibold d-block">{{ 'ar.viewitemparameter.title.shifoucankaoshenqing' | translate:'Tham chiếu làm đơn xin phép' }}</label>
+        <nz-select class="w-100" [(ngModel)]="form.applyFlag" name="vaipFormApplyFlag">
+          <nz-option [nzValue]="1" [nzLabel]="'common.yes' | translate:'Có'"></nz-option>
+          <nz-option [nzValue]="0" [nzLabel]="'common.no' | translate:'Không'"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-semibold">{{ 'ar.viewitemparameter.title.shenqingleixing' | translate:'Loại đơn (CODE)' }}</label>
+        <input nz-input [(ngModel)]="form.applyType" name="vaipFormApplyType">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-semibold">{{ 'ar.viewitemparameter.title.shenqingmanyirishuzhi' | translate:'Giá trị tương đương cả ngày' }}</label>
+        <nz-input-number class="w-100" [(ngModel)]="form.applyFulldayValue" name="vaipFormApplyFulldayValue"></nz-input-number>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-semibold d-block">{{ 'ar.viewitemparameter.title.shenqingdakayouxianji' | translate:'Ưu tiên thẻ quẹt hơn đơn' }}</label>
+        <nz-select class="w-100" [(ngModel)]="form.applyCardPriority" name="vaipFormApplyCardPriority">
+          <nz-option [nzValue]="1" [nzLabel]="'common.yes' | translate:'Có'"></nz-option>
+          <nz-option [nzValue]="0" [nzLabel]="'common.no' | translate:'Không'"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-semibold">{{ 'ar.viewitemparameter.title.riqileixing' | translate:'Loại ngày nghỉ áp dụng (CODE)' }}</label>
+        <input nz-input [(ngModel)]="form.dateType" name="vaipFormDateType">
+      </div>
+      <div class="col-md-4"></div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'arItemParam.hrPolicyNote' | translate:'Ghi chú chính sách nhân sự' }}</label>
+        <input nz-input [(ngModel)]="form.detailContent" name="vaipFormDetailContent">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label fw-semibold">{{ 'common.sortOrder' | translate:'Sắp xếp' }}</label>
+        <nz-input-number class="w-100" [(ngModel)]="form.orderno" name="vaipFormOrderno"></nz-input-number>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label fw-semibold d-block">{{ 'common.status' | translate:'Trạng thái' }}</label>
+        <nz-select class="w-100" [(ngModel)]="form.activity" name="vaipFormActivity">
+          <nz-option [nzValue]="1" [nzLabel]="'common.active' | translate:'Hoạt động'"></nz-option>
+          <nz-option [nzValue]="0" [nzLabel]="'common.inactive' | translate:'Ngừng'"></nz-option>
+        </nz-select>
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal xác nhận xóa -->
+<nz-modal [nzVisible]="deleteVisible()" [nzTitle]="'common.confirm' | translate:'Xác nhận'"
+          (nzOnCancel)="closeDeleteConfirm()" (nzOnOk)="confirmDelete()" [nzOkLoading]="deleting()"
+          [nzOkText]="'common.confirm' | translate:'Xác nhận'" [nzCancelText]="'common.cancel' | translate:'Hủy'">
+  <ng-container *nzModalContent>
+    <p class="mb-1">{{ 'arItemParam.confirmDelete' | translate:'Bạn có chắc muốn xóa thông số này không?' }}</p>
+    <p class="fw-bold mb-0">{{ deleteTargetName }}</p>
+  </ng-container>
+</nz-modal>

@@ -39,13 +39,10 @@
     <!-- jQuery -->
     <script src="/assets/js/jquery-3.6.0.min.js"></script>
 
-    <!-- DataTables CSS/JS -->
+    <!-- DataTables CSS (JS được nạp 1 LẦN DUY NHẤT ở cuối body - xem giải thích bên dưới) -->
     <link href="/assets/css/jquery.dataTables.min.css" rel="stylesheet" type="text/css" />
     <link href="/assets/css/select.dataTables.min.css" rel="stylesheet" type="text/css" />
     <link href="/assets/css/fixedColumns.dataTables.min.css" rel="stylesheet" type="text/css" />
-
-    <script src="/assets/js/dataTables/jquery.dataTables.min.js"></script>
-    <script src="/assets/js/dataTables/dataTables.select.min.js"></script>
 
     <!-- Buttons extension for export -->
     <link href="/assets/css/buttons.dataTables.min.css" rel="stylesheet" type="text/css" />
@@ -127,7 +124,12 @@
         <!-- ==================================================== -->
     </div>
     <!-- END Wrapper -->
-    <!-- DataTables JS -->
+    <!-- DataTables JS - CHỈ nạp jquery.dataTables.min.js/dataTables.select.min.js MỘT LẦN DUY NHẤT ở đây.
+         Trước đây 2 file này còn bị nạp trùng thêm 1 lần nữa trong <head> phía trên: file core nạp lần 2
+         này sẽ tạo lại $.fn.dataTable từ đầu, khiến các extension (Select) đã gắn vào bản nạp lần 1 bị
+         orphan, và các DataTable đã khởi tạo/destroy qua lại nhiều lần (VD khi tab hệ thống load lại 1
+         trang) có thể tham chiếu nhầm registry cũ - gây ra hiện tượng chỉnh columnDefs/width không có
+         tác dụng hoặc header/dữ liệu bị lệch cột không rõ nguyên nhân ở các trang dùng DataTable scrollX. -->
     <script src="/assets/js/dataTables/jquery.dataTables.min.js"></script>
     <script src="/assets/js/dataTables/dataTables.fixedColumns.min.js"></script>
 

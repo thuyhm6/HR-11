@@ -1,0 +1,15 @@
+.vct1-clickable {
+  cursor: pointer;
+}
+.vct1-clickable:hover {
+  background-color: #f0f4ff;
+}
+
+.vct1-active {
+  background-color: #cce5ff !important;
+}
+
+.vct1-blue-name {
+  color: #0d6efd;
+  font-weight: 500;
+}

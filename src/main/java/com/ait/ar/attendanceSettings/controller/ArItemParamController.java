@@ -23,22 +23,6 @@ public class ArItemParamController {
     private ArItemParamService arItemParamService;
 
     /**
-     * Mở giao diện trang Danh sách tham số hạng mục
-     */
-    @GetMapping("/viewArItemParamList")
-    public String viewArItemParamList() {
-        return "ar/attendanceSettings/viewArItemParamList";
-    }
-
-    /**
-     * Mở giao diện trang Quản lý tham số hạng mục (Tree-Table)
-     */
-    @GetMapping("/viewItemParameter")
-    public String viewItemParameter() {
-        return "ar/attendanceSettings/viewItemParameter";
-    }
-
-    /**
      * API: Lấy danh sách tham số hoặc tìm kiếm
      */
     @GetMapping("/api/arItemParam")

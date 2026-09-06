@@ -24,10 +24,8 @@ public class SyRoleController {
     @Autowired
     private SyRoleService syRoleService;
 
-    @GetMapping("/syRole/viewRolesGroup")
-    public String viewRolesGroup() {
-        return "sys/syRole/viewRolesGroup";
-    }
+    // Trang Thymeleaf viewRolesGroup.html đã được thay bằng Angular route /view-roles-group (xem
+    // ViewRolesGroupComponent) - các API JSON bên dưới vẫn giữ nguyên, không đổi backend.
 
     @GetMapping("/api/role/list")
     @ResponseBody

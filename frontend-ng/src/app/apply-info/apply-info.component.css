@@ -1,0 +1,9 @@
+.ai-row-clickable {
+  cursor: pointer;
+}
+.ai-row-clickable:hover {
+  background: #fafafa;
+}
+.ai-row-active {
+  background: #e6f4ff;
+}

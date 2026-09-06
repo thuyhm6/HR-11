@@ -1,6 +1,6 @@
 package com.ait.config;
 
-import com.ait.sy.sys.service.MenuService;
+import com.ait.sy.sys.service.PermissionService;
 import com.ait.sy.sys.service.HrAuthenticationService.HrUserInfo;
 import com.ait.sy.sys.service.PermissionService.UserPermissionInfo;
 import jakarta.servlet.http.HttpSession;
@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 public class LayoutModelAttributeAdvice {
 
     @Autowired
-    private MenuService menuService;
+    private PermissionService permissionService;
 
     @ModelAttribute
     public void addLayoutAttributes(Model model, HttpSession session) {
@@ -32,7 +32,7 @@ public class LayoutModelAttributeAdvice {
         boolean resolvedHasSysTypeZeroMenus = Boolean.TRUE.equals(hasSysTypeZeroMenus);
         if (hasSysTypeZeroMenus == null && currentHrUser != null && currentHrUser.getSyUser() != null) {
             resolvedHasSysTypeZeroMenus =
-                    menuService.hasMenusByUserPermissionBySysType(currentHrUser.getSyUser().getUserNo(), "0");
+                    permissionService.hasRoleGroupWithSysType(currentHrUser.getSyUser().getUserNo(), 0);
             session.setAttribute("hasSysTypeZeroMenus", resolvedHasSysTypeZeroMenus);
         }
 

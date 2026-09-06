@@ -1,0 +1,70 @@
+/* You can add global styles to this file, and also import other style files */
+
+/* Thu gọn padding mặc định của NG-ZORRO (antd) trên toàn app - hệ thống quản lý nhân sự cần hiển thị
+   nhiều dữ liệu trên 1 màn hình, padding mặc định của antd (card 24px, table cell ~16px...) quá rộng. */
+.ant-card-body {
+  padding: 10px;
+}
+.ant-card-head {
+  min-height: 40px;
+  padding: 0 10px;
+}
+.ant-card-head-title {
+  padding: 10px 0;
+}
+
+.ant-table-thead > tr > th {
+  padding: 6px 4px;
+}
+.ant-table-tbody > tr > td {
+  padding: 4px;
+}
+
+/* Ô dữ liệu quá dài (tên phòng ban, tên quản lý...) bị ẩn bớt kèm dấu "..." thay vì tràn sang cột
+   bên cạnh - cần table-layout: fixed để ô tôn trọng đúng nzWidth đã khai báo trên cột thay vì tự nới
+   rộng theo nội dung. Dùng kèm [title] trên từng <td> (xem *.component.html) để hiện đầy đủ khi
+   hover, giống hành vi tooltip mặc định của trình duyệt - không cần thêm thư viện. */
+.ant-table-fixed-header .ant-table-thead > tr > th,
+.ant-table-fixed-header .ant-table-tbody > tr > td,
+.ant-table-fixed-column .ant-table-thead > tr > th,
+.ant-table-fixed-column .ant-table-tbody > tr > td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ant-table-header table,
+.ant-table-body table {
+  table-layout: fixed;
+}
+
+.ant-modal-body {
+  padding: 10px;
+}
+
+.ant-drawer-body {
+  padding: 10px;
+}
+
+.ant-descriptions-item-label,
+.ant-descriptions-item-content {
+  padding: 6px 10px;
+}
+
+.ant-form-item {
+  margin-bottom: 12px;
+}
+
+/* Card "Điều kiện tìm kiếm" đứng im khi cuộn trang (nếu chưa vượt viewport) - đứng ngay dưới
+   tab-strip nếu tab-strip đang hiện (biến --tab-strip-height do AppShellComponent set theo số tab
+   đang mở, xem app-shell.component.html). Dùng cho các trang danh sách có form lọc phía trên bảng. */
+.sticky-filter-card {
+  position: sticky;
+  top: var(--tab-strip-height, 0px);
+  z-index: 15;
+}
+
+.ant-btn {
+  height: 26px;
+  padding: 2px 6px;
+}
+

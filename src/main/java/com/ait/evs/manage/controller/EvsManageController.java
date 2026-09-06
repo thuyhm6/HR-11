@@ -120,10 +120,9 @@ public class EvsManageController {
     @Autowired
     private EvsResultEmpService evsResultEmpService;
 
-    @GetMapping("/viewResumeList")
-    public String viewResumeList() {
-        return "evs/manage/viewResumeList";
-    }
+    // ── Danh sách đợt đánh giá (EVS_RESUME_INFO) ─────────────────────────────
+    // Trang Thymeleaf viewResumeList.html đã được thay bằng Angular route /evs-resume-list
+    // (xem frontend-ng/src/app/evs-resume-list/ và MIGRATED_ROUTES trong app-shell.component.ts).
 
     @GetMapping("/api/resume/list")
     @ResponseBody
@@ -171,11 +170,8 @@ public class EvsManageController {
     }
 
     // ── Quy trình đánh giá (EVS_SCHEDULE) ────────────────────────────────────
-
-    @GetMapping("/viewEvsSchedulePanel")
-    public String viewEvsSchedulePanel() {
-        return "evs/manage/viewEvsSchedulePanel";
-    }
+    // Trang Thymeleaf viewEvsSchedulePanel.html đã được thay bằng Angular route /evs-schedule-panel
+    // (xem frontend-ng/src/app/evs-schedule-panel/ và MIGRATED_ROUTES trong app-shell.component.ts).
 
     @GetMapping("/api/schedule/list")
     @ResponseBody
@@ -205,11 +201,8 @@ public class EvsManageController {
     }
 
     // ── Tiêu chuẩn đánh giá (EVS_PARAM panel) ────────────────────────────────
-
-    @GetMapping("/viewEvsParamPanel")
-    public String viewEvsParamPanel() {
-        return "evs/manage/viewEvsParamPanel";
-    }
+    // Trang Thymeleaf viewEvsParamPanel.html đã được thay bằng Angular route /evs-param-panel
+    // (xem frontend-ng/src/app/evs-param-panel/ và MIGRATED_ROUTES trong app-shell.component.ts).
 
     // -- Cấp đánh giá (EVS_GRADE) --
 
@@ -327,11 +320,8 @@ public class EvsManageController {
     }
 
     // ── Công thức đánh giá (EVS_FORMULA) ─────────────────────────────────────
-
-    @GetMapping("/viewEvsFormulaList")
-    public String viewEvsFormulaList() {
-        return "evs/manage/viewEvsFormulaList";
-    }
+    // Trang Thymeleaf viewEvsFormulaList.html đã được thay bằng Angular route /evs-formula-list
+    // (xem frontend-ng/src/app/evs-formula-list/ và MIGRATED_ROUTES trong app-shell.component.ts).
 
     @GetMapping("/api/evsFormula/formulaOptions")
     @ResponseBody
@@ -373,11 +363,9 @@ public class EvsManageController {
     }
 
     // ── Tỷ lệ phân bổ (EVS_SCORE) ────────────────────────────────────────────
-
-    @GetMapping("/viewEvsDistributionRatePanel")
-    public String viewEvsDistributionRatePanel() {
-        return "evs/manage/viewEvsDistributionRatePanel";
-    }
+    // Trang Thymeleaf viewEvsDistributionRatePanel.html đã được thay bằng Angular route
+    // /evs-distribution-rate-panel (xem frontend-ng/src/app/evs-distribution-rate-panel/ và
+    // MIGRATED_ROUTES trong app-shell.component.ts).
 
     @GetMapping("/api/evsScore/list")
     @ResponseBody
@@ -415,11 +403,8 @@ public class EvsManageController {
     }
 
     // ── Đối tượng đánh giá và người đánh giá (EVS_OBJECT + EVS_AFFIRM) ────────
-
-    @GetMapping("/viewEvsAffirmorSetup")
-    public String viewEvsAffirmorSetup() {
-        return "evs/manage/viewEvsAffirmorSetup";
-    }
+    // Trang Thymeleaf viewEvsAffirmorSetup.html đã được thay bằng Angular route /evs-affirmor-setup
+    // (xem frontend-ng/src/app/evs-affirmor-setup/ và MIGRATED_ROUTES trong app-shell.component.ts).
 
     @GetMapping("/api/affirmorSetup/list")
     @ResponseBody
@@ -504,11 +489,8 @@ public class EvsManageController {
     }
 
     // ── Kết quả đánh giá (EVS_OBJECT - viewEvsResult) ────────────────────────
-
-    @GetMapping("/viewEvsResult")
-    public String viewEvsResult() {
-        return "evs/manage/viewEvsResult";
-    }
+    // Trang Thymeleaf viewEvsResult.html đã được thay bằng Angular route /evs-result
+    // (xem frontend-ng/src/app/evs-result/ và MIGRATED_ROUTES trong app-shell.component.ts).
 
     @GetMapping("/api/evsResult/list")
     @ResponseBody
@@ -592,11 +574,8 @@ public class EvsManageController {
     }
 
     // ── Chỉ tiêu đánh giá (EVS_ITEM) ─────────────────────────────────────────
-
-    @GetMapping("/viewEvsItemPanel")
-    public String viewEvsItemPanel() {
-        return "evs/manage/viewEvsItemPanel";
-    }
+    // Trang Thymeleaf viewEvsItemPanel.html đã được thay bằng Angular route /evs-item-panel
+    // (xem frontend-ng/src/app/evs-item-panel/ và MIGRATED_ROUTES trong app-shell.component.ts).
 
     @GetMapping("/api/evsItem/list")
     @ResponseBody
@@ -671,11 +650,8 @@ public class EvsManageController {
     }
 
     // ── Đăng ký mục tiêu cá nhân (EVS_ITEM_SST) ──────────────────────────────
-
-    @GetMapping("/viewRegPersonalTarget")
-    public String viewRegPersonalTarget() {
-        return "evs/manage/viewRegPersonalTarget";
-    }
+    // Trang Thymeleaf viewRegPersonalTarget.html đã được thay bằng Angular route /reg-personal-target
+    // (xem frontend-ng/src/app/reg-personal-target/ và MIGRATED_ROUTES trong app-shell.component.ts).
 
     @GetMapping("/api/personalTarget/objectInfo")
     @ResponseBody
@@ -718,18 +694,12 @@ public class EvsManageController {
     }
 
     // ── Xác nhận mục tiêu lần 1 (EVS_OBJECT + EVS_AFFIRM level 1) ────────────
-
-    @GetMapping("/viewConfirmTarget1")
-    public String viewConfirmTarget1() {
-        return "evs/manage/viewConfirmTarget1";
-    }
+    // Trang Thymeleaf viewConfirmTarget1.html đã được thay bằng Angular route /confirm-target1
+    // (xem frontend-ng/src/app/confirm-target1/ và MIGRATED_ROUTES trong app-shell.component.ts).
 
     // ── Xác nhận mục tiêu lần 2 (EVS_OBJECT + EVS_AFFIRM level 2) ────────────
-
-    @GetMapping("/viewConfirmTarget2")
-    public String viewConfirmTarget2() {
-        return "evs/manage/viewConfirmTarget2";
-    }
+    // Trang Thymeleaf viewConfirmTarget2.html đã được thay bằng Angular route /confirm-target2
+    // (xem frontend-ng/src/app/confirm-target2/ và MIGRATED_ROUTES trong app-shell.component.ts).
 
     @GetMapping("/api/confirmTarget2/objectList")
     @ResponseBody
@@ -769,11 +739,8 @@ public class EvsManageController {
     }
 
     // ── Đánh giá bản thân HTSV (EVS_OBJECT + EVS_ITEM_SST.EVS_SCORE) ─────────────
-
-    @GetMapping("/viewEvsBySelfHTSV")
-    public String viewEvsBySelfHTSV() {
-        return "evs/manage/viewEvsBySelfHTSV";
-    }
+    // Trang Thymeleaf viewEvsBySelfHTSV.html đã được thay bằng Angular route /evs-by-self-htsv
+    // (xem frontend-ng/src/app/evs-by-self-htsv/ và MIGRATED_ROUTES trong app-shell.component.ts).
 
     @GetMapping("/api/evsBySelfHTSV/objectList")
     @ResponseBody
@@ -811,11 +778,8 @@ public class EvsManageController {
     }
 
     // ── Đánh giá năng lực bản thân SST (EVS_ITEM_SCORE.EVS_SCORE) ────────────────
-
-    @GetMapping("/viewEvsBySelfSSTAbility")
-    public String viewEvsBySelfSSTAbility() {
-        return "evs/manage/viewEvsBySelfSSTAbility";
-    }
+    // Trang Thymeleaf viewEvsBySelfSSTAbility.html đã được thay bằng Angular route /evs-by-self-sst-ability
+    // (xem frontend-ng/src/app/evs-by-self-sst-ability/ và MIGRATED_ROUTES trong app-shell.component.ts).
 
     @GetMapping("/api/evsBySelfSSTAbility/itemList")
     @ResponseBody
@@ -839,11 +803,8 @@ public class EvsManageController {
     }
 
     // ── Đánh giá lần 1 (EVS_AFFIRM level 1 - nhập điểm + cấp đánh giá) ─────────
-
-    @GetMapping("/viewAffirmTarget1")
-    public String viewAffirmTarget1() {
-        return "evs/manage/viewAffirmTarget1";
-    }
+    // Trang Thymeleaf viewAffirmTarget1.html đã được thay bằng Angular route /affirm-target1
+    // (xem frontend-ng/src/app/affirm-target1/ và MIGRATED_ROUTES trong app-shell.component.ts).
 
     @GetMapping("/api/affirmTarget1/objectList")
     @ResponseBody
@@ -956,11 +917,8 @@ public class EvsManageController {
     }
 
     // ── Đánh giá năng lực lần 1 (EVS_AFFIRM level 1 - dropdown năng lực) ────────
-
-    @GetMapping("/viewAffirmTarget1Ability")
-    public String viewAffirmTarget1Ability() {
-        return "evs/manage/viewAffirmTarget1Ability";
-    }
+    // Trang Thymeleaf viewAffirmTarget1Ability.html đã được thay bằng Angular route /affirm-target1-ability
+    // (xem frontend-ng/src/app/affirm-target1-ability/ và MIGRATED_ROUTES trong app-shell.component.ts).
 
     @GetMapping("/api/affirmTarget1Ability/itemList")
     @ResponseBody
@@ -1008,11 +966,8 @@ public class EvsManageController {
     }
 
     // ── Đánh giá năng lực lần 2 (EVS_AFFIRM level 2 - dropdown năng lực) ────────
-
-    @GetMapping("/viewAffirmTarget2Ability")
-    public String viewAffirmTarget2Ability() {
-        return "evs/manage/viewAffirmTarget2Ability";
-    }
+    // Trang Thymeleaf viewAffirmTarget2Ability.html đã được thay bằng Angular route /affirm-target2-ability
+    // (xem frontend-ng/src/app/affirm-target2-ability/ và MIGRATED_ROUTES trong app-shell.component.ts).
 
     @GetMapping("/api/affirmTarget2Ability/itemList")
     @ResponseBody
@@ -1060,11 +1015,8 @@ public class EvsManageController {
     }
 
     // ── Đánh giá lần 2 (EVS_AFFIRM level 2 - nhập điểm + cấp đánh giá) ─────────
-
-    @GetMapping("/viewAffirmTarget2")
-    public String viewAffirmTarget2() {
-        return "evs/manage/viewAffirmTarget2";
-    }
+    // Trang Thymeleaf viewAffirmTarget2.html đã được thay bằng Angular route /affirm-target2
+    // (xem frontend-ng/src/app/affirm-target2/ và MIGRATED_ROUTES trong app-shell.component.ts).
 
     @GetMapping("/api/affirmTarget2/objectList")
     @ResponseBody
@@ -1177,11 +1129,8 @@ public class EvsManageController {
     }
 
     // ── Lịch sử kết quả đánh giá nhân viên (EVS_OBJECT) ──────────────────────
-
-    @GetMapping("/viewEvsResultEmp")
-    public String viewEvsResultEmp() {
-        return "evs/manage/viewEvsResultEmp";
-    }
+    // Trang Thymeleaf viewEvsResultEmp.html đã được thay bằng Angular route /evs-result-emp
+    // (xem frontend-ng/src/app/evs-result-emp/ và MIGRATED_ROUTES trong app-shell.component.ts).
 
     @GetMapping("/api/evsResultEmp/list")
     @ResponseBody

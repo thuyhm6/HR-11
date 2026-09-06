@@ -1,0 +1,53 @@
+<nz-card [nzTitle]="'org.orgManage.viewOrgInfo.title' | translate:'Sơ đồ tổ chức (Visual Chart)'"
+         [nzExtra]="orgInfoExtra" [nzBodyStyle]="{ padding: '0' }">
+  <ng-template #orgInfoExtra>
+    <button nz-button nzSize="small" type="button" id="orgInfoBtnExpandAll" (click)="expandAll()">
+      <i class="bx bx-expand"></i> {{ 'org.orgManage.viewOrgInfo.expand' | translate:'Mở rộng' }}
+    </button>
+    <button nz-button nzSize="small" type="button" id="orgInfoBtnCollapseAll" (click)="collapseAll()">
+      <i class="bx bx-collapse"></i> {{ 'org.orgManage.viewOrgInfo.collapse' | translate:'Thu gọn' }}
+    </button>
+    <button nz-button nzSize="small" type="button" id="orgInfoBtnZoomIn" (click)="zoomIn()">
+      <i class="bx bx-zoom-in"></i> {{ 'org.orgManage.viewOrgInfo.zoomIn' | translate:'Phóng to' }}
+    </button>
+    <button nz-button nzSize="small" type="button" id="orgInfoBtnZoomOut" (click)="zoomOut()">
+      <i class="bx bx-zoom-out"></i> {{ 'org.orgManage.viewOrgInfo.zoomOut' | translate:'Thu nhỏ' }}
+    </button>
+    <button nz-button nzSize="small" type="button" id="orgInfoBtnResetZoom" (click)="resetZoom()">
+      <i class="bx bx-refresh"></i> {{ 'org.orgManage.viewOrgInfo.reset' | translate:'Đặt lại' }}
+    </button>
+  </ng-template>
+
+  <div class="org-container">
+    <div *ngIf="loading()" class="text-center p-5">
+      <i class="bx bx-loader-alt bx-spin fs-1"></i><br>
+      {{ 'org.orgManage.viewOrgInfo.loading' | translate:'Đang tải dữ liệu...' }}
+    </div>
+
+    <div *ngIf="!loading() && errorMessage()" class="text-danger p-3">
+      {{ errorMessage() }}
+      <div class="mt-2">
+        <button nz-button nzSize="small" type="button" id="orgInfoBtnRetry" (click)="loadTree()">
+          {{ 'org.orgManage.viewOrgInfo.retry' | translate:'Thử lại' }}
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="!loading() && !errorMessage() && treeData().length === 0" class="p-4">
+      {{ 'org.orgManage.viewOrgInfo.noData' | translate:'Không có dữ liệu' }}
+    </div>
+
+    <div *ngIf="!loading() && !errorMessage() && treeData().length > 0" class="org-viewport" id="orgInfoChart" #viewport>
+      <div class="org-world" #world [style.width.px]="layout().width" [style.height.px]="layout().height">
+        <svg class="org-links" [attr.width]="layout().width" [attr.height]="layout().height">
+          <path *ngFor="let link of layout().links; trackBy: trackLink" class="org-link" [attr.d]="link.path"></path>
+        </svg>
+        <div class="org-card-wrap" *ngFor="let n of layout().nodes; trackBy: trackNode"
+             [style.transform]="'translate(' + n.x + 'px,' + n.y + 'px)'">
+          <app-org-chart-card [node]="n.data" [hasChildren]="n.hasChildren" [collapsed]="n.collapsed"
+                              [toggleFn]="toggleNode"></app-org-chart-card>
+        </div>
+      </div>
+    </div>
+  </div>
+</nz-card>

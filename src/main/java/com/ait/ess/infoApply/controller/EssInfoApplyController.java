@@ -2,11 +2,13 @@ package com.ait.ess.infoApply.controller;
 
 import com.ait.ess.infoApply.dto.EssCwaAbnormalDto;
 import com.ait.ess.infoApply.dto.EssCoordApplyOtInfoDto;
+import com.ait.ess.infoApply.dto.EssDeptOtApplyInfoDto;
 import com.ait.ess.infoApply.dto.EssOtApplyListDto;
 import com.ait.ess.infoApply.dto.EssOtReportDto;
 import com.ait.ess.infoApply.dto.EssPersonOtInfoDto;
 import com.ait.ess.infoApply.service.EssCwaAbnormalService;
 import com.ait.ess.infoApply.service.EssCoordApplyOtInfoService;
+import com.ait.ess.infoApply.service.EssDeptOtApplyInfoService;
 import com.ait.ess.infoApply.service.EssOtApplyService;
 import com.ait.ess.infoApply.service.EssOtReportService;
 import com.ait.ess.infoApply.service.EssPersonOtInfoService;
@@ -50,15 +52,16 @@ public class EssInfoApplyController {
     @Autowired
     private EssOtReportService essOtReportService;
 
-    @GetMapping("/viewSSTOtApplyInfo")
-    public String viewSSTOtApplyInfo() {
-        return "ess/infoApply/viewSSTOtApplyInfo";
-    }
+    @Autowired
+    private EssDeptOtApplyInfoService essDeptOtApplyInfoService;
 
-    @GetMapping("/viewPOtApplyInfoList")
-    public String viewPOtApplyInfoList() {
-        return "ess/infoApply/viewPOtApplyInfoList";
-    }
+    // Trang Thymeleaf viewSSTOtApplyInfo.html đã được thay bằng Angular route /sst-ot-apply-info
+    // (xem frontend-ng/src/app/sst-ot-apply-info/ và MIGRATED_ROUTES trong app-shell.component.ts) -
+    // các API /api/otDateInfo, /api/otDuration bên dưới vẫn giữ nguyên.
+
+    // Trang Thymeleaf viewPOtApplyInfoList.html đã được thay bằng Angular route /ot-apply-info-list
+    // (xem frontend-ng/src/app/ot-apply-info-list/ và MIGRATED_ROUTES trong app-shell.component.ts) -
+    // các API /api/myOtApply/** bên dưới vẫn giữ nguyên.
 
     @GetMapping("/api/otDateInfo")
     @ResponseBody
@@ -111,10 +114,10 @@ public class EssInfoApplyController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/viewPersonOtApplyInfoList")
-    public String viewPersonOtApplyInfoList() {
-        return "ess/infoApply/viewPersonOtApplyInfoList";
-    }
+    // Trang Thymeleaf viewPersonOtApplyInfoList.html đã được thay bằng Angular route
+    // /person-ot-apply-info-list (xem frontend-ng/src/app/person-ot-apply-info-list/ và
+    // MIGRATED_ROUTES trong app-shell.component.ts) - các API /api/personOt/** bên dưới vẫn giữ nguyên
+    // (DashboardService cũng đang gọi chung /api/personOt/list cho biểu đồ).
 
     @GetMapping("/api/personOt/list")
     @ResponseBody
@@ -137,15 +140,9 @@ public class EssInfoApplyController {
         return ResponseEntity.ok(essPersonOtInfoService.getOtItemList());
     }
 
-    @GetMapping("/viewPiciOtAffirmLBatchList")
-    public String viewPiciOtAffirmLBatchList() {
-        return "ess/infoApply/viewPiciOtAffirmLBatchList";
-    }
+    // Trang Thymeleaf viewPiciOtAffirmLBatchList.html đã được thay bằng Angular route /ot-apply-batch-info
 
-    @GetMapping("/viewApprovalEmail")
-    public String viewApprovalEmail() {
-        return "ess/infoApply/viewApprovalEmail";
-    }
+    // Trang Thymeleaf viewApprovalEmail.html đã được thay bằng Angular route /view-approval-email
 
     @GetMapping("/api/approvalEmail/list")
     @ResponseBody
@@ -153,10 +150,7 @@ public class EssInfoApplyController {
         return ResponseEntity.ok(syAffirmEmailService.getApprovalEmailList(dto));
     }
 
-    @GetMapping("/viewApprovaledEmail")
-    public String viewApprovaledEmail() {
-        return "ess/infoApply/viewApprovaledEmail";
-    }
+    // Trang Thymeleaf viewApprovaledEmail.html đã được thay bằng Angular route /view-approvaled-email
 
     @GetMapping("/api/approvaledEmail/list")
     @ResponseBody
@@ -191,10 +185,7 @@ public class EssInfoApplyController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/viewNoticeedEmail")
-    public String viewNoticeedEmail() {
-        return "ess/infoApply/viewNoticeedEmail";
-    }
+    // Trang Thymeleaf viewNoticeedEmail.html đã được thay bằng Angular route /view-noticeed-email
 
     @GetMapping("/api/noticeedEmail/list")
     @ResponseBody
@@ -202,10 +193,7 @@ public class EssInfoApplyController {
         return ResponseEntity.ok(syAffirmEmailService.getNoticeedEmailList(dto));
     }
 
-    @GetMapping("/viewCoordApplyOtInfoList")
-    public String viewCoordApplyOtInfoList() {
-        return "ess/infoApply/viewCoordApplyOtInfoList";
-    }
+    // Trang Thymeleaf viewCoordApplyOtInfoList.html đã được thay bằng Angular route /coord-apply-ot-info-list
 
     @GetMapping("/api/coordOt/list")
     @ResponseBody
@@ -242,10 +230,9 @@ public class EssInfoApplyController {
         return ResponseEntity.ok(essCoordApplyOtInfoService.getOtItemList());
     }
 
-    @GetMapping("/viewShowCwaAbnormalApply")
-    public String viewShowCwaAbnormalApply() {
-        return "ess/infoApply/viewShowCwaAbnormalApply";
-    }
+    // Trang Thymeleaf viewShowCwaAbnormalApply.html đã được thay bằng Angular route /cwa-abnormal-apply
+    // (xem frontend-ng/src/app/cwa-abnormal-apply/ và MIGRATED_ROUTES trong app-shell.component.ts) -
+    // API /api/myCwaAbnormal/list bên dưới vẫn giữ nguyên.
 
     @GetMapping("/api/myCwaAbnormal/list")
     @ResponseBody
@@ -258,10 +245,7 @@ public class EssInfoApplyController {
         return ResponseEntity.ok(essCwaAbnormalService.getMyList(dto));
     }
 
-    @GetMapping("/viewOtReport")
-    public String viewOtReport() {
-        return "ess/infoApply/viewOtReport";
-    }
+    // Trang Thymeleaf viewOtReport.html đã được thay bằng Angular route /view-ot-report
 
     @GetMapping("/api/otReport/list")
     @ResponseBody
@@ -272,5 +256,18 @@ public class EssInfoApplyController {
     @GetMapping("/api/otReport/export")
     public void exportOtReport(EssOtReportDto params, HttpServletResponse response) throws IOException {
         essOtReportService.exportReport(params, response);
+    }
+
+    // Trang Thymeleaf viewDeptOtApplyInfo.html đã được thay bằng Angular route /dept-ot-apply-info
+
+    @GetMapping("/api/deptOtApplyInfo/list")
+    @ResponseBody
+    public DataTablesResponse<EssDeptOtApplyInfoDto> getDeptOtApplyInfoList(EssDeptOtApplyInfoDto params) {
+        return essDeptOtApplyInfoService.getPageList(params);
+    }
+
+    @GetMapping("/api/deptOtApplyInfo/export")
+    public void exportDeptOtApplyInfo(EssDeptOtApplyInfoDto params, HttpServletResponse response) throws IOException {
+        essDeptOtApplyInfoService.exportReport(params, response);
     }
 }

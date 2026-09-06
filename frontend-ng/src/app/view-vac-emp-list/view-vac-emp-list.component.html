@@ -1,0 +1,116 @@
+<div class="row">
+  <div class="col-12">
+    <!-- Điều kiện tìm kiếm - đứng im khi cuộn (xem .sticky-filter-card trong styles.css) -->
+    <nz-card class="mb-3 sticky-filter-card">
+      <form class="row g-3" (ngSubmit)="search()">
+        <div class="col-md-3">
+          <label class="form-label">{{ 'common.search.empIdOrName' | translate:'Mã nhân viên / Họ tên' }}</label>
+          <input nz-input [(ngModel)]="keyword" name="keyword" id="ve-keyword"
+                 [placeholder]="'common.placeholder.enterEmpId' | translate:'Nhập mã hoặc họ tên'">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'common.deptName' | translate:'Phòng ban' }}</label>
+          <nz-tree-select class="w-100" id="ve-deptNo" [nzNodes]="deptNodes()" [(ngModel)]="deptNos" name="deptNos"
+                           nzCheckable nzShowSearch nzAllowClear
+                           [nzPlaceHolder]="'common.select' | translate:'Chọn phòng ban'"
+                           nzDropdownClassName="ve-dept-tree-dropdown"></nz-tree-select>
+          <div *ngIf="deptTreeErrorMessage()" class="text-danger small mt-1">{{ deptTreeErrorMessage() }}</div>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'common.workStatus' | translate:'Trạng thái làm việc' }}</label>
+          <nz-select class="w-100" id="ve-empOffice" [(ngModel)]="empOffice" name="empOffice" nzAllowClear
+                     [nzPlaceHolder]="'common.selectAll' | translate:'-- Tất cả --'">
+            <nz-option *ngFor="let c of empOfficeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'vacEmp.year' | translate:'Năm phép' }}</label>
+          <input nz-input id="ve-vacId" [ngModel]="currentYear" name="vacId" disabled>
+        </div>
+        <div class="col-12 d-flex align-items-end gap-2 flex-wrap">
+          <button nz-button nzType="primary" type="submit" id="ve-btn-search">
+            <i class="bx bx-search"></i> {{ 'common.search' | translate:'Tra cứu' }}
+          </button>
+          <button nz-button type="button" id="ve-btn-clear" (click)="clearSearch()">
+            <i class="bx bx-x"></i> {{ 'common.clearFilter' | translate:'Xóa lọc' }}
+          </button>
+          <button nz-button nzType="default" type="button" class="btn-export" id="ve-btn-export" (click)="exportExcel()">
+            <i class="bx bx-export"></i> {{ 'common.exportExcel' | translate:'Xuất excel' }}
+          </button>
+        </div>
+      </form>
+    </nz-card>
+
+    <nz-card>
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+      <nz-table [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="25" [nzShowSizeChanger]="true"
+                [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="veTotalTpl"
+                [nzScroll]="{ x: '2200px', y: 'calc(100vh - 420px)' }"
+                class="table-nowrap" #veTable>
+        <!-- nzWidth khai báo cho từng cột để đồng bộ độ rộng header/body khi dùng nzScroll. -->
+        <thead>
+          <tr>
+            <th class="text-center" nzWidth="60px">{{ 'common.stt' | translate:'STT' }}</th>
+            <th class="text-center" nzWidth="100px">{{ 'common.empId' | translate:'Mã nhân viên' }}</th>
+            <th nzWidth="150px">{{ 'common.empName' | translate:'Họ tên' }}</th>
+            <th nzWidth="160px">{{ 'common.deptName' | translate:'Phòng ban' }}</th>
+            <th nzWidth="120px">{{ 'attSearch.position' | translate:'Chức vụ' }}</th>
+            <th class="text-end" nzWidth="90px">{{ 'vacEmp.colTotal' | translate:'Tổng phép' }}</th>
+            <th class="text-end" nzWidth="100px">{{ 'vacEmp.lastYearVac' | translate:'Phép năm trước' }}</th>
+            <th class="text-end" nzWidth="90px">{{ 'vacEmp.colUsed' | translate:'Đã dùng' }}</th>
+            <th class="text-end" nzWidth="90px">{{ 'vacEmp.colPending' | translate:'Chờ duyệt' }}</th>
+            <th class="text-end" nzWidth="70px">{{ 'vacEmp.colJan' | translate:'Tháng 1' }}</th>
+            <th class="text-end" nzWidth="70px">{{ 'vacEmp.colFeb' | translate:'Tháng 2' }}</th>
+            <th class="text-end" nzWidth="70px">{{ 'vacEmp.colMar' | translate:'Tháng 3' }}</th>
+            <th class="text-end" nzWidth="70px">{{ 'vacEmp.colApr' | translate:'Tháng 4' }}</th>
+            <th class="text-end" nzWidth="70px">{{ 'vacEmp.colMay' | translate:'Tháng 5' }}</th>
+            <th class="text-end" nzWidth="70px">{{ 'vacEmp.colJun' | translate:'Tháng 6' }}</th>
+            <th class="text-end" nzWidth="70px">{{ 'vacEmp.colJul' | translate:'Tháng 7' }}</th>
+            <th class="text-end" nzWidth="70px">{{ 'vacEmp.colAug' | translate:'Tháng 8' }}</th>
+            <th class="text-end" nzWidth="70px">{{ 'vacEmp.colSep' | translate:'Tháng 9' }}</th>
+            <th class="text-end" nzWidth="75px">{{ 'vacEmp.colOct' | translate:'Tháng 10' }}</th>
+            <th class="text-end" nzWidth="75px">{{ 'vacEmp.colNov' | translate:'Tháng 11' }}</th>
+            <th class="text-end" nzWidth="75px">{{ 'vacEmp.colDec' | translate:'Tháng 12' }}</th>
+            <th class="text-end" nzWidth="90px">{{ 'vacEmp.convert' | translate:'Quy đổi' }}</th>
+            <th class="text-end" nzWidth="110px">{{ 'vacEmp.workMonth' | translate:'Tháng công tác' }}</th>
+            <th class="text-center" nzWidth="70px">{{ 'vacEmp.locked' | translate:'Khóa' }}</th>
+            <th nzWidth="160px">{{ 'common.remark' | translate:'Ghi chú' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of veTable.data; let i = index">
+            <td class="text-center">{{ i + 1 }}</td>
+            <td class="text-center" [attr.title]="row.empId || null">{{ row.empId }}</td>
+            <td [attr.title]="row.localName || null">{{ row.localName }}</td>
+            <td [attr.title]="row.deptName || null">{{ row.deptName }}</td>
+            <td [attr.title]="row.postGradeName || null">{{ row.postGradeName }}</td>
+            <td class="text-end">{{ row.totVacCnt }}</td>
+            <td class="text-end">{{ row.lastYearVac }}</td>
+            <td class="text-end">{{ row.useVac }}</td>
+            <td class="text-end">{{ row.affirmUseVac }}</td>
+            <td class="text-end">{{ row.useVac1 }}</td>
+            <td class="text-end">{{ row.useVac2 }}</td>
+            <td class="text-end">{{ row.useVac3 }}</td>
+            <td class="text-end">{{ row.useVac4 }}</td>
+            <td class="text-end">{{ row.useVac5 }}</td>
+            <td class="text-end">{{ row.useVac6 }}</td>
+            <td class="text-end">{{ row.useVac7 }}</td>
+            <td class="text-end">{{ row.useVac8 }}</td>
+            <td class="text-end">{{ row.useVac9 }}</td>
+            <td class="text-end">{{ row.useVac10 }}</td>
+            <td class="text-end">{{ row.useVac11 }}</td>
+            <td class="text-end">{{ row.useVac12 }}</td>
+            <td class="text-end">{{ row.mentVac }}</td>
+            <td class="text-end">{{ row.workMonth }}</td>
+            <td class="text-center">{{ row.isLocked }}</td>
+            <td [attr.title]="row.remark || null">{{ row.remark }}</td>
+          </tr>
+        </tbody>
+        <ng-template #veTotalTpl let-total>
+          {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+        </ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>

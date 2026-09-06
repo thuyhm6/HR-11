@@ -1,0 +1,13 @@
+.vps-btn-export {
+  color: #52c41a;
+  border-color: #52c41a;
+}
+
+.vps-row-clickable {
+  cursor: pointer;
+}
+
+.vps-tree-scroll {
+  max-height: calc(100vh - 480px);
+  overflow-y: auto;
+}

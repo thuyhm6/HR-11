@@ -1,0 +1,143 @@
+/* Port từ CSS .ccal-* inject runtime của bản Thymeleaf gốc (ar/attendanceSettings/viewClassCalendar.html)
+   sang class .vcc-* (view-encapsulated theo component, không cần inject bằng JS như bản cũ). */
+
+@keyframes vcc-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, .4); }
+  50% { box-shadow: 0 0 0 6px rgba(59, 130, 246, 0); }
+}
+
+@keyframes vcc-slideDown {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.vcc-wrap { display: block; }
+
+.vcc-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border: 1px solid #cbd5e1;
+  border-radius: 8px 8px 0 0;
+  padding: 8px 14px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .06);
+}
+
+.vcc-nav { display: flex; align-items: center; gap: 4px; margin: 0 auto; }
+.vcc-combo { width: 130px; }
+.vcc-combo.vcc-year { width: 90px; }
+.vcc-combo.vcc-group { width: 180px; }
+.vcc-actions { display: flex; gap: 6px; }
+
+.vcc-grid-wrap {
+  border: 1px solid #cbd5e1;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, .06);
+}
+
+.vcc-hrow {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+}
+
+.vcc-hcell {
+  padding: 8px;
+  text-align: center;
+  font-weight: 700;
+  font-size: .82rem;
+  color: #e2e8f0;
+  letter-spacing: .5px;
+  border-right: 1px solid rgba(255, 255, 255, .08);
+}
+.vcc-hcell:last-child { border-right: none; }
+.vcc-col-sun { color: #fca5a5 !important; }
+.vcc-col-sat { color: #86efac !important; }
+
+.vcc-status-msg { padding: 20px; text-align: center; color: #64748b; }
+
+.vcc-week {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  border-bottom: 1px solid #e2e8f0;
+  animation: vcc-slideDown .3s ease-out both;
+}
+.vcc-week:last-child { border-bottom: none; }
+
+.vcc-day {
+  min-height: 90px;
+  padding: 6px 8px;
+  border-right: 1px solid #e2e8f0;
+  background: #fff;
+  overflow: hidden;
+  transition: all .2s ease;
+  position: relative;
+}
+.vcc-day:last-child { border-right: none; }
+.vcc-day.is-empty { background: #f8fafc; min-height: 0; }
+.vcc-day.is-today { background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); animation: vcc-pulse 2.5s infinite; }
+.vcc-day.is-rest { background: linear-gradient(180deg, #fff 0%, #fef2f2 100%); }
+.vcc-day.is-work { background: linear-gradient(180deg, #fff 0%, #f0fdf4 100%); }
+.vcc-day.vcc-clickable { cursor: pointer; }
+.vcc-day.vcc-clickable:hover { transform: scale(1.02); z-index: 2; box-shadow: 0 4px 16px rgba(0, 0, 0, .1); border-radius: 4px; }
+
+.vcc-day-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+.vcc-day-num { font-size: .95rem; font-weight: 800; color: #1e293b; white-space: nowrap; line-height: 1.2; }
+.vcc-day-num.is-sun { color: #dc2626; }
+.vcc-day-num.is-sat { color: #16a34a; }
+
+.vcc-status {
+  font-size: .62rem;
+  padding: 2px 7px;
+  border-radius: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+  line-height: 1.3;
+  letter-spacing: .3px;
+  text-transform: uppercase;
+}
+.vcc-status.s-rest { background: linear-gradient(135deg, #fecaca, #fca5a5); color: #7f1d1d; }
+.vcc-status.s-work { background: linear-gradient(135deg, #bbf7d0, #86efac); color: #166534; }
+
+.vcc-tags { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 4px; }
+.vcc-tag {
+  display: inline-flex;
+  align-items: center;
+  font-size: .58rem;
+  padding: 1px 6px;
+  border-radius: 8px;
+  line-height: 1.6;
+  white-space: nowrap;
+  font-weight: 600;
+}
+.vcc-tag.t-rest { background: #fde8e8; color: #991b1b; }
+.vcc-tag.t-wd { background: #dbeafe; color: #1e3a8a; }
+.vcc-tag.t-sh { background: #d1fae5; color: #065f46; }
+
+.vcc-legend {
+  display: flex;
+  gap: 16px;
+  padding: 8px 14px;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  margin-top: -1px;
+  flex-wrap: wrap;
+}
+.vcc-legend-item { display: inline-flex; align-items: center; gap: 5px; font-size: .72rem; color: #64748b; font-weight: 500; }
+.vcc-legend-dot { width: 10px; height: 10px; border-radius: 50%; border: 1px solid rgba(0, 0, 0, .1); }
+.vcc-lg-work { background: linear-gradient(135deg, #86efac, #4ade80); }
+.vcc-lg-rest { background: linear-gradient(135deg, #fca5a5, #f87171); }
+.vcc-lg-today { background: linear-gradient(135deg, #93c5fd, #3b82f6); }
+
+/* ===== Modal forms ===== */
+.vcc-form-row { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
+.vcc-form-row label { font-size: .82rem; font-weight: 600; color: #334155; }
+.vcc-form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.vcc-form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+.vcc-required { color: #dc2626; }

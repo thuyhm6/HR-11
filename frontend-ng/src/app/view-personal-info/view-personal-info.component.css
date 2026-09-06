@@ -1,0 +1,6 @@
+.vpi-row-clickable {
+  cursor: pointer;
+}
+.vpi-row-clickable:hover {
+  background: #fafafa;
+}

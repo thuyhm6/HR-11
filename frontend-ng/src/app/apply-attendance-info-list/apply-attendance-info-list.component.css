@@ -1,0 +1,6 @@
+.aal-row-clickable {
+  cursor: pointer;
+}
+.aal-row-clickable:hover {
+  background: #fafafa;
+}

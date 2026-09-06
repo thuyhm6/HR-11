@@ -26,10 +26,7 @@ public class PaMonthPersonInfoController {
     @Autowired
     private PaPayStubService paPayStubService;
 
-    @GetMapping("/viewPaMonthPersonInfoEssList")
-    public String viewPaMonthPersonInfoEssList() {
-        return "pa/salary/viewPaMonthPersonInfoEssList";
-    }
+    // Trang Thymeleaf viewPaMonthPersonInfoEssList.html đã được thay bằng Angular route /pa-month-person-info
 
     // ── API Danh sách kế hoạch trả lương đã mở (PA_OPEN_FLAG = 1) ──────────────
 

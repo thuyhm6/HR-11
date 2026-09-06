@@ -1,0 +1,13 @@
+.rbl-row {
+  cursor: pointer;
+}
+.rbl-row:hover {
+  background: #fafafa;
+}
+.rbl-row-processed {
+  color: #6c757d;
+}
+.rbl-modal-body {
+  max-height: 70vh;
+  overflow-y: auto;
+}

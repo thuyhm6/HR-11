@@ -1,0 +1,4 @@
+.curr-org-tree-scroll {
+  max-height: calc(100vh - 280px);
+  overflow-y: auto;
+}

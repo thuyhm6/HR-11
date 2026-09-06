@@ -497,5 +497,26 @@ table.dataTable tbody tr:hover>.sorting_1 {
     color: #fcfcfc !important;
     font-weight: bold;
     border-bottom: 3px solid #ffffff;
+}
+
+/* Override khoảng cách giữa các item trong ant-menu (mặc định 8px của ng-zorro) */
+.ant-menu-inline .ant-menu-item:not(:last-child),
+.ant-menu-vertical .ant-menu-item:not(:last-child),
+.ant-menu-vertical-left .ant-menu-item:not(:last-child),
+.ant-menu-vertical-right .ant-menu-item:not(:last-child) {
+    margin-bottom: 4px;
     border-radius: 4px;
+}
+
+/* Override chiều cao item trong ant-menu (mặc định 40px của ng-zorro) */
+.ant-menu-inline .ant-menu-item,
+.ant-menu-inline .ant-menu-submenu-title,
+.ant-menu-vertical .ant-menu-item,
+.ant-menu-vertical .ant-menu-submenu-title,
+.ant-menu-vertical-left .ant-menu-item,
+.ant-menu-vertical-left .ant-menu-submenu-title,
+.ant-menu-vertical-right .ant-menu-item,
+.ant-menu-vertical-right .ant-menu-submenu-title {
+    height: 36px;
+    line-height: 36px;
 }

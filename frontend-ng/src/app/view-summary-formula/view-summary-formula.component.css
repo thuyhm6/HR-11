@@ -1,0 +1,26 @@
+.vsf-tree-scroll {
+  max-height: 700px;
+  overflow-y: auto;
+}
+
+.vsf-cell-wrap {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.vsf-tool-header {
+  font-size: 0.9rem;
+}
+
+.vsf-tool-body {
+  height: 250px;
+  font-size: 0.85rem;
+}
+
+.vsf-tool-item {
+  cursor: pointer;
+}
+
+.vsf-tool-item:hover {
+  background-color: #f5f5f5;
+}

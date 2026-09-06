@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpSession;
@@ -34,41 +33,15 @@ public class HrContractController {
     @Autowired
     private HrContractService hrContractService;
 
-    /**
-     * Display contract list page
-     */
-    @GetMapping("/viewNOContractInfo")
-    public String viewNOContractInfo(Model model, HttpSession session) {
-        // Check authentication
-        HrUserInfo currentHrUser = getAuthenticatedUser(session);
+    // Trang Thymeleaf viewNOContractInfo.html đã được thay bằng Angular route /contract-info-list
+    // (xem ContractInfoListComponent) - các API JSON bên dưới vẫn giữ nguyên, không đổi.
 
-        model.addAttribute("currentHrUser", currentHrUser);
-        return "hrm/contract/viewNOContractInfo";
-    }
+    // Trang Thymeleaf viewExpiredContract.html đã được thay bằng Angular route /expired-contract-list
+    // (xem ExpiredContractListComponent) - các API JSON bên dưới vẫn giữ nguyên, không đổi.
 
-    /**
-     * Display expired contract list page for extension
-     */
-    @GetMapping("/viewExpiredContract")
-    public String viewExpiredContract(Model model, HttpSession session) {
-        // Check authentication
-        HrUserInfo currentHrUser = getAuthenticatedUser(session);
-
-        model.addAttribute("currentHrUser", currentHrUser);
-        return "hrm/contract/viewExpiredContract";
-    }
-
-    /**
-     * Display contract search page
-     */
-    @GetMapping("/viewContractInfoForSearch")
-    public String viewContractInfoForSearch(Model model, HttpSession session) {
-        // Check authentication
-        HrUserInfo currentHrUser = getAuthenticatedUser(session);
-
-        model.addAttribute("currentHrUser", currentHrUser);
-        return "hrm/contract/viewContractInfoForSearch";
-    }
+    // Trang Thymeleaf viewContractInfoForSearch.html đã được thay bằng Angular route
+    // /contract-info-search (xem ContractInfoSearchComponent) - các API JSON bên dưới vẫn giữ nguyên,
+    // không đổi (GET /export vẫn giữ vì chưa có view Thymeleaf nào khác dùng chung với /contracts).
 
     /**
      * API endpoint cho DataTables server-side processing

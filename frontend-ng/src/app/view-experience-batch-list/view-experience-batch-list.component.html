@@ -1,0 +1,201 @@
+<nz-card [nzBodyStyle]="{ padding: '10px' }">
+  <!-- ════ Toolbar ════ -->
+  <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+    <label class="form-label mb-0 fw-semibold small">{{ 'ebl.label.registerDate' | translate:'Ngày đăng ký' }}</label>
+    <nz-select style="min-width:220px" [(ngModel)]="selectedRegisterSeq" name="registerSeq"
+               (ngModelChange)="onRegisterChange()" nzAllowClear>
+      <nz-option *ngFor="let r of registers()" [nzValue]="r.registerSeq"
+                 [nzLabel]="(r.registerDate || '') + (r.registerRemark ? ' - ' + r.registerRemark : '')"></nz-option>
+    </nz-select>
+    <button nz-button nzType="primary" nzSize="small" (click)="openRegisterModal()">
+      <i class="bx bx-plus"></i> {{ 'ebl.btn.register' | translate:'Đăng ký' }}
+    </button>
+
+    <div class="ms-auto d-flex flex-wrap gap-1">
+      <button *ngIf="!allProcessed()" nz-button nzSize="small" (click)="downloadTemplate()">
+        <i class="bx bx-download"></i> {{ 'common.downloadTemplate' | translate:'Tải File Mẫu' }}
+      </button>
+      <button *ngIf="!allProcessed()" nz-button nzType="primary" nzSize="small" (click)="confirmExecute()">
+        <i class="bx bx-check-double"></i> {{ 'common.confirm' | translate:'Xác nhận' }}
+      </button>
+      <button nz-button nzSize="small" (click)="search()">
+        <i class="bx bx-search"></i> {{ 'common.search' | translate:'Tra cứu' }}
+      </button>
+      <button *ngIf="!allProcessed()" nz-button nzDanger nzSize="small"
+              [disabled]="checkedSeqs().size === 0" (click)="deleteSelected()">
+        <i class="bx bx-trash"></i> {{ 'common.delete' | translate:'Xóa' }}
+      </button>
+      <button nz-button nzSize="small" (click)="exportExcel()">
+        <i class="bx bx-export"></i> {{ 'common.exportExcel' | translate:'Xuất Excel' }}
+      </button>
+      <button *ngIf="!allProcessed()" nz-button nzSize="small" [nzLoading]="importing()" (click)="openImportPicker()">
+        <i class="bx bx-upload"></i> {{ 'ebl.btn.insertFile' | translate:'Chèn file' }}
+      </button>
+      <input #excelFileInput type="file" hidden accept=".xlsx,.xls" (change)="onExcelFileSelected($event)">
+    </div>
+  </div>
+
+  <div class="small text-muted mb-1">{{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ totalRecords() }}</div>
+
+  <!-- ════ Bảng dữ liệu ════ -->
+  <nz-table [nzData]="rows()" [nzFrontPagination]="false" [nzLoading]="loading()"
+            [nzTotal]="totalRecords()" [nzPageIndex]="pageIndex" [nzPageSize]="pageSize"
+            [nzShowPagination]="true" [nzPageSizeOptions]="[20, 50, 100]" nzShowSizeChanger
+            (nzPageIndexChange)="onPageIndexChange($event)"
+            [nzScroll]="{ x: '1800px', y: 'calc(100vh - 320px)' }" nzSize="small" class="table-nowrap">
+    <thead>
+      <tr>
+        <th class="text-center" nzLeft nzWidth="44px">No.</th>
+        <th class="text-center" nzLeft nzWidth="36px">
+          <label nz-checkbox [ngModel]="allChecked" (ngModelChange)="toggleAllChecked($event)"></label>
+        </th>
+        <th class="text-center" nzLeft nzWidth="80px">{{ 'ebl.col.processed' | translate:'Đã xử lý' }}</th>
+        <th nzLeft nzWidth="150px">{{ 'common.empName' | translate:'Họ tên' }}</th>
+        <th class="text-center" nzWidth="100px">{{ 'common.empId' | translate:'Mã nhân viên' }}</th>
+        <th class="text-center" nzWidth="100px">{{ 'ebl.col.startDate' | translate:'Thời gian' }}</th>
+        <th nzWidth="140px">{{ 'ebl.col.decision' | translate:'Quyết định' }}</th>
+        <th nzWidth="140px">{{ 'ebl.col.reason' | translate:'Lý do' }}</th>
+        <th nzWidth="150px">{{ 'common.deptName' | translate:'Phòng ban' }}</th>
+        <th nzWidth="130px">{{ 'ebl.col.group' | translate:'Nhóm nhân viên' }}</th>
+        <th nzWidth="120px">{{ 'ebl.col.level' | translate:'Chức vụ' }}</th>
+        <th nzWidth="130px">{{ 'ebl.col.jobTitle' | translate:'Chức danh' }}</th>
+        <th nzWidth="120px">{{ 'ebl.col.empType' | translate:'Loại nhân viên' }}</th>
+        <th nzWidth="180px">{{ 'ebl.col.job' | translate:'Công việc' }}</th>
+        <th class="text-center" nzWidth="100px">{{ 'ebl.col.costCenter' | translate:'Mã chi phí' }}</th>
+        <th class="text-center" nzWidth="60px">{{ 'common.action' | translate:'Thao tác' }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngIf="!loading() && rows().length === 0">
+        <td colspan="16" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+      </tr>
+      <tr *ngFor="let row of rows(); let i = index">
+        <td class="text-center" nzLeft>{{ (pageIndex - 1) * pageSize + i + 1 }}</td>
+        <td class="text-center" nzLeft>
+          <label *ngIf="isRowSelectable(row)" nz-checkbox [ngModel]="isChecked(row.seq)"
+                 (ngModelChange)="toggleChecked(row.seq, $event)"></label>
+        </td>
+        <td class="text-center" nzLeft>
+          <span *ngIf="row.activity === '1'" class="badge bg-success">&#10003;</span>
+          <span *ngIf="row.activity !== '1'" class="badge bg-secondary">-</span>
+        </td>
+        <td nzLeft>{{ row.localName }}</td>
+        <td class="text-center">{{ row.empId }}</td>
+        <td class="text-center">{{ row.startDate }}</td>
+        <td>{{ row.transCodeName }}</td>
+        <td>{{ row.transReasonName }}</td>
+        <td>{{ row.deptName }}</td>
+        <td>{{ row.postFamilyName }}</td>
+        <td>{{ row.postGradeName }}</td>
+        <td>{{ row.positionNoName }}</td>
+        <td>{{ row.empTypeName }}</td>
+        <td>{{ row.mainBusinessName }}</td>
+        <td class="text-center">{{ row.costCenter }}</td>
+        <td class="text-center">
+          <button nz-button nzType="text" nzSize="small" (click)="openEditModal(row)" [title]="'common.action' | translate:'Sửa'">
+            <i class="bx bx-edit text-warning"></i>
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </nz-table>
+</nz-card>
+
+<!-- ════ Modal: Đăng ký ngày ════ -->
+<nz-modal [nzVisible]="registerModalVisible()" [nzTitle]="'ebl.modal.register.title' | translate:'Đăng ký ngày'"
+          nzWidth="380px" [nzOkLoading]="registerSaving()"
+          [nzOkText]="'common.save' | translate:'Lưu'" [nzCancelText]="'common.cancel' | translate:'Hủy'"
+          (nzOnCancel)="closeRegisterModal()" (nzOnOk)="saveRegister()">
+  <ng-container *nzModalContent>
+    <div class="mb-2">
+      <label class="form-label small fw-semibold text-danger">{{ 'ebl.modal.register.date' | translate:'Ngày đăng ký *' }}</label>
+      <nz-date-picker class="w-100" [(ngModel)]="regDatePicker" name="regDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
+    </div>
+    <div>
+      <label class="form-label small">{{ 'ebl.modal.register.remark' | translate:'Ghi chú' }}</label>
+      <textarea nz-input [(ngModel)]="regRemark" name="regRemark" rows="2" maxlength="2000"></textarea>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- ════ Modal: Chỉnh sửa dòng ════ -->
+<nz-modal [nzVisible]="editModalVisible()" [nzTitle]="'ebl.modal.edit.title' | translate:'Chỉnh sửa thông tin'"
+          nzWidth="700px" [nzOkLoading]="editSaving()" [nzOkText]="'common.save' | translate:'Lưu'"
+          [nzCancelText]="'common.cancel' | translate:'Hủy'"
+          (nzOnCancel)="closeEditModal()" (nzOnOk)="saveEdit()">
+  <ng-container *nzModalContent>
+    <div class="row g-2">
+      <div class="col-md-4">
+        <label class="form-label small mb-0">{{ 'common.empId' | translate:'Mã nhân viên' }}</label>
+        <input nz-input [ngModel]="editForm.empId" name="editEmpId" readonly>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label small mb-0">{{ 'common.empName' | translate:'Họ tên' }}</label>
+        <input nz-input [ngModel]="editForm.localName" name="editLocalName" readonly>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label small mb-0">{{ 'ebl.col.startDate' | translate:'Thời gian' }}</label>
+        <nz-date-picker class="w-100" [(ngModel)]="editForm.startDatePicker" name="editStartDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label small mb-0">{{ 'ebl.col.decision' | translate:'Quyết định' }}</label>
+        <nz-select class="w-100" [ngModel]="editForm.transCode" name="editTransCode"
+                   (ngModelChange)="onEditTransCodeChange($event)" nzAllowClear>
+          <nz-option *ngFor="let c of transCodeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label small mb-0">{{ 'ebl.col.reason' | translate:'Lý do' }}</label>
+        <nz-select class="w-100" [(ngModel)]="editForm.transReason" name="editTransReason" nzAllowClear>
+          <nz-option *ngFor="let c of transReasonOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label small mb-0">{{ 'common.deptName' | translate:'Phòng ban' }}</label>
+        <nz-tree-select class="w-100" [nzNodes]="deptNodes()" [(ngModel)]="editForm.deptno" name="editDeptno"
+                         nzShowSearch nzAllowClear
+                         [nzPlaceHolder]="'recruit.list.placeholder.selectDept' | translate:'-- Chọn phòng ban --'"></nz-tree-select>
+        <div *ngIf="deptTreeErrorMessage()" class="text-danger small mt-1">{{ deptTreeErrorMessage() }}</div>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label small mb-0">{{ 'ebl.col.group' | translate:'Nhóm nhân viên' }}</label>
+        <nz-select class="w-100" [ngModel]="editForm.postFamily" name="editPostFamily"
+                   (ngModelChange)="onEditPostFamilyChange($event)" nzAllowClear>
+          <nz-option *ngFor="let c of postFamilyOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label small mb-0">{{ 'ebl.col.level' | translate:'Chức vụ' }}</label>
+        <nz-select class="w-100" [(ngModel)]="editForm.newPostGradeNo" name="editNewPostGradeNo" nzAllowClear>
+          <nz-option *ngFor="let c of postGradeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label small mb-0">{{ 'ebl.col.jobTitle' | translate:'Chức danh' }}</label>
+        <nz-select class="w-100" [(ngModel)]="editForm.positionNo" name="editPositionNo" nzAllowClear>
+          <nz-option *ngFor="let c of positionOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label small mb-0">{{ 'ebl.col.empType' | translate:'Loại nhân viên' }}</label>
+        <nz-select class="w-100" [(ngModel)]="editForm.empTypeCode" name="editEmpTypeCode" nzAllowClear>
+          <nz-option *ngFor="let c of empTypeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label small mb-0">{{ 'ebl.col.job' | translate:'Công việc' }}</label>
+        <nz-select class="w-100" [(ngModel)]="editForm.mainBusiness" name="editMainBusiness" nzAllowClear>
+          <nz-option *ngFor="let c of mainBusinessOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label small mb-0">{{ 'ebl.col.costCenter' | translate:'Mã chi phí' }}</label>
+        <input nz-input [(ngModel)]="editForm.costCenter" name="editCostCenter">
+      </div>
+      <div class="col-12">
+        <label class="form-label small mb-0">{{ 'common.remark' | translate:'Ghi chú' }}</label>
+        <input nz-input [(ngModel)]="editForm.remarks" name="editRemarks" maxlength="200">
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>

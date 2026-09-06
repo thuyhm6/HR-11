@@ -1,0 +1,207 @@
+<div class="row">
+  <div class="col-12">
+    <!-- Điều kiện tìm kiếm - đứng im khi cuộn (xem .sticky-filter-card trong styles.css) -->
+    <nz-card class="mb-3 sticky-filter-card">
+      <form class="row g-3 align-items-end" (ngSubmit)="search()">
+        <div class="col-md-3">
+          <label class="form-label">{{ 'common.search.empIdOrName' | translate:'Mã nhân viên / Họ tên' }}</label>
+          <input nz-input [(ngModel)]="keyword" name="keyword"
+                 [placeholder]="'common.placeholder.enterEmpId' | translate:'Nhập mã hoặc họ tên'">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'common.fromDate' | translate:'Từ ngày' }}</label>
+          <nz-date-picker class="w-100" [(ngModel)]="fromDate" name="fromDate" nzFormat="yyyy-MM-dd"></nz-date-picker>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'common.toDate' | translate:'Đến ngày' }}</label>
+          <nz-date-picker class="w-100" [(ngModel)]="toDate" name="toDate" nzFormat="yyyy-MM-dd"></nz-date-picker>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'common.deptName' | translate:'Phòng ban' }}</label>
+          <nz-tree-select class="w-100" [nzNodes]="deptNodes()" [(ngModel)]="deptNos" name="deptNos"
+                           nzCheckable nzShowSearch nzAllowClear
+                           [nzPlaceHolder]="'common.select' | translate:'Chọn phòng ban'"></nz-tree-select>
+          <div *ngIf="deptTreeErrorMessage()" class="text-danger small mt-1">{{ deptTreeErrorMessage() }}</div>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'attSearch.shiftType' | translate:'Ca làm việc' }}</label>
+          <nz-select class="w-100" [(ngModel)]="shiftNo" name="shiftNo" nzAllowClear
+                     [nzPlaceHolder]="'attSearch.all' | translate:'-- Tất cả --'">
+            <nz-option *ngFor="let s of shiftOptions()" [nzValue]="s.shiftNo" [nzLabel]="s.nameVi || s.shiftNo"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-12 d-flex align-items-end gap-2 flex-wrap justify-content-end">
+          <button nz-button nzType="primary" type="submit">
+            <i class="bx bx-search"></i> {{ 'common.search' | translate:'Tra cứu' }}
+          </button>
+          <button nz-button type="button" (click)="clearSearch()">
+            <i class="bx bx-x"></i> {{ 'common.clearFilter' | translate:'Xóa lọc' }}
+          </button>
+          <button nz-button nzType="default" type="button" (click)="exportExcel()">
+            <i class="bx bx-export"></i> {{ 'common.exportExcel' | translate:'Xuất Excel' }}
+          </button>
+          <ng-container *ngIf="hrmMode">
+            <button nz-button nzType="primary" type="button" (click)="openAddModal()">
+              <i class="bx bx-plus"></i> {{ 'acr.btn.addRecord' | translate:'Thêm bản ghi' }}
+            </button>
+            <button nz-button nzDanger type="button" (click)="deleteSelected()">
+              <i class="bx bx-trash"></i> {{ 'acr.btn.deleteSelected' | translate:'Xóa đã chọn' }}
+            </button>
+            <button nz-button type="button" (click)="openImportModal()">
+              <i class="bx bx-id-card"></i> {{ 'acr.btn.importFromDevice' | translate:'Đọc dữ liệu quẹt thẻ' }}
+            </button>
+            <button nz-button type="button" (click)="downloadTemplate()">
+              <i class="bx bx-download"></i> {{ 'common.downloadTemplate' | translate:'Tải File Mẫu' }}
+            </button>
+            <button nz-button type="button" [nzLoading]="importingExcel()" (click)="excelFileInput.click()">
+              <i class="bx bx-upload"></i> {{ 'common.importExcel' | translate:'Import Excel' }}
+            </button>
+            <input #excelFileInput type="file" hidden accept=".xlsx,.xls" (change)="onExcelFileSelected($event)">
+          </ng-container>
+        </div>
+      </form>
+    </nz-card>
+
+    <nz-card>
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+      <nz-table [nzData]="rows()" [nzFrontPagination]="false" [nzLoading]="loading()"
+                [nzTotal]="recordsTotal()" [nzPageIndex]="pageIndex" [nzPageSize]="pageSize"
+                [nzPageSizeOptions]="pageSizeOptions" nzShowSizeChanger [nzShowTotal]="acrTotalTpl"
+                (nzPageIndexChange)="onPageIndexChange($event)" (nzPageSizeChange)="onPageSizeChange($event)"
+                [nzScroll]="{ x: '1400px', y: 'calc(100vh - 380px)' }"
+                class="table-nowrap">
+        <!-- nzWidth khai báo cho từng cột để đồng bộ độ rộng header/body khi dùng nzScroll (xem
+             giải thích ở dept-ot-apply-info.component.html). -->
+        <thead>
+          <tr>
+            <th class="text-center" nzWidth="60px">{{ 'common.stt' | translate:'STT' }}</th>
+            <th class="text-center" nzWidth="50px" *ngIf="hrmMode">
+              <label nz-checkbox [ngModel]="allSelectableChecked" (ngModelChange)="toggleAll($event)"></label>
+            </th>
+            <th class="text-center" nzWidth="100px">{{ 'common.empId' | translate:'Mã nhân viên' }}</th>
+            <th nzWidth="140px">{{ 'common.empName' | translate:'Họ tên' }}</th>
+            <th nzWidth="160px">{{ 'common.deptName' | translate:'Phòng ban' }}</th>
+            <th nzWidth="120px">{{ 'common.position' | translate:'Chức vụ' }}</th>
+            <th class="text-center" nzWidth="90px">{{ 'attSearch.shiftType' | translate:'Ca' }}</th>
+            <th class="text-center" nzWidth="100px">{{ 'attSearch.workDate' | translate:'Ngày công' }}</th>
+            <th class="text-center" nzWidth="150px">{{ 'acr.col.swipeTime' | translate:'Thời gian quẹt thẻ' }}</th>
+            <th class="text-center" nzWidth="80px">{{ 'acr.col.doorType' | translate:'Loại' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'acr.col.dataSource' | translate:'Nguồn dữ liệu' }}</th>
+            <th class="text-center" nzWidth="100px" *ngIf="hrmMode">{{ 'common.action' | translate:'Thao tác' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of rows(); let i = index">
+            <td class="text-center">{{ (pageIndex - 1) * pageSize + i + 1 }}</td>
+            <td class="text-center" *ngIf="hrmMode">
+              <label *ngIf="isRowSelectable(row)" nz-checkbox [ngModel]="isRowSelected(row.recordNo)"
+                     (ngModelChange)="toggleRow(row.recordNo, $event)"></label>
+            </td>
+            <td class="text-center" [attr.title]="row.empId || null">{{ row.empId }}</td>
+            <td [attr.title]="row.localName || null">{{ row.localName }}</td>
+            <td [attr.title]="row.deptName || null">{{ row.deptName }}</td>
+            <td [attr.title]="row.postGradeName || null">{{ row.postGradeName }}</td>
+            <td class="text-center">{{ row.shiftName }}</td>
+            <td class="text-center">{{ row.arDateStr }}</td>
+            <td class="text-center">{{ row.swipeTime }}</td>
+            <td class="text-center">{{ row.doorType }}</td>
+            <td class="text-center">{{ row.dataSourceName }}</td>
+            <td class="text-center" *ngIf="hrmMode">
+              <button nz-button nzType="text" nzSize="small" (click)="openEditModal(row)" [title]="'common.action' | translate:'Sửa'">
+                <i class="bx bx-edit text-warning"></i>
+              </button>
+              <button *ngIf="isRowSelectable(row)" nz-button nzType="text" nzSize="small" nzDanger
+                      (click)="deleteOne(row)" [title]="'common.action' | translate:'Xóa'">
+                <i class="bx bx-trash"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+        <ng-template #acrTotalTpl let-total>
+          {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+        </ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>
+
+<!-- ===== Modal Thêm/Sửa bản ghi quẹt thẻ ===== -->
+<nz-modal [nzVisible]="modalVisible()" [nzTitle]="(isEdit() ? 'acr.modal.editTitle' : 'acr.modal.addTitle') | translate:(isEdit() ? 'Chỉnh sửa bản ghi quẹt thẻ' : 'Thêm bản ghi quẹt thẻ')"
+          nzWidth="640px" (nzOnCancel)="closeModal()" [nzOkLoading]="saving()"
+          [nzOkText]="'common.save' | translate:'Lưu'" [nzCancelText]="'common.cancel' | translate:'Hủy'"
+          (nzOnOk)="saveRecord()">
+  <ng-container *nzModalContent>
+    <form class="acr-form">
+      <div class="acr-form-row">
+        <label>{{ 'acr.col.employee' | translate:'Nhân viên' }} <span class="acr-required">*</span></label>
+        <input nz-input [ngModel]="form.empKeyword" (ngModelChange)="onEmpKeywordChange($event)" name="empKeyword"
+               [nzAutocomplete]="empAuto" [placeholder]="'empSearch.placeholder.empId' | translate:'Nhập mã hoặc họ tên nhân viên...'">
+        <nz-autocomplete #empAuto>
+          <nz-auto-option *ngFor="let opt of form.empOptions" [nzValue]="opt" (click)="onEmpSelected(opt)">
+            {{ opt.empId }} - {{ opt.localName }} <small class="text-muted">({{ opt.deptName }})</small>
+          </nz-auto-option>
+        </nz-autocomplete>
+      </div>
+      <div class="acr-form-row-2">
+        <div class="acr-form-row">
+          <label>{{ 'attSearch.workDate' | translate:'Ngày công' }} <span class="acr-required">*</span></label>
+          <nz-date-picker class="w-100" [(ngModel)]="form.arDateStr" name="arDateStr" nzFormat="yyyy/MM/dd"></nz-date-picker>
+        </div>
+        <div class="acr-form-row">
+          <label>{{ 'acr.col.swipeTime' | translate:'Thời gian quẹt thẻ' }} <span class="acr-required">*</span></label>
+          <input nz-input [ngModel]="form.swipeDateTime" (input)="onSwipeDateTimeInput($event)" name="swipeDateTime"
+                 maxlength="16" placeholder="YYYY/MM/DD HH:MM">
+        </div>
+      </div>
+      <div class="acr-form-row-2">
+        <div class="acr-form-row">
+          <label>{{ 'acr.col.doorType' | translate:'Loại' }}</label>
+          <nz-select [(ngModel)]="form.doorType" name="doorType" [nzPlaceHolder]="'common.select' | translate:'Chọn'" [nzAllowClear]="true">
+            <nz-option nzValue="IN" [nzLabel]="'acr.doorType.in' | translate:'Vào'"></nz-option>
+            <nz-option nzValue="OUT" [nzLabel]="'acr.doorType.out' | translate:'Ra'"></nz-option>
+          </nz-select>
+        </div>
+        <div class="acr-form-row">
+          <label>{{ 'acr.col.remark' | translate:'Ghi chú' }}</label>
+          <input nz-input [(ngModel)]="form.remark" name="remark">
+        </div>
+      </div>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- ===== Modal Đọc dữ liệu quẹt thẻ từ máy chủ ===== -->
+<nz-modal [nzVisible]="impModalVisible()" [nzTitle]="'acr.imp.title' | translate:'Đọc dữ liệu quẹt thẻ từ máy chủ'"
+          nzWidth="480px" (nzOnCancel)="closeImportModal()" [nzOkLoading]="impRunning()"
+          [nzOkText]="'acr.imp.btnRun' | translate:'Thực hiện'" [nzCancelText]="'common.close' | translate:'Đóng'"
+          (nzOnOk)="runImport()">
+  <ng-container *nzModalContent>
+    <div class="acr-form-row-2">
+      <div class="acr-form-row">
+        <label>{{ 'common.fromDate' | translate:'Từ ngày' }}</label>
+        <nz-date-picker class="w-100" [(ngModel)]="impFromDate" name="impFromDate" nzFormat="yyyy-MM-dd"></nz-date-picker>
+      </div>
+      <div class="acr-form-row">
+        <label>{{ 'common.toDate' | translate:'Đến ngày' }}</label>
+        <nz-date-picker class="w-100" [(ngModel)]="impToDate" name="impToDate" nzFormat="yyyy-MM-dd"></nz-date-picker>
+      </div>
+    </div>
+
+    <div *ngIf="impRunning()" class="text-center mt-3">
+      <div class="spinner-border text-warning" role="status"></div>
+      <div class="mt-2 text-muted">{{ 'acr.imp.processing' | translate:'Đang kết nối và đọc dữ liệu...' }}</div>
+    </div>
+
+    <div *ngIf="!impRunning() && impResult() as res" class="mt-3">
+      <hr>
+      <nz-alert [nzType]="res.success ? 'success' : 'error'" [nzMessage]="res.message || ''" nzShowIcon></nz-alert>
+      <ul *ngIf="res.success" class="mt-2 mb-0">
+        <li>{{ 'acr.imp.result.total' | translate:'Tổng bản ghi từ máy chủ' }}: <strong>{{ res.total || 0 }}</strong></li>
+        <li>{{ 'acr.imp.result.imported' | translate:'Đã lưu mới' }}: <strong class="text-success">{{ res.imported || 0 }}</strong></li>
+        <li>{{ 'acr.imp.result.skipped' | translate:'Bỏ qua (trùng)' }}: <strong>{{ res.skipped || 0 }}</strong></li>
+        <li>{{ 'acr.imp.result.notFound' | translate:'Không tìm thấy nhân viên' }}: <strong class="text-warning">{{ res.notFound || 0 }}</strong></li>
+      </ul>
+    </div>
+  </ng-container>
+</nz-modal>

@@ -1,0 +1,151 @@
+<div class="row">
+  <div class="col-12">
+    <!-- Điều kiện tìm kiếm - đứng im khi cuộn (xem .sticky-filter-card trong styles.css) -->
+    <nz-card class="mb-3 sticky-filter-card">
+      <form class="row g-3" (ngSubmit)="search()">
+        <div class="col-md-4">
+          <label class="form-label">{{ 'common.search' | translate:'Tìm kiếm' }}</label>
+          <input nz-input [(ngModel)]="searchText" name="vspiSearchText"
+                 [placeholder]="'staParamItem.searchPlaceholder' | translate:'Nhập mã hạng mục / Tên hạng mục'">
+        </div>
+        <div class="col-md-8 d-flex align-items-end gap-2 flex-wrap">
+          <button nz-button nzType="primary" type="submit">
+            <i class="bx bx-search"></i> {{ 'common.search' | translate:'Tìm kiếm' }}
+          </button>
+          <button nz-button type="button" (click)="clearSearch()">
+            <i class="bx bx-x"></i> {{ 'common.clearFilter' | translate:'Xóa lọc' }}
+          </button>
+        </div>
+        <div class="col-12 d-flex gap-2 flex-wrap">
+          <button nz-button nzType="primary" type="button" (click)="openAddModal()">
+            <i class="bx bx-plus"></i> {{ 'common.addNew' | translate:'Thêm mới' }}
+          </button>
+          <button nz-button nzType="default" type="button" class="vspi-btn-export" (click)="exportExcel()">
+            <i class="bx bx-export"></i> {{ 'essDept.exportExcel' | translate:'Xuất excel' }}
+          </button>
+        </div>
+      </form>
+    </nz-card>
+
+    <nz-card>
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+      <!-- nzWidth khai báo cho từng cột để đồng bộ độ rộng header/body khi dùng nzScroll. -->
+      <nz-table [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="25" [nzShowSizeChanger]="true"
+                [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="vspiTotalTpl"
+                [nzScroll]="{ x: '1400px', y: 'calc(100vh - 420px)' }" #vspiTable>
+        <thead>
+          <tr>
+            <th class="text-center" nzWidth="60px">{{ 'common.stt' | translate:'STT' }}</th>
+            <th nzWidth="110px">{{ 'staParamItem.paramNo' | translate:'Param No' }}</th>
+            <th nzWidth="130px">{{ 'staParamItem.itemCode' | translate:'Mã hạng mục' }}</th>
+            <th nzWidth="180px">{{ 'staParamItem.itemName' | translate:'Tên hạng mục' }}</th>
+            <th nzWidth="100px">{{ 'ar.viewitemparameter.title.unit' | translate:'Đơn vị' }}</th>
+            <th class="text-center" nzWidth="130px">{{ 'staParamItem.minUnit' | translate:'Đơn vị tối thiểu' }}</th>
+            <th class="text-center" nzWidth="130px">{{ 'staParamItem.calOrder' | translate:'Thứ tự tính toán' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'staParamItem.manageFlag' | translate:'Cờ quản lý' }}</th>
+            <th class="text-center" nzWidth="90px">{{ 'common.sortOrder' | translate:'Sắp xếp' }}</th>
+            <th class="text-center" nzWidth="120px">{{ 'common.status' | translate:'Trạng thái' }}</th>
+            <th class="text-center" nzWidth="90px">{{ 'common.action' | translate:'Thao tác' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!loading() && rows().length === 0">
+            <td colspan="11" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+          </tr>
+          <tr *ngFor="let row of vspiTable.data; let i = index">
+            <td class="text-center">{{ i + 1 }}</td>
+            <td [attr.title]="row.paramNo || null">{{ row.paramNo }}</td>
+            <td [attr.title]="row.itemNo || null">{{ row.itemNo }}</td>
+            <td [attr.title]="row.itemNameVi || null">{{ row.itemNameVi }}</td>
+            <td [attr.title]="row.unit || null">{{ row.unit }}</td>
+            <td class="text-center">{{ row.minUnit }}</td>
+            <td class="text-center">{{ row.calOrder }}</td>
+            <td class="text-center">{{ row.manageFlag }}</td>
+            <td class="text-center">{{ row.orderno }}</td>
+            <td class="text-center">
+              <nz-tag [nzColor]="row.activity === 1 ? 'success' : 'default'">
+                {{ row.activity === 1 ? ('common.active' | translate:'Hoạt động') : ('common.inactive' | translate:'Ngừng') }}
+              </nz-tag>
+            </td>
+            <td class="text-center">
+              <button nz-button nzType="text" nzSize="small" [title]="'common.edit' | translate:'Sửa'" (click)="openEditModal(row)">
+                <i class="bx bx-edit text-warning"></i>
+              </button>
+              <button nz-button nzType="text" nzSize="small" [title]="'common.delete' | translate:'Xóa'" (click)="openDeleteConfirm(row)">
+                <i class="bx bx-trash text-danger"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+        <ng-template #vspiTotalTpl let-total>
+          {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+        </ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>
+
+<!-- Modal Thêm mới / Cập nhật -->
+<nz-modal [nzVisible]="modalVisible()" [nzTitle]="modalTitle()" nzWidth="700px"
+          (nzOnCancel)="closeModal()" (nzOnOk)="saveForm()" [nzOkLoading]="saving()"
+          [nzOkText]="'common.save' | translate:'Lưu dữ liệu'" [nzCancelText]="'common.close' | translate:'Đóng'">
+  <ng-container *nzModalContent>
+    <h6 class="mb-3 text-primary border-bottom pb-2">{{ 'staParamItem.itemInfoTitle' | translate:'Thông tin Hạng mục' }}</h6>
+    <div class="row g-3 mb-4">
+      <div class="col-md-12">
+        <label class="form-label fw-semibold">{{ 'staParamItem.selectItem' | translate:'Chọn Hạng mục (ITEM_NO)' }} <span class="text-danger">*</span></label>
+        <nz-select class="w-100" [(ngModel)]="form.itemNo" name="vspiFormItemNo" nzShowSearch [nzDisabled]="!isNew()"
+                   [nzPlaceHolder]="'staParamItem.selectItemPlaceholder' | translate:'-- Chọn hạng mục chưa có thông số --'">
+          <nz-option *ngFor="let opt of availableItems()" [nzValue]="opt.itemNo" [nzLabel]="itemLabel(opt)"></nz-option>
+        </nz-select>
+      </div>
+    </div>
+
+    <h6 class="mb-3 text-primary border-bottom pb-2">{{ 'staParamItem.configTitle' | translate:'Cấu hình thông số (Parameters)' }}</h6>
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'ar.viewitemparameter.title.unit' | translate:'Đơn vị (ngày, giờ, phút)' }}</label>
+        <nz-select class="w-100" [(ngModel)]="form.unit" name="vspiFormUnit">
+          <nz-option *ngFor="let u of unitOptions" [nzValue]="u.value" [nzLabel]="i18n.t(u.key, u.fallback)"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'staParamItem.minUnit' | translate:'Đơn vị tối thiểu (Min Unit)' }}</label>
+        <nz-select class="w-100" [(ngModel)]="form.minUnit" name="vspiFormMinUnit">
+          <nz-option *ngFor="let u of minUnitOptions" [nzValue]="u" [nzLabel]="u"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-md-6" *ngIf="!isNew()">
+        <label class="form-label fw-semibold">{{ 'staParamItem.calOrder' | translate:'Thứ tự tính toán (Cal Order)' }}</label>
+        <nz-input-number class="w-100" [(ngModel)]="form.calOrder" name="vspiFormCalOrder" [nzDisabled]="true"></nz-input-number>
+        <small class="text-muted">{{ 'staParamItem.calOrderHint' | translate:'Tự động tăng khi thêm mới' }}</small>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'staParamItem.manageFlag' | translate:'Cờ quản lý (Manage Flag)' }}</label>
+        <nz-input-number class="w-100" [(ngModel)]="form.manageFlag" name="vspiFormManageFlag"></nz-input-number>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'common.sortOrder' | translate:'Sắp xếp (Orderno)' }}</label>
+        <nz-input-number class="w-100" [(ngModel)]="form.orderno" name="vspiFormOrderno"></nz-input-number>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold d-block">{{ 'common.status' | translate:'Trạng thái' }}</label>
+        <nz-select class="w-100" [(ngModel)]="form.activity" name="vspiFormActivity">
+          <nz-option [nzValue]="1" [nzLabel]="'common.active' | translate:'Hoạt động'"></nz-option>
+          <nz-option [nzValue]="0" [nzLabel]="'common.inactive' | translate:'Ngừng'"></nz-option>
+        </nz-select>
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal xác nhận xóa -->
+<nz-modal [nzVisible]="deleteVisible()" [nzTitle]="'common.confirm' | translate:'Xác nhận'"
+          (nzOnCancel)="closeDeleteConfirm()" (nzOnOk)="confirmDelete()" [nzOkLoading]="deleting()"
+          [nzOkText]="'common.confirm' | translate:'Xác nhận'" [nzCancelText]="'common.cancel' | translate:'Hủy'">
+  <ng-container *nzModalContent>
+    <p class="mb-1">{{ 'staParamItem.confirmDelete' | translate:'Bạn có chắc chắn muốn xóa thông số này?' }}</p>
+    <p class="fw-bold mb-0">{{ deleteTargetName }}</p>
+  </ng-container>
+</nz-modal>

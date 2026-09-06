@@ -1,0 +1,35 @@
+.mep-row-clickable {
+  cursor: pointer;
+}
+.mep-row-clickable:hover {
+  background: #fafafa;
+}
+
+.mep-detail-photo-box {
+  width: 120px;
+  height: 150px;
+  flex: 0 0 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #f0f0f0;
+  border-radius: 4px;
+  overflow: hidden;
+  background: #fafafa;
+}
+.mep-detail-photo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.mep-detail-photo-fallback {
+  color: #999;
+  font-size: 12px;
+  text-align: center;
+  padding: 8px;
+}
+
+.btn-export {
+  color: #52c41a;
+  border-color: #52c41a;
+}

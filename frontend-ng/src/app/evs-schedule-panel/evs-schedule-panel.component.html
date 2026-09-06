@@ -1,0 +1,300 @@
+<div class="row">
+  <div class="col-12">
+    <!-- Điều kiện tìm kiếm -->
+    <nz-card class="mb-3 sticky-filter-card">
+      <form class="d-flex align-items-end gap-3 flex-wrap" (ngSubmit)="search()">
+        <div style="min-width:280px;">
+          <label class="form-label">{{ 'evs.manage.viewEvsSchedulePanel.search.evaluationName' | translate:'Tên đánh giá' }}</label>
+          <nz-select class="w-100" [(ngModel)]="resumeSeq" name="espResumeSeq"
+                     [nzPlaceHolder]="'evs.manage.viewEvsSchedulePanel.search.selectOption' | translate:'-- Chọn tên đánh giá --'">
+            <nz-option *ngFor="let r of resumeOptions()" [nzValue]="r.seq" [nzLabel]="r.resumeName"></nz-option>
+          </nz-select>
+        </div>
+        <button nz-button nzType="primary" type="submit">
+          <i class="bx bx-search"></i> {{ 'evs.manage.viewEvsSchedulePanel.btn.search' | translate:'Tra cứu' }}
+        </button>
+      </form>
+    </nz-card>
+
+    <nz-card>
+      <nz-tabs>
+        <!-- ── Tab Công ty ── -->
+        <nz-tab [nzTitle]="'evs.viewEvsSchedulePanel.GONGSIRICHENG.a' | translate:'Công ty'">
+          <div class="d-flex align-items-center justify-content-between mt-2 mb-2 flex-wrap gap-2">
+            <input nz-input style="width:200px;" [ngModel]="cpny.filterText()" (ngModelChange)="onFilterChange('CPNY', $event)"
+                   [placeholder]="'evs.manage.viewEvsSchedulePanel.filter.quickFilter' | translate:'Lọc nhanh'">
+            <div class="d-flex align-items-center gap-2">
+              <button nz-button nzType="primary" nzSize="small" type="button" (click)="addRow('CPNY')">
+                <i class="bx bx-plus"></i> {{ 'evs.manage.viewEvsSchedulePanel.btn.addNew' | translate:'Thêm mới' }}
+              </button>
+              <button nz-button nzDanger nzSize="small" type="button" (click)="openDeleteConfirm('CPNY')">
+                <i class="bx bx-trash"></i> {{ 'common.delete' | translate:'Xóa' }}
+              </button>
+              <button nz-button nzType="primary" nzSize="small" type="button" [nzLoading]="cpny.saving()" (click)="saveTab('CPNY')">
+                <i class="bx bx-save"></i> {{ 'common.save' | translate:'Lưu' }}
+              </button>
+            </div>
+          </div>
+
+          <nz-table [nzData]="cpny.filteredRows()" [nzLoading]="cpny.loading()" [nzPageSize]="10" [nzShowSizeChanger]="true"
+                    [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="espTotalTpl"
+                    [nzScroll]="{ x: '900px' }" #cpnyTable="nzTable">
+            <thead>
+              <tr>
+                <th class="text-center" nzWidth="40px">
+                  <label nz-checkbox [ngModel]="allCheckedOnPage('CPNY', cpnyTable.data)"
+                         [nzIndeterminate]="someCheckedOnPage('CPNY', cpnyTable.data)"
+                         (ngModelChange)="toggleAllOnPage('CPNY', cpnyTable.data, $event)"></label>
+                </th>
+                <th class="text-center" nzWidth="50px">{{ 'common.stt' | translate:'No.' }}</th>
+                <th nzWidth="220px">{{ 'evs.manage.viewEvsSchedulePanel.col.evsStep' | translate:'Giai đoạn thực hiện' }}</th>
+                <th class="text-center" nzWidth="130px">{{ 'evs.manage.viewEvsSchedulePanel.col.startDate' | translate:'Ngày bắt đầu' }}</th>
+                <th class="text-center" nzWidth="130px">{{ 'evs.manage.viewEvsSchedulePanel.col.endDate' | translate:'Ngày kết thúc' }}</th>
+                <th class="text-center" nzWidth="80px">{{ 'evs.manage.viewEvsSchedulePanel.col.active' | translate:'Sử dụng' }}</th>
+                <th nzWidth="220px">{{ 'evs.manage.viewEvsSchedulePanel.col.updatedBy' | translate:'Người thay đổi' }}</th>
+                <th class="text-center" nzWidth="120px">{{ 'evs.manage.viewEvsSchedulePanel.col.updateDate' | translate:'Thời gian thay đổi' }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngIf="!cpny.loading() && cpnyTable.data.length === 0">
+                <td colspan="8" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+              </tr>
+              <tr *ngFor="let row of cpnyTable.data; let i = index"
+                  [class.esp-row-edit]="row.editing" [class.esp-row-new]="row.isNew" (click)="rowClick('CPNY', row)">
+                <td class="text-center" (click)="$event.stopPropagation()">
+                  <label nz-checkbox [ngModel]="isChecked('CPNY', row)" (ngModelChange)="toggleChecked('CPNY', row, $event)"></label>
+                </td>
+                <td class="text-center">{{ i + 1 }}</td>
+                <td (click)="$event.stopPropagation()">
+                  <nz-select *ngIf="row.editing; else cpnyStepView" class="w-100" [(ngModel)]="row.evsStep"
+                             (ngModelChange)="onEvsStepChange(row, $event)"
+                             [nzPlaceHolder]="'common.select' | translate:'-- Chọn --'">
+                    <nz-option *ngFor="let o of evsStepOptions()" [nzValue]="o.codeNo" [nzLabel]="o.codeName"></nz-option>
+                  </nz-select>
+                  <ng-template #cpnyStepView>{{ evsStepLabel(row) }}</ng-template>
+                </td>
+                <td class="text-center" (click)="$event.stopPropagation()">
+                  <nz-date-picker *ngIf="row.editing; else cpnyStartView" [(ngModel)]="row.startDateObj" nzFormat="dd/MM/yyyy"></nz-date-picker>
+                  <ng-template #cpnyStartView>{{ toDmy(row.startDate) }}</ng-template>
+                </td>
+                <td class="text-center" (click)="$event.stopPropagation()">
+                  <nz-date-picker *ngIf="row.editing; else cpnyEndView" [(ngModel)]="row.endDateObj" nzFormat="dd/MM/yyyy"></nz-date-picker>
+                  <ng-template #cpnyEndView>{{ toDmy(row.endDate) }}</ng-template>
+                </td>
+                <td class="text-center" (click)="$event.stopPropagation()">
+                  <label nz-checkbox [ngModel]="isActive(row)" [nzDisabled]="!row.editing" (ngModelChange)="setActive(row, $event)"></label>
+                </td>
+                <td class="small">{{ row.updatedBy }}</td>
+                <td class="text-center small">{{ toDmy(row.updateDate) }}</td>
+              </tr>
+            </tbody>
+          </nz-table>
+        </nz-tab>
+
+        <!-- ── Tab Phòng ban ── -->
+        <nz-tab [nzTitle]="'evs.viewEvsSchedulePanel.BUMENRICHENG.a' | translate:'Phòng ban'">
+          <div class="d-flex align-items-center justify-content-between mt-2 mb-2 flex-wrap gap-2">
+            <input nz-input style="width:200px;" [ngModel]="dept.filterText()" (ngModelChange)="onFilterChange('DEPT', $event)"
+                   [placeholder]="'evs.manage.viewEvsSchedulePanel.filter.quickFilter' | translate:'Lọc nhanh'">
+            <div class="d-flex align-items-center gap-2">
+              <button nz-button nzType="primary" nzSize="small" type="button" (click)="addRow('DEPT')">
+                <i class="bx bx-plus"></i> {{ 'evs.manage.viewEvsSchedulePanel.btn.addNew' | translate:'Thêm mới' }}
+              </button>
+              <button nz-button nzDanger nzSize="small" type="button" (click)="openDeleteConfirm('DEPT')">
+                <i class="bx bx-trash"></i> {{ 'common.delete' | translate:'Xóa' }}
+              </button>
+              <button nz-button nzType="primary" nzSize="small" type="button" [nzLoading]="dept.saving()" (click)="saveTab('DEPT')">
+                <i class="bx bx-save"></i> {{ 'common.save' | translate:'Lưu' }}
+              </button>
+            </div>
+          </div>
+
+          <nz-table [nzData]="dept.filteredRows()" [nzLoading]="dept.loading()" [nzPageSize]="10" [nzShowSizeChanger]="true"
+                    [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="espTotalTpl"
+                    [nzScroll]="{ x: '1150px' }" #deptTable="nzTable">
+            <thead>
+              <tr>
+                <th class="text-center" nzWidth="40px">
+                  <label nz-checkbox [ngModel]="allCheckedOnPage('DEPT', deptTable.data)"
+                         [nzIndeterminate]="someCheckedOnPage('DEPT', deptTable.data)"
+                         (ngModelChange)="toggleAllOnPage('DEPT', deptTable.data, $event)"></label>
+                </th>
+                <th class="text-center" nzWidth="50px">{{ 'common.stt' | translate:'No.' }}</th>
+                <th nzWidth="200px">{{ 'evs.manage.viewEvsSchedulePanel.col.evsStep' | translate:'Giai đoạn thực hiện' }}</th>
+                <th class="text-center" nzWidth="110px">{{ 'evs.manage.viewEvsSchedulePanel.col.deptNo' | translate:'Mã phòng ban' }}</th>
+                <th nzWidth="170px">{{ 'evs.manage.viewEvsSchedulePanel.col.deptName' | translate:'Tên phòng ban' }}</th>
+                <th class="text-center" nzWidth="120px">{{ 'evs.manage.viewEvsSchedulePanel.col.deptType' | translate:'Loại phòng ban' }}</th>
+                <th class="text-center" nzWidth="130px">{{ 'evs.manage.viewEvsSchedulePanel.col.startDate' | translate:'Ngày bắt đầu' }}</th>
+                <th class="text-center" nzWidth="130px">{{ 'evs.manage.viewEvsSchedulePanel.col.endDate' | translate:'Ngày kết thúc' }}</th>
+                <th class="text-center" nzWidth="80px">{{ 'evs.manage.viewEvsSchedulePanel.col.active' | translate:'Sử dụng' }}</th>
+                <th nzWidth="200px">{{ 'evs.manage.viewEvsSchedulePanel.col.updatedBy' | translate:'Người thay đổi' }}</th>
+                <th class="text-center" nzWidth="120px">{{ 'evs.manage.viewEvsSchedulePanel.col.updateDate' | translate:'Thời gian thay đổi' }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngIf="!dept.loading() && deptTable.data.length === 0">
+                <td colspan="10" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+              </tr>
+              <tr *ngFor="let row of deptTable.data; let i = index"
+                  [class.esp-row-edit]="row.editing" [class.esp-row-new]="row.isNew" (click)="rowClick('DEPT', row)">
+                <td class="text-center" (click)="$event.stopPropagation()">
+                  <label nz-checkbox [ngModel]="isChecked('DEPT', row)" (ngModelChange)="toggleChecked('DEPT', row, $event)"></label>
+                </td>
+                <td class="text-center">{{ i + 1 }}</td>
+                <td (click)="$event.stopPropagation()">
+                  <nz-select *ngIf="row.editing; else deptStepView" class="w-100" [(ngModel)]="row.evsStep"
+                             (ngModelChange)="onEvsStepChange(row, $event)"
+                             [nzPlaceHolder]="'common.select' | translate:'-- Chọn --'">
+                    <nz-option *ngFor="let o of evsStepOptions()" [nzValue]="o.codeNo" [nzLabel]="o.codeName"></nz-option>
+                  </nz-select>
+                  <ng-template #deptStepView>{{ evsStepLabel(row) }}</ng-template>
+                </td>
+                <td class="text-center" (click)="$event.stopPropagation()">
+                  <input *ngIf="row.editing; else deptNoView" nz-input [(ngModel)]="row.deptNo" maxlength="20">
+                  <ng-template #deptNoView>{{ row.deptNo }}</ng-template>
+                </td>
+                <td (click)="$event.stopPropagation()">
+                  <input *ngIf="row.editing; else deptNameView" nz-input [(ngModel)]="row.deptName" maxlength="60">
+                  <ng-template #deptNameView>{{ row.deptName }}</ng-template>
+                </td>
+                <td class="text-center" (click)="$event.stopPropagation()">
+                  <input *ngIf="row.editing; else deptTypeView" nz-input [(ngModel)]="row.deptType" maxlength="20">
+                  <ng-template #deptTypeView>{{ row.deptType }}</ng-template>
+                </td>
+                <td class="text-center" (click)="$event.stopPropagation()">
+                  <nz-date-picker *ngIf="row.editing; else deptStartView" [(ngModel)]="row.startDateObj" nzFormat="dd/MM/yyyy"></nz-date-picker>
+                  <ng-template #deptStartView>{{ toDmy(row.startDate) }}</ng-template>
+                </td>
+                <td class="text-center" (click)="$event.stopPropagation()">
+                  <nz-date-picker *ngIf="row.editing; else deptEndView" [(ngModel)]="row.endDateObj" nzFormat="dd/MM/yyyy"></nz-date-picker>
+                  <ng-template #deptEndView>{{ toDmy(row.endDate) }}</ng-template>
+                </td>
+                <td class="text-center" (click)="$event.stopPropagation()">
+                  <label nz-checkbox [ngModel]="isActive(row)" [nzDisabled]="!row.editing" (ngModelChange)="setActive(row, $event)"></label>
+                </td>
+                <td class="small">{{ row.updatedBy }}</td>
+                <td class="text-center small">{{ toDmy(row.updateDate) }}</td>
+              </tr>
+            </tbody>
+          </nz-table>
+        </nz-tab>
+
+        <!-- ── Tab Cá nhân ── -->
+        <nz-tab [nzTitle]="'evs.viewEvsSchedulePanel.GERENRICHENG.a' | translate:'Cá nhân'">
+          <div class="d-flex align-items-center justify-content-between mt-2 mb-2 flex-wrap gap-2">
+            <input nz-input style="width:200px;" [ngModel]="emp.filterText()" (ngModelChange)="onFilterChange('EMP', $event)"
+                   [placeholder]="'evs.manage.viewEvsSchedulePanel.filter.quickFilter' | translate:'Lọc nhanh'">
+            <div class="d-flex align-items-center gap-2">
+              <button nz-button nzType="primary" nzSize="small" type="button" (click)="addRow('EMP')">
+                <i class="bx bx-plus"></i> {{ 'evs.manage.viewEvsSchedulePanel.btn.addNew' | translate:'Thêm mới' }}
+              </button>
+              <button nz-button nzDanger nzSize="small" type="button" (click)="openDeleteConfirm('EMP')">
+                <i class="bx bx-trash"></i> {{ 'common.delete' | translate:'Xóa' }}
+              </button>
+              <button nz-button nzType="primary" nzSize="small" type="button" [nzLoading]="emp.saving()" (click)="saveTab('EMP')">
+                <i class="bx bx-save"></i> {{ 'common.save' | translate:'Lưu' }}
+              </button>
+            </div>
+          </div>
+
+          <nz-table [nzData]="emp.filteredRows()" [nzLoading]="emp.loading()" [nzPageSize]="10" [nzShowSizeChanger]="true"
+                    [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="espTotalTpl"
+                    [nzScroll]="{ x: '1400px' }" #empTable="nzTable">
+            <thead>
+              <tr>
+                <th class="text-center" nzWidth="40px">
+                  <label nz-checkbox [ngModel]="allCheckedOnPage('EMP', empTable.data)"
+                         [nzIndeterminate]="someCheckedOnPage('EMP', empTable.data)"
+                         (ngModelChange)="toggleAllOnPage('EMP', empTable.data, $event)"></label>
+                </th>
+                <th class="text-center" nzWidth="50px">{{ 'common.stt' | translate:'No.' }}</th>
+                <th nzWidth="200px">{{ 'evs.manage.viewEvsSchedulePanel.col.evsStep' | translate:'Giai đoạn thực hiện' }}</th>
+                <th class="text-center" nzWidth="110px">{{ 'evs.manage.viewEvsSchedulePanel.col.deptNo' | translate:'Mã phòng ban' }}</th>
+                <th nzWidth="150px">{{ 'evs.manage.viewEvsSchedulePanel.col.deptName' | translate:'Tên phòng ban' }}</th>
+                <th class="text-center" nzWidth="110px">{{ 'evs.manage.viewEvsSchedulePanel.col.postGradeNo' | translate:'Mã chức danh' }}</th>
+                <th nzWidth="150px">{{ 'evs.manage.viewEvsSchedulePanel.col.postGradeName' | translate:'Tên chức danh' }}</th>
+                <th class="text-center" nzWidth="120px">{{ 'evs.manage.viewEvsSchedulePanel.col.personId' | translate:'Mã cá nhân' }}</th>
+                <th class="text-center" nzWidth="130px">{{ 'evs.manage.viewEvsSchedulePanel.col.startDate' | translate:'Ngày bắt đầu' }}</th>
+                <th class="text-center" nzWidth="130px">{{ 'evs.manage.viewEvsSchedulePanel.col.endDate' | translate:'Ngày kết thúc' }}</th>
+                <th class="text-center" nzWidth="80px">{{ 'evs.manage.viewEvsSchedulePanel.col.active' | translate:'Sử dụng' }}</th>
+                <th nzWidth="200px">{{ 'evs.manage.viewEvsSchedulePanel.col.updatedBy' | translate:'Người thay đổi' }}</th>
+                <th class="text-center" nzWidth="120px">{{ 'evs.manage.viewEvsSchedulePanel.col.updateDate' | translate:'Thời gian thay đổi' }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngIf="!emp.loading() && empTable.data.length === 0">
+                <td colspan="12" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+              </tr>
+              <tr *ngFor="let row of empTable.data; let i = index"
+                  [class.esp-row-edit]="row.editing" [class.esp-row-new]="row.isNew" (click)="rowClick('EMP', row)">
+                <td class="text-center" (click)="$event.stopPropagation()">
+                  <label nz-checkbox [ngModel]="isChecked('EMP', row)" (ngModelChange)="toggleChecked('EMP', row, $event)"></label>
+                </td>
+                <td class="text-center">{{ i + 1 }}</td>
+                <td (click)="$event.stopPropagation()">
+                  <nz-select *ngIf="row.editing; else empStepView" class="w-100" [(ngModel)]="row.evsStep"
+                             (ngModelChange)="onEvsStepChange(row, $event)"
+                             [nzPlaceHolder]="'common.select' | translate:'-- Chọn --'">
+                    <nz-option *ngFor="let o of evsStepOptions()" [nzValue]="o.codeNo" [nzLabel]="o.codeName"></nz-option>
+                  </nz-select>
+                  <ng-template #empStepView>{{ evsStepLabel(row) }}</ng-template>
+                </td>
+                <td class="text-center" (click)="$event.stopPropagation()">
+                  <input *ngIf="row.editing; else empDeptNoView" nz-input [(ngModel)]="row.deptNo" maxlength="20">
+                  <ng-template #empDeptNoView>{{ row.deptNo }}</ng-template>
+                </td>
+                <td (click)="$event.stopPropagation()">
+                  <input *ngIf="row.editing; else empDeptNameView" nz-input [(ngModel)]="row.deptName" maxlength="60">
+                  <ng-template #empDeptNameView>{{ row.deptName }}</ng-template>
+                </td>
+                <td class="text-center" (click)="$event.stopPropagation()">
+                  <input *ngIf="row.editing; else postGradeNoView" nz-input [(ngModel)]="row.postGradeNo" maxlength="20">
+                  <ng-template #postGradeNoView>{{ row.postGradeNo }}</ng-template>
+                </td>
+                <td (click)="$event.stopPropagation()">
+                  <input *ngIf="row.editing; else postGradeNameView" nz-input [(ngModel)]="row.postGradeName" maxlength="60">
+                  <ng-template #postGradeNameView>{{ row.postGradeName }}</ng-template>
+                </td>
+                <td class="text-center" (click)="$event.stopPropagation()">
+                  <input *ngIf="row.editing; else personIdView" nz-input [(ngModel)]="row.personId" maxlength="20">
+                  <ng-template #personIdView>{{ row.personId }}</ng-template>
+                </td>
+                <td class="text-center" (click)="$event.stopPropagation()">
+                  <nz-date-picker *ngIf="row.editing; else empStartView" [(ngModel)]="row.startDateObj" nzFormat="dd/MM/yyyy"></nz-date-picker>
+                  <ng-template #empStartView>{{ toDmy(row.startDate) }}</ng-template>
+                </td>
+                <td class="text-center" (click)="$event.stopPropagation()">
+                  <nz-date-picker *ngIf="row.editing; else empEndView" [(ngModel)]="row.endDateObj" nzFormat="dd/MM/yyyy"></nz-date-picker>
+                  <ng-template #empEndView>{{ toDmy(row.endDate) }}</ng-template>
+                </td>
+                <td class="text-center" (click)="$event.stopPropagation()">
+                  <label nz-checkbox [ngModel]="isActive(row)" [nzDisabled]="!row.editing" (ngModelChange)="setActive(row, $event)"></label>
+                </td>
+                <td class="small">{{ row.updatedBy }}</td>
+                <td class="text-center small">{{ toDmy(row.updateDate) }}</td>
+              </tr>
+            </tbody>
+          </nz-table>
+        </nz-tab>
+      </nz-tabs>
+    </nz-card>
+  </div>
+</div>
+
+<ng-template #espTotalTpl let-total>
+  {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+</ng-template>
+
+<!-- Modal xác nhận xóa -->
+<nz-modal [nzVisible]="deleteVisible()" [nzTitle]="'evs.manage.viewEvsSchedulePanel.modal.deleteTitle' | translate:'Xác nhận xóa'"
+          (nzOnCancel)="closeDeleteConfirm()" (nzOnOk)="confirmDelete()" [nzOkLoading]="deleting()"
+          [nzOkText]="'common.delete' | translate:'Xóa'" nzOkDanger
+          [nzCancelText]="'common.cancel' | translate:'Hủy'">
+  <ng-container *nzModalContent>
+    <p class="mb-0">
+      {{ 'evs.manage.viewEvsSchedulePanel.modal.deletePrefix' | translate:'Bạn có chắc muốn xóa' }}
+      <strong>{{ pendingDeleteCount }}</strong>
+      {{ 'evs.manage.viewEvsSchedulePanel.modal.deleteSuffix' | translate:'dòng đã chọn?' }}
+    </p>
+  </ng-container>
+</nz-modal>

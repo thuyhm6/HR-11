@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -27,20 +26,6 @@ public class OrgComposeController {
 
     @Autowired
     private OrgStructureService orgStructureService;
-
-    @GetMapping("/orgManage/viewComposeOrg")
-    public String viewComposeOrg(Model model, HttpSession session) {
-        HrUserInfo currentHrUser = getAuthenticatedUser(session);
-        model.addAttribute("currentHrUser", currentHrUser);
-        return "org/orgManage/viewComposeOrg";
-    }
-
-    @GetMapping("/orgManage/viewHistoryOrgInfo")
-    public String viewHistoryOrgInfo(Model model, HttpSession session) {
-        HrUserInfo currentHrUser = getAuthenticatedUser(session);
-        model.addAttribute("currentHrUser", currentHrUser);
-        return "org/orgManage/viewHistoryOrgInfo";
-    }
 
     @GetMapping("/api/compose/structure")
     @ResponseBody
@@ -128,14 +113,6 @@ public class OrgComposeController {
             log.error("Failed to transfer employees payload={}", payload, e);
             return ResponseEntity.status(500).body(Map.of("error", "Loi he thong khi dieu chuyen nhan vien."));
         }
-    }
-
-    @GetMapping("/orgManage/viewDeptManagerCheck")
-    public String viewDeptManagerCheck(Model model, HttpSession session) {
-        HrUserInfo currentHrUser = getAuthenticatedUser(session);
-        model.addAttribute("currentHrUser", currentHrUser);
-        model.addAttribute("title", "Kiểm tra trưởng bộ phận");
-        return "org/orgManage/viewDeptManagerCheck";
     }
 
     @GetMapping("/api/compose/manager-check")

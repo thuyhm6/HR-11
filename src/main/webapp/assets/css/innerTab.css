@@ -275,6 +275,36 @@
   box-sizing: border-box;
 }
 
+/* DataTables scrollX/scrollY tách header và dữ liệu thành 2 bảng <table> độc lập
+   (.dataTables_scrollHead và .dataTables_scrollBody), rồi tự gán width cố định (px)
+   cho từng bảng để đồng bộ số cột. .dataTables_scrollHead có overflow:hidden còn
+   .dataTables_scrollBody có overflow:auto (bị thanh cuộn dọc chiếm mất vài px), nên
+   "100%" của 2 khối này KHÔNG bằng nhau về px thực tế. Quy tắc max-width:100% ở trên
+   (áp cho mọi phần tử con trong tab) vô tình kẹp lại width mà DataTables đã tính, khiến
+   header và dữ liệu bị kẹp về 2 giá trị khác nhau -> lệch cột, càng về bên phải càng lệch.
+   Loại trừ toàn bộ phần tử bên trong 2 khối scroll này khỏi max-width:100% để DataTables
+   tự quản lý width đúng như đã tính toán. */
+.tab-content-area .dataTables_scrollHead,
+.tab-content-area .dataTables_scrollHead *,
+.tab-content-area .dataTables_scrollBody,
+.tab-content-area .dataTables_scrollBody *,
+.tab-content-area .dataTables_scrollFoot,
+.tab-content-area .dataTables_scrollFoot *,
+.tab-pane .dataTables_scrollHead,
+.tab-pane .dataTables_scrollHead *,
+.tab-pane .dataTables_scrollBody,
+.tab-pane .dataTables_scrollBody *,
+.tab-pane .dataTables_scrollFoot,
+.tab-pane .dataTables_scrollFoot *,
+#default-content .dataTables_scrollHead,
+#default-content .dataTables_scrollHead *,
+#default-content .dataTables_scrollBody,
+#default-content .dataTables_scrollBody *,
+#default-content .dataTables_scrollFoot,
+#default-content .dataTables_scrollFoot * {
+  max-width: none;
+}
+
 /* Ensure body has proper scrolling */
 body {
   overflow-x: hidden;

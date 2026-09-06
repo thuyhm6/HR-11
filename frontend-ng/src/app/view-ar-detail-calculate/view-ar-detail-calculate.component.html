@@ -1,0 +1,114 @@
+<div class="row justify-content-center">
+  <div class="col-xl-8 col-lg-10">
+    <nz-card [nzTitle]="'arCalc.title' | translate:'Tính toán chi tiết'">
+      <form class="row g-3" (ngSubmit)="runCalculate()">
+        <div class="col-12">
+          <label class="form-label d-block">{{ 'arCalc.calType' | translate:'Phân loại tính toán' }}</label>
+          <nz-radio-group id="adc-caltype" [(ngModel)]="caltype" name="caltype" (ngModelChange)="onCaltypeChange()">
+            <label nz-radio nzValue="EMP">{{ 'arCalc.byEmployee' | translate:'Nhân viên' }}</label>
+            <label nz-radio nzValue="DEPT">{{ 'arCalc.byDept' | translate:'Phòng ban' }}</label>
+          </nz-radio-group>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">{{ 'common.fromDate' | translate:'Từ ngày' }}</label>
+          <nz-date-picker class="w-100" id="adc-fromDate" [(ngModel)]="fromDate" name="fromDate" nzFormat="yyyy-MM-dd"></nz-date-picker>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">{{ 'common.toDate' | translate:'Đến ngày' }}</label>
+          <nz-date-picker class="w-100" id="adc-toDate" [(ngModel)]="toDate" name="toDate" nzFormat="yyyy-MM-dd"></nz-date-picker>
+        </div>
+
+        <div class="col-12" *ngIf="caltype === 'EMP'">
+          <label class="form-label">{{ 'arCalc.byEmployee' | translate:'Nhân viên' }}</label>
+          <div class="adc-picker-input">
+            <input nz-input id="adc-personDisplay" [ngModel]="personDisplay" name="personDisplay"
+                   [placeholder]="'arCalc.selectEmployee' | translate:'Chọn nhân viên...'" readonly
+                   (click)="openPicker()">
+            <button nz-button type="button" (click)="openPicker()">
+              <i class="bx bx-search"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="col-12" *ngIf="caltype === 'DEPT'">
+          <label class="form-label">{{ 'arCalc.byDept' | translate:'Phòng ban' }}</label>
+          <nz-tree-select class="w-100 mb-2" id="adc-deptId" [nzNodes]="deptNodes()" [(ngModel)]="deptId" name="deptId"
+                           nzShowSearch nzAllowClear
+                           [nzPlaceHolder]="'arCalc.selectDept' | translate:'Chọn phòng ban'"></nz-tree-select>
+          <div *ngIf="deptTreeErrorMessage()" class="text-danger small mb-2">{{ deptTreeErrorMessage() }}</div>
+          <label nz-checkbox id="adc-sonDeptFlag" [(ngModel)]="sonDeptFlag" name="sonDeptFlag">
+            {{ 'arCalc.includeSubDept' | translate:'Bao gồm phòng ban con' }}
+          </label>
+        </div>
+
+        <div class="col-12 d-flex justify-content-end">
+          <button nz-button nzType="primary" type="submit" id="adc-btn-calculate" [nzLoading]="calculating()">
+            <i class="bx bx-calculator"></i>
+            {{ (calculating() ? 'arCalc.calculating' : 'arCalc.btnCalculate') | translate:(calculating() ? 'Đang tính toán' : 'Tính toán') }}
+          </button>
+        </div>
+      </form>
+    </nz-card>
+  </div>
+</div>
+
+<!-- Modal tìm kiếm nhân viên - thay cho fragment employeeSearchModal.html (jQuery + DataTables), tái
+     dùng đúng pattern của ChangeUserComponent/AddEmpShiftComponent. -->
+<nz-modal [nzVisible]="pickerVisible()" [nzTitle]="'empSearch.title' | translate:'Tìm kiếm nhân viên'"
+          nzWidth="900px" (nzOnCancel)="closePicker()" [nzFooter]="null">
+  <ng-container *nzModalContent>
+    <form class="row g-2 align-items-end mb-3" (ngSubmit)="pickerSearch()">
+      <div class="col-md-5">
+        <label class="form-label">{{ 'empSearch.field.keyword' | translate:'Mã nhân viên / Họ tên' }}</label>
+        <input nz-input [(ngModel)]="pickerKeyword" name="pickerKeyword"
+               [placeholder]="'empSearch.placeholder.keyword' | translate:'Nhập mã hoặc họ tên'"
+               (keydown.enter)="$event.preventDefault(); pickerSearch()">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">{{ 'empSearch.field.dept' | translate:'Phòng ban' }}</label>
+        <nz-tree-select class="w-100" [nzNodes]="deptNodes()" [(ngModel)]="pickerDeptNos" name="pickerDeptNos"
+                         nzCheckable nzShowSearch nzAllowClear
+                         [nzPlaceHolder]="'vdp.search.dept.placeholder' | translate:'Chọn phòng ban'"></nz-tree-select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">{{ 'empSearch.field.empOffice' | translate:'Trạng thái làm việc' }}</label>
+        <nz-select class="w-100" [(ngModel)]="pickerEmpOffice" name="pickerEmpOffice" nzAllowClear
+                   [nzPlaceHolder]="'common.selectAll' | translate:'-- Tất cả --'">
+          <nz-option *ngFor="let c of empOfficeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-12 d-flex gap-2">
+        <button nz-button nzType="primary" type="submit">
+          <i class="bx bx-search"></i> {{ 'common.search' | translate:'Tìm kiếm' }}
+        </button>
+        <button nz-button type="button" (click)="pickerClear()">
+          <i class="bx bx-x"></i> {{ 'empSearch.btn.clearFilter' | translate:'Xóa bộ lọc' }}
+        </button>
+      </div>
+    </form>
+
+    <nz-alert *ngIf="pickerErrorMessage()" nzType="error" [nzMessage]="pickerErrorMessage() ?? ''" class="mb-2"></nz-alert>
+
+    <nz-table [nzData]="pickerRows()" [nzLoading]="pickerLoading()" [nzPageSize]="10" nzSize="small" #adcTable>
+      <thead>
+        <tr>
+          <th class="text-center" nzWidth="60px">{{ 'empSearch.col.no' | translate:'STT' }}</th>
+          <th nzWidth="110px">{{ 'common.empId' | translate:'Mã nhân viên' }}</th>
+          <th>{{ 'common.empName' | translate:'Họ tên' }}</th>
+          <th>{{ 'common.deptName' | translate:'Phòng ban' }}</th>
+          <th>{{ 'epi.field.position' | translate:'Chức vụ' }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of adcTable.data; let i = index" class="adc-row-clickable" (click)="selectEmployee(row)">
+          <td class="text-center">{{ i + 1 }}</td>
+          <td>{{ row.empId }}</td>
+          <td>{{ row.localName }}</td>
+          <td>{{ row.deptName || row.deptNo }}</td>
+          <td>{{ row.position }}</td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </ng-container>
+</nz-modal>

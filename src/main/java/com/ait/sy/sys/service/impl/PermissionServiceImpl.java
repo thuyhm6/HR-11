@@ -63,6 +63,16 @@ public class PermissionServiceImpl implements PermissionService {
     }
 
     @Override
+    public boolean hasRoleGroupWithSysType(String userNo, Integer sysType) {
+        if (userNo == null || userNo.trim().isEmpty() || sysType == null) {
+            return false;
+        }
+
+        List<SyRoleGroup> roleGroups = getUserRoleGroups(userNo);
+        return roleGroups.stream().anyMatch(roleGroup -> sysType.equals(roleGroup.getSysType()));
+    }
+
+    @Override
     @Cacheable(value = "userPermissions", key = "#userNo + '_roles'")
     public List<SyRole> getUserRoles(String userNo) {
         try {

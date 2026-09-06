@@ -1,0 +1,266 @@
+<div class="row">
+  <div class="col-12">
+    <!-- Điều kiện tìm kiếm - đứng im khi cuộn (xem .sticky-filter-card trong styles.css) -->
+    <nz-card class="mb-3 sticky-filter-card">
+      <form class="row g-3" (ngSubmit)="search()">
+        <div class="col-md-3">
+          <label class="form-label">{{ 'pa.empAccount.empSearch' | translate:'Mã nhân viên / Họ tên' }}</label>
+          <input nz-input [(ngModel)]="empSearch" name="vpeaEmpSearch"
+                 [placeholder]="'pa.empAccount.empSearch' | translate:'Mã nhân viên / Họ tên'">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'pa.empAccount.bank' | translate:'Ngân hàng' }}</label>
+          <nz-select class="w-100" [(ngModel)]="bankSearch" name="vpeaBankSearch" nzAllowClear
+                     [nzPlaceHolder]="'common.selectAll' | translate:'-- Tất cả --'">
+            <nz-option *ngFor="let c of bankOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'pa.empAccount.empOffice' | translate:'Trạng thái làm việc' }}</label>
+          <nz-select class="w-100" [(ngModel)]="empOfficeSearch" name="vpeaEmpOfficeSearch" nzAllowClear
+                     [nzPlaceHolder]="'common.selectAll' | translate:'-- Tất cả --'">
+            <nz-option *ngFor="let c of empOfficeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'pa.empAccount.dateStarted' | translate:'Ngày vào làm' }}</label>
+          <div class="d-flex align-items-center gap-2">
+            <nz-date-picker class="w-100" [(ngModel)]="fromDate" name="vpeaFromDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
+            <span class="text-muted">-</span>
+            <nz-date-picker class="w-100" [(ngModel)]="toDate" name="vpeaToDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">{{ 'pa.empAccount.dept' | translate:'Phòng ban' }}</label>
+          <nz-tree-select class="w-100" [nzNodes]="deptNodes()" [(ngModel)]="deptNos" name="vpeaDeptNos"
+                           nzCheckable nzShowSearch nzAllowClear
+                           [nzPlaceHolder]="'pa.empAccount.deptPlaceholder' | translate:'Chọn phòng ban'"></nz-tree-select>
+          <div *ngIf="deptTreeErrorMessage()" class="text-danger small mt-1">{{ deptTreeErrorMessage() }}</div>
+        </div>
+        <div class="col-12 d-flex align-items-end gap-2 flex-wrap">
+          <button nz-button nzType="primary" type="submit">
+            <i class="bx bx-search"></i> {{ 'pa.empAccount.search' | translate:'Tra cứu' }}
+          </button>
+          <button nz-button type="button" (click)="clearSearch()">
+            <i class="bx bx-x"></i> {{ 'common.clearFilter' | translate:'Xóa lọc' }}
+          </button>
+          <button nz-button nzType="primary" type="button" (click)="openAddModal()">
+            <i class="bx bx-plus"></i> {{ 'pa.empAccount.addNew' | translate:'Thêm mới' }}
+          </button>
+          <button nz-button nzDanger type="button" (click)="openDeleteConfirm()">
+            <i class="bx bx-trash"></i> {{ 'pa.empAccount.delete' | translate:'Xóa' }}
+          </button>
+          <button nz-button nzType="default" type="button" class="vpea-btn-export" [nzLoading]="exporting()" (click)="exportExcel()">
+            <i class="bx bx-export"></i> {{ 'essDept.exportExcel' | translate:'Xuất excel' }}
+          </button>
+        </div>
+      </form>
+    </nz-card>
+
+    <nz-card>
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+      <!-- nzWidth khai báo cho từng cột để đồng bộ độ rộng header/body khi dùng nzScroll. -->
+      <nz-table [nzData]="rows()" [nzFrontPagination]="false" [nzLoading]="loading()"
+                [nzTotal]="recordsFiltered()" [nzPageIndex]="pageIndex" [nzPageSize]="pageSize"
+                [nzPageSizeOptions]="pageSizeOptions" nzShowSizeChanger [nzShowTotal]="vpeaTotalTpl"
+                (nzPageIndexChange)="onPageIndexChange($event)" (nzPageSizeChange)="onPageSizeChange($event)"
+                [nzScroll]="{ x: '1900px', y: 'calc(100vh - 420px)' }">
+        <thead>
+          <tr>
+            <th class="text-center" nzWidth="50px">
+              <label nz-checkbox [ngModel]="allChecked" [nzIndeterminate]="someChecked"
+                     [ngModelOptions]="{ standalone: true }" (ngModelChange)="toggleAll($event)"></label>
+            </th>
+            <th class="text-center" nzWidth="60px">{{ 'pa.empAccount.no' | translate:'STT' }}</th>
+            <th nzWidth="110px">{{ 'pa.empAccount.empId' | translate:'Mã nhân viên' }}</th>
+            <th nzWidth="160px">{{ 'pa.empAccount.localName' | translate:'Họ tên' }}</th>
+            <th nzWidth="180px">{{ 'pa.empAccount.dept' | translate:'Phòng ban' }}</th>
+            <th nzWidth="130px">{{ 'pa.empAccount.position' | translate:'Chức vụ' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'pa.empAccount.dateStarted' | translate:'Ngày vào làm' }}</th>
+            <th nzWidth="150px">{{ 'pa.empAccount.bank' | translate:'Ngân hàng' }}</th>
+            <th nzWidth="150px">{{ 'pa.empAccount.accountNo' | translate:'Tài khoản ngân hàng' }}</th>
+            <th nzWidth="150px">{{ 'pa.empAccount.accountAddress' | translate:'Chi nhánh' }}</th>
+            <th nzWidth="130px">{{ 'pa.empAccount.securityNo' | translate:'Mã số BH' }}</th>
+            <th nzWidth="130px">{{ 'pa.empAccount.taxNo' | translate:'Mã số thuế' }}</th>
+            <th class="text-center" nzWidth="130px">{{ 'pa.empAccount.createdBy' | translate:'Người tạo' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'pa.empAccount.createDate' | translate:'Thời gian tạo' }}</th>
+            <th class="text-center" nzWidth="130px">{{ 'pa.empAccount.updatedBy' | translate:'Người thay đổi' }}</th>
+            <th class="text-center" nzWidth="130px">{{ 'pa.empAccount.updateDate' | translate:'Thời gian thay đổi' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!loading() && rows().length === 0">
+            <td colspan="16" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+          </tr>
+          <tr *ngFor="let row of rows(); let i = index" class="vpea-row-clickable" (click)="openEditModal(row)">
+            <td class="text-center">
+              <label nz-checkbox [ngModel]="isChecked(row)" [ngModelOptions]="{ standalone: true }"
+                     (click)="$event.stopPropagation()"
+                     (ngModelChange)="toggleRow(row, $event)"></label>
+            </td>
+            <td class="text-center">{{ (pageIndex - 1) * pageSize + i + 1 }}</td>
+            <td [attr.title]="row.empId || null">{{ row.empId }}</td>
+            <td [attr.title]="row.localName || null">{{ row.localName }}</td>
+            <td [attr.title]="row.deptName || null">{{ row.deptName }}</td>
+            <td [attr.title]="row.postGradeName || null">{{ row.postGradeName }}</td>
+            <td class="text-center">{{ toDmy(row.dateStarted) }}</td>
+            <td [attr.title]="row.accountTypeName || null">{{ row.accountTypeName }}</td>
+            <td [attr.title]="row.accountNo || null">{{ row.accountNo }}</td>
+            <td [attr.title]="row.accountAddress || null">{{ row.accountAddress }}</td>
+            <td [attr.title]="row.securityNo || null">{{ row.securityNo }}</td>
+            <td [attr.title]="row.taxNo || null">{{ row.taxNo }}</td>
+            <td class="text-center">{{ row.createdBy }}</td>
+            <td class="text-center">{{ toDmy(row.createDate) }}</td>
+            <td class="text-center">{{ row.updatedBy }}</td>
+            <td class="text-center">{{ toDmy(row.updateDate) }}</td>
+          </tr>
+        </tbody>
+        <ng-template #vpeaTotalTpl let-total>
+          {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+        </ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>
+
+<!-- Modal Thêm mới / Chỉnh sửa tài khoản lương nhân viên -->
+<nz-modal [nzVisible]="modalVisible()"
+          [nzTitle]="(isNew() ? 'pa.empAccount.addTitle' : 'pa.empAccount.editTitle') | translate:(isNew() ? 'Thêm mới tài khoản lương nhân viên' : 'Chỉnh sửa tài khoản lương nhân viên')"
+          nzWidth="600px" (nzOnCancel)="closeModal()" (nzOnOk)="saveForm()" [nzOkLoading]="saving()"
+          [nzOkText]="'pa.empAccount.save' | translate:'Lưu'" [nzCancelText]="'common.close' | translate:'Đóng'">
+  <ng-container *nzModalContent>
+    <div class="row g-3">
+      <div class="col-12">
+        <label class="form-label fw-semibold">
+          {{ 'pa.empAccount.supervisor' | translate:'Nhân viên' }} <span class="text-danger">*</span>
+        </label>
+        <div class="d-flex gap-2">
+          <input nz-input [ngModel]="form.empDisplay" name="vpeaEmpDisplay" readonly
+                 [ngModelOptions]="{ standalone: true }"
+                 [placeholder]="'pa.empAccount.empSelectPlaceholder' | translate:'Chọn nhân viên...'">
+          <button *ngIf="isNew()" nz-button nzType="default" type="button" (click)="openPicker()">
+            <i class="bx bx-search"></i> {{ 'arSupervisor.btn.select' | translate:'Chọn' }}
+          </button>
+        </div>
+        <small *ngIf="form.personId" class="text-success d-block mt-1">
+          <i class="bx bx-check"></i> {{ 'arSupervisor.js.empSelected' | translate:'Đã chọn NV: ' }}{{ form.empDisplay }}
+        </small>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'pa.empAccount.bank' | translate:'Ngân hàng' }}</label>
+        <nz-select class="w-100" [(ngModel)]="form.accountType" name="vpeaFormAccountType" nzAllowClear
+                   [nzPlaceHolder]="'common.selectAll' | translate:'-- Tất cả --'">
+          <nz-option *ngFor="let c of bankOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'pa.empAccount.accountNo' | translate:'Tài khoản ngân hàng' }}</label>
+        <input nz-input [(ngModel)]="form.accountNo" name="vpeaFormAccountNo">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'pa.empAccount.accountAddress' | translate:'Chi nhánh' }}</label>
+        <input nz-input [(ngModel)]="form.accountAddress" name="vpeaFormAccountAddress">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'pa.empAccount.accountName' | translate:'Tên tài khoản' }}</label>
+        <input nz-input [(ngModel)]="form.accountName" name="vpeaFormAccountName">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'pa.empAccount.securityNo' | translate:'Mã số BHXH' }}</label>
+        <input nz-input [(ngModel)]="form.securityNo" name="vpeaFormSecurityNo">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'pa.empAccount.securityPayDate' | translate:'Thời gian đóng BH' }}</label>
+        <input nz-input [(ngModel)]="form.securityPayDate" name="vpeaFormSecurityPayDate">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'pa.empAccount.fundNo' | translate:'Mã số công đoàn' }}</label>
+        <input nz-input [(ngModel)]="form.fundNo" name="vpeaFormFundNo">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'pa.empAccount.fundPayDate' | translate:'Thời gian đóng CĐ' }}</label>
+        <input nz-input [(ngModel)]="form.fundPayDate" name="vpeaFormFundPayDate">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'pa.empAccount.taxNo' | translate:'Mã số thuế' }}</label>
+        <input nz-input [(ngModel)]="form.taxNo" name="vpeaFormTaxNo">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'pa.empAccount.activity' | translate:'Trạng thái' }}</label>
+        <nz-select class="w-100" [(ngModel)]="form.activity" name="vpeaFormActivity">
+          <nz-option [nzValue]="1" [nzLabel]="'pa.empAccount.activity.active' | translate:'Hoạt động'"></nz-option>
+          <nz-option [nzValue]="0" [nzLabel]="'pa.empAccount.activity.inactive' | translate:'Không hoạt động'"></nz-option>
+        </nz-select>
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Popup tìm kiếm nhân viên - tái dùng pattern ChangeUserComponent (thay fragment employeeSearchModal.html) -->
+<nz-modal [nzVisible]="pickerVisible()" [nzTitle]="'empSearch.title' | translate:'Tìm kiếm nhân viên'"
+          nzWidth="900px" (nzOnCancel)="closePicker()" [nzFooter]="null">
+  <ng-container *nzModalContent>
+    <form class="row g-2 align-items-end mb-3" (ngSubmit)="pickerSearch()">
+      <div class="col-md-5">
+        <label class="form-label">{{ 'empSearch.field.keyword' | translate:'Mã nhân viên / Họ tên' }}</label>
+        <input nz-input [(ngModel)]="pickerKeyword" name="vpeaPickerKeyword"
+               [placeholder]="'empSearch.placeholder.keyword' | translate:'Nhập mã hoặc họ tên'"
+               (keydown.enter)="$event.preventDefault(); pickerSearch()">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">{{ 'empSearch.field.dept' | translate:'Phòng ban' }}</label>
+        <nz-tree-select class="w-100" [nzNodes]="deptNodes()" [(ngModel)]="pickerDeptNos" name="vpeaPickerDeptNos"
+                         nzCheckable nzShowSearch nzAllowClear
+                         [nzPlaceHolder]="'vdp.search.dept.placeholder' | translate:'Chọn phòng ban'"></nz-tree-select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">{{ 'empSearch.field.empOffice' | translate:'Trạng thái làm việc' }}</label>
+        <nz-select class="w-100" [(ngModel)]="pickerEmpOffice" name="vpeaPickerEmpOffice" nzAllowClear
+                   [nzPlaceHolder]="'common.selectAll' | translate:'-- Tất cả --'">
+          <nz-option *ngFor="let c of empOfficeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-12 d-flex gap-2">
+        <button nz-button nzType="primary" type="submit">
+          <i class="bx bx-search"></i> {{ 'common.search' | translate:'Tìm kiếm' }}
+        </button>
+        <button nz-button type="button" (click)="pickerClear()">
+          <i class="bx bx-x"></i> {{ 'empSearch.btn.clearFilter' | translate:'Xóa bộ lọc' }}
+        </button>
+      </div>
+    </form>
+
+    <nz-alert *ngIf="pickerErrorMessage()" nzType="error" [nzMessage]="pickerErrorMessage() ?? ''" class="mb-2"></nz-alert>
+
+    <nz-table [nzData]="pickerRows()" [nzLoading]="pickerLoading()" [nzPageSize]="10" nzSize="small" #vpeaPickerTable>
+      <thead>
+        <tr>
+          <th class="text-center" nzWidth="60px">{{ 'empSearch.col.no' | translate:'STT' }}</th>
+          <th nzWidth="110px">{{ 'common.empId' | translate:'Mã nhân viên' }}</th>
+          <th>{{ 'common.empName' | translate:'Họ tên' }}</th>
+          <th>{{ 'empSearch.field.dept' | translate:'Phòng ban' }}</th>
+          <th>{{ 'epi.field.position' | translate:'Chức vụ' }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of vpeaPickerTable.data; let i = index" class="vpea-row-clickable" (click)="selectEmployee(row)">
+          <td class="text-center">{{ i + 1 }}</td>
+          <td>{{ row.empId }}</td>
+          <td>{{ row.localName }}</td>
+          <td>{{ row.deptName || row.deptNo }}</td>
+          <td>{{ row.position }}</td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal xác nhận xóa -->
+<nz-modal [nzVisible]="deleteVisible()" [nzTitle]="'common.confirm' | translate:'Xác nhận'"
+          (nzOnCancel)="closeDeleteConfirm()" (nzOnOk)="confirmDelete()" [nzOkLoading]="deleting()"
+          [nzOkText]="'common.confirm' | translate:'Xác nhận'" [nzCancelText]="'common.cancel' | translate:'Hủy'">
+  <ng-container *nzModalContent>
+    <p class="mb-0">{{ 'pa.empAccount.confirmDelete' | translate:'Bạn có chắc chắn muốn xóa các bản ghi đã chọn?' }} ({{ deleteCount }})</p>
+  </ng-container>
+</nz-modal>

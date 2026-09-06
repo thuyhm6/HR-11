@@ -28,11 +28,6 @@ public class PaItemInputController {
     @Autowired
     private PaItemInputService paItemInputService;
 
-    @GetMapping("/viewPaResult")
-    public String viewPaResult() {
-        return "pa/salary/viewPaResult";
-    }
-
     @GetMapping("/result/api/sectionItems")
     @ResponseBody
     public ResponseEntity<?> getSectionItems() {

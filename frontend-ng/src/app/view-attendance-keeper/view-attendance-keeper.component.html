@@ -1,0 +1,190 @@
+<div class="row">
+  <!-- Danh sách nhân viên phân quyền chấm công bên trái -->
+  <div class="col-md-4 mb-3">
+    <nz-card>
+      <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+        <h6 class="mb-0 text-primary fw-bold">{{ 'arSupervisor.pageTitle' | translate:'Nhân viên Phân quyền' }}</h6>
+        <button nz-button nzType="primary" nzSize="small" type="button" (click)="openAddModal()">
+          <i class="bx bx-user-plus"></i> {{ 'arSupervisor.btn.addNew' | translate:'Thêm mới' }}
+        </button>
+      </div>
+      <input nz-input class="mb-3" [ngModel]="searchKeyword()" (ngModelChange)="searchKeyword.set($event)"
+             [placeholder]="'arSupervisor.placeholder.search' | translate:'Tìm kiếm nhân viên...'">
+
+      <div class="vak-list-scroll">
+        <div *ngIf="!loadingList() && filteredSupervisors().length === 0" class="text-muted p-2 text-center mt-3">
+          {{ 'arSupervisor.js.noSupervisor' | translate:'Không có nhân viên phân quyền nào' }}
+        </div>
+        <a *ngFor="let row of filteredSupervisors()" href="javascript:void(0)"
+           class="list-group-item list-group-item-action vak-list-item"
+           [class.active]="selectedPersonId() === row.personId"
+           (click)="selectSupervisor(row)">
+          <div class="d-flex w-100 justify-content-between align-items-start">
+            <h6 class="mb-1 fw-bold">{{ empLabel(row) }}</h6>
+            <button nz-button nzType="text" nzSize="small" nzDanger (click)="openDeleteConfirm(row, $event)">
+              <i class="bx bx-trash"></i>
+            </button>
+          </div>
+          <div *ngIf="row.deptName" class="small text-muted"><i class="bx bx-building"></i> {{ row.deptName }}</div>
+        </a>
+      </div>
+    </nz-card>
+  </div>
+
+  <!-- Cấu hình nhóm phòng ban bên phải -->
+  <div class="col-md-8 mb-3">
+    <nz-card>
+      <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+        <h6 class="mb-0 fw-bold">
+          <ng-container *ngIf="selectedEmpLabel(); else noSelLabel">
+            {{ 'arSupervisor.js.configDeptFor' | translate:'Cấu hình nhóm phòng ban cho: ' }}
+            <span class="text-primary">{{ selectedEmpLabel() }}</span>
+          </ng-container>
+          <ng-template #noSelLabel>{{ 'arSupervisor.orgChart' | translate:'Sơ đồ Tổ chức Phân quyền' }}</ng-template>
+        </h6>
+        <button nz-button nzType="primary" nzSize="small" type="button"
+                [disabled]="!selectedPersonId()" [nzLoading]="savingDepts()" (click)="saveDepartments()">
+          <i class="bx bx-save"></i> {{ 'arSupervisor.saveDepts' | translate:'Lưu phân quyền phòng ban' }}
+        </button>
+      </div>
+
+      <div *ngIf="!selectedPersonId()" class="p-2 bg-light border-bottom text-muted">
+        <i class="bx bx-info-circle"></i> {{ 'arSupervisor.hint' | translate:'Vui lòng chọn một nhân viên bên trái để xem/cấu hình thông tin.' }}
+      </div>
+      <div *ngIf="selectedPersonId() && deptInfoLoading()" class="p-2 bg-light border-bottom text-muted">
+        <i class="bx bx-loader-alt bx-spin"></i> {{ 'arSupervisor.js.loading' | translate:'Đang tải thông tin...' }}
+      </div>
+      <div *ngIf="selectedPersonId() && !deptInfoLoading() && deptInfoError()" class="p-2 bg-light border-bottom text-danger">
+        <i class="bx bx-error"></i> {{ deptInfoError() }}
+      </div>
+      <div *ngIf="selectedPersonId() && !deptInfoLoading() && !deptInfoError()" class="p-2 bg-light border-bottom text-success">
+        <i class="bx bx-check-double"></i>
+        {{ 'arSupervisor.js.deptLoaded' | translate:'Đã tải dữ liệu phòng ban mà' }}
+        <b>{{ selectedEmpLabel() }}</b>{{ 'arSupervisor.js.deptLoadedSuf' | translate:' được quản lý.' }}
+      </div>
+
+      <div class="vak-tree-scroll mt-2">
+        <div *ngIf="deptTreeNodes().length === 0" class="text-muted p-2">
+          {{ 'arSupervisor.js.noDeptData' | translate:'Không có dữ liệu phòng ban.' }}
+        </div>
+        <nz-tree *ngIf="selectedPersonId() && deptTreeNodes().length > 0"
+                 [nzData]="deptTreeNodes()" nzCheckable [nzCheckedKeys]="checkedDeptKeys()"
+                 (nzCheckedKeysChange)="onDeptCheckedKeysChange($event)"></nz-tree>
+      </div>
+    </nz-card>
+  </div>
+</div>
+
+<!-- Modal Thêm mới Nhân sự Phân quyền -->
+<nz-modal [nzVisible]="modalVisible()" [nzTitle]="'arSupervisor.js.titleAdd' | translate:'Thêm mới Nhân sự Phân quyền'"
+          (nzOnCancel)="closeModal()" (nzOnOk)="saveForm()" [nzOkLoading]="saving()" [nzOkDisabled]="!form.personId"
+          [nzOkText]="'arSupervisor.btn.saveData' | translate:'Lưu dữ liệu'"
+          [nzCancelText]="'arSupervisor.btn.close' | translate:'Đóng'">
+  <ng-container *nzModalContent>
+    <div class="row g-3">
+      <div class="col-md-12">
+        <label class="form-label">
+          {{ 'arSupervisor.field.emp' | translate:'Nhân viên' }} <span class="text-danger">*</span>
+        </label>
+        <div class="d-flex gap-2">
+          <input nz-input [ngModel]="form.empDisplay" name="vakEmpDisplay" readonly
+                 [placeholder]="'arSupervisor.placeholder.selectEmp' | translate:'Chọn nhân viên...'">
+          <button nz-button nzType="default" type="button" (click)="openPicker()">
+            <i class="bx bx-search"></i> {{ 'arSupervisor.btn.select' | translate:'Chọn' }}
+          </button>
+        </div>
+        <small *ngIf="form.personId" class="text-success d-block mt-1">
+          <i class="bx bx-check"></i> {{ 'arSupervisor.js.empSelected' | translate:'Đã chọn NV: ' }}{{ form.empDisplay }}
+        </small>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">{{ 'arSupervisor.field.orderno' | translate:'Sắp xếp (Orderno)' }}</label>
+        <nz-input-number class="w-100" [(ngModel)]="form.orderno" name="vakOrderno"></nz-input-number>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label d-block">{{ 'arSupervisor.field.modifyYn' | translate:'Quyền sửa đổi (Modify_YN)' }}</label>
+        <nz-select class="w-100" [(ngModel)]="form.modifyYn" name="vakModifyYn">
+          <nz-option [nzValue]="1" [nzLabel]="'arSupervisor.opt.allow' | translate:'1 - Cho phép'"></nz-option>
+          <nz-option [nzValue]="0" [nzLabel]="'arSupervisor.opt.disallow' | translate:'0 - Không'"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-md-12">
+        <label class="form-label d-block">{{ 'arSupervisor.field.activity' | translate:'Trạng thái (Activity)' }}</label>
+        <nz-select class="w-100" [(ngModel)]="form.activity" name="vakActivity">
+          <nz-option [nzValue]="1" [nzLabel]="'arSupervisor.opt.active' | translate:'1 - Hoạt động'"></nz-option>
+          <nz-option [nzValue]="0" [nzLabel]="'arSupervisor.opt.inactive' | translate:'0 - Ngừng'"></nz-option>
+        </nz-select>
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal tìm kiếm nhân viên - tái dùng pattern ChangeUserComponent (thay fragment employeeSearchModal.html) -->
+<nz-modal [nzVisible]="pickerVisible()" [nzTitle]="'empSearch.title' | translate:'Tìm kiếm nhân viên'"
+          nzWidth="900px" (nzOnCancel)="closePicker()" [nzFooter]="null">
+  <ng-container *nzModalContent>
+    <form class="row g-2 align-items-end mb-3" (ngSubmit)="pickerSearch()">
+      <div class="col-md-5">
+        <label class="form-label">{{ 'empSearch.field.keyword' | translate:'Mã nhân viên / Họ tên' }}</label>
+        <input nz-input [(ngModel)]="pickerKeyword" name="vakPickerKeyword"
+               [placeholder]="'empSearch.placeholder.keyword' | translate:'Nhập mã hoặc họ tên'"
+               (keydown.enter)="$event.preventDefault(); pickerSearch()">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">{{ 'empSearch.field.dept' | translate:'Phòng ban' }}</label>
+        <nz-tree-select class="w-100" [nzNodes]="deptNodes()" [(ngModel)]="pickerDeptNos" name="vakPickerDeptNos"
+                         nzCheckable nzShowSearch nzAllowClear
+                         [nzPlaceHolder]="'vdp.search.dept.placeholder' | translate:'Chọn phòng ban'"></nz-tree-select>
+        <div *ngIf="deptTreeErrorMessage()" class="text-danger small mt-1">{{ deptTreeErrorMessage() }}</div>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">{{ 'empSearch.field.empOffice' | translate:'Trạng thái làm việc' }}</label>
+        <nz-select class="w-100" [(ngModel)]="pickerEmpOffice" name="vakPickerEmpOffice" nzAllowClear
+                   [nzPlaceHolder]="'common.selectAll' | translate:'-- Tất cả --'">
+          <nz-option *ngFor="let c of empOfficeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-12 d-flex gap-2">
+        <button nz-button nzType="primary" type="submit">
+          <i class="bx bx-search"></i> {{ 'common.search' | translate:'Tìm kiếm' }}
+        </button>
+        <button nz-button type="button" (click)="pickerClear()">
+          <i class="bx bx-x"></i> {{ 'empSearch.btn.clearFilter' | translate:'Xóa bộ lọc' }}
+        </button>
+      </div>
+    </form>
+
+    <nz-alert *ngIf="pickerErrorMessage()" nzType="error" [nzMessage]="pickerErrorMessage() ?? ''" class="mb-2"></nz-alert>
+
+    <nz-table [nzData]="pickerRows()" [nzLoading]="pickerLoading()" [nzPageSize]="10" nzSize="small" #vakPickerTable>
+      <thead>
+        <tr>
+          <th class="text-center" nzWidth="60px">{{ 'empSearch.col.no' | translate:'STT' }}</th>
+          <th nzWidth="110px">{{ 'common.empId' | translate:'Mã nhân viên' }}</th>
+          <th>{{ 'common.empName' | translate:'Họ tên' }}</th>
+          <th>{{ 'common.deptName' | translate:'Phòng ban' }}</th>
+          <th>{{ 'epi.field.position' | translate:'Chức vụ' }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of vakPickerTable.data; let i = index" class="vak-row-clickable" (click)="selectEmployee(row)">
+          <td class="text-center">{{ i + 1 }}</td>
+          <td>{{ row.empId }}</td>
+          <td>{{ row.localName }}</td>
+          <td>{{ row.deptName || row.deptNo }}</td>
+          <td>{{ row.position }}</td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal xác nhận xóa -->
+<nz-modal [nzVisible]="deleteVisible()" [nzTitle]="'common.confirm' | translate:'Xác nhận'"
+          (nzOnCancel)="closeDeleteConfirm()" (nzOnOk)="confirmDelete()" [nzOkLoading]="deleting()"
+          [nzOkText]="'common.confirm' | translate:'Xác nhận'" [nzCancelText]="'common.cancel' | translate:'Hủy'">
+  <ng-container *nzModalContent>
+    <p class="mb-1 vak-pre-line">{{ 'arSupervisor.js.deleteConfirm' | translate:'Bạn có chắc chắn muốn xóa phân quyền NV này?\nChú ý: Toàn bộ cấu hình phòng ban của NV sẽ bị xóa theo!' }}</p>
+    <p class="fw-bold mb-0">{{ deleteTargetName }}</p>
+  </ng-container>
+</nz-modal>

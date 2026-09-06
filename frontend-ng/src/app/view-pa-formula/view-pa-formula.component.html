@@ -1,0 +1,173 @@
+<div class="row">
+  <!-- Danh sách hạng mục tính bên trái -->
+  <div class="col-md-3 mb-3">
+    <nz-card [nzTitle]="'pa.formula.itemList' | translate:'Hạng mục tính'">
+      <input nz-input class="mb-2" [(ngModel)]="treeSearchValue" name="vpfTreeSearch"
+             [placeholder]="'arItemParam.treeSearchPlaceholder' | translate:'Tìm kiếm hạng mục...'">
+      <div class="vpf-tree-scroll">
+        <nz-tree [nzData]="treeNodes()" [nzSearchValue]="treeSearchValue" nzSelectMode
+                 [nzSelectedKeys]="selectedItemNo ? [selectedItemNo] : []"
+                 (nzClick)="onTreeClick($event)"></nz-tree>
+      </div>
+    </nz-card>
+  </div>
+
+  <!-- Danh sách công thức bên phải -->
+  <div class="col-md-9 mb-3">
+    <nz-card>
+      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <span class="fw-bold text-primary">{{ panelTitle() }}</span>
+        <div class="d-flex gap-2 flex-wrap">
+          <button nz-button nzType="primary" type="button" (click)="openAddModal()">
+            <i class="bx bx-plus"></i> {{ 'pa.formula.addNew' | translate:'Thêm mới' }}
+          </button>
+          <button nz-button nzType="default" nzDanger type="button" (click)="openDeleteConfirm()">
+            <i class="bx bx-trash"></i> {{ 'pa.formula.delete' | translate:'Xóa' }}
+          </button>
+        </div>
+      </div>
+
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+      <nz-table [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="20" [nzShowSizeChanger]="true"
+                [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="vpfTotalTpl"
+                [nzScroll]="{ y: 'calc(100vh - 420px)' }" #vpfTable>
+        <thead>
+          <tr>
+            <th class="text-center" nzWidth="50px">{{ 'pa.formula.no' | translate:'STT' }}</th>
+            <th class="text-center" nzWidth="40px">
+              <label nz-checkbox [ngModel]="allChecked()" (ngModelChange)="toggleAllChecked($event)"></label>
+            </th>
+            <th class="text-center" nzWidth="120px">{{ 'pa.formula.conditionSeq' | translate:'Trình tự tính' }}</th>
+            <th nzWidth="30%">{{ 'pa.formula.condition' | translate:'Điều kiện' }}</th>
+            <th nzWidth="30%">{{ 'pa.formula.formular' | translate:'Công thức' }}</th>
+            <th>{{ 'pa.formula.description' | translate:'Mô tả' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!loading() && rows().length === 0">
+            <td colspan="6" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+          </tr>
+          <tr *ngFor="let row of vpfTable.data; let i = index" class="vpf-row" (click)="openEditModal(row)">
+            <td class="text-center">{{ i + 1 }}</td>
+            <td class="text-center" (click)="$event.stopPropagation()">
+              <label nz-checkbox [ngModel]="isChecked(row.formularNo)"
+                     (ngModelChange)="toggleChecked(row.formularNo, $event)"></label>
+            </td>
+            <td class="text-center" (click)="$event.stopPropagation()">
+              <span class="me-1">{{ row.conditionSeq }}</span>
+              <button nz-button nzType="text" nzSize="small" title="Lên"
+                      *ngIf="row.maxSeq == null || row.conditionSeq !== row.maxSeq"
+                      (click)="swapSeq(row, 'up')">
+                <i class="bx bx-up-arrow-alt text-success"></i>
+              </button>
+              <button nz-button nzType="text" nzSize="small" title="Xuống"
+                      *ngIf="row.minSeq == null || row.conditionSeq !== row.minSeq"
+                      (click)="swapSeq(row, 'down')">
+                <i class="bx bx-down-arrow-alt text-primary"></i>
+              </button>
+            </td>
+            <td class="vpf-cell-wrap" [innerHTML]="highlightExpr(row.condition)"></td>
+            <td class="vpf-cell-wrap" [innerHTML]="highlightExpr(row.formular)"></td>
+            <td class="vpf-cell-wrap">{{ row.description }}</td>
+          </tr>
+        </tbody>
+        <ng-template #vpfTotalTpl let-total>
+          {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+        </ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>
+
+<!-- Modal Thêm mới / Cập nhật -->
+<nz-modal [nzVisible]="modalVisible()" [nzTitle]="modalTitle()" nzWidth="1000px"
+          (nzOnCancel)="closeModal()" (nzOnOk)="saveForm()" [nzOkLoading]="saving()"
+          [nzOkText]="'common.save' | translate:'Lưu'" [nzCancelText]="'common.close' | translate:'Đóng'">
+  <ng-container *nzModalContent>
+    <nz-alert nzType="info"
+              [nzMessage]="(('pa.formula.configItem' | translate:'Hạng mục đang cấu hình:')) + ' ' + (selectedItemLabel() ?? form.itemNo)"
+              class="mb-3"></nz-alert>
+
+    <div class="row g-3 mb-3">
+      <div class="col-12">
+        <label class="form-label fw-semibold">{{ 'pa.formula.conditionLabel' | translate:'Điều kiện (Condition)' }}</label>
+        <textarea nz-input id="vpf_condition" [(ngModel)]="form.condition" name="vpfFormCondition" rows="2"
+                  class="vpf-mono" (focus)="onFieldFocus('condition')"></textarea>
+      </div>
+      <div class="col-12">
+        <label class="form-label fw-semibold">{{ 'pa.formula.formularLabel' | translate:'Công thức (Formular)' }} <span class="text-danger">*</span></label>
+        <textarea nz-input id="vpf_formular" [(ngModel)]="form.formular" name="vpfFormFormular" rows="3" required
+                  class="vpf-mono" (focus)="onFieldFocus('formular')"></textarea>
+      </div>
+      <div class="col-12">
+        <label class="form-label fw-semibold">{{ 'pa.formula.descriptionLabel' | translate:'Mô tả (Description)' }}</label>
+        <textarea nz-input [(ngModel)]="form.description" name="vpfFormDescription" rows="2"></textarea>
+      </div>
+    </div>
+
+    <!-- Công cụ chèn nhanh vào ô điều kiện/công thức -->
+    <div class="border-top pt-3">
+      <h6 class="text-secondary"><i class="bx bx-wrench"></i> {{ 'pa.formula.toolPanel' | translate:'Công cụ' }}</h6>
+      <div class="row gx-2">
+        <div class="col-md-3">
+          <div class="card h-100 shadow-none border">
+            <div class="card-header bg-light p-2 fw-bold vpf-tool-header">
+              {{ 'pa.formula.toolParamItem' | translate:'Danh sách mục nhập' }}
+            </div>
+            <div class="card-body p-0 overflow-auto vpf-tool-body">
+              <div *ngIf="toolParamItems().length === 0" class="text-muted small p-2 text-center">-</div>
+              <div *ngFor="let itm of toolParamItems()" class="p-1 border-bottom vpf-tool-item"
+                   [title]="itm.itemId" (click)="insertToFocusedField(itm.itemId)">{{ itm.itemName || itm.itemId }}</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card h-100 shadow-none border">
+            <div class="card-header bg-light p-2 fw-bold vpf-tool-header">
+              {{ 'pa.formula.toolSalaryItem' | translate:'Danh sách hạng mục lương' }}
+            </div>
+            <div class="card-body p-0 overflow-auto vpf-tool-body">
+              <div *ngIf="toolSalaryItems().length === 0" class="text-muted small p-2 text-center">-</div>
+              <div *ngFor="let itm of toolSalaryItems()" class="p-1 border-bottom vpf-tool-item"
+                   [title]="itm.itemId" (click)="insertToFocusedField(itm.itemId)">{{ itm.itemName || itm.itemId }}</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card h-100 shadow-none border">
+            <div class="card-header bg-light p-2 fw-bold vpf-tool-header">
+              {{ 'pa.formula.toolAttendanceItem' | translate:'Hạng mục chấm công' }}
+            </div>
+            <div class="card-body p-0 overflow-auto vpf-tool-body">
+              <div *ngIf="toolAttendanceItems().length === 0" class="text-muted small p-2 text-center">-</div>
+              <div *ngFor="let itm of toolAttendanceItems()" class="p-1 border-bottom vpf-tool-item"
+                   [title]="itm.itemId" (click)="insertToFocusedField(itm.itemId)">{{ itm.itemName || itm.itemId }}</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card h-100 shadow-none border">
+            <div class="card-header bg-light p-2 fw-bold vpf-tool-header">
+              {{ 'pa.formula.toolFixedParam' | translate:'Tham số cố định' }}
+            </div>
+            <div class="card-body p-0 overflow-auto vpf-tool-body">
+              <div *ngIf="toolFixedParams().length === 0" class="text-muted small p-2 text-center">-</div>
+              <div *ngFor="let itm of toolFixedParams()" class="p-1 border-bottom vpf-tool-item"
+                   [title]="itm.itemId" (click)="insertToFocusedField(itm.itemId)">{{ itm.itemName || itm.itemId }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal xác nhận xóa -->
+<nz-modal [nzVisible]="deleteVisible()" [nzTitle]="'common.confirm' | translate:'Xác nhận'"
+          (nzOnCancel)="closeDeleteConfirm()" (nzOnOk)="confirmDelete()" [nzOkLoading]="deleting()"
+          [nzOkText]="'common.confirm' | translate:'Xác nhận'" [nzCancelText]="'common.cancel' | translate:'Hủy'">
+  <ng-container *nzModalContent>
+    <p class="mb-0">{{ 'pa.formula.confirmDelete' | translate:'Bạn có chắc chắn muốn xóa công thức đã chọn?' }}</p>
+  </ng-container>
+</nz-modal>

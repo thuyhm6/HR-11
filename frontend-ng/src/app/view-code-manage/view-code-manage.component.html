@@ -1,0 +1,142 @@
+<div class="row">
+  <!-- Cây code bên trái -->
+  <div class="col-md-3 mb-3">
+    <nz-card [nzTitle]="'sys.basic.viewCodeManage.treeTitle' | translate:'Danh sách Code'">
+      <input nz-input class="mb-2" [(ngModel)]="treeSearchValue" name="vcmTreeSearch"
+             [placeholder]="'sys.basic.viewMenuParamList.treeSearchPlaceholder' | translate:'Tìm kiếm...'">
+      <div class="vcm-tree-scroll">
+        <nz-tree [nzData]="treeNodes()" [nzSearchValue]="treeSearchValue" nzSelectMode
+                 [nzSelectedKeys]="selectedParentCodeNo ? [selectedParentCodeNo] : []"
+                 (nzClick)="onTreeClick($event)"></nz-tree>
+      </div>
+    </nz-card>
+  </div>
+
+  <!-- Danh sách mã con bên phải -->
+  <div class="col-md-9 mb-3">
+    <nz-card>
+      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <span class="fw-bold">
+          <ng-container *ngIf="selectedParentLabel(); else noSelTitle">
+            {{ 'sys.basic.viewCodeManage.selectedParentPrefix' | translate:'Danh sách mã con của:' }}
+            <span class="text-primary">{{ selectedParentLabel() }}</span>
+          </ng-container>
+          <ng-template #noSelTitle>{{ 'sys.basic.viewCodeManage.rightPaneTitle' | translate:'Danh sách mã con' }}</ng-template>
+        </span>
+        <div class="d-flex gap-2 flex-wrap">
+          <button nz-button nzType="primary" type="button" (click)="openAddModal()">
+            <i class="bx bx-plus"></i> {{ 'common.addNew' | translate:'Thêm mới' }}
+          </button>
+          <button nz-button nzType="default" type="button" class="vcm-btn-export" (click)="exportExcel()">
+            <i class="bx bx-export"></i> {{ 'common.exportExcel' | translate:'Xuất Excel' }}
+          </button>
+        </div>
+      </div>
+
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+      <nz-table [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="25" [nzShowSizeChanger]="true"
+                [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="vcmTotalTpl"
+                [nzScroll]="{ x: '900px', y: 'calc(100vh - 420px)' }" #vcmTable>
+        <thead>
+          <tr>
+            <th class="text-center" nzWidth="60px">{{ 'common.stt' | translate:'STT' }}</th>
+            <th nzWidth="120px">{{ 'sys.basic.viewCodeManage.col.codeNo' | translate:'Mã Code' }}</th>
+            <th nzWidth="200px">{{ 'sys.basic.viewMenuList.col.nameVi' | translate:'Tên TV' }}</th>
+            <th nzWidth="200px">{{ 'sys.basic.viewMenuList.col.nameEn' | translate:'Tên TA' }}</th>
+            <th nzWidth="160px">{{ 'sys.basic.viewCodeManage.col.nameZh' | translate:'Tên TT' }}</th>
+            <th nzWidth="160px">{{ 'sys.basic.viewCodeManage.col.nameKo' | translate:'Tên TH' }}</th>
+            <th class="text-center" nzWidth="90px">{{ 'sys.basic.viewMenuList.label.orderNo' | translate:'Thứ tự' }}</th>
+            <th class="text-center" nzWidth="90px">{{ 'common.action' | translate:'Thao tác' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!loading() && rows().length === 0">
+            <td colspan="8" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+          </tr>
+          <tr *ngFor="let row of vcmTable.data; let i = index">
+            <td class="text-center">{{ i + 1 }}</td>
+            <td [attr.title]="row.codeNo || null">{{ row.codeNo }}</td>
+            <td [attr.title]="row.nameVi || null">{{ row.nameVi }}</td>
+            <td [attr.title]="row.nameEn || null">{{ row.nameEn }}</td>
+            <td [attr.title]="row.nameZh || null">{{ row.nameZh }}</td>
+            <td [attr.title]="row.nameKo || null">{{ row.nameKo }}</td>
+            <td class="text-center">{{ row.orderNo }}</td>
+            <td class="text-center">
+              <button nz-button nzType="text" nzSize="small" [title]="'common.edit' | translate:'Sửa'" (click)="openEditModal(row)">
+                <i class="bx bx-edit text-warning"></i>
+              </button>
+              <button nz-button nzType="text" nzSize="small" [title]="'common.delete' | translate:'Xóa'" (click)="openDeleteConfirm(row)">
+                <i class="bx bx-trash text-danger"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+        <ng-template #vcmTotalTpl let-total>
+          {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+        </ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>
+
+<!-- Modal Thêm mới / Cập nhật -->
+<nz-modal [nzVisible]="modalVisible()" [nzTitle]="modalTitle()" nzWidth="700px"
+          (nzOnCancel)="closeModal()" (nzOnOk)="saveForm()" [nzOkLoading]="saving()"
+          [nzOkText]="'common.save' | translate:'Lưu'" [nzCancelText]="'common.close' | translate:'Đóng'">
+  <ng-container *nzModalContent>
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'sys.basic.viewCodeManage.label.codeNo' | translate:'Mã Code' }} <span class="text-danger">*</span></label>
+        <input nz-input [ngModel]="form.codeNo" name="vcmCodeNo" readonly
+               [placeholder]="'sys.basic.viewCodeManage.label.codeNo.placeholder' | translate:'Tự động sinh'">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'sys.basic.viewCodeManage.label.parentCodeNo' | translate:'Mã Cha' }}</label>
+        <input nz-input [ngModel]="form.parentCodeNo" name="vcmParentCodeNo" readonly>
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'sys.basic.viewMenuList.label.nameVi' | translate:'Tên Tiếng Việt' }} <span class="text-danger">*</span></label>
+        <input nz-input [(ngModel)]="form.nameVi" name="vcmNameVi">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'sys.basic.viewMenuList.label.nameEn' | translate:'Tên Tiếng Anh' }}</label>
+        <input nz-input [(ngModel)]="form.nameEn" name="vcmNameEn">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'sys.basic.viewMenuList.label.nameZh' | translate:'Tên Tiếng Trung' }}</label>
+        <input nz-input [(ngModel)]="form.nameZh" name="vcmNameZh">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'sys.basic.viewMenuList.label.nameKo' | translate:'Tên Tiếng Hàn' }}</label>
+        <input nz-input [(ngModel)]="form.nameKo" name="vcmNameKo">
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'sys.basic.viewMenuList.label.orderNo' | translate:'Thứ tự' }}</label>
+        <nz-input-number class="w-100" [(ngModel)]="form.orderNo" name="vcmOrderNo" [nzMin]="0"></nz-input-number>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'sys.basic.viewCodeManage.label.description' | translate:'Mô tả' }}</label>
+        <input nz-input [(ngModel)]="form.description" name="vcmDescription">
+      </div>
+
+      <div class="col-12">
+        <label nz-checkbox [(ngModel)]="form.activity" name="vcmActivity">
+          {{ 'sys.basic.viewMenuList.label.activity' | translate:'Hoạt động' }}
+        </label>
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal xác nhận xóa -->
+<nz-modal [nzVisible]="deleteVisible()" [nzTitle]="'common.confirm' | translate:'Xác nhận'"
+          (nzOnCancel)="closeDeleteConfirm()" (nzOnOk)="confirmDelete()" [nzOkLoading]="deleting()"
+          [nzOkText]="'common.confirm' | translate:'Xác nhận'" [nzCancelText]="'common.cancel' | translate:'Hủy'">
+  <ng-container *nzModalContent>
+    <p class="mb-1">{{ 'sys.basic.viewCodeManage.msg.confirmDelete' | translate:'Bạn có chắc chắn muốn xóa mã code này?' }}</p>
+    <p class="fw-bold mb-0">{{ deleteTargetName }}</p>
+  </ng-container>
+</nz-modal>

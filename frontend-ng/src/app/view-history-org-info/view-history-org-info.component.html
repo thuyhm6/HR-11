@@ -1,0 +1,132 @@
+<div class="row">
+  <!-- Cây tổ chức bên trái -->
+  <div class="col-md-3 mb-3">
+    <nz-card [nzTitle]="'org.orgManage.viewHistoryOrgInfo.title' | translate:'Lịch sử thay đổi cơ cấu tổ chức'" [nzBodyStyle]="{ padding: '12px' }">
+      <div class="mb-2">
+        <label class="form-label fw-bold">{{ 'orgResumeProcess.versionName' | translate:'Tên phiên bản' }}</label>
+        <nz-select class="w-100" id="histOrgResumeSelect" [(ngModel)]="selectedResumeNo" (ngModelChange)="onResumeChange($event)"
+                   [nzLoading]="loadingResume()" nzShowSearch nzAllowClear
+                   [nzPlaceHolder]="'orgResumeProcess.selectPlaceholder' | translate:'-- Chọn phiên bản thay đổi --'">
+          <nz-option *ngFor="let r of resumeOptions()" [nzValue]="r.no" [nzLabel]="resumeLabel(r)"></nz-option>
+        </nz-select>
+      </div>
+
+      <input nz-input class="mb-2" id="histOrgTreeSearch" [(ngModel)]="treeSearchValue" name="histOrgTreeSearch"
+             [placeholder]="'orgCompose.searchTreePlaceholder' | translate:'Tìm kiếm phòng ban...'">
+
+      <div class="mb-2 btn-group">
+        <button nz-button nzSize="small" type="button" id="histOrgBtnExpandAll" (click)="expandAllNodes()">
+          {{ 'orgCompose.expandAll' | translate:'Mở tất cả' }}
+        </button>
+        <button nz-button nzSize="small" type="button" id="histOrgBtnCollapseAll" (click)="collapseAllNodes()">
+          {{ 'orgCompose.collapseAll' | translate:'Đóng tất cả' }}
+        </button>
+      </div>
+
+      <nz-spin [nzSpinning]="loadingTree()">
+        <div class="hist-org-tree-scroll">
+          <nz-tree [nzData]="treeNodes()" [nzSearchValue]="treeSearchValue" nzSelectMode
+                   [(nzExpandedKeys)]="expandedKeys" [nzSelectedKeys]="selectedDeptKey ? [selectedDeptKey] : []"
+                   (nzClick)="onTreeClick($event)"></nz-tree>
+          <div *ngIf="!loadingTree() && treeNodes().length === 0" class="text-muted fst-italic p-2">
+            {{ 'orgCompose.msg.noOrgData' | translate:'Không có dữ liệu tổ chức' }}
+          </div>
+        </div>
+      </nz-spin>
+    </nz-card>
+  </div>
+
+  <!-- Thông tin tổ chức + danh sách nhân viên bên phải (chỉ xem) -->
+  <div class="col-md-9 mb-3">
+    <nz-card class="mb-3" [nzTitle]="'orgCompose.orgInfoTitle' | translate:'Thông tin tổ chức'" *ngIf="selectedOrgInfo() as dept">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">{{ 'org.orgManage.title.deptNo' | translate:'Mã phòng ban' }}</label>
+          <input nz-input [ngModel]="dept.deptNo" name="histOrgDeptNo" readonly>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">{{ 'org.orgManage.title.parentDept' | translate:'Phòng ban trên' }}</label>
+          <input nz-input [ngModel]="dept.parentDeptNo" name="histOrgParentDeptNo" readonly>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">{{ 'org.orgManage.title.deptEnglishName' | translate:'Phòng ban tiếng Anh' }}</label>
+          <input nz-input [ngModel]="dept.orgNameEng" name="histOrgOrgNameEng" readonly>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">{{ 'orgCompose.orgNameLocal' | translate:'Tên địa phương' }}</label>
+          <input nz-input [ngModel]="dept.orgNameLocal" name="histOrgOrgNameLocal" readonly>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">{{ 'org.orgManage.title.deptType' | translate:'Loại hình phòng ban' }}</label>
+          <input nz-input [ngModel]="dept.deptType" name="histOrgDeptType" readonly>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">{{ 'org.orgManage.ORGANIZATIONAL_LEVEL.Z' | translate:'Cấp' }}</label>
+          <input nz-input [ngModel]="dept.deptLevel" name="histOrgDeptLevel" readonly>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">{{ 'org.orgManage.DEPARTMENT_INFORMATION.Z' | translate:'Trưởng phòng' }}</label>
+          <input nz-input [ngModel]="dept.managerEmpId" name="histOrgManagerEmpId" readonly>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">{{ 'common.createDate' | translate:'Ngày tạo' }}</label>
+          <input nz-input [ngModel]="dateCreatedDisplay(dept)" name="histOrgDateCreated" readonly>
+        </div>
+
+        <div class="col-md-6 d-flex align-items-center">
+          <label class="form-check-label hist-org-inline-checkbox">
+            <input type="checkbox" [ngModel]="dept.isPartTime === 'Y'" name="histOrgIsPartTime" disabled>
+            {{ 'orgCompose.isPartTime' | translate:'Kiêm nhiệm' }}
+          </label>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">{{ 'orgCompose.costCenter' | translate:'Mã chi phí' }}</label>
+          <input nz-input [ngModel]="dept.costCenter" name="histOrgCostCenter" readonly>
+        </div>
+      </div>
+    </nz-card>
+
+    <nz-card [nzTitle]="'orgCompose.employeeListTitle' | translate:'Danh sách nhân viên'" [nzExtra]="histOrgEmpExtra">
+      <ng-template #histOrgEmpExtra>
+        <span class="badge bg-primary" id="histOrgTotalEmployees">
+          {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ employees().length }}
+        </span>
+      </ng-template>
+
+      <nz-table [nzData]="employees()" [nzLoading]="loadingEmployees()" [nzPageSize]="10" [nzShowSizeChanger]="true"
+                [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="histOrgEmpTotalTpl" #histOrgEmpTable>
+        <thead>
+          <tr>
+            <th class="text-center" nzWidth="60px">{{ 'common.stt' | translate:'STT' }}</th>
+            <th>{{ 'org.title.LOCAL_NAME' | translate:'Họ tên' }}</th>
+            <th>{{ 'org.title.EMPID' | translate:'Mã nhân viên' }}</th>
+            <th>{{ 'org.title.BUSINESS_NAME' | translate:'Chức vụ' }}</th>
+            <th>{{ 'org.title.POSITION_NO' | translate:'Chức danh' }}</th>
+            <th>{{ 'hrm.empinfo.hrcard.empGroup' | translate:'Nhóm nhân viên' }}</th>
+            <th class="text-center">{{ 'common.status' | translate:'Trạng thái' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!loadingEmployees() && employees().length === 0">
+            <td colspan="7" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+          </tr>
+          <tr *ngFor="let emp of histOrgEmpTable.data; let i = index">
+            <td class="text-center">{{ i + 1 }}</td>
+            <td>{{ emp.localName }}</td>
+            <td>{{ emp.empId }}</td>
+            <td>{{ emp.dutyNo }}</td>
+            <td>{{ emp.postNo }}</td>
+            <td>{{ emp.empTypeCode }}</td>
+            <td class="text-center">{{ emp.statusCode }}</td>
+          </tr>
+        </tbody>
+        <ng-template #histOrgEmpTotalTpl let-total>
+          {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+        </ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>

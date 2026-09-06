@@ -33,6 +33,14 @@ public class FrontendConfig implements WebMvcConfigurer {
                                 .addResourceLocations("file:" + uploadDirPath)
                                 .setCacheControl(CacheControl.maxAge(Duration.ofHours(1)));
 
+                // Alias cho font Font Awesome - /assets/css/all.min.css tham chiếu font tương đối
+                // dạng url(../webfonts/fa-solid-900.woff2) (tức /assets/webfonts/...), nhưng file thật
+                // nằm ở /assets/plugins/fontawesome-free/webfonts/. Đăng ký trước /assets/** để ưu tiên
+                // path cụ thể hơn (giống cách /assets/images/users/** đã làm ở trên).
+                registry.addResourceHandler("/assets/webfonts/**")
+                                .addResourceLocations("/assets/plugins/fontawesome-free/webfonts/")
+                                .setCacheControl(CacheControl.maxAge(Duration.ofDays(365)));
+
                 // Assets nằm trong webapp root (src/main/webapp/assets/)
                 // Dùng "/" prefix để Spring MVC resolve từ ServletContext (webapp root)
                 registry.addResourceHandler("/assets/**")

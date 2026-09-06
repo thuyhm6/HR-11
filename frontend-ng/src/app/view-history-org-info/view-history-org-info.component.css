@@ -1,0 +1,8 @@
+.hist-org-tree-scroll {
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.hist-org-inline-checkbox {
+  margin-top: 28px;
+}

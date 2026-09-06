@@ -1,0 +1,253 @@
+<div class="row">
+  <div class="col-12">
+
+    <!-- ===== Chọn nhân viên ===== -->
+    <div class="card mb-3">
+      <div class="card-body">
+        <label class="form-label fw-semibold">{{ 'essCommon.empInfo' | translate:'Thông tin nhân viên' }}</label>
+        <div class="input-group">
+          <input nz-input readonly
+                 [ngModel]="selectedEmployee() ? (selectedEmployee()!.empId + ' - ' + selectedEmployee()!.localName) : ''"
+                 [placeholder]="'vpi.msg.selectEmployeeHint' | translate:'Vui lòng chọn nhân viên để xem thông tin cá nhân'">
+          <button nz-button type="button" [title]="'tempEmp.pickEmp' | translate:'Chọn nhân viên'" (click)="openPicker()">
+            <i class="bx bx-search"></i> {{ 'tempEmp.pickEmp' | translate:'Chọn nhân viên' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+    <ng-container *ngIf="selectedEmployee() as emp">
+
+      <!-- ===== Thông tin nhân viên ===== -->
+      <div class="card mb-3">
+        <div class="card-body p-0">
+          <table class="table table-bordered table-sm align-middle mb-0" style="table-layout:fixed;">
+            <colgroup>
+              <col style="width:15%;"><col style="width:35%;"><col style="width:15%;"><col style="width:35%;">
+            </colgroup>
+            <tbody>
+              <tr>
+                <th class="table-light text-center">{{ 'common.empId' | translate:'Mã nhân viên' }}</th>
+                <td>{{ emp.empId }}</td>
+                <th class="table-light text-center">{{ 'common.empName' | translate:'Họ tên' }}</th>
+                <td>{{ emp.localName }}</td>
+              </tr>
+              <tr>
+                <th class="table-light text-center">{{ 'common.deptName' | translate:'Phòng ban' }}</th>
+                <td>{{ emp.deptName || emp.deptNo }}</td>
+                <th class="table-light text-center">{{ 'epi.field.position' | translate:'Chức vụ' }}</th>
+                <td>{{ emp.position }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ===== Cá nhân ===== -->
+      <div class="card mb-3" *ngIf="personalInfo() as info">
+        <div class="card-header bg-light py-2">
+          <strong><i class="bx bx-id-card me-1"></i>{{ 'epi.section.personal' | translate:'Cá nhân' }}</strong>
+        </div>
+        <div class="card-body p-0">
+          <table class="table table-bordered table-sm align-middle mb-0">
+            <tbody>
+              <tr>
+                <th class="table-light text-center" style="width:150px;">{{ 'epi.field.dob' | translate:'Ngày sinh' }}</th>
+                <td>{{ formatDisplayDate(info.dob) }}</td>
+                <th class="table-light text-center" style="width:150px;">{{ 'epi.field.gender' | translate:'Giới tính' }}</th>
+                <td>{{ info.sexName }}</td>
+                <th class="table-light text-center" style="width:170px;">{{ 'epi.field.maritalStatus' | translate:'Tình trạng hôn nhân' }}</th>
+                <td>{{ info.maritalStatusName }}</td>
+                <th class="table-light text-center" style="width:100px;">{{ 'epi.field.ethnicity' | translate:'Dân tộc' }}</th>
+                <td>{{ info.nationName }}</td>
+                <th class="table-light text-center" style="width:80px;">{{ 'epi.field.houseTp' | translate:'Hộ khẩu' }}</th>
+                <td>{{ info.houseTp }}</td>
+              </tr>
+              <tr>
+                <th class="table-light text-center">{{ 'epi.field.homePhone' | translate:'ĐT gia đình' }}</th>
+                <td>{{ info.homePhone }}</td>
+                <th class="table-light text-center">{{ 'epi.field.companyPhone' | translate:'ĐT công ty' }}</th>
+                <td>{{ info.companyPhone }}</td>
+                <th class="table-light text-center">{{ 'epi.field.phone' | translate:'Điện thoại' }}</th>
+                <td>{{ info.cellphone }}</td>
+                <th class="table-light text-center">{{ 'epi.field.residence' | translate:'Chỗ ở' }}</th>
+                <td>{{ info.residentialDistinction }}</td>
+                <th class="table-light text-center">{{ 'epi.field.existSingle' | translate:'EagleM' }}</th>
+                <td>{{ info.existSingle === '1' ? ('common.yes' | translate:'Yes') : (info.existSingle === '0' ? ('common.no' | translate:'No') : '') }}</td>
+              </tr>
+              <tr>
+                <th class="table-light text-center">{{ 'epi.field.email' | translate:'Email' }}</th>
+                <td>{{ info.email }}</td>
+                <th class="table-light text-center">{{ 'epi.field.companyEmail' | translate:'Email công ty' }}</th>
+                <td>{{ info.emailSecond }}</td>
+                <th class="table-light text-center">{{ 'epi.field.nationality' | translate:'Quốc tịch' }}</th>
+                <td>{{ info.nationalityName }}</td>
+                <th class="table-light text-center">{{ 'epi.field.idcardNo' | translate:'CMND' }}</th>
+                <td colspan="3">{{ info.idcardNo }}</td>
+              </tr>
+              <tr>
+                <th class="table-light text-center">{{ 'epi.field.idcardDate' | translate:'Ngày cấp' }}</th>
+                <td>{{ formatDisplayDate(info.idcardStartDate) }}</td>
+                <th class="table-light text-center">{{ 'epi.field.issuingAuthority' | translate:'Nơi cấp' }}</th>
+                <td>{{ info.issuingAuthority }}</td>
+                <th class="table-light text-center">{{ 'epi.field.education' | translate:'Trình độ học vấn' }}</th>
+                <td>{{ info.finalDegreeName }}</td>
+                <th class="table-light text-center">{{ 'epi.field.religion' | translate:'Tôn giáo' }}</th>
+                <td colspan="3">{{ info.religion }}</td>
+              </tr>
+              <tr>
+                <th class="table-light text-center">{{ 'epi.field.politicalStatus' | translate:'Tình trạng chính trị' }}</th>
+                <td>{{ info.politicalStatus }}</td>
+                <th class="table-light text-center">{{ 'epi.field.weddingDate' | translate:'Ngày kết hôn' }}</th>
+                <td>{{ formatDisplayDate(info.weddingDate) }}</td>
+                <th class="table-light text-center">{{ 'epi.field.militaryService' | translate:'Tham gia quân đội' }}</th>
+                <td>{{ info.armyOrNot === '1' ? ('common.yes' | translate:'Yes') : ('common.no' | translate:'No') }}</td>
+                <th class="table-light text-center">{{ 'epi.field.disability' | translate:'Khuyết tật' }}</th>
+                <td colspan="3">{{ info.obstacleOrNot === '1' ? ('common.yes' | translate:'Yes') : ('common.no' | translate:'No') }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ===== Loại địa chỉ ===== -->
+      <div class="card mb-3">
+        <div class="card-header bg-light py-2">
+          <strong><i class="bx bx-map me-1"></i>{{ 'epi.section.address' | translate:'Loại địa chỉ' }}</strong>
+        </div>
+        <div class="card-body p-0">
+          <nz-table [nzData]="addressList()" [nzLoading]="loading()" [nzShowPagination]="false" nzSize="small" #vpiAddrTable>
+            <thead>
+              <tr>
+                <th>{{ 'epi.field.addressType' | translate:'Loại địa chỉ' }}</th>
+                <th>{{ 'epi.field.effectiveDate' | translate:'Ngày hiệu lực' }}</th>
+                <th>{{ 'epi.field.address' | translate:'Địa chỉ' }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngIf="!loading() && vpiAddrTable.data.length === 0">
+                <td colspan="3" class="text-center text-muted">{{ 'epi.msg.noData' | translate:'Không có dữ liệu' }}</td>
+              </tr>
+              <tr *ngFor="let row of vpiAddrTable.data">
+                <td>{{ row.addressTypeName || row.addressType }}</td>
+                <td>{{ formatDisplayDate(row.effectiveStartDate) }}</td>
+                <td>{{ row.addressContent }}</td>
+              </tr>
+            </tbody>
+          </nz-table>
+        </div>
+      </div>
+
+      <!-- ===== Thông tin gia đình ===== -->
+      <div class="card mb-3">
+        <div class="card-header bg-light py-2">
+          <strong><i class="bx bx-group me-1"></i>{{ 'epi.section.family' | translate:'Thông tin gia đình' }}</strong>
+        </div>
+        <div class="card-body p-0">
+          <nz-table [nzData]="familyList()" [nzLoading]="loading()" [nzShowPagination]="false" nzSize="small" #vpiFamTable>
+            <thead>
+              <tr>
+                <th>{{ 'epi.field.relationship' | translate:'Quan hệ' }}</th>
+                <th>{{ 'epi.field.fullName' | translate:'Họ tên' }}</th>
+                <th>{{ 'epi.field.gender' | translate:'Giới tính' }}</th>
+                <th>{{ 'epi.field.dob' | translate:'Ngày sinh' }}</th>
+                <th>{{ 'epi.field.familyPhone' | translate:'Điện thoại gia đình' }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngIf="!loading() && vpiFamTable.data.length === 0">
+                <td colspan="5" class="text-center text-muted">{{ 'epi.msg.noData' | translate:'Không có dữ liệu' }}</td>
+              </tr>
+              <tr *ngFor="let row of vpiFamTable.data">
+                <td>{{ row.famTypeName || row.famTypeCode }}</td>
+                <td>{{ row.famName }}</td>
+                <td>{{ row.genderName }}</td>
+                <td>{{ formatDisplayDate(row.famBorndate) }}</td>
+                <td>{{ row.famPhone }}</td>
+              </tr>
+            </tbody>
+          </nz-table>
+        </div>
+      </div>
+
+      <!-- ===== Người liên hệ khẩn cấp ===== -->
+      <div class="card mb-3">
+        <div class="card-header bg-light py-2">
+          <strong><i class="bx bx-phone-call me-1"></i>{{ 'epi.section.emergency' | translate:'Người liên hệ khẩn cấp' }}</strong>
+        </div>
+        <div class="card-body p-0">
+          <nz-table [nzData]="emergencyList()" [nzLoading]="loading()" [nzShowPagination]="false" nzSize="small" #vpiEmerTable>
+            <thead>
+              <tr>
+                <th>{{ 'epi.field.fullName' | translate:'Họ tên' }}</th>
+                <th>{{ 'epi.field.relationship' | translate:'Quan hệ' }}</th>
+                <th>{{ 'epi.field.phone' | translate:'Điện thoại' }}</th>
+                <th>{{ 'epi.field.email' | translate:'Email' }}</th>
+                <th>{{ 'epi.field.address' | translate:'Địa chỉ' }}</th>
+                <th class="text-center" style="width:90px;">{{ 'epi.field.primaryContact' | translate:'Liên hệ chính' }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngIf="!loading() && vpiEmerTable.data.length === 0">
+                <td colspan="6" class="text-center text-muted">{{ 'epi.msg.noData' | translate:'Không có dữ liệu' }}</td>
+              </tr>
+              <tr *ngFor="let row of vpiEmerTable.data">
+                <td>{{ row.emerName }}</td>
+                <td>{{ row.emerTypeName }}</td>
+                <td>{{ row.emerPhone }}</td>
+                <td>{{ row.emerEmail }}</td>
+                <td>{{ row.emerAddress }}</td>
+                <td class="text-center"><input type="checkbox" [checked]="row.isEmergencyAddress === '1' || row.isEmergencyAddress === 'Y'" disabled></td>
+              </tr>
+            </tbody>
+          </nz-table>
+        </div>
+      </div>
+
+    </ng-container>
+
+  </div>
+</div>
+
+<!-- ===== Modal chọn nhân viên ===== -->
+<nz-modal [nzVisible]="pickerVisible()" [nzTitle]="'empSearch.title' | translate:'Tìm kiếm nhân viên'"
+          nzWidth="800px" (nzOnCancel)="closePicker()" [nzFooter]="null">
+  <ng-container *nzModalContent>
+    <form class="row g-2 align-items-end mb-3" (ngSubmit)="pickerSearch()">
+      <div class="col-md-8">
+        <label class="form-label">{{ 'empSearch.field.keyword' | translate:'Mã nhân viên / Họ tên' }}</label>
+        <input nz-input [(ngModel)]="pickerKeyword" name="vpiPickerKeyword"
+               [placeholder]="'empSearch.placeholder.keyword' | translate:'Nhập mã hoặc họ tên'"
+               (keydown.enter)="$event.preventDefault(); pickerSearch()">
+      </div>
+      <div class="col-md-4">
+        <button nz-button nzType="primary" type="submit">
+          <i class="bx bx-search"></i> {{ 'common.search' | translate:'Tìm kiếm' }}
+        </button>
+      </div>
+    </form>
+
+    <nz-table [nzData]="pickerRows()" [nzLoading]="pickerLoading()" [nzPageSize]="10" nzSize="small" #vpiPickerTable>
+      <thead>
+        <tr>
+          <th class="text-center" nzWidth="60px">{{ 'empSearch.col.no' | translate:'STT' }}</th>
+          <th nzWidth="110px">{{ 'common.empId' | translate:'Mã nhân viên' }}</th>
+          <th>{{ 'common.empName' | translate:'Họ tên' }}</th>
+          <th>{{ 'common.deptName' | translate:'Phòng ban' }}</th>
+          <th>{{ 'epi.field.position' | translate:'Chức vụ' }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of vpiPickerTable.data; let i = index" class="vpi-row-clickable" (click)="selectPickedEmployee(row)">
+          <td class="text-center">{{ i + 1 }}</td>
+          <td>{{ row.empId }}</td>
+          <td>{{ row.localName }}</td>
+          <td>{{ row.deptName || row.deptNo }}</td>
+          <td>{{ row.position }}</td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </ng-container>
+</nz-modal>

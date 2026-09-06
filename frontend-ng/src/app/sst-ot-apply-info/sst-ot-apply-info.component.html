@@ -1,0 +1,166 @@
+<div class="row">
+  <div class="col-12">
+
+    <!-- ===== Thông tin nhân viên (tương đương fragments/essEmpInfoCard.html) ===== -->
+    <div class="card mb-3" *ngIf="basicInfo() as info">
+      <div class="card-body p-0">
+        <table class="table table-bordered table-sm align-middle mb-0" style="table-layout:fixed;">
+          <colgroup>
+            <col style="width:15%;"><col style="width:35%;"><col style="width:15%;"><col style="width:35%;">
+          </colgroup>
+          <tbody>
+            <tr>
+              <th class="table-light text-center">{{ 'essEmpCard.localName' | translate:'Họ tên' }}</th>
+              <td>{{ info.localName }}</td>
+              <th class="table-light text-center">{{ 'essEmpCard.empId' | translate:'Mã nhân viên' }}</th>
+              <td>{{ info.empId }}</td>
+            </tr>
+            <tr>
+              <th class="table-light text-center">{{ 'essEmpCard.deptName' | translate:'Phòng ban' }}</th>
+              <td>{{ info.deptName }}</td>
+              <th class="table-light text-center">{{ 'essEmpCard.headDept' | translate:'Trưởng phòng' }}</th>
+              <td>{{ info.headDepartment }}</td>
+            </tr>
+            <tr>
+              <th class="table-light text-center">{{ 'essEmpCard.postFamily' | translate:'Nhóm nhân viên' }}</th>
+              <td>{{ info.postFamilyName }}</td>
+              <th class="table-light text-center">{{ 'essEmpCard.postGrade' | translate:'Chức vụ' }}</th>
+              <td>{{ info.postGradeName }}</td>
+            </tr>
+            <tr>
+              <th class="table-light text-center">{{ 'essEmpCard.positionName' | translate:'Chức danh' }}</th>
+              <td>{{ info.positionNoName }}</td>
+              <th class="table-light text-center">{{ 'essEmpCard.dateStarted' | translate:'Ngày vào làm' }}</th>
+              <td>{{ info.dateStarted }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== Form xin tăng ca ===== -->
+    <div class="card mb-3">
+      <div class="card-body p-0">
+        <table class="table table-bordered table-sm align-middle mb-0" style="table-layout:fixed;">
+          <colgroup>
+            <col style="width:15%;"><col style="width:35%;"><col style="width:15%;"><col style="width:35%;">
+          </colgroup>
+          <tbody>
+            <tr>
+              <th class="table-light text-center">{{ 'essOt.applyDate' | translate:'Ngày' }}</th>
+              <td>
+                <nz-date-picker style="width:140px;" [(ngModel)]="applyDate" (ngModelChange)="onDateChange()"
+                                 nzFormat="yyyy-MM-dd"></nz-date-picker>
+              </td>
+              <th class="table-light text-center">{{ 'essOt.otStatus' | translate:'Tình hình tăng ca' }}</th>
+              <td class="small text-muted">
+                {{ 'essOt.stat.thisMonth' | translate:'Tháng này:' }} {{ otTotalMonth() }}h
+                &nbsp;&nbsp;{{ 'essOt.stat.weekday' | translate:'Ngày thường:' }} {{ otWeekdayTotal() }}h
+                <ng-container *ngIf="otLimitEnabled(); else noMonthLimit">
+                  &nbsp;&nbsp;{{ 'essOt.stat.maxOt' | translate:'Tối đa:' }} 40h
+                  <span class="text-danger">{{ 'essOt.limited' | translate:'(có giới hạn)' }}</span>
+                </ng-container>
+                <ng-template #noMonthLimit>
+                  &nbsp;&nbsp;<span class="text-success">{{ 'essOt.unlimitedMonth' | translate:'(không giới hạn tháng)' }}</span>
+                </ng-template>
+                <br>
+                {{ 'essOt.stat.thisYear' | translate:'Năm nay:' }} {{ otTotalYear() }}h
+                <ng-container *ngIf="otLimit100Enabled(); else noYearLimit">
+                  &nbsp;&nbsp;{{ 'essOt.stat.maxOt' | translate:'Tối đa:' }} 300h
+                  <span class="text-danger">{{ 'essOt.limited' | translate:'(có giới hạn)' }}</span>
+                </ng-container>
+                <ng-template #noYearLimit>
+                  &nbsp;&nbsp;<span class="text-success">{{ 'essOt.unlimitedYear' | translate:'(không giới hạn năm)' }}</span>
+                </ng-template>
+              </td>
+            </tr>
+            <tr>
+              <th class="table-light text-center">{{ 'essOt.otStartTimeLabel' | translate:'Thời gian bắt đầu tăng ca' }}</th>
+              <td class="d-flex align-items-center gap-2">
+                <nz-date-picker style="width:200px;" [(ngModel)]="otFromTime" (ngModelChange)="onTimeChange()"
+                                 nzFormat="yyyy-MM-dd HH:mm" [nzShowTime]="{ nzFormat: 'HH:mm' }"></nz-date-picker>
+                ~
+                <nz-date-picker style="width:200px;" [(ngModel)]="otToTime" (ngModelChange)="onTimeChange()"
+                                 nzFormat="yyyy-MM-dd HH:mm" [nzShowTime]="{ nzFormat: 'HH:mm' }"></nz-date-picker>
+              </td>
+              <th class="table-light text-center">{{ 'essOt.otType' | translate:'Hình thức tăng ca' }}</th>
+              <td>
+                <span class="form-control-plaintext form-control-sm">{{ otTypeName() }}</span>
+              </td>
+            </tr>
+            <tr>
+              <th class="table-light text-center">{{ 'essOt.inOutTime' | translate:'Thời gian vào ra' }}</th>
+              <td>
+                <span class="small">{{ 'essOt.inTime' | translate:'Thời gian vào' }}: </span><span class="fw-semibold">{{ indoorTime() }}</span><br>
+                <span class="small">{{ 'essOt.outTime' | translate:'Thời gian ra' }}: </span><span class="fw-semibold">{{ outdoorTime() }}</span>
+              </td>
+              <th class="table-light text-center">{{ 'essOt.shift' | translate:'Ca' }}</th>
+              <td>
+                <span class="small text-muted">{{ shiftName() }}</span>
+                <span class="small text-muted">{{ workTimeText() }}</span>
+              </td>
+            </tr>
+            <tr>
+              <th class="table-light text-center">{{ 'essOt.duration' | translate:'Thời lượng' }}</th>
+              <td>{{ duration() }}</td>
+              <th class="table-light text-center">{{ 'essOt.mealBreak' | translate:"Bảo cơm / Nghỉ ngơi (30')" }}</th>
+              <td>
+                <label nz-checkbox [(ngModel)]="mealCheck" (ngModelChange)="onMealCheckChange()">
+                  {{ 'essOt.yes' | translate:'Có' }}
+                </label>
+              </td>
+            </tr>
+            <tr>
+              <th class="table-light text-center">{{ 'essOt.reason' | translate:'Lý do' }}</th>
+              <td colspan="3">
+                <textarea nz-input [(ngModel)]="reason" rows="3" style="resize:vertical;"></textarea>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== Danh sách người phê duyệt ===== -->
+    <div class="card mb-3">
+      <div class="card-header py-2 fw-bold">{{ 'essOt.approverList' | translate:'Danh sách người phê duyệt' }}</div>
+      <div class="card-body p-0">
+        <nz-table [nzData]="approvers()" [nzLoading]="approversLoading()" [nzShowPagination]="false"
+                  nzSize="small" #soaApproverTable>
+          <thead>
+            <tr>
+              <th class="text-center" style="width:60px">{{ 'sa.col.stt' | translate:'STT' }}</th>
+              <th>{{ 'essOt.approver' | translate:'Người duyệt' }}</th>
+              <th class="text-center" style="width:120px">{{ 'sa.col.empId' | translate:'Mã nhân viên' }}</th>
+              <th>{{ 'sa.col.dept' | translate:'Phòng ban' }}</th>
+              <th>{{ 'sa.col.position' | translate:'Chức danh' }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="!approversLoading() && soaApproverTable.data.length === 0">
+              <td colspan="5" class="text-center text-muted">
+                {{ (approversLoaded() ? 'essOt.msg.noApprover' : 'essOt.selectDateFirst')
+                   | translate: (approversLoaded() ? 'Không có người phê duyệt' : 'Chọn ngày tăng ca để xem người phê duyệt') }}
+              </td>
+            </tr>
+            <tr *ngFor="let item of soaApproverTable.data; let i = index">
+              <td class="text-center">{{ item.affirmLevel || i + 1 }}</td>
+              <td>{{ item.localName }}</td>
+              <td class="text-center">{{ item.empId }}</td>
+              <td>{{ item.deptName }}</td>
+              <td>{{ item.postionName || item.positionName }}</td>
+            </tr>
+          </tbody>
+        </nz-table>
+      </div>
+    </div>
+
+    <!-- ===== Nút xin phép ===== -->
+    <div class="text-end mb-3">
+      <button nz-button nzType="primary" [nzLoading]="submitting()" (click)="submit()">
+        {{ 'essOt.submit' | translate:'Xin phép' }}
+      </button>
+    </div>
+
+  </div>
+</div>

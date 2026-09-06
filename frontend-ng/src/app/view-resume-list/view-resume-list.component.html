@@ -1,0 +1,151 @@
+<div class="row">
+  <div class="col-12">
+    <!-- Điều kiện tìm kiếm - đứng im khi cuộn (xem .sticky-filter-card trong styles.css) -->
+    <nz-card class="mb-3 sticky-filter-card">
+      <form class="row g-3" (ngSubmit)="search()">
+        <div class="col-md-3">
+          <label class="form-label">{{ 'orgResume.no' | translate:'Mã thay đổi' }}</label>
+          <input nz-input [(ngModel)]="searchNo" name="vrlSearchNo"
+                 [placeholder]="'orgResume.noPlaceholder' | translate:'Nhập mã thay đổi'">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'orgResume.resumeName' | translate:'Tên thay đổi' }}</label>
+          <input nz-input [(ngModel)]="searchResumeName" name="vrlSearchResumeName"
+                 [placeholder]="'orgResume.resumeNamePlaceholder' | translate:'Nhập tên thay đổi'">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'orgResume.changeDateFrom' | translate:'Ngày hiệu lực từ' }}</label>
+          <nz-date-picker class="w-100" [(ngModel)]="searchChangeDateFrom" name="vrlSearchChangeDateFrom" nzFormat="dd/MM/yyyy"></nz-date-picker>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'orgResume.changeDateTo' | translate:'Ngày hiệu lực đến' }}</label>
+          <nz-date-picker class="w-100" [(ngModel)]="searchChangeDateTo" name="vrlSearchChangeDateTo" nzFormat="dd/MM/yyyy"></nz-date-picker>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'common.status' | translate:'Trạng thái' }}</label>
+          <nz-select class="w-100" [(ngModel)]="searchActivity" name="vrlSearchActivity" nzAllowClear
+                     [nzPlaceHolder]="'common.selectAll' | translate:'-- Tất cả --'">
+            <nz-option [nzValue]="activeCode" [nzLabel]="'common.active' | translate:'Hoạt động'"></nz-option>
+            <nz-option [nzValue]="inactiveCode" [nzLabel]="'common.inactive' | translate:'Không hoạt động'"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-12 d-flex align-items-end gap-2 flex-wrap">
+          <button nz-button nzType="primary" type="button" (click)="openAddModal()">
+            <i class="bx bx-plus"></i> {{ 'common.addNew' | translate:'Thêm mới' }}
+          </button>
+          <button nz-button nzType="default" type="submit">
+            <i class="bx bx-search"></i> {{ 'common.search' | translate:'Tìm kiếm' }}
+          </button>
+          <button nz-button type="button" (click)="clearSearch()">
+            <i class="bx bx-x"></i> {{ 'common.clearFilter' | translate:'Xóa bộ lọc' }}
+          </button>
+          <button nz-button nzType="default" type="button" class="vrl-btn-export" [nzLoading]="exporting()" (click)="exportExcel()">
+            <i class="bx bx-export"></i> {{ 'common.exportExcel' | translate:'Xuất Excel' }}
+          </button>
+        </div>
+      </form>
+    </nz-card>
+
+    <nz-card>
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+      <!-- nzWidth khai báo cho từng cột để đồng bộ độ rộng header/body khi dùng nzScroll. -->
+      <nz-table [nzData]="rows()" [nzFrontPagination]="false" [nzLoading]="loading()"
+                [nzTotal]="recordsFiltered()" [nzPageIndex]="pageIndex" [nzPageSize]="pageSize"
+                [nzPageSizeOptions]="pageSizeOptions" nzShowSizeChanger [nzShowTotal]="vrlTotalTpl"
+                (nzPageIndexChange)="onPageIndexChange($event)" (nzPageSizeChange)="onPageSizeChange($event)"
+                [nzScroll]="{ x: '1300px' }" class="table-nowrap">
+        <thead>
+          <tr>
+            <th class="text-center" nzWidth="60px">{{ 'common.stt' | translate:'STT' }}</th>
+            <th nzWidth="130px">{{ 'orgResume.no' | translate:'Mã thay đổi' }}</th>
+            <th nzWidth="200px">{{ 'orgResume.resumeName' | translate:'Tên thay đổi' }}</th>
+            <th class="text-center" nzWidth="120px">{{ 'orgResume.changeDate' | translate:'Ngày hiệu lực' }}</th>
+            <th nzWidth="220px">{{ 'orgResume.changeReason' | translate:'Nguyên nhân' }}</th>
+            <th class="text-center" nzWidth="120px">{{ 'common.status' | translate:'Trạng thái' }}</th>
+            <th nzWidth="120px">{{ 'common.createdBy' | translate:'Người tạo' }}</th>
+            <th class="text-center" nzWidth="150px">{{ 'common.createDate' | translate:'Ngày tạo' }}</th>
+            <th class="text-center" nzWidth="100px">{{ 'common.action' | translate:'Thao tác' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!loading() && rows().length === 0">
+            <td colspan="9" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+          </tr>
+          <tr *ngFor="let row of rows(); let i = index">
+            <td class="text-center">{{ (pageIndex - 1) * pageSize + i + 1 }}</td>
+            <td>{{ row.no }}</td>
+            <td [attr.title]="row.resumeName || null">{{ row.resumeName }}</td>
+            <td class="text-center">{{ formatDisplayDate(row.changeDate) }}</td>
+            <td [attr.title]="row.changeReason || null">{{ row.changeReason }}</td>
+            <td class="text-center">
+              <nz-tag [nzColor]="row.activity === activeCode ? 'success' : 'default'">
+                {{ row.activity === activeCode ? ('common.active' | translate:'Hoạt động') : ('common.inactive' | translate:'Không hoạt động') }}
+              </nz-tag>
+            </td>
+            <td>{{ row.createdBy }}</td>
+            <td class="text-center">{{ formatDisplayDateTime(row.createDate) }}</td>
+            <td class="text-center">
+              <button nz-button nzType="text" nzSize="small" [title]="'common.edit' | translate:'Sửa'" (click)="openEditModal(row)">
+                <i class="bx bx-edit text-warning"></i>
+              </button>
+              <button nz-button nzType="text" nzSize="small" [title]="'common.delete' | translate:'Xóa'" (click)="openDeleteConfirm(row)">
+                <i class="bx bx-trash text-danger"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+        <ng-template #vrlTotalTpl let-total>
+          {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+        </ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>
+
+<!-- Modal Thêm mới / Cập nhật -->
+<nz-modal [nzVisible]="modalVisible()" [nzTitle]="modalTitle()" nzWidth="700px"
+          (nzOnCancel)="closeModal()" (nzOnOk)="saveForm()" [nzOkLoading]="saving()"
+          [nzOkText]="'common.save' | translate:'Lưu'" [nzCancelText]="'common.close' | translate:'Đóng'">
+  <ng-container *nzModalContent>
+    <div class="row g-3">
+      <div class="col-md-6" *ngIf="!isNew()">
+        <label class="form-label fw-semibold">{{ 'orgResume.no' | translate:'Mã thay đổi' }}</label>
+        <input nz-input [ngModel]="form.no" name="vrlFormNo" readonly>
+      </div>
+      <div class="col-md-6" [class.col-md-12]="isNew()">
+        <label class="form-label fw-semibold">{{ 'orgResume.resumeName' | translate:'Tên thay đổi' }} <span class="text-danger">*</span></label>
+        <input nz-input [(ngModel)]="form.resumeName" name="vrlFormResumeName">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'orgResume.changeDate' | translate:'Ngày hiệu lực' }} <span class="text-danger">*</span></label>
+        <nz-date-picker class="w-100" [(ngModel)]="form.changeDate" name="vrlFormChangeDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold d-block">{{ 'common.status' | translate:'Trạng thái' }}</label>
+        <nz-select class="w-100" [(ngModel)]="form.activity" name="vrlFormActivity">
+          <nz-option [nzValue]="activeCode" [nzLabel]="'common.active' | translate:'Hoạt động'"></nz-option>
+          <nz-option [nzValue]="inactiveCode" [nzLabel]="'common.inactive' | translate:'Không hoạt động'"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-12">
+        <label class="form-label fw-semibold">{{ 'orgResume.changeReason' | translate:'Nguyên nhân' }}</label>
+        <textarea nz-input [(ngModel)]="form.changeReason" name="vrlFormChangeReason" rows="3"></textarea>
+      </div>
+      <div class="col-12">
+        <label class="form-label fw-semibold">{{ 'common.remark' | translate:'Ghi chú' }}</label>
+        <textarea nz-input [(ngModel)]="form.remark" name="vrlFormRemark" rows="2"></textarea>
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal xác nhận xóa -->
+<nz-modal [nzVisible]="deleteVisible()" [nzTitle]="'common.confirm' | translate:'Xác nhận'"
+          (nzOnCancel)="closeDeleteConfirm()" (nzOnOk)="confirmDelete()" [nzOkLoading]="deleting()"
+          [nzOkText]="'common.confirm' | translate:'Xác nhận'" [nzCancelText]="'common.cancel' | translate:'Hủy'">
+  <ng-container *nzModalContent>
+    <p class="mb-1">{{ 'orgResume.confirmDelete' | translate:'Bạn có chắc chắn muốn xóa thay đổi tổ chức này?' }}</p>
+    <p class="fw-bold mb-0">{{ deleteTargetName }}</p>
+  </ng-container>
+</nz-modal>

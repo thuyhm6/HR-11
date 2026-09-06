@@ -1,0 +1,10 @@
+<nz-drawer nzTitle="Cài đặt giao diện" [nzVisible]="visible()" (nzOnClose)="close()" nzPlacement="right" [nzWidth]="320">
+  <ng-container *nzDrawerContent>
+    <h5 class="mb-3 fw-semibold">Kích thước Sidebar</h5>
+    <nz-radio-group [ngModel]="theme.menuSize()" (ngModelChange)="select($event)" class="d-flex flex-column gap-2">
+      <label nz-radio *ngFor="let opt of sizeOptions" [nzValue]="opt.value">{{ opt.label }}</label>
+    </nz-radio-group>
+
+    <button nz-button nzDanger nzBlock class="mt-4" (click)="reset()">Đặt lại</button>
+  </ng-container>
+</nz-drawer>

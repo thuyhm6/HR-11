@@ -27,11 +27,6 @@ public class EssLeaveApplyController {
     @Autowired
     private SyAffirmEmailService affirmorService;
 
-    @GetMapping("/viewApplyAttenanceManagentInfoList_new")
-    public String view() {
-        return "ar/attendanceMintenance/viewApplyAttenanceManagentInfoList_new";
-    }
-
     @GetMapping("/viewImportAttendanceTempList")
     public String viewImportAttendanceTempList() {
         return "ar/attendanceMintenance/viewImportAttendanceTempList";

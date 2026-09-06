@@ -1,0 +1,13 @@
+.vsp-decision-row {
+  cursor: pointer;
+}
+.vsp-decision-row:hover {
+  background: #fafafa;
+}
+.vsp-decision-row-active {
+  background: #e6f4ff;
+}
+.vsp-loading {
+  opacity: 0.6;
+  pointer-events: none;
+}

@@ -1,0 +1,82 @@
+<div class="row">
+  <div class="col-12">
+    <!-- Form tìm kiếm - đứng im khi cuộn (xem .sticky-filter-card trong styles.css) -->
+    <nz-card class="mb-3 sticky-filter-card">
+      <form class="row g-3 align-items-end" (ngSubmit)="search()">
+        <div class="col-md-2">
+          <label class="form-label">{{ 'common.year' | translate:'Năm' }}</label>
+          <nz-select [(ngModel)]="year" name="year" class="w-100">
+            <nz-option *ngFor="let y of years" [nzValue]="y" [nzLabel]="y"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'essDept.keyword' | translate:'Mã nhân viên / Họ tên' }}</label>
+          <input nz-input [(ngModel)]="keyword" name="keyword"
+                 [placeholder]="'vdp.search.empKeyword.placeholder' | translate:'Nhập mã hoặc họ tên'">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'common.deptName' | translate:'Phòng ban' }}</label>
+          <input nz-input [(ngModel)]="deptNos" name="deptNos"
+                 [placeholder]="'essDept.deptNos.placeholder' | translate:'VD: D001,D002'">
+        </div>
+        <div class="col-md-4">
+          <button nz-button nzType="primary" type="submit">{{ 'essDept.search' | translate:'Tra cứu' }}</button>
+          <button nz-button nzType="default" type="button" class="ms-2" (click)="exportReport()">{{ 'ess.viewMonthDetailList.btnExport' | translate:'Xuất báo cáo' }}</button>
+        </div>
+      </form>
+    </nz-card>
+
+    <!-- Bảng tổng hợp OT Đã duyệt / Xin phép theo tháng -->
+    <nz-card>
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+      <!-- Bọc div cuộn ngang thủ công (không dùng nzScroll) vì nz-table chỉ đồng bộ độ rộng cột
+           theo HÀNG ĐẦU TIÊN của thead (xem NzTheadComponent.ngAfterContentInit trong
+           ng-zorro-antd/table) - header 3 hàng rowspan/colspan ở đây có 28 cột lá nhưng hàng 1 chỉ có
+           5 th (1 ô gộp colspan=24 không có nzWidth), khiến colgroup đồng bộ sai và 24 cột tháng bị co
+           về 0 khi bật nzScroll. Không dùng nzScroll thì nz-table render bảng HTML thuần
+           (tableLayout=auto), trình duyệt tự xử lý rowspan/colspan đúng chuẩn, không cần đồng bộ. -->
+      <div class="table-scroll-wrapper">
+        <nz-table [nzData]="rows()" [nzFrontPagination]="false" [nzLoading]="loading()"
+                  [nzTotal]="recordsTotal()" [nzPageIndex]="pageIndex" [nzPageSize]="pageSize"
+                  [nzPageSizeOptions]="pageSizeOptions" nzShowSizeChanger
+                  (nzPageIndexChange)="onPageIndexChange($event)" (nzPageSizeChange)="onPageSizeChange($event)"
+                  class="table-nowrap">
+          <thead>
+              <tr>
+                <th rowspan="3">{{ 'common.stt' | translate:'STT' }}</th>
+                <th rowspan="3">{{ 'common.empId' | translate:'Mã nhân viên' }}</th>
+                <th rowspan="3">{{ 'common.empName' | translate:'Họ tên' }}</th>
+                <th rowspan="3">{{ 'common.deptName' | translate:'Bộ phận' }}</th>
+                <th [attr.colspan]="24">{{ 'common.year' | translate:'Năm' }} {{ year }}</th>
+              </tr>
+              <tr>
+                <th *ngFor="let m of monthColumns" colspan="2">{{ m.labelKey | translate:('Tháng ' + m.key) }}</th>
+              </tr>
+              <tr>
+                <ng-container *ngFor="let m of monthColumns">
+                  <th>{{ 'common.approved' | translate:'Đã duyệt' }}</th>
+                  <th>{{ 'ess.viewDeptOtApplyInfo.apply.b' | translate:'Xin phép' }}</th>
+                </ng-container>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngIf="!loading() && rows().length === 0">
+                <td [attr.colspan]="28" class="text-center">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+              </tr>
+              <tr *ngFor="let row of rows(); let i = index">
+                <td class="text-center">{{ (pageIndex - 1) * pageSize + i + 1 }}</td>
+                <td class="text-center" [attr.title]="row.empId || null">{{ row.empId }}</td>
+                <td [attr.title]="row.localName || null">{{ row.localName }}</td>
+                <td [attr.title]="row.deptName || null">{{ row.deptName }}</td>
+                <ng-container *ngFor="let m of monthColumns">
+                  <td class="text-end">{{ row[m.approvedField] }}</td>
+                  <td class="text-end">{{ row[m.applyField] }}</td>
+                </ng-container>
+              </tr>
+            </tbody>
+        </nz-table>
+      </div>
+    </nz-card>
+  </div>
+</div>

@@ -27,11 +27,6 @@ public class ArSupervisorController {
     @Autowired
     private HrEmployeeMapper empMapper;
 
-    @GetMapping("/viewAttendanceKeeper")
-    public String viewAttendanceKeeper() {
-        return "ar/attendanceSettings/viewAttendanceKeeper";
-    }
-
     // 1. Lấy danh sách Supervisor (Left Pane)
     @GetMapping("/api/arSupervisor")
     @ResponseBody

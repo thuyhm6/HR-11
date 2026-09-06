@@ -43,7 +43,7 @@ html[data-menu-color=light] {
 /* Main Menu Dark */
 html[data-menu-color=dark],
 html[data-bs-theme=dark][data-menu-color=light] {
-  --bs-main-nav-bg: #f4731f;
+  --bs-main-nav-bg: #dc6428;
   --bs-main-nav-item-color: #ffffff;
   --bs-main-nav-item-hover-bg: transparent;
   --bs-main-nav-item-hover-color: #ffffff;
@@ -52,7 +52,7 @@ html[data-bs-theme=dark][data-menu-color=light] {
 
 /* Topbar Light */
 html[data-topbar-color=light] {
-  --bs-topbar-bg: #f4731f;
+  --bs-topbar-bg: #dc6428;
   --bs-topbar-item-color: #fdfdff;
   --bs-topbar-search-bg: #eae8e8;
 }
@@ -3100,7 +3100,7 @@ progress {
 }
 
 .table-sm> :not(caption)>*>* {
-  padding: 0.5rem 0.5rem;
+  padding: 0.25rem 0.25rem;
 }
 
 .table-bordered> :not(caption)>* {
@@ -21026,10 +21026,10 @@ th {
   vertical-align: middle !important;
 }
 
-.table-nowrap th,
+/* .table-nowrap th,
 .table-nowrap td {
   white-space: nowrap;
-}
+} */
 
 .table tbody tr:last-child td {
   border-bottom: 0px;

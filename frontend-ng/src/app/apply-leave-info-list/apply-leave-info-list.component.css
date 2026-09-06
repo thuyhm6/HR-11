@@ -1,0 +1,6 @@
+.ali-row-clickable {
+  cursor: pointer;
+}
+.ali-row-clickable:hover {
+  background: #fafafa;
+}

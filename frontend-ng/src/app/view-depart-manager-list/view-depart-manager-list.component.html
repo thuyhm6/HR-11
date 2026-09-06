@@ -1,0 +1,97 @@
+<nz-card class="mb-3">
+  <div class="row align-items-end g-2 mb-2">
+    <div class="col-md-2">
+      <label class="form-label">{{ 'deptManage.field.date' | translate:'Ngày:' }}</label>
+      <nz-date-picker class="w-100" [(ngModel)]="lockDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">{{ 'deptManage.field.dept' | translate:'Phòng ban:' }}</label>
+      <nz-tree-select class="w-100" [nzNodes]="deptNodes()" [(ngModel)]="deptNos"
+                       nzCheckable nzShowSearch nzAllowClear
+                       [nzPlaceHolder]="'deptManage.placeholder.dept' | translate:'Mã / Tên phòng'"></nz-tree-select>
+      <div *ngIf="deptTreeErrorMessage()" class="text-danger small mt-1">{{ deptTreeErrorMessage() }}</div>
+    </div>
+    <div class="col-md-6 text-end">
+      <button nz-button nzType="primary" nzSize="small" type="button" [nzLoading]="loading()" (click)="search()">
+        <i class="bx bx-search"></i> {{ 'deptManage.btn.search' | translate:'Tra cứu' }}
+      </button>
+      <button nz-button nzType="default" nzSize="small" type="button" class="vdm-btn-save"
+              [nzLoading]="saving()" (click)="save()">
+        <i class="bx bx-save"></i> {{ 'common.save' | translate:'Lưu' }}
+      </button>
+      <button nz-button nzType="default" nzSize="small" type="button" class="vdm-btn-export" (click)="exportExcel()">
+        <i class="bx bx-export"></i> {{ 'deptManage.btn.export' | translate:'Xuất Excel' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Toolbar tác động nhanh (Mass Actions) -->
+  <div class="bg-light p-2 border rounded">
+    <div class="row align-items-center text-center vdm-mass-toolbar">
+      <div *ngFor="let g of lockColumnGroups" class="col-md-2 border-end">
+        <div class="fw-bold mb-1">{{ g.labelKey | translate:g.labelFallback }}</div>
+        <div>
+          <label nz-checkbox [(ngModel)]="massToggle[g.day]" class="me-2">{{ 'deptManage.col.dayShift' | translate:'Ca ngày' }}</label>
+          <label nz-checkbox [(ngModel)]="massToggle[g.night]">{{ 'deptManage.col.nightShift' | translate:'Ca đêm' }}</label>
+        </div>
+      </div>
+      <div class="col-md-4 text-end">
+        <button nz-button nzType="default" nzSize="small" class="me-1" type="button" (click)="applyMassToggle(false)">
+          <i class="bx bx-lock-open"></i> {{ 'deptManage.btn.openRequest' | translate:'Mở xin phép' }}
+        </button>
+        <button nz-button nzType="default" nzSize="small" nzDanger type="button" (click)="applyMassToggle(true)">
+          <i class="bx bx-lock"></i> {{ 'deptManage.btn.closeRequest' | translate:'Đóng xin phép' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</nz-card>
+
+<nz-card>
+  <nz-table #dmTable [nzData]="visibleRows()" [nzLoading]="loading()" [nzShowPagination]="false"
+            [nzScroll]="{ y: 'calc(100vh - 380px)' }" nzSize="small" class="vdm-table">
+    <thead>
+      <tr>
+        <th rowspan="2" class="text-start" nzWidth="25%">{{ 'common.deptName' | translate:'Phòng ban' }}</th>
+        <th rowspan="2" nzWidth="90px">{{ 'common.date' | translate:'Ngày' }}</th>
+        <th *ngFor="let g of lockColumnGroups" colspan="2">{{ g.labelKey | translate:g.labelFallback }}</th>
+        <th rowspan="2">{{ 'deptManage.col.updatedBy' | translate:'Người thay đổi' }}</th>
+        <th rowspan="2" nzWidth="10%">{{ 'deptManage.col.updateTime' | translate:'Thời gian thay đổi' }}</th>
+      </tr>
+      <tr>
+        <ng-container *ngFor="let g of lockColumnGroups">
+          <th nzWidth="70px">
+            {{ 'deptManage.col.dayShift' | translate:'Ca ngày' }}
+            <input type="checkbox" class="form-check-input ms-1" [(ngModel)]="headerSelectAll[g.day]" (ngModelChange)="onSelectAllColumn(g.day)">
+          </th>
+          <th nzWidth="70px">
+            {{ 'deptManage.col.nightShift' | translate:'Ca đêm' }}
+            <input type="checkbox" class="form-check-input ms-1" [(ngModel)]="headerSelectAll[g.night]" (ngModelChange)="onSelectAllColumn(g.night)">
+          </th>
+        </ng-container>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngIf="!loading() && dmTable.data.length === 0">
+        <td [attr.colspan]="4 + allLockColumns.length" class="text-center text-muted py-3">
+          {{ 'deptManage.js.noData' | translate:'Không có dữ liệu (có thể hệ thống chưa đồng bộ phòng ban).' }}
+        </td>
+      </tr>
+      <tr *ngFor="let row of dmTable.data" [class.table-warning]="row.modified">
+        <td class="text-start" [style.paddingLeft.px]="row.level * 20 + 10">
+          <i *ngIf="row.hasChildren" class="bx vdm-tree-icon border rounded bg-white text-primary"
+             [class.bx-minus]="!isCollapsed(row.deptNo)" [class.bx-plus]="isCollapsed(row.deptNo)"
+             (click)="toggleRow(row.deptNo)"></i>
+          <span *ngIf="!row.hasChildren" class="vdm-tree-icon"></span>
+          <span class="fw-bold ms-1" [title]="row.deptNo">{{ row.dispDeptName }}</span>
+        </td>
+        <td class="text-center">{{ lockDate | date:'dd/MM/yyyy' }}</td>
+        <td *ngFor="let col of allLockColumns" class="text-center">
+          <input type="checkbox" class="form-check-input" [(ngModel)]="row[col]" (ngModelChange)="markModified(row)">
+        </td>
+        <td class="text-center">{{ row.updatedBy }}</td>
+        <td class="text-center vdm-update-time">{{ row.updateDate ? (row.updateDate | date:'dd/MM/yyyy HH:mm') : '' }}</td>
+      </tr>
+    </tbody>
+  </nz-table>
+</nz-card>

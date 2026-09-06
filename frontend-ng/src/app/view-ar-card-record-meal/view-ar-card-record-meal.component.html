@@ -1,0 +1,139 @@
+<div class="row">
+  <div class="col-12">
+    <!-- Điều kiện tìm kiếm - đứng im khi cuộn (xem .sticky-filter-card trong styles.css) -->
+    <nz-card class="mb-3 sticky-filter-card">
+      <form class="row g-3 align-items-end" (ngSubmit)="search()">
+        <div class="col-md-3">
+          <label class="form-label">{{ 'common.search.empIdOrName' | translate:'Mã nhân viên / Họ tên' }}</label>
+          <input nz-input [(ngModel)]="keyword" name="keyword"
+                 [placeholder]="'common.placeholder.enterEmpId' | translate:'Nhập mã hoặc họ tên'">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'common.deptName' | translate:'Phòng ban' }}</label>
+          <nz-tree-select class="w-100" [nzNodes]="deptNodes()" [(ngModel)]="deptNos" name="deptNos"
+                           nzCheckable nzShowSearch nzAllowClear
+                           [nzPlaceHolder]="'common.select' | translate:'Chọn phòng ban'"></nz-tree-select>
+          <div *ngIf="deptTreeErrorMessage()" class="text-danger small mt-1">{{ deptTreeErrorMessage() }}</div>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'common.fromDate' | translate:'Từ ngày' }}</label>
+          <nz-date-picker class="w-100" [(ngModel)]="fromDate" name="fromDate" nzFormat="yyyy-MM-dd"></nz-date-picker>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'common.toDate' | translate:'Đến ngày' }}</label>
+          <nz-date-picker class="w-100" [(ngModel)]="toDate" name="toDate" nzFormat="yyyy-MM-dd"></nz-date-picker>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'acrm.filter.eatDate' | translate:'Phân loại' }}</label>
+          <nz-select class="w-100" [(ngModel)]="eatDate" name="eatDate" nzAllowClear
+                     [nzPlaceHolder]="'acrm.eatDate.all' | translate:'Tất cả'">
+            <nz-option nzValue="BREAKFAST" [nzLabel]="'acrm.eatDate.breakfast' | translate:'Bữa sáng'"></nz-option>
+            <nz-option nzValue="LUNCH" [nzLabel]="'acrm.eatDate.lunch' | translate:'Bữa trưa'"></nz-option>
+            <nz-option nzValue="DINNER" [nzLabel]="'acrm.eatDate.dinner' | translate:'Bữa tối'"></nz-option>
+            <nz-option nzValue="NIGHT" [nzLabel]="'acrm.eatDate.night' | translate:'Ca đêm'"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-12 d-flex align-items-end gap-2 flex-wrap justify-content-end">
+          <button nz-button nzType="primary" type="submit">
+            <i class="bx bx-search"></i> {{ 'common.search' | translate:'Tra cứu' }}
+          </button>
+          <button nz-button type="button" (click)="clearSearch()">
+            <i class="bx bx-x"></i> {{ 'common.clearFilter' | translate:'Xóa lọc' }}
+          </button>
+          <button nz-button nzType="default" type="button" (click)="exportExcel()">
+            <i class="bx bx-export"></i> {{ 'common.exportExcel' | translate:'Xuất Excel' }}
+          </button>
+          <button nz-button nzType="default" type="button" (click)="openImportModal()">
+            <i class="bx bx-bowl-hot"></i> {{ 'acrm.imp.title' | translate:'Đọc dữ liệu suất ăn từ máy chủ' }}
+          </button>
+        </div>
+      </form>
+    </nz-card>
+
+    <nz-card>
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+      <nz-table [nzData]="rows()" [nzFrontPagination]="false" [nzLoading]="loading()"
+                [nzTotal]="recordsTotal()" [nzPageIndex]="pageIndex" [nzPageSize]="pageSize"
+                [nzPageSizeOptions]="pageSizeOptions" nzShowSizeChanger [nzShowTotal]="acrmTotalTpl"
+                (nzPageIndexChange)="onPageIndexChange($event)" (nzPageSizeChange)="onPageSizeChange($event)"
+                [nzScroll]="{ x: '1500px', y: 'calc(100vh - 380px)' }"
+                class="table-nowrap">
+        <!-- nzWidth khai báo cho từng cột để đồng bộ độ rộng header/body khi dùng nzScroll (xem
+             giải thích ở dept-ot-apply-info.component.html). -->
+        <thead>
+          <tr>
+            <th class="text-center" nzWidth="60px">{{ 'common.stt' | translate:'STT' }}</th>
+            <th class="text-center" nzWidth="100px">{{ 'common.empId' | translate:'Mã nhân viên' }}</th>
+            <th nzWidth="140px">{{ 'common.empName' | translate:'Họ tên' }}</th>
+            <th nzWidth="160px">{{ 'common.deptName' | translate:'Phòng ban' }}</th>
+            <th nzWidth="120px">{{ 'common.position' | translate:'Chức vụ' }}</th>
+            <th class="text-center" nzWidth="100px">{{ 'acrm.col.attendanceDate' | translate:'Ngày công' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'acrm.col.rDate' | translate:'Ngày quẹt thẻ' }}</th>
+            <th class="text-center" nzWidth="120px">{{ 'acrm.col.rTime' | translate:'Thời gian quẹt thẻ' }}</th>
+            <th nzWidth="150px">{{ 'acrm.col.eatName' | translate:'Tên món ăn' }}</th>
+            <th class="text-center" nzWidth="100px">{{ 'acrm.col.eatDate' | translate:'Phân loại' }}</th>
+            <th class="text-center" nzWidth="90px">{{ 'acrm.col.amount' | translate:'Số lượng' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'acrm.col.outdoorTime' | translate:'Thời gian ra' }}</th>
+            <th nzWidth="160px">{{ 'acrm.col.remark' | translate:'Ghi chú' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of rows(); let i = index">
+            <td class="text-center">{{ (pageIndex - 1) * pageSize + i + 1 }}</td>
+            <td class="text-center" [attr.title]="row.empId || null">{{ row.empId }}</td>
+            <td [attr.title]="row.localName || null">{{ row.localName }}</td>
+            <td [attr.title]="row.deptName || null">{{ row.deptName }}</td>
+            <td [attr.title]="row.postGradeName || null">{{ row.postGradeName }}</td>
+            <td class="text-center">{{ row.attendanceDate }}</td>
+            <td class="text-center">{{ row.rDate }}</td>
+            <td class="text-center">{{ row.rTime }}</td>
+            <td [attr.title]="row.eatName || null">{{ row.eatName }}</td>
+            <td class="text-center">{{ row.eatDate }}</td>
+            <td class="text-center">{{ row.amount }}</td>
+            <td class="text-center">{{ row.outdoorTime }}</td>
+            <td [attr.title]="row.remark || null">{{ row.remark }}</td>
+          </tr>
+        </tbody>
+        <ng-template #acrmTotalTpl let-total>
+          {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+        </ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>
+
+<!-- ===== Modal Đọc dữ liệu suất ăn từ máy chủ ===== -->
+<nz-modal [nzVisible]="impModalVisible()" [nzTitle]="'acrm.imp.title' | translate:'Đọc dữ liệu suất ăn từ máy chủ'"
+          nzWidth="480px" (nzOnCancel)="closeImportModal()" [nzOkLoading]="impRunning()"
+          [nzOkText]="'acrm.imp.btnRun' | translate:'Thực hiện'" [nzCancelText]="'common.close' | translate:'Đóng'"
+          (nzOnOk)="runImport()">
+  <ng-container *nzModalContent>
+    <div class="acrm-form-row-2">
+      <div class="acrm-form-row">
+        <label>{{ 'common.fromDate' | translate:'Từ ngày' }}</label>
+        <nz-date-picker class="w-100" [(ngModel)]="impFromDate" name="impFromDate" nzFormat="yyyy-MM-dd"></nz-date-picker>
+      </div>
+      <div class="acrm-form-row">
+        <label>{{ 'common.toDate' | translate:'Đến ngày' }}</label>
+        <nz-date-picker class="w-100" [(ngModel)]="impToDate" name="impToDate" nzFormat="yyyy-MM-dd"></nz-date-picker>
+      </div>
+    </div>
+
+    <div *ngIf="impRunning()" class="text-center mt-3">
+      <div class="spinner-border text-warning" role="status"></div>
+      <div class="mt-2 text-muted">{{ 'acrm.imp.processing' | translate:'Đang kết nối và đọc dữ liệu suất ăn...' }}</div>
+    </div>
+
+    <div *ngIf="!impRunning() && impResult() as res" class="mt-3">
+      <hr>
+      <nz-alert [nzType]="res.success ? 'success' : 'error'" [nzMessage]="res.message || ''" nzShowIcon></nz-alert>
+      <ul *ngIf="res.success" class="mt-2 mb-0">
+        <li>{{ 'acr.imp.result.total' | translate:'Tổng bản ghi từ máy chủ' }}: <strong>{{ res.total || 0 }}</strong></li>
+        <li>{{ 'acr.imp.result.imported' | translate:'Đã lưu mới' }}: <strong class="text-success">{{ res.imported || 0 }}</strong></li>
+        <li>{{ 'acr.imp.result.skipped' | translate:'Bỏ qua (trùng)' }}: <strong>{{ res.skipped || 0 }}</strong></li>
+        <li>{{ 'acr.imp.result.notFound' | translate:'Không tìm thấy nhân viên' }}: <strong class="text-warning">{{ res.notFound || 0 }}</strong></li>
+      </ul>
+    </div>
+  </ng-container>
+</nz-modal>

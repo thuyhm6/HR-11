@@ -24,10 +24,8 @@ public class SyCodeController {
     @Autowired
     private SyCodeService syCodeService;
 
-    @GetMapping("/basicMaintenance/viewCodeManage")
-    public String viewCodeManage() {
-        return "sys/basicMaintenance/viewCodeManage";
-    }
+    // Trang Thymeleaf viewCodeManage.html đã được thay bằng Angular route /view-code-manage (xem
+    // ViewCodeManageComponent) - các API JSON bên dưới vẫn giữ nguyên, không đổi backend.
 
     @GetMapping("/api/code/tree")
     @ResponseBody

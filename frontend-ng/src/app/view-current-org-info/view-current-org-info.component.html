@@ -1,0 +1,96 @@
+<div class="row">
+  <!-- Cây tổ chức bên trái -->
+  <div class="col-md-3 mb-3">
+    <nz-card [nzTitle]="'org.orgManage.title.orgHorizView' | translate:'Sơ đồ tổ chức'" [nzBodyStyle]="{ padding: '12px' }">
+      <input nz-input class="mb-2" id="currOrgTreeSearch" [(ngModel)]="treeSearchValue" name="currOrgTreeSearch"
+             [placeholder]="'orgCompose.searchTreePlaceholder' | translate:'Tìm kiếm phòng ban...'">
+
+      <div class="mb-2 btn-group">
+        <button nz-button nzSize="small" type="button" id="currOrgBtnExpandAll" (click)="expandAllNodes()">
+          {{ 'orgCompose.expandAll' | translate:'Mở tất cả' }}
+        </button>
+        <button nz-button nzSize="small" type="button" id="currOrgBtnCollapseAll" (click)="collapseAllNodes()">
+          {{ 'orgCompose.collapseAll' | translate:'Đóng tất cả' }}
+        </button>
+      </div>
+
+      <nz-spin [nzSpinning]="loadingTree()">
+        <div class="curr-org-tree-scroll">
+          <nz-tree [nzData]="treeNodes()" [nzSearchValue]="treeSearchValue" nzSelectMode
+                   [(nzExpandedKeys)]="expandedKeys" [nzSelectedKeys]="selectedDeptKey ? [selectedDeptKey] : []"
+                   (nzClick)="onTreeClick($event)"></nz-tree>
+          <div *ngIf="!loadingTree() && treeNodes().length === 0" class="text-muted fst-italic p-2">
+            {{ 'orgCompose.msg.noOrgData' | translate:'Không có dữ liệu tổ chức' }}
+          </div>
+        </div>
+      </nz-spin>
+    </nz-card>
+  </div>
+
+  <!-- Thông tin phòng ban + danh sách nhân viên bên phải -->
+  <div class="col-md-9 mb-3">
+    <nz-card [nzTitle]="panelTitle()" [nzExtra]="currOrgExtra">
+      <ng-template #currOrgExtra>
+        <button nz-button nzSize="small" type="button" id="currOrgBtnExportExcel" (click)="exportExcel()">
+          <i class="bx bx-file-blank"></i> {{ 'common.exportExcel' | translate:'Xuất Excel' }}
+        </button>
+      </ng-template>
+
+      <div class="row mb-3" *ngIf="selectedDept() as dept">
+        <div class="col-md-3 mb-2">
+          <strong>{{ 'evs.manage.viewEvsSchedulePanel.col.deptName' | translate:'Tên phòng ban' }}:</strong>
+          <span class="text-primary">{{ dept.orgNameLocal }}</span>
+        </div>
+        <div class="col-md-3 mb-2">
+          <strong>{{ 'org.title.DEPT_ID' | translate:'ID phòng ban' }}:</strong> <span>{{ dept.deptNo }}</span>
+        </div>
+        <div class="col-md-3 mb-2">
+          <strong>{{ 'org.orgManage.DEPARTMENT_INFORMATION.Z' | translate:'Trưởng phòng' }}:</strong>
+          <span>{{ managerDisplay(dept) }}</span>
+        </div>
+        <div class="col-md-3 mb-2">
+          <strong>{{ 'org.orgManage.title.deptType' | translate:'Loại hình phòng ban' }}:</strong> <span>{{ dept.deptType }}</span>
+        </div>
+        <div class="col-md-3 mb-2">
+          <strong>{{ 'orgCompose.costCenter' | translate:'Mã chi phí' }}:</strong> <span>{{ costCenterDisplay(dept) }}</span>
+        </div>
+        <div class="col-12"><hr class="my-2"></div>
+      </div>
+
+      <nz-table [nzData]="employees()" [nzLoading]="loadingEmployees()" [nzPageSize]="20" [nzShowSizeChanger]="true"
+                [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="currOrgTotalTpl"
+                [nzScroll]="{ y: 'calc(100vh - 420px)' }" #currOrgEmpTable>
+        <thead>
+          <tr>
+            <th nzWidth="60px" class="text-center">{{ 'common.stt' | translate:'STT' }}</th>
+            <th>{{ 'org.title.EMPID' | translate:'Mã nhân viên' }}</th>
+            <th>{{ 'sys.affirm.title.personName' | translate:'Tên nhân viên' }}</th>
+            <th>{{ 'org.title.ORG_NAME_ENG' | translate:'Tên tiếng Anh' }}</th>
+            <th>{{ 'hrm.empinfo.workexp.position' | translate:'Vị trí' }}</th>
+            <th>{{ 'org.title.DATE_STARTED' | translate:'Ngày vào làm' }}</th>
+            <th class="text-center">{{ 'common.status' | translate:'Trạng thái' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!loadingEmployees() && employees().length === 0">
+            <td colspan="7" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+          </tr>
+          <tr *ngFor="let emp of currOrgEmpTable.data; let i = index">
+            <td class="text-center">{{ i + 1 }}</td>
+            <td>{{ emp.empId }}</td>
+            <td>{{ emp.localName }}</td>
+            <td>{{ emp.englishName }}</td>
+            <td>{{ emp.position }}</td>
+            <td>{{ formatDateStarted(emp.dateStarted) }}</td>
+            <td class="text-center">
+              {{ isActiveEmp(emp) ? ('common.active' | translate:'Hoạt động') : ('common.inactive' | translate:'Không hoạt động') }}
+            </td>
+          </tr>
+        </tbody>
+        <ng-template #currOrgTotalTpl let-total>
+          {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+        </ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>

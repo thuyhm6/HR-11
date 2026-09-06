@@ -1,0 +1,234 @@
+<div class="row">
+  <div class="col-12">
+    <!-- Điều kiện tìm kiếm - đứng im khi cuộn (xem .sticky-filter-card trong styles.css) -->
+    <nz-card class="mb-3 sticky-filter-card">
+      <form class="row g-3" (ngSubmit)="search()">
+        <div class="col-md-2">
+          <label class="form-label">{{ 'common.empId' | translate:'Mã nhân viên' }}</label>
+          <input nz-input [(ngModel)]="searchEmpId" name="searchEmpId"
+                 [placeholder]="'common.placeholder.enterEmpId' | translate:'Nhập mã nhân viên'">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'common.empName' | translate:'Tên nhân viên' }}</label>
+          <input nz-input [(ngModel)]="searchEmpName" name="searchEmpName"
+                 [placeholder]="'common.placeholder.enterEmpName' | translate:'Nhập tên nhân viên'">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'common.fromDate' | translate:'Từ ngày' }}</label>
+          <nz-date-picker class="w-100" [(ngModel)]="searchFromDate" name="searchFromDate" nzFormat="yyyy-MM-dd"></nz-date-picker>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'common.toDate' | translate:'Đến ngày' }}</label>
+          <nz-date-picker class="w-100" [(ngModel)]="searchToDate" name="searchToDate" nzFormat="yyyy-MM-dd"></nz-date-picker>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'arOtf.affirmFlag' | translate:'Trạng thái đơn tăng ca' }}</label>
+          <nz-select class="w-100" [(ngModel)]="searchAffirmFlag" name="searchAffirmFlag" nzAllowClear
+                     [nzPlaceHolder]="'common.selectAll' | translate:'-- Tất cả --'">
+            <nz-option *ngFor="let o of affirmFlagOptions" [nzValue]="o.value" [nzLabel]="o.labelKey | translate:o.fallback"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'arOtf.confirmFlag' | translate:'Trạng thái xác nhận' }}</label>
+          <nz-select class="w-100" [(ngModel)]="searchConfirmFlag" name="searchConfirmFlag" nzAllowClear
+                     [nzPlaceHolder]="'common.selectAll' | translate:'-- Tất cả --'">
+            <nz-option *ngFor="let o of confirmFlagOptions" [nzValue]="o.value" [nzLabel]="o.labelKey | translate:o.fallback"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-12 d-flex align-items-end gap-2 flex-wrap">
+          <button nz-button nzType="primary" type="submit">
+            <i class="bx bx-search"></i> {{ 'common.search' | translate:'Tìm kiếm' }}
+          </button>
+          <button nz-button type="button" (click)="clearSearch()">
+            <i class="bx bx-x"></i> {{ 'common.clearFilter' | translate:'Xóa lọc' }}
+          </button>
+          <button nz-button nzType="primary" type="button" (click)="addEmptyRow()">
+            <i class="bx bx-plus"></i> {{ 'common.addNew' | translate:'Thêm mới' }}
+          </button>
+          <button nz-button nzType="primary" type="button" [nzLoading]="saving()" (click)="saveAll()">
+            <i class="bx bx-save"></i> {{ 'common.save' | translate:'Lưu' }}
+          </button>
+          <button nz-button nzDanger type="button" [nzLoading]="cancelling()" (click)="cancelSelected()">
+            <i class="bx bx-x-circle"></i> {{ 'arOtf.cancelBatch' | translate:'Hủy bỏ' }}
+          </button>
+          <button nz-button type="button" (click)="downloadTemplate()">
+            <i class="bx bx-download"></i> {{ 'common.downloadTemplate' | translate:'Tải File Mẫu' }}
+          </button>
+          <button nz-button type="button" [nzLoading]="importing()" (click)="importFileInput.click()">
+            <i class="bx bx-upload"></i> {{ 'common.importExcel' | translate:'Import Excel' }}
+          </button>
+          <input #importFileInput type="file" hidden accept=".xlsx,.xls" (change)="onImportFileSelected($event)">
+        </div>
+      </form>
+    </nz-card>
+
+    <nz-card>
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+      <nz-table [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="25" [nzShowSizeChanger]="true"
+                [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="oabTotalTpl"
+                [nzScroll]="{ x: '2500px', y: 'calc(100vh - 320px)' }"
+                class="table-nowrap" #oabTable>
+        <!-- nzWidth khai báo cho từng cột để đồng bộ độ rộng header/body khi dùng nzScroll (xem
+             giải thích ở dept-ot-apply-info.component.html). -->
+        <thead>
+          <tr>
+            <th nzWidth="50px">
+              <label nz-checkbox [ngModel]="allCancelableSelected" [nzIndeterminate]="someCancelableSelected"
+                     (ngModelChange)="toggleSelectAll($event)"></label>
+            </th>
+            <th class="text-center" nzWidth="60px">{{ 'common.stt' | translate:'STT' }}</th>
+            <th nzWidth="220px">{{ 'common.empName' | translate:'Nhân viên' }}</th>
+            <th nzWidth="150px">{{ 'common.deptName' | translate:'Phòng ban' }}</th>
+            <th nzWidth="150px">{{ 'arOtf.otType' | translate:'Loại tăng ca' }}</th>
+            <th nzWidth="150px">{{ 'arOtf.otDate' | translate:'Ngày tăng ca' }}</th>
+            <th nzWidth="180px">{{ 'arOtf.fromHour' | translate:'Từ giờ' }}</th>
+            <th nzWidth="180px">{{ 'arOtf.toHour' | translate:'Đến giờ' }}</th>
+            <th class="text-center" nzWidth="100px">{{ 'ps.col.indoorTime' | translate:'Giờ vào' }}</th>
+            <th class="text-center" nzWidth="100px">{{ 'ps.col.outdoorTime' | translate:'Giờ ra' }}</th>
+            <th class="text-end" nzWidth="80px">{{ 'common.hours' | translate:'Số giờ' }}</th>
+            <th class="text-center" nzWidth="90px">{{ 'impOt.deductYn' | translate:'Trừ ăn nghỉ' }}</th>
+            <th nzWidth="220px">{{ 'common.reason' | translate:'Lý do' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'arOtf.otTotalMonth' | translate:'Tổng tăng ca tháng này' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'arOtf.otTotalYear' | translate:'Tổng tăng ca năm này' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'common.status' | translate:'Trạng thái' }}</th>
+            <th nzWidth="160px">{{ 'common.creator' | translate:'Người tạo' }}</th>
+            <th nzWidth="160px">{{ 'common.updater' | translate:'Người sửa' }}</th>
+            <th nzWidth="220px">{{ 'common.approver' | translate:'Người duyệt' }}</th>
+            <th class="text-center" nzWidth="80px">{{ 'common.action' | translate:'Thao tác' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of oabTable.data; let i = index; trackBy: trackByRow">
+            <td class="text-center">
+              <label nz-checkbox *ngIf="isCancelable(row)" [(ngModel)]="row.selected"></label>
+            </td>
+            <td class="text-center">{{ i + 1 }}</td>
+
+            <!-- Nhân viên: dòng mới -> gõ tìm (nz-autocomplete), dòng đã lưu -> link mở chi tiết đơn -->
+            <td>
+              <ng-container *ngIf="row.isNew; else empDisplay">
+                <input nz-input [ngModel]="row.empKeyword" (ngModelChange)="onEmpKeywordChange(row, $event)"
+                       [nzAutocomplete]="empAuto" [placeholder]="'arOtf.selectEmp' | translate:'Chọn NV...'">
+                <nz-autocomplete #empAuto>
+                  <nz-auto-option *ngFor="let opt of row.empOptions" [nzValue]="opt" (click)="onEmpSelected(row, opt)">
+                    {{ opt.empId }} - {{ opt.localName }} <small class="text-muted">({{ opt.deptName }})</small>
+                  </nz-auto-option>
+                </nz-autocomplete>
+              </ng-container>
+              <ng-template #empDisplay>
+                <a href="javascript:void(0)" (click)="openDetail(row)">{{ row.empId }} - {{ row.localName }}</a>
+              </ng-template>
+            </td>
+
+            <td [attr.title]="row.deptName || null">{{ row.deptName }}</td>
+            <td [attr.title]="row.otTypeName || null">{{ row.otTypeName }}</td>
+
+            <td>
+              <nz-date-picker class="w-100" [ngModel]="row.applyOtDateObj" (ngModelChange)="onDateChange(row, $event)"
+                              nzFormat="yyyy-MM-dd"></nz-date-picker>
+            </td>
+            <td>
+              <nz-date-picker class="w-100" [ngModel]="row.otFromTimeObj" (ngModelChange)="onTimeChange(row, 'from', $event)"
+                              nzFormat="yyyy-MM-dd HH:mm" [nzShowTime]="{ nzFormat: 'HH:mm' }"></nz-date-picker>
+            </td>
+            <td>
+              <nz-date-picker class="w-100" [ngModel]="row.otToTimeObj" (ngModelChange)="onTimeChange(row, 'to', $event)"
+                              nzFormat="yyyy-MM-dd HH:mm" [nzShowTime]="{ nzFormat: 'HH:mm' }"></nz-date-picker>
+            </td>
+            <td class="text-center">{{ row.indoorTime }}</td>
+            <td class="text-center">{{ row.outdoorTime }}</td>
+            <td class="text-end">{{ row.otApplyHour }}</td>
+            <td class="text-center">
+              <label nz-checkbox [ngModel]="row.deductYn === '1'" (ngModelChange)="onDeductYnChange(row, $event)"></label>
+            </td>
+            <td>
+              <input nz-input [(ngModel)]="row.applyOtRemark">
+            </td>
+            <td class="text-center">{{ row.otTotalMonth }}</td>
+            <td class="text-center">{{ row.otTotalYear }}</td>
+            <td class="text-center">
+              <nz-tag [nzColor]="affirmBadge(row.affirmFlag).color || undefined">
+                {{ affirmBadge(row.affirmFlag).labelKey ? (affirmBadge(row.affirmFlag).labelKey | translate:affirmBadge(row.affirmFlag).fallback) : affirmBadge(row.affirmFlag).fallback }}
+              </nz-tag>
+            </td>
+            <td>
+              <ng-container *ngIf="!row.isNew">{{ row.createdBy }}<br><small class="text-muted">{{ row.createDate }}</small></ng-container>
+            </td>
+            <td>
+              <ng-container *ngIf="!row.isNew">{{ row.updatedBy }}<br><small class="text-muted">{{ row.updateDate }}</small></ng-container>
+            </td>
+            <td [attr.title]="row.affirmStr || null" [innerHTML]="row.affirmStr"></td>
+
+            <td class="text-center">
+              <button *ngIf="row.isNew" nz-button nzDanger nzSize="small" nzShape="circle" (click)="removeNewRow(row)" title="Loại bỏ dòng này">
+                <i class="bx bx-minus"></i>
+              </button>
+              <button *ngIf="!row.isNew && row.affirmFlag === AFFIRM_APPROVED" nz-button nzType="primary" nzSize="small" nzShape="circle"
+                      [nzLoading]="row.resubmitting" (click)="resubmitLine(row)" title="Lưu lại đơn">
+                <i class="bx bx-save"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+        <ng-template #oabTotalTpl let-total>
+          {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+        </ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>
+
+<!-- Modal chi tiết đơn tăng ca (dòng đã lưu) -->
+<nz-modal [nzVisible]="detailVisible()" [nzTitle]="'arOtf.otInfo' | translate:'Thông tin tăng ca'" nzWidth="55vw"
+          [nzBodyStyle]="{ 'max-height': '75vh', 'overflow-y': 'auto' }"
+          (nzOnCancel)="closeDetail()" [nzFooter]="null">
+  <ng-container *nzModalContent>
+    <nz-alert *ngIf="detailErrorMessage()" nzType="error" [nzMessage]="detailErrorMessage() ?? ''" class="mb-3"></nz-alert>
+    <ng-container *ngIf="!detailLoading() && detailData() as d">
+      <h6 class="fw-bold mb-2">{{ 'arOtf.empInfo' | translate:'Thông tin nhân viên' }}</h6>
+      <nz-descriptions nzBordered [nzColumn]="2" nzSize="small" class="mb-3">
+        <nz-descriptions-item [nzTitle]="'common.empId' | translate:'Mã nhân viên'">{{ d.employeeInfo?.['empId'] }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'common.empName' | translate:'Họ tên'">{{ d.employeeInfo?.['localName'] }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'common.deptName' | translate:'Phòng ban'">{{ d.employeeInfo?.['deptName'] }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'arOtf.otType' | translate:'Loại tăng ca'">{{ d.otInfo?.['otTypeName'] }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'arOtf.fromHour' | translate:'Từ giờ'">{{ d.otInfo?.['otFromTime'] }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'arOtf.toHour' | translate:'Đến giờ'">{{ d.otInfo?.['otToTime'] }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'common.hours' | translate:'Số giờ'">{{ d.otInfo?.['otApplyHour'] }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'common.status' | translate:'Trạng thái'">{{ d.otInfo?.['affirmFlagName'] }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'common.reason' | translate:'Lý do'" [nzSpan]="2">{{ d.otInfo?.['applyOtRemark'] }}</nz-descriptions-item>
+      </nz-descriptions>
+
+      <h6 class="fw-bold mb-2">{{ 'arOtf.approvalSeq' | translate:'Trình tự duyệt' }}</h6>
+      <div class="table-responsive">
+        <nz-table [nzData]="d.approvalList" [nzShowPagination]="false" nzSize="small">
+          <thead>
+            <tr>
+              <th class="text-center" style="width:50px">{{ 'common.stt' | translate:'STT' }}</th>
+              <th class="text-center" style="width:90px">{{ 'arOtf.approvalSeq' | translate:'Trình tự duyệt' }}</th>
+              <th class="text-center" style="width:110px">{{ 'arOtf.approvalStatus' | translate:'Trạng thái duyệt' }}</th>
+              <th>{{ 'common.empName' | translate:'Họ tên' }}</th>
+              <th>{{ 'arOtf.opinion' | translate:'Ý kiến' }}</th>
+              <th class="text-center" style="width:170px">{{ 'arOtf.actionTime' | translate:'Thời gian thực hiện' }}</th>
+              <th style="width:120px">{{ 'common.deptName' | translate:'Phòng ban' }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="!d.approvalList?.length">
+              <td colspan="7" class="text-center text-muted">{{ 'arOtf.noApprovalData' | translate:'Không có dữ liệu phê duyệt' }}</td>
+            </tr>
+            <tr *ngFor="let item of d.approvalList; let i = index">
+              <td class="text-center">{{ approvalStt(item, i) }}</td>
+              <td class="text-center">{{ item.affirmTypeName }}</td>
+              <td class="text-center">{{ item.affirmFlagName }}</td>
+              <td>{{ item.affirmName }}</td>
+              <td>{{ item.affirmContent }}</td>
+              <td class="text-center">{{ item.updateDate }}</td>
+              <td>{{ item.deptName }}</td>
+            </tr>
+          </tbody>
+        </nz-table>
+      </div>
+    </ng-container>
+  </ng-container>
+</nz-modal>

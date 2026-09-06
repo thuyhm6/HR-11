@@ -1,0 +1,153 @@
+<div class="row">
+  <!-- Cây hạng mục bên trái -->
+  <div class="col-md-3 mb-3">
+    <nz-card [nzTitle]="'ar.viewSummaryFormula.title.huizongxiangmuliebiao' | translate:'Danh sách hạng mục tổng hợp'">
+      <input nz-input class="mb-2" [(ngModel)]="treeSearchValue" name="vsfTreeSearch"
+             [placeholder]="'arItemParam.treeSearchPlaceholder' | translate:'Tìm kiếm hạng mục...'">
+      <div class="vsf-tree-scroll">
+        <nz-tree [nzData]="treeNodes()" [nzSearchValue]="treeSearchValue" nzSelectMode
+                 [nzSelectedKeys]="selectedItemNo ? [selectedItemNo] : []"
+                 (nzClick)="onTreeClick($event)"></nz-tree>
+      </div>
+    </nz-card>
+  </div>
+
+  <!-- Danh sách công thức bên phải -->
+  <div class="col-md-9 mb-3">
+    <nz-card>
+      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <span class="fw-bold">{{ panelTitle() }}</span>
+        <button nz-button nzType="primary" type="button" (click)="openAddModal()">
+          <i class="bx bx-plus"></i> {{ 'common.addNew' | translate:'Thêm mới' }}
+        </button>
+      </div>
+
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+      <nz-table [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="25" [nzShowSizeChanger]="true"
+                [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="vsfTotalTpl"
+                [nzScroll]="{ y: 'calc(100vh - 420px)' }" #vsfTable>
+        <thead>
+          <tr>
+            <th class="text-center" nzWidth="60px">{{ 'common.stt' | translate:'STT' }}</th>
+            <th nzWidth="260px">{{ 'pa.formula.condition' | translate:'Điều kiện' }}</th>
+            <th>{{ 'pa.formula.formular' | translate:'Công thức' }}</th>
+            <th class="text-center" nzWidth="90px">{{ 'common.sortOrder' | translate:'Sắp xếp' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'common.status' | translate:'Trạng thái' }}</th>
+            <th class="text-center" nzWidth="90px">{{ 'common.action' | translate:'Thao tác' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!loading() && rows().length === 0">
+            <td colspan="6" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+          </tr>
+          <tr *ngFor="let row of vsfTable.data; let i = index">
+            <td class="text-center">{{ i + 1 }}</td>
+            <td [attr.title]="row.condition || null" class="vsf-cell-wrap">{{ row.condition }}</td>
+            <td [attr.title]="row.formular || null" class="vsf-cell-wrap">{{ row.formular }}</td>
+            <td class="text-center">{{ row.orderno }}</td>
+            <td class="text-center">
+              <nz-tag [nzColor]="row.activity === 1 ? 'success' : 'default'">
+                {{ row.activity === 1 ? ('common.active' | translate:'Hoạt động') : ('common.inactive' | translate:'Ngừng') }}
+              </nz-tag>
+            </td>
+            <td class="text-center">
+              <button nz-button nzType="text" nzSize="small" [title]="'common.edit' | translate:'Sửa'" (click)="openEditModal(row)">
+                <i class="bx bx-edit text-warning"></i>
+              </button>
+              <button nz-button nzType="text" nzSize="small" [title]="'common.delete' | translate:'Xóa'" (click)="openDeleteConfirm(row)">
+                <i class="bx bx-trash text-danger"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+        <ng-template #vsfTotalTpl let-total>
+          {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+        </ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>
+
+<!-- Modal Thêm mới / Cập nhật -->
+<nz-modal [nzVisible]="modalVisible()" [nzTitle]="modalTitle()" nzWidth="1000px"
+          (nzOnCancel)="closeModal()" (nzOnOk)="saveForm()" [nzOkLoading]="saving()"
+          [nzOkText]="'common.save' | translate:'Lưu'" [nzCancelText]="'common.close' | translate:'Đóng'">
+  <ng-container *nzModalContent>
+    <nz-alert nzType="info"
+              [nzMessage]="(('pa.formula.configItem' | translate:'Hạng mục đang cấu hình:')) + ' ' + selectedItemLabel()"
+              class="mb-3"></nz-alert>
+
+    <div class="row g-3 mb-3">
+      <div class="col-md-12">
+        <label class="form-label fw-semibold">{{ 'pa.formula.conditionLabel' | translate:'Điều kiện (Condition)' }}</label>
+        <textarea nz-input [(ngModel)]="form.condition" name="vsfFormCondition" rows="2"></textarea>
+      </div>
+      <div class="col-md-12">
+        <label class="form-label fw-semibold">{{ 'pa.formula.formularLabel' | translate:'Công thức (Formular)' }} <span class="text-danger">*</span></label>
+        <textarea nz-input [(ngModel)]="form.formular" name="vsfFormFormular" rows="3" required></textarea>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'common.sortOrder' | translate:'Sắp xếp' }}</label>
+        <nz-input-number class="w-100" [(ngModel)]="form.orderno" name="vsfFormOrderno"></nz-input-number>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold d-block">{{ 'common.status' | translate:'Trạng thái' }}</label>
+        <nz-select class="w-100" [(ngModel)]="form.activity" name="vsfFormActivity">
+          <nz-option [nzValue]="1" [nzLabel]="'common.active' | translate:'Hoạt động'"></nz-option>
+          <nz-option [nzValue]="0" [nzLabel]="'common.inactive' | translate:'Ngừng'"></nz-option>
+        </nz-select>
+      </div>
+    </div>
+
+    <!-- Công cụ chèn nhanh vào ô công thức -->
+    <div class="border-top pt-3">
+      <h6 class="text-secondary"><i class="bx bx-wrench"></i> {{ 'pa.formula.toolPanel' | translate:'Công cụ' }}</h6>
+      <div class="row gx-2">
+        <div class="col-md-4">
+          <div class="card h-100 shadow-none border">
+            <div class="card-header bg-light p-2 fw-bold vsf-tool-header">
+              {{ 'ar.viewSummaryFormula.title.kaoqingxiangmuliebiao' | translate:'Danh sách hạng mục chấm công' }}
+            </div>
+            <div class="card-body p-0 overflow-auto vsf-tool-body">
+              <div *ngFor="let itm of attItems()" class="p-1 border-bottom vsf-tool-item"
+                   (click)="insertToFormula('ATT_ITEM.' + itm.itemId)">{{ itm.itemName }}</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card h-100 shadow-none border">
+            <div class="card-header bg-light p-2 fw-bold vsf-tool-header">
+              {{ 'ar.viewSummaryFormula.title.kaoqinghuizongliebiao' | translate:'Bảng tổng hợp chấm công' }}
+            </div>
+            <div class="card-body p-0 overflow-auto vsf-tool-body">
+              <div *ngFor="let itm of staItems()" class="p-1 border-bottom vsf-tool-item"
+                   (click)="insertToFormula('STA_ITEM.' + itm.staItemId)">{{ itm.itemName }}</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card h-100 shadow-none border">
+            <div class="card-header bg-light p-2 fw-bold vsf-tool-header">
+              {{ 'ar.viewSummaryFormula.title.renyuanjibenxinxi' | translate:'Thông tin cơ bản' }}
+            </div>
+            <div class="card-body p-0 overflow-auto vsf-tool-body">
+              <div *ngFor="let itm of basicInfos()" class="p-1 border-bottom vsf-tool-item"
+                   (click)="insertToFormula('STA_ITEM.' + itm.distinctField)">{{ itm.fieldName }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal xác nhận xóa -->
+<nz-modal [nzVisible]="deleteVisible()" [nzTitle]="'common.confirm' | translate:'Xác nhận'"
+          (nzOnCancel)="closeDeleteConfirm()" (nzOnOk)="confirmDelete()" [nzOkLoading]="deleting()"
+          [nzOkText]="'common.confirm' | translate:'Xác nhận'" [nzCancelText]="'common.cancel' | translate:'Hủy'">
+  <ng-container *nzModalContent>
+    <p class="mb-1">{{ 'pa.formula.confirmDelete' | translate:'Bạn có chắc chắn muốn xóa công thức đã chọn?' }}</p>
+    <p class="fw-bold mb-0">{{ deleteTargetName }}</p>
+  </ng-container>
+</nz-modal>

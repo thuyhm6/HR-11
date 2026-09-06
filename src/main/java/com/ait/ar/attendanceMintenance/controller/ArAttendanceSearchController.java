@@ -32,7 +32,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -71,15 +70,13 @@ public class ArAttendanceSearchController {
     @Autowired
     private ArCardRecordDayService arCardRecordDayService;
 
-    @GetMapping("/viewAttendanceManagentForSerchInfoList")
-    public String viewAttendanceManagentForSerchInfoList() {
-        return "ar/attendanceMintenance/viewAttendanceManagentForSerchInfoList";
-    }
+    // Trang view đã migrate sang Angular (/attendance-search) - xem MIGRATED_ROUTES trong
+    // app-shell.component.ts. API /api/attendanceSearch/list bên dưới vẫn giữ nguyên vì Angular gọi
+    // lại nguyên backend.
 
-    @GetMapping("/viewSearchApplyOtInfoList")
-    public String viewSearchApplyOtInfoList() {
-        return "ar/attendanceMintenance/viewSearchApplyOtInfoList";
-    }
+    // Trang Thymeleaf viewSearchApplyOtInfoList.html đã được thay bằng Angular route
+    // /search-apply-ot-info-list - xem MIGRATED_ROUTES trong app-shell.component.ts. API
+    // /api/attendanceSearch/otList bên dưới vẫn giữ nguyên vì Angular gọi lại nguyên backend.
 
     @GetMapping("/api/attendanceSearch/list")
     @ResponseBody
@@ -123,12 +120,8 @@ public class ArAttendanceSearchController {
         return ResponseEntity.ok(service.getAttendanceOtSearchList(params));
     }
 
-    @GetMapping("/viewArCardRecord")
-    public String viewArCardRecord(HttpSession session, Model model) {
-        String sysMode = (String) session.getAttribute("sysMode");
-        model.addAttribute("sysMode", sysMode != null ? sysMode : "hrm");
-        return "ar/attendanceMintenance/viewArCardRecord";
-    }
+    // Trang view đã migrate sang Angular (/view-ar-card-record) - xem MIGRATED_ROUTES trong
+    // app-shell.component.ts. Các API JSON bên dưới vẫn giữ nguyên vì Angular gọi lại nguyên backend.
 
     private boolean isEssMode(HttpSession session) {
         return "ess".equals(session.getAttribute("sysMode"));
@@ -250,10 +243,8 @@ public class ArAttendanceSearchController {
         return ResponseEntity.ok(arMacRecordTempService.getList(errorOnly));
     }
 
-    @GetMapping("/viewArCardRecordForSelf")
-    public String viewArCardRecordForSelf() {
-        return "ar/attendanceMintenance/viewArCardRecordForSelf";
-    }
+    // Trang view đã migrate sang Angular (/view-ar-card-record-for-self) - xem MIGRATED_ROUTES trong
+    // app-shell.component.ts. API JSON/servlet bên dưới vẫn giữ nguyên vì Angular gọi lại nguyên backend.
 
     @GetMapping("/api/cardRecordForSelf/list")
     @ResponseBody
@@ -359,10 +350,8 @@ public class ArAttendanceSearchController {
         return ResponseEntity.ok(arMacRecordTempService.confirm());
     }
 
-    @GetMapping("/viewArCardRecordDay")
-    public String viewArCardRecordDay() {
-        return "ar/attendanceMintenance/viewArCardRecordDay";
-    }
+    // Trang view đã migrate sang Angular (/view-ar-card-record-day) - xem MIGRATED_ROUTES trong
+    // app-shell.component.ts. API JSON bên dưới vẫn giữ nguyên vì Angular gọi lại nguyên backend.
 
     @GetMapping("/api/cardRecordDay/list")
     @ResponseBody
@@ -389,10 +378,8 @@ public class ArAttendanceSearchController {
         return ResponseEntity.ok(arCardRecordDayService.getPageList(dto));
     }
 
-    @GetMapping("/viewArCardRecordMeal")
-    public String viewArCardRecordMeal() {
-        return "ar/attendanceMintenance/viewArCardRecordMeal";
-    }
+    // Trang view đã migrate sang Angular (/view-ar-card-record-meal) - xem MIGRATED_ROUTES trong
+    // app-shell.component.ts. API JSON/servlet bên dưới vẫn giữ nguyên vì Angular gọi lại nguyên backend.
 
     @PostMapping("/api/macRecordEat/importFromDevice")
     @ResponseBody
@@ -436,7 +423,8 @@ public class ArAttendanceSearchController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> testSyncCleverse(@RequestBody Map<String, String> body) {
         Map<String, Object> result = new java.util.HashMap<>();
-        final String DEV_ENDPOINT = "https://epdev.cleverse.kr/soap/org/neoHrWs";
+        //final String DEV_ENDPOINT = "https://epdev.cleverse.kr/soap/org/neoHrWs";
+        final String DEV_ENDPOINT = "https://epdev.cleverse.hanwha.com/soap/org/neoHrWs";
         try {
             HrOffListVo item = new HrOffListVo();
             item.setEnterCd(body.getOrDefault("enterCd", ""));

@@ -1,6 +1,6 @@
 build dụ án để đưa vào JEUS 8
 deploy-jeus.bat
-mã màu: #f4731f
+mã màu: #dc6428
 
 destroy: true,
 columnDefs: [
@@ -27,6 +27,8 @@ sử dụng processingModal.html để hiển thị khi đang xử lý, tham kh�
 
 url: '/ar/attendanceSettings/api/shift',
 url: '/sys/api/code/list?parentCodeNo=400223',
+
+Khi tôi bấm vào "HR Management System" để điều hướng sang hrm, thì lấy lại cho tôi danh sách menu với điều kiện SYS_TYPE trong bảng sy_role_group tương ứng có giá trị == '0'. Ngoài ra check giúp tôi điều kiện khi thực hiện câu lệnh SELECT COUNT(SU.USER_NO)     FROM SY_USER SU,SY_USER_RELATION SUR,SY_ROLE_GROUP SRG     WHERE SU.USER_NO = SUR.USER_NO     AND SUR.ROLE_GROUP_NO = SRG.ROLE_GROUP_NO     AND SRG.SYS_TYPE = 0     AND SU.USER_NAME = #{userName}, nếu kết quả trả về là 0 thì không cho phép điều hướng sang hrm, hiển thị thông báo "Bạn không có quyền truy cập vào HR Management System"
 
 sử dụng onclick="openEmployeeSearchPopup()"> như của educationSearch.html để tìm nhân viên. $('#esm_empOffice').val('15119'); để truyền giá trị tìm kiếm mặc định
 
@@ -2474,3 +2476,72 @@ Khi tick vào vpwf_chkPaCal và bấm thực hiện thì check giá trị của 
 Tiếp tục vẫn ở file excel này, thêm cho tôi bảng thống kê, bắt đầu từ dòng thứ 7, sẽ thống kê số lượng nhân viên Vào làm việc và nghỉ việc trong tuần của ngày truy vấn theo Chức vụ (POST_GRADE_NO) dựa vào bảng HR_EMPLOYEE. tham khảo hình ảnh.
 
 Căn cứ vào /ess/tempEmp/viewMonthDetailList.html. hãy tạo cho tôi file viewOtReport.html - Báo cáo tăng ca nằm trong module /ess/infoApply. Giao diện sẽ hiển thị danh sách các báo cáo OT của nhân viên, bao gồm các thông tin như Như hình ảnh. Dữ liệu sẽ được lấy từ view V_HR_OT_REPORT với các trường như hình ảnh kết hợp cùng bảng HR_EMPLOYEE. Giao diện cũng sẽ có các nút để người quản lý có thể xuất báo cáo OT ra file excel để tiện cho việc lưu trữ và phân tích dữ liệu. Việc này sẽ giúp cho quá trình quản lý các báo cáo OT của nhân viên được minh bạch hơn.
+
+Căn cứ vào /ess/tempEmp/viewMonthDetailList.html. hãy tạo cho tôi file viewDeptOtApplyInfo.html - Quản lý tăng ca nằm trong module /ess/infoApply. Giao diện sẽ hiển thị tổng OT của nhân viên xin phép và đã được duyệt trong tháng, bao gồm các thông tin như Như hình ảnh. Câu lệnh lấy dữ liệu tương tự như selectSalaryReport của MonthDetailListMapper. chỉ là Dữ liệu Xin phép lấy từ function GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0101'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR},PERSON_ID,'400'). Dữ liệu đã duyệt lấy từ function GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0101'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR},PERSON_ID,'200'). Giao diện dữ liệu tham khảo hình ảnh. Giao diện cũng sẽ có các nút để người quản lý có thể xuất báo cáo OT ra file excel để tiện cho việc lưu trữ và phân tích dữ liệu. Việc này sẽ giúp cho quá trình quản lý các báo cáo OT của nhân viên được minh bạch hơn.
+
+chuyển đổi dự án từ thymeleaf (Frontend) sang Angular + NG-ZORRO  (Frontend).
+
+hãy build/nhúng Angular vào project Spring Boot của dự án. để khi tôi bấm vào Run and Debug thì sẽ tự động sử dụng đến Angular chứ khoogn dùng đến Thymeleaf cũ nữa, và khi đăng nhập thành công thì cũng điều hướng đến dashboard có Angular
+
+Tôi đang trong quá trình chuyển đổi dự án từ thymeleaf (Frontend) sangAngular + NG-ZORRO  (Frontend). Khi đăng nhập tôi thấy dashboard.html vẫn đang sử dụng thymeleaf, tôi muốn khi đăng nhập thành công thì điều hướng đến dashboard có Angular. Hãy build/nhúng Angular vào project Spring Boot của dự án. để khi tôi bấm vào Run and Debug thì sẽ tự động sử dụng đến Angular chứ không dùng đến Thymeleaf cũ nữa.
+
+Từ giờ khi tạo giao diện mới, bạn chỉ cần yêu cầu như trước ("tạo giao diện cho màn hình X"), tôi sẽ:
+Tạo module dưới frontend-ng/src/app/<tên-module>/ (component + service + model)
+Dùng component NG-ZORRO (nz-table, nz-form, nz-date-picker, nz-modal...) cho phần UI mới thay vì HTML Bootstrap thuần
+Tạo backend liên quan (controller/service/mapper) nếu cần, theo đúng quy tắc đã có trong CLAUDE.md
+Đăng ký route + MIGRATED_ROUTES để mở đúng dưới dạng tab
+
+EssDeptOtApplyInfoMapper.selectListPage mất 3.6–17.5 giây mỗi lần tải trang vì gọi hàm Oracle GET_AR_OT_TOTAIL tới 600 lần/trang (12 tháng × 2 cột × 25 dòng). Đây là vấn đề hiệu năng backend có từ trước khi tôi bắt đầu port, không liên quan đến việc chuyển NG-ZORRO. Nếu muốn, tôi có thể tối ưu lại (gộp thành 1 query duy nhất thay vì gọi hàm lặp lại) ở lượt làm việc khác.
+
+
+
+
+hãy chuyển giao diện /ar/attendanceMintenance/viewArCardRecordDay.html này về dạng Angular + NG-ZORRO  (Frontend) dữ liệu hiển thị ra không dùng dataTables nữa mà dùng nz-table (tham khảo ot-apply-batch-info). sau khi hoàn thành thì có thể xóa file /ar/attendanceMintenance/viewArCardRecordDay.html cũ đi.
+
+tương tự contract-info-search hãy tạo cho tôi giao diện Chỉnh sửa hượp đồng ở module /hrm/contractInfo/viewContractChangeList.html này về dạng Angular + NG-ZORRO  (Frontend) dữ liệu hiển thị ra không dùng dataTables nữa mà dùng nz-table (tham khảo manage-emp-position-info). giao diện này có thể chỉnh sửa được các thông tin của hợp đồng.
+
+
+
+
+hãy chuyển giao diện /ar/attendanceMintenance/viewArCardRecordMeal.html này về dạng Angular + NG-ZORRO  (Frontend) dữ liệu hiển thị ra không dùng dataTables nữa mà dùng nz-table (tham khảo view-ar-card-record-day). sau khi hoàn thành thì có thể xóa file /ar/attendanceMintenance/viewArCardRecordMeal.html cũ đi.
+hãy chuyển giao diện /ar/attendanceMintenance/viewArCardRecordForSelf.html này về dạng Angular + NG-ZORRO  (Frontend) dữ liệu hiển thị ra không dùng dataTables nữa mà dùng nz-table (tham khảo view-ar-card-record-day). sau khi hoàn thành thì có thể xóa file /ar/attendanceMintenance/viewArCardRecordForSelf.html cũ đi.
+
+
+hãy chuyển giao diện /ess/infoApply/viewCoordApplyOtInfoList.html này về dạng Angular + NG-ZORRO  (Frontend) dữ liệu hiển thị ra không dùng dataTables nữa mà dùng nz-table (tham khảo manage-emp-position-info). sau khi hoàn thành thì có thể xóa file /ess/infoApply/viewCoordApplyOtInfoList.html cũ đi.
+
+hãy chuyển giao diện /evs/manage/viewResumeList.html này về dạng Angular + NG-ZORRO  (Frontend) dữ liệu hiển thị ra không dùng dataTables nữa mà dùng nz-table (tham khảo view-resume-list). sau khi hoàn thành thì có thể xóa file /evs/manage/viewResumeList.html cũ đi.
+
+
+
+
+
+
+
+
+hãy chuyển giao diện /sys/menu/viewMenuList.html này về dạng Angular + NG-ZORRO  (Frontend) dữ liệu hiển thị ra không dùng dataTables nữa mà dùng nz-table (tham khảo pa-month-person-info). sau khi hoàn thành thì có thể xóa file /sys/menu/viewMenuList.html cũ đi.
+hãy chuyển giao diện /sys/menu/viewMenuParamList.html này về dạng Angular + NG-ZORRO  (Frontend) dữ liệu hiển thị ra không dùng dataTables nữa mà dùng nz-table (tham khảo view-attendance-keeper). sau khi hoàn thành thì có thể xóa file /sys/menu/viewMenuParamList.html cũ đi.
+
+
+
+
+
+
+
+
+
+hãy chuyển giao diện /sys/rightsManagement/viewLoginUser.html này về dạng Angular + NG-ZORRO  (Frontend) dữ liệu hiển thị ra không dùng dataTables nữa mà dùng nz-table (tham khảo view-attendance-keeper). sau khi hoàn thành thì có thể xóa file /sys/rightsManagement/viewLoginUser.html cũ đi.
+hãy chuyển giao diện /sys/rightsManagement/viewLoginUser.html này về dạng Angular + NG-ZORRO  (Frontend) dữ liệu hiển thị ra không dùng dataTables nữa mà dùng nz-table (tham khảo pa-month-person-info). sau khi hoàn thành thì có thể xóa file /sys/rightsManagement/viewLoginUser.html cũ đi.
+hãy chuyển giao diện /sys/rightsManagement/viewLoginInfo.html này về dạng Angular + NG-ZORRO  (Frontend) dữ liệu hiển thị ra không dùng dataTables nữa mà dùng nz-table (tham khảo pa-month-person-info). sau khi hoàn thành thì có thể xóa file /sys/rightsManagement/viewLoginInfo.html cũ đi.
+hãy chuyển giao diện /hrm/approve/viewEssApplyInfo.html này về dạng Angular + NG-ZORRO  (Frontend) dữ liệu hiển thị ra không dùng dataTables nữa mà dùng nz-table (tham khảo pa-month-person-info). sau khi hoàn thành thì có thể xóa file /hrm/approve/viewEssApplyInfo.html cũ đi.
+hãy chuyển giao diện /sys/rightsManagement/viewLoginUserIPList.html này về dạng Angular + NG-ZORRO  (Frontend) dữ liệu hiển thị ra không dùng dataTables nữa mà dùng nz-table (tham khảo pa-month-person-info). sau khi hoàn thành thì có thể xóa file /sys/rightsManagement/viewLoginUserIPList.html cũ đi.
+
+
+
+
+
+Căn cứ vào manage-emp-position-info.
+
+bạn đã loại bỏ mất những thành phần trong topbar.html (gồm Đổi mật khẩu, và link HR Management System).hãy đưa 2 phần này vào. và sau đó có thể xóa topbar.html đi nếu nó không cần thiết nữa. khi bấm vào link HR Management System vẫn điều hướng bình thường sang hrm.html. nhưng bây giờ hãy chuyển sang dạng Angular + NG-ZORRO  (Frontend) cho hrm.html, và khi bấm vào link HR Management System thì vẫn điều hướng sang hrm.html nhưng không hiển thị tên của tab đó lên ô địa chỉ chỉ trình duyệt nữa. sau khi chuyển sang Angular + NG-ZORRO  (Frontend) cho hrm.html thì có thể xóa hrm.html cũ đi.
+cập nhật lại thông báo ở bên hrm giúp tôi, khi chuyển sang hrm thì thông báo phỉa chuyển sang attendance-ex-confirm và leave-confirm, và đếm lại số lương thông báo
+
+tạo mới giao diện /ess/tempEmp/viewMonthDetailList - Thông tin nghỉ phép năm của nhân viên với dạng Angular + NG-ZORRO  (Frontend). giao diện tham khảo hình ảnh. với dữ liệu tham khảo từ selectVacationRowsByYear ở YearUseInfoMapper, 

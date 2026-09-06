@@ -1,0 +1,30 @@
+.vdm-btn-save {
+  color: #d97706;
+  border-color: #d97706;
+  margin-left: 4px;
+}
+
+.vdm-btn-export {
+  color: #52c41a;
+  border-color: #52c41a;
+  margin-left: 4px;
+}
+
+.vdm-mass-toolbar {
+  font-size: 0.85rem;
+}
+
+.vdm-tree-icon {
+  cursor: pointer;
+  width: 20px;
+  display: inline-block;
+  text-align: center;
+}
+
+.vdm-update-time {
+  font-size: 0.75rem;
+}
+
+.vdm-table {
+  font-size: 0.85rem;
+}

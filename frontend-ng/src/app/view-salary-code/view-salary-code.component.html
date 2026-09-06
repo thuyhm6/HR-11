@@ -1,0 +1,144 @@
+<div class="row">
+  <div class="col-12">
+    <!-- Điều kiện tìm kiếm -->
+    <nz-card class="mb-3 sticky-filter-card">
+      <form class="row g-3" (ngSubmit)="search()">
+        <div class="col-md-3">
+          <label class="form-label">{{ 'pa.salaryCode.itemType' | translate:'Loại hạng mục' }}</label>
+          <nz-select class="w-100" [(ngModel)]="searchItemType" name="vscSearchItemType" nzAllowClear
+                     [nzPlaceHolder]="'pa.salaryCode.itemType.all' | translate:'Tất cả'">
+            <nz-option *ngFor="let t of itemTypes" [nzValue]="t.value" [nzLabel]="i18n.t(t.key, t.fallback)"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">{{ 'pa.salaryCode.itemName' | translate:'Tên hạng mục' }}</label>
+          <input nz-input [(ngModel)]="searchItemName" name="vscSearchItemName" (keyup.enter)="search()">
+        </div>
+        <div class="col-md-5 d-flex align-items-end gap-2 flex-wrap">
+          <button nz-button nzType="primary" type="submit">
+            <i class="bx bx-search"></i> {{ 'pa.salaryCode.search' | translate:'Tra cứu' }}
+          </button>
+          <button nz-button nzType="primary" type="button" (click)="openAddModal()">
+            <i class="bx bx-plus"></i> {{ 'pa.salaryCode.addNew' | translate:'Thêm mới' }}
+          </button>
+          <button nz-button nzDanger type="button" (click)="openDeleteConfirm()">
+            <i class="bx bx-trash"></i> {{ 'pa.salaryCode.delete' | translate:'Xóa' }}
+          </button>
+        </div>
+      </form>
+    </nz-card>
+
+    <nz-card>
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+      <!-- Server-side pagination (draw/start/length -> recordsTotal), đúng hành vi DataTables gốc. -->
+      <nz-table [nzData]="rows()" [nzFrontPagination]="false" [nzLoading]="loading()" [nzTotal]="totalRecords()"
+                [nzPageIndex]="pageIndex" [nzPageSize]="pageSize" [nzPageSizeOptions]="pageSizeOptions"
+                [nzShowSizeChanger]="true" [nzShowTotal]="vscTotalTpl"
+                (nzPageIndexChange)="onPageIndexChange($event)" (nzPageSizeChange)="onPageSizeChange($event)"
+                [nzScroll]="{ x: '1400px', y: 'calc(100vh - 420px)' }" #vscTable>
+        <thead>
+          <tr>
+            <th class="text-center" nzWidth="40px">
+              <label nz-checkbox [ngModel]="allChecked" [nzIndeterminate]="someChecked" (ngModelChange)="toggleAllChecked($event)"></label>
+            </th>
+            <th class="text-center" nzWidth="50px">{{ 'pa.salaryCode.no' | translate:'STT' }}</th>
+            <th nzWidth="170px">{{ 'pa.salaryCode.itemType' | translate:'Loại hạng mục' }}</th>
+            <th nzWidth="140px">{{ 'pa.salaryCode.itemId' | translate:'ID hạng mục' }}</th>
+            <th>{{ 'pa.salaryCode.itemName' | translate:'Tên hạng mục' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'pa.salaryCode.dataType' | translate:'Dữ liệu' }}</th>
+            <th>{{ 'pa.salaryCode.descr' | translate:'Miêu tả' }}</th>
+            <th class="text-center" nzWidth="120px">{{ 'pa.salaryCode.companyUsage' | translate:'Công ty sử dụng' }}</th>
+            <th class="text-center" nzWidth="140px">{{ 'pa.salaryCode.createdBy' | translate:'Người tạo' }}</th>
+            <th class="text-center" nzWidth="150px">{{ 'pa.salaryCode.createDate' | translate:'Thời gian tạo' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!loading() && rows().length === 0">
+            <td colspan="10" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+          </tr>
+          <tr *ngFor="let row of vscTable.data; let i = index" class="vsc-row-clickable" (click)="openEditModal(row)">
+            <td class="text-center" (click)="$event.stopPropagation()">
+              <label nz-checkbox [ngModel]="isChecked(row)" (ngModelChange)="toggleChecked(row, $event)"></label>
+            </td>
+            <td class="text-center">{{ (pageIndex - 1) * pageSize + i + 1 }}</td>
+            <td>{{ itemTypeLabel(row.itemType) }}</td>
+            <td>{{ row.itemId }}</td>
+            <td [attr.title]="row.itemName || null">{{ row.itemName }}</td>
+            <td class="text-center">{{ row.dataType }}</td>
+            <td [attr.title]="row.descr || null">{{ row.descr }}</td>
+            <td class="text-center">{{ row.companyUsageStr }}</td>
+            <td class="text-center">{{ row.createdBy }}</td>
+            <td class="text-center">{{ row.createDate }}</td>
+          </tr>
+        </tbody>
+        <ng-template #vscTotalTpl let-total>
+          {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+        </ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>
+
+<!-- Modal Thêm mới / Chỉnh sửa -->
+<nz-modal [nzVisible]="modalVisible()" [nzTitle]="modalTitle()" nzWidth="700px"
+          (nzOnCancel)="closeModal()" (nzOnOk)="saveForm()" [nzOkLoading]="saving()"
+          [nzOkText]="'pa.salaryCode.save' | translate:'Lưu'" [nzCancelText]="'common.close' | translate:'Đóng'">
+  <ng-container *nzModalContent>
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'pa.salaryCode.itemType' | translate:'Loại hạng mục' }} <span class="text-danger">*</span></label>
+        <nz-select class="w-100" [(ngModel)]="form.itemType" name="vscFormItemType">
+          <nz-option *ngFor="let t of itemTypes" [nzValue]="t.value" [nzLabel]="i18n.t(t.key, t.fallback)"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'pa.salaryCode.itemId' | translate:'ID hạng mục' }} <span class="text-danger">*</span></label>
+        <input nz-input [(ngModel)]="form.itemId" name="vscFormItemId" maxlength="50">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'pa.salaryCode.nameEn' | translate:'English Name' }} <span class="text-danger">*</span></label>
+        <input nz-input [(ngModel)]="form.nameEn" name="vscFormNameEn" maxlength="200">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'pa.salaryCode.nameKo' | translate:'Korean Name' }} <span class="text-danger">*</span></label>
+        <input nz-input [(ngModel)]="form.nameKo" name="vscFormNameKo" maxlength="200">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'pa.salaryCode.nameVi' | translate:'Vietnamese Name' }} <span class="text-danger">*</span></label>
+        <input nz-input [(ngModel)]="form.nameVi" name="vscFormNameVi" maxlength="200">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'pa.salaryCode.nameZh' | translate:'Chinese Name' }} <span class="text-danger">*</span></label>
+        <input nz-input [(ngModel)]="form.nameZh" name="vscFormNameZh" maxlength="200">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'pa.salaryCode.dataType' | translate:'Dữ liệu' }}</label>
+        <nz-select class="w-100" [(ngModel)]="form.dataType" name="vscFormDataType">
+          <nz-option nzValue="NUMBER(14,4)" [nzLabel]="'pa.salaryCode.dataType.number' | translate:'Dạng số'"></nz-option>
+          <nz-option nzValue="VARCHAR(100)" [nzLabel]="'pa.salaryCode.dataType.varchar' | translate:'Dạng ký tự'"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'pa.salaryCode.companyUsage' | translate:'Công ty sử dụng' }}</label>
+        <div class="d-flex gap-3 align-items-center pt-2">
+          <label nz-checkbox *ngFor="let c of companyUsageOptions" [ngModel]="isCompanyChecked(c)"
+                 [name]="'vscFormCpny_' + c" (ngModelChange)="toggleCompanyUsage(c, $event)">{{ c }}</label>
+        </div>
+      </div>
+      <div class="col-12">
+        <label class="form-label fw-semibold">{{ 'pa.salaryCode.descr' | translate:'Miêu tả' }}</label>
+        <textarea nz-input [(ngModel)]="form.descr" name="vscFormDescr" rows="3" maxlength="200"></textarea>
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal xác nhận xóa nhiều dòng -->
+<nz-modal [nzVisible]="deleteVisible()" [nzTitle]="'common.confirm' | translate:'Xác nhận'"
+          (nzOnCancel)="closeDeleteConfirm()" (nzOnOk)="confirmDelete()" [nzOkLoading]="deleting()"
+          [nzOkText]="'common.confirm' | translate:'Xác nhận'" [nzCancelText]="'common.cancel' | translate:'Hủy'">
+  <ng-container *nzModalContent>
+    <p class="mb-0">{{ 'pa.salaryCode.confirmDelete' | translate:'Bạn có chắc chắn muốn xóa các bản ghi đã chọn?' }} ({{ selectedCount }})</p>
+  </ng-container>
+</nz-modal>

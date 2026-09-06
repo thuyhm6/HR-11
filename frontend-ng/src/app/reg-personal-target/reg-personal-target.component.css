@@ -1,0 +1,21 @@
+.rpt-item-table :where(td, th) {
+  vertical-align: middle;
+}
+
+.rpt-clickable {
+  cursor: pointer;
+}
+.rpt-clickable:hover {
+  background-color: #f0f4ff;
+}
+
+.rpt-edit-row {
+  background-color: #fff9e6 !important;
+}
+
+.rpt-total-ok {
+  color: #198754 !important;
+}
+.rpt-total-err {
+  color: #dc3545 !important;
+}

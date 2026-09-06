@@ -1,0 +1,6 @@
+.qi-row-clickable {
+  cursor: pointer;
+}
+.qi-row-clickable:hover {
+  background: #fafafa;
+}

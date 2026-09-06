@@ -1,0 +1,11 @@
+.vtei-row-clickable {
+  cursor: pointer;
+}
+.vtei-row-clickable:hover {
+  background: #fafafa;
+}
+
+.vtei-btn-export {
+  color: #52c41a;
+  border-color: #52c41a;
+}

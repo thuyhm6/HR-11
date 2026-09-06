@@ -1,0 +1,13 @@
+.vrl-emp-row {
+  cursor: pointer;
+}
+.vrl-emp-row:hover {
+  background: #fafafa;
+}
+.vrl-emp-row-active {
+  background: #e6f4ff;
+}
+.vrl-loading {
+  opacity: 0.6;
+  pointer-events: none;
+}

@@ -1,0 +1,6 @@
+.pi-row-clickable {
+  cursor: pointer;
+}
+.pi-row-clickable:hover {
+  background: #fafafa;
+}

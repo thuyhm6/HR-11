@@ -29,11 +29,6 @@ public class EssLeaveConfirmController {
     @Autowired
     private EssAttendanceExConfirmService attendanceExConfirmService;
 
-    @GetMapping("/viewAttendanceExConfirm")
-    public String viewAttendanceExConfirm() {
-        return "ess/arConfirm/viewAttendanceExConfirm";
-    }
-
     @GetMapping("/api/attendanceExConfirm/list")
     @ResponseBody
     public ResponseEntity<DataTablesResponse<EssAttendanceExConfirmDto>> getAttendanceExConfirmList(
@@ -116,11 +111,6 @@ public class EssLeaveConfirmController {
             response.put("error", String.join("\n", errors));
         }
         return ResponseEntity.ok(response);
-    }
-
-    @GetMapping("/viewLeaveConfirmList")
-    public String viewLeaveConfirmList() {
-        return "ess/arConfirm/viewLeaveConfirmList";
     }
 
     @GetMapping("/api/leaveConfirm/list")

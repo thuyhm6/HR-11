@@ -1,0 +1,149 @@
+<div class="row">
+  <div class="col-12">
+    <!-- Bộ lọc -->
+    <nz-card class="mb-2">
+      <form class="row g-2 align-items-end" (ngSubmit)="search()">
+        <div class="col-md-2">
+          <label class="form-label mb-1 small fw-semibold">{{ 'pa.result.paySchedule' | translate:'Kế hoạch trả lương' }}</label>
+          <nz-select class="w-100" [(ngModel)]="payScheduleNo" name="vprPayScheduleNo" nzAllowClear nzShowSearch>
+            <nz-option *ngFor="let s of schedules()" [nzValue]="s.payScheduleNo"
+                       [nzLabel]="s.payDate + (s.salaryDistinName ? ' ' + s.salaryDistinName : '')"></nz-option>
+          </nz-select>
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label mb-1 small fw-semibold">{{ 'pa.result.dept' | translate:'Phòng ban' }}</label>
+          <nz-tree-select class="w-100" [nzNodes]="deptNodes()" [(ngModel)]="deptNos" name="vprDeptNos"
+                           nzCheckable nzShowSearch nzAllowClear
+                           [nzPlaceHolder]="'pa.result.deptPlaceholder' | translate:'Chọn phòng ban'"></nz-tree-select>
+          <div *ngIf="deptTreeErrorMessage()" class="text-danger small mt-1">{{ deptTreeErrorMessage() }}</div>
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label mb-1 small fw-semibold">{{ 'pa.result.isUse' | translate:'Hạng mục tích chọn' }}</label>
+          <nz-select class="w-100" [(ngModel)]="isUse" name="vprIsUse"
+                     [nzPlaceHolder]="'common.select' | translate:'-- Chọn --'">
+            <nz-option *ngFor="let o of isUseOptions" [nzValue]="o.value" [nzLabel]="i18n.t(o.key, o.fallback)"></nz-option>
+          </nz-select>
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label mb-1 small fw-semibold">{{ 'pa.result.itemType' | translate:'Phân biệt hạng mục' }}</label>
+          <nz-select class="w-100" [(ngModel)]="itemType" name="vprItemType"
+                     [nzPlaceHolder]="'common.select' | translate:'-- Chọn --'">
+            <nz-option *ngFor="let o of itemTypeOptions" [nzValue]="o.value" [nzLabel]="i18n.t(o.key, o.fallback)"></nz-option>
+          </nz-select>
+        </div>
+
+        <div class="col-md-4 text-end">
+          <button nz-button nzType="default" nzSize="small" type="submit" [nzLoading]="searching()">
+            <i class="bx bx-search"></i> {{ 'pa.result.search' | translate:'Tra cứu' }}
+          </button>
+          <button nz-button nzType="primary" nzSize="small" type="button" class="ms-1"
+                  [nzLoading]="saving()" (click)="save()">
+            <i class="bx bx-save"></i> {{ 'pa.result.save' | translate:'Lưu' }}
+          </button>
+          <button nz-button nzType="default" nzSize="small" type="button" class="ms-1" (click)="exportExcel()">
+            <i class="bx bx-export"></i> {{ 'pa.result.exportExcel' | translate:'Xuất Excel' }}
+          </button>
+        </div>
+      </form>
+    </nz-card>
+
+    <!-- Chọn nhanh -->
+    <div class="mb-2 d-flex gap-3 align-items-center">
+      <label nz-checkbox [ngModel]="selectAllFlag" [ngModelOptions]="{ standalone: true }" (ngModelChange)="toggleSelectAll($event)">
+        <span class="small">{{ 'pa.result.selectAll' | translate:'Chọn tất cả' }}</span>
+      </label>
+      <label nz-checkbox [ngModel]="selectInverseFlag" [ngModelOptions]="{ standalone: true }" (ngModelChange)="toggleSelectInverse($event)">
+        <span class="small">{{ 'pa.result.selectInverse' | translate:'Chọn ngược' }}</span>
+      </label>
+    </div>
+
+    <nz-spin [nzSpinning]="loadingSections()">
+      <!-- Hạng mục nhân sự -->
+      <ng-template #vprHrTitle>
+        <label nz-checkbox [ngModel]="false" [ngModelOptions]="{ standalone: true }"
+               (ngModelChange)="toggleSectionAll(hrItems, $event)">
+          <span class="fw-semibold small">{{ 'pa.result.hrItems' | translate:'Hạng mục nhân sự' }}</span>
+        </label>
+      </ng-template>
+      <nz-card class="mb-2" [nzTitle]="vprHrTitle">
+        <div class="row g-1">
+          <div class="col-12 text-muted small" *ngIf="!loadingSections() && hrItems.length === 0">
+            {{ 'common.noData' | translate:'Không có dữ liệu' }}
+          </div>
+          <div class="col-md-3 col-sm-6 d-flex align-items-center border-bottom py-1" *ngFor="let row of hrItems">
+            <label nz-checkbox [(ngModel)]="row.checked" [ngModelOptions]="{ standalone: true }" class="me-1"></label>
+            <input nz-input type="number" [(ngModel)]="row.orderNo" [ngModelOptions]="{ standalone: true }"
+                   class="me-1 vpr-order-input" min="0">
+            <span class="small text-truncate" [attr.title]="row.itemName">{{ row.itemName }}</span>
+          </div>
+        </div>
+      </nz-card>
+
+      <!-- Hạng mục chấm công -->
+      <ng-template #vprAttendTitle>
+        <label nz-checkbox [ngModel]="false" [ngModelOptions]="{ standalone: true }"
+               (ngModelChange)="toggleSectionAll(attendanceItems, $event)">
+          <span class="fw-semibold small">{{ 'pa.result.attendanceItems' | translate:'Hạng mục chấm công' }}</span>
+        </label>
+      </ng-template>
+      <nz-card class="mb-2" [nzTitle]="vprAttendTitle">
+        <div class="row g-1">
+          <div class="col-12 text-muted small" *ngIf="!loadingSections() && attendanceItems.length === 0">
+            {{ 'common.noData' | translate:'Không có dữ liệu' }}
+          </div>
+          <div class="col-md-3 col-sm-6 d-flex align-items-center border-bottom py-1" *ngFor="let row of attendanceItems">
+            <label nz-checkbox [(ngModel)]="row.checked" [ngModelOptions]="{ standalone: true }" class="me-1"></label>
+            <input nz-input type="number" [(ngModel)]="row.orderNo" [ngModelOptions]="{ standalone: true }"
+                   class="me-1 vpr-order-input" min="0">
+            <span class="small text-truncate" [attr.title]="row.itemName">{{ row.itemName }}</span>
+          </div>
+        </div>
+      </nz-card>
+
+      <!-- Hạng mục nhập -->
+      <ng-template #vprInputTitle>
+        <label nz-checkbox [ngModel]="false" [ngModelOptions]="{ standalone: true }"
+               (ngModelChange)="toggleSectionAll(inputItems, $event)">
+          <span class="fw-semibold small">{{ 'pa.result.inputItems' | translate:'Hạng mục nhập' }}</span>
+        </label>
+      </ng-template>
+      <nz-card class="mb-2" [nzTitle]="vprInputTitle">
+        <div class="row g-1">
+          <div class="col-12 text-muted small" *ngIf="!loadingSections() && inputItems.length === 0">
+            {{ 'common.noData' | translate:'Không có dữ liệu' }}
+          </div>
+          <div class="col-md-3 col-sm-6 d-flex align-items-center border-bottom py-1" *ngFor="let row of inputItems">
+            <label nz-checkbox [(ngModel)]="row.checked" [ngModelOptions]="{ standalone: true }" class="me-1"></label>
+            <input nz-input type="number" [(ngModel)]="row.orderNo" [ngModelOptions]="{ standalone: true }"
+                   class="me-1 vpr-order-input" min="0">
+            <span class="small text-truncate" [attr.title]="row.itemName">{{ row.itemName }}</span>
+          </div>
+        </div>
+      </nz-card>
+
+      <!-- Hạng mục tính -->
+      <ng-template #vprComputeTitle>
+        <label nz-checkbox [ngModel]="false" [ngModelOptions]="{ standalone: true }"
+               (ngModelChange)="toggleSectionAll(computeItems, $event)">
+          <span class="fw-semibold small">{{ 'pa.result.computeItems' | translate:'Hạng mục tính' }}</span>
+        </label>
+      </ng-template>
+      <nz-card class="mb-2" [nzTitle]="vprComputeTitle">
+        <div class="row g-1">
+          <div class="col-12 text-muted small" *ngIf="!loadingSections() && computeItems.length === 0">
+            {{ 'common.noData' | translate:'Không có dữ liệu' }}
+          </div>
+          <div class="col-md-3 col-sm-6 d-flex align-items-center border-bottom py-1" *ngFor="let row of computeItems">
+            <label nz-checkbox [(ngModel)]="row.checked" [ngModelOptions]="{ standalone: true }" class="me-1"></label>
+            <input nz-input type="number" [(ngModel)]="row.orderNo" [ngModelOptions]="{ standalone: true }"
+                   class="me-1 vpr-order-input" min="0">
+            <span class="small text-truncate" [attr.title]="row.itemName">{{ row.itemName }}</span>
+          </div>
+        </div>
+      </nz-card>
+    </nz-spin>
+  </div>
+</div>

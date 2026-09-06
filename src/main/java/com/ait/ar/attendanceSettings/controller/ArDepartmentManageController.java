@@ -23,11 +23,6 @@ public class ArDepartmentManageController {
     @Autowired
     private ArDepartmentManageService service;
 
-    @GetMapping("/viewDepartManagerList")
-    public String viewContent() {
-        return "ar/attendanceSettings/viewDepartManagerList";
-    }
-
     @GetMapping("/api/departmentManage/list")
     @ResponseBody
     public ResponseEntity<List<ArDepartmentManageDto>> getList(

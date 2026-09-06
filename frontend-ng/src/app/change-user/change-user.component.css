@@ -1,0 +1,11 @@
+.cu-picker-input {
+  display: flex;
+  gap: 4px;
+}
+
+.cu-row-clickable {
+  cursor: pointer;
+}
+.cu-row-clickable:hover {
+  background: #fafafa;
+}

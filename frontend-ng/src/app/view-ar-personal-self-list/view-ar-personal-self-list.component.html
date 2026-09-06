@@ -1,0 +1,112 @@
+<div class="row">
+  <div class="col-12">
+    <!-- Điều kiện tìm kiếm -->
+    <nz-card class="mb-3 sticky-filter-card">
+      <form class="row g-3 align-items-end" (ngSubmit)="search()">
+        <div class="col-md-3">
+          <label class="form-label">{{ 'apsl.label.startDate' | translate:'Ngày bắt đầu' }}</label>
+          <nz-date-picker class="w-100" [(ngModel)]="startDate" name="startDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'apsl.label.endDate' | translate:'Ngày kết thúc' }}</label>
+          <nz-date-picker class="w-100" [(ngModel)]="endDate" name="endDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
+        </div>
+        <div class="col-md-6 d-flex align-items-end gap-2 flex-wrap">
+          <button nz-button nzType="primary" type="submit">
+            <i class="bx bx-search"></i> {{ 'common.search' | translate:'Tra cứu' }}
+          </button>
+          <button nz-button nzType="default" type="button" class="btn-export" (click)="exportExcel()">
+            <i class="bx bx-export"></i> {{ 'common.exportExcel' | translate:'Xuất Excel' }}
+          </button>
+        </div>
+      </form>
+    </nz-card>
+
+    <!-- Bảng pivot: mỗi hàng = chính nhân viên đang đăng nhập, cột chấm công dynamic từ AR_ITEM -->
+    <nz-card>
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+      <div class="table-scroll-wrapper">
+        <nz-table [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="25" nzShowSizeChanger
+                  [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="vapslTotalTpl"
+                  class="vapsl-table" #vapslTable>
+          <thead>
+            <tr>
+              <th class="vapsl-sticky vapsl-sticky-0 text-center">{{ 'apsl.msg.stt' | translate:'STT' }}</th>
+              <th class="vapsl-sticky vapsl-sticky-1 text-center">{{ 'apsl.msg.empId' | translate:'Mã NV' }}</th>
+              <th class="vapsl-sticky vapsl-sticky-2">{{ 'apsl.msg.empName' | translate:'Họ tên' }}</th>
+              <th class="vapsl-sticky vapsl-sticky-3">{{ 'apsl.msg.deptName' | translate:'Phòng ban' }}</th>
+              <th class="vapsl-num">{{ 'apsl.msg.total' | translate:'Tổng' }}</th>
+              <th class="vapsl-num" *ngFor="let it of items()">{{ it.itemName }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="!loading() && vapslTable.data.length === 0">
+              <td [attr.colspan]="5 + items().length" class="text-center text-muted">
+                {{ 'apsl.msg.noData' | translate:'Không có dữ liệu' }}
+              </td>
+            </tr>
+            <tr *ngFor="let row of vapslTable.data; let i = index">
+              <td class="vapsl-sticky vapsl-sticky-0 text-center">{{ i + 1 }}</td>
+              <td class="vapsl-sticky vapsl-sticky-1 text-center" [attr.title]="row.empId || null">{{ row.empId }}</td>
+              <td class="vapsl-sticky vapsl-sticky-2" [attr.title]="row.localName || null">{{ row.localName }}</td>
+              <td class="vapsl-sticky vapsl-sticky-3" [attr.title]="row.deptName || null">{{ row.deptName }}</td>
+              <td class="vapsl-num text-center fw-bold">{{ fmtQty(row.total) }}</td>
+              <td class="vapsl-num text-center" *ngFor="let it of items()">
+                <a *ngIf="(row.items[it.itemNo] || 0) > 0; else vapslZeroTpl" href="javascript:void(0)"
+                   class="fw-bold" (click)="openDetail(row, it)">{{ fmtQty(row.items[it.itemNo]) }}</a>
+                <ng-template #vapslZeroTpl><span class="text-muted">0</span></ng-template>
+              </td>
+            </tr>
+          </tbody>
+          <ng-template #vapslTotalTpl let-total>
+            {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+          </ng-template>
+        </nz-table>
+      </div>
+    </nz-card>
+  </div>
+</div>
+
+<!-- Modal chi tiết chấm công -->
+<nz-modal [nzVisible]="detailVisible()"
+          [nzTitle]="detailTitle() || ('apsl.modal.title' | translate:'Chi tiết chấm công')"
+          nzWidth="900px" [nzBodyStyle]="{ 'max-height': '70vh', 'overflow-y': 'auto' }"
+          (nzOnCancel)="closeDetail()" [nzFooter]="null">
+  <ng-container *nzModalContent>
+    <nz-alert *ngIf="detailErrorMessage()" nzType="error" [nzMessage]="detailErrorMessage() ?? ''" class="mb-2"></nz-alert>
+    <nz-table [nzData]="detailRows()" [nzLoading]="detailLoading()" [nzShowPagination]="false" nzSize="small">
+      <thead>
+        <tr>
+          <th class="text-center" style="width:50px">{{ 'apsl.msg.stt' | translate:'STT' }}</th>
+          <th class="text-center" style="width:110px">{{ 'apsl.msg.empId' | translate:'Mã NV' }}</th>
+          <th style="min-width:140px">{{ 'apsl.msg.empName' | translate:'Họ tên' }}</th>
+          <th style="min-width:120px">{{ 'apsl.detail.col.shift' | translate:'Ca' }}</th>
+          <th class="text-center" style="width:110px">{{ 'apsl.detail.col.date' | translate:'Ngày' }}</th>
+          <th style="min-width:150px">{{ 'apsl.detail.col.leaveType' | translate:'Loại nghỉ phụ lục' }}</th>
+          <th class="text-center" style="width:120px">{{ 'apsl.detail.col.startTime' | translate:'Thời gian bắt đầu' }}</th>
+          <th class="text-center" style="width:120px">{{ 'apsl.detail.col.endTime' | translate:'Thời gian kết thúc' }}</th>
+          <th class="text-center" style="width:90px">{{ 'apsl.detail.col.duration' | translate:'Thời lượng' }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngIf="!detailLoading() && detailRows().length === 0">
+          <td colspan="9" class="text-center text-muted">
+            {{ 'apsl.detail.hint' | translate:'Chọn vào từng con số để xem chi tiết.' }}
+          </td>
+        </tr>
+        <tr *ngFor="let d of detailRows(); let i = index">
+          <td class="text-center">{{ i + 1 }}</td>
+          <td class="text-center">{{ d.empId }}</td>
+          <td>{{ d.localName }}</td>
+          <td class="text-center">{{ d.shiftName || d.shiftNo }}</td>
+          <td class="text-center">{{ formatDetailDate(d.arDateStr) }}</td>
+          <td>{{ d.itemName }}</td>
+          <td class="text-center">{{ d.fromTimeStr }}</td>
+          <td class="text-center">{{ d.toTimeStr }}</td>
+          <td class="text-center">{{ fmtQty(d.quantity) }}</td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </ng-container>
+</nz-modal>

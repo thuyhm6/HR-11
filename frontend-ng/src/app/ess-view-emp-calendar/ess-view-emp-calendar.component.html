@@ -1,0 +1,100 @@
+<div class="essvc-wrap">
+  <!-- ===== Toolbar ===== -->
+  <div id="essvc_toolbar" class="essvc-toolbar">
+    <div class="essvc-nav">
+      <button nz-button nzType="default" nzShape="circle" [attr.title]="'esscal.nav.prevMonth' | translate:'Tháng trước'" (click)="prevMonth()">
+        <i class="bx bx-chevron-left"></i>
+      </button>
+      <nz-select id="essvc_monthSel" class="essvc-combo" [(ngModel)]="selectedMonth">
+        <nz-option *ngFor="let m of monthOptions" [nzValue]="m" [nzLabel]="monthKeys[m - 1] | translate"></nz-option>
+      </nz-select>
+      <nz-select id="essvc_yearSel" class="essvc-combo essvc-year" [(ngModel)]="selectedYear">
+        <nz-option *ngFor="let y of yearOptions" [nzValue]="y" [nzLabel]="y"></nz-option>
+      </nz-select>
+      <button nz-button nzType="default" nzShape="circle" [attr.title]="'esscal.nav.nextMonth' | translate:'Tháng sau'" (click)="nextMonth()">
+        <i class="bx bx-chevron-right"></i>
+      </button>
+    </div>
+    <div class="essvc-actions">
+      <button id="essvc_searchBtn" nz-button nzType="default" (click)="search()">
+        <i class="bx bx-refresh"></i> {{ 'button.search' | translate:'Tra cứu' }}
+      </button>
+    </div>
+  </div>
+
+  <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-2"></nz-alert>
+
+  <!-- ===== Calendar grid ===== -->
+  <div id="essvc_gridWrap" class="essvc-grid-wrap">
+    <div class="essvc-hrow">
+      <div class="essvc-hcell essvc-col-sun"><i class="bx bxs-sun"></i> {{ 'common.day.sun' | translate:'CN' }}</div>
+      <div class="essvc-hcell">{{ 'common.day.mon' | translate:'T2' }}</div>
+      <div class="essvc-hcell">{{ 'common.day.tue' | translate:'T3' }}</div>
+      <div class="essvc-hcell">{{ 'common.day.wed' | translate:'T4' }}</div>
+      <div class="essvc-hcell">{{ 'common.day.thu' | translate:'T5' }}</div>
+      <div class="essvc-hcell">{{ 'common.day.fri' | translate:'T6' }}</div>
+      <div class="essvc-hcell essvc-col-sat"><i class="bx bxs-star"></i> {{ 'common.day.sat' | translate:'T7' }}</div>
+    </div>
+
+    <div id="essvc_body">
+      <div *ngIf="loading()" class="essvc-status-msg">{{ 'esscal.msg.loading' | translate:'Đang tải...' }}</div>
+      <div *ngIf="!loading() && emptyMessage()" class="essvc-status-msg">{{ emptyMessage() }}</div>
+
+      <ng-container *ngIf="!loading()">
+        <div class="essvc-week" *ngFor="let week of weeks()">
+          <div *ngFor="let cell of week"
+               class="essvc-day"
+               [class.is-empty]="cell.isEmpty"
+               [class.is-today]="cell.isToday"
+               [class.is-holiday]="!cell.isEmpty && cell.isHoliday"
+               [class.is-rest]="!cell.isEmpty && !cell.isHoliday && cell.isRest"
+               [class.is-work]="!cell.isEmpty && !cell.isHoliday && !cell.isRest"
+               [class.essvc-clickable]="hrmMode && !cell.isEmpty"
+               (click)="dayClick(cell)">
+            <ng-container *ngIf="!cell.isEmpty">
+              <div class="essvc-day-top">
+                <span class="essvc-day-num" [class.is-sun]="cell.isSunday" [class.is-sat]="cell.isSaturday">{{ cell.day }}</span>
+                <span class="essvc-status" [class.s-holiday]="cell.isHoliday" [class.s-rest]="!cell.isHoliday && cell.isRest" [class.s-work]="!cell.isHoliday && !cell.isRest">
+                  {{ statusKey(cell) | translate }}
+                </span>
+              </div>
+              <div class="essvc-tags">
+                <span class="essvc-tag" [class.t-we]="cell.isWeekend" [class.t-wd]="!cell.isWeekend">
+                  {{ (cell.isWeekend ? 'esscal.status.weekend' : 'esscal.status.weekday') | translate }}
+                </span>
+                <span class="essvc-tag t-hol" *ngIf="cell.isHoliday">{{ 'esscal.status.holidayStar' | translate:'★ Lễ' }}</span>
+                <span class="essvc-tag t-sh">{{ shiftLabel(cell) }}</span>
+                <span class="essvc-tag t-custom" *ngIf="cell.record?.typeidName">{{ cell.record?.typeidName }}</span>
+              </div>
+              <div class="essvc-remark" *ngIf="cell.record?.remark" [attr.title]="cell.record?.remark">— {{ cell.record?.remark }}</div>
+            </ng-container>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+
+  <!-- ===== Legend ===== -->
+  <div class="essvc-legend">
+    <span class="essvc-legend-item"><span class="essvc-legend-dot essvc-lg-work"></span> {{ 'esscal.legend.workDay' | translate:'Ngày làm việc' }}</span>
+    <span class="essvc-legend-item"><span class="essvc-legend-dot essvc-lg-rest"></span> {{ 'esscal.legend.restDay' | translate:'Ngày nghỉ' }}</span>
+    <span class="essvc-legend-item"><span class="essvc-legend-dot essvc-lg-holiday"></span> {{ 'esscal.legend.holiday' | translate:'Ngày lễ' }}</span>
+    <span class="essvc-legend-item"><span class="essvc-legend-dot essvc-lg-today"></span> {{ 'esscal.legend.today' | translate:'Hôm nay' }}</span>
+  </div>
+</div>
+
+<!-- ===== Modal chi tiết ngày (chỉ dùng khi hrmMode = true, xem JSDoc component) ===== -->
+<nz-modal *ngIf="hrmMode" [nzVisible]="detailVisible()" [nzTitle]="'esscal.modal.dayDetail' | translate:'Chi tiết ngày'"
+          nzWidth="360px" (nzOnCancel)="closeDetail()" [nzFooter]="null">
+  <ng-container *nzModalContent>
+    <ng-container *ngIf="detailCell() as cell">
+      <nz-descriptions nzBordered [nzColumn]="1" nzSize="small">
+        <nz-descriptions-item [nzTitle]="'common.date' | translate:'Ngày'">{{ cell.dateKey }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'common.status' | translate:'Trạng thái'">{{ statusKey(cell) | translate }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'common.shift' | translate:'Ca làm việc'">{{ shiftLabel(cell) }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'common.type' | translate:'Loại'" *ngIf="cell.record?.typeidName">{{ cell.record?.typeidName }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'common.remark' | translate:'Ghi chú'" *ngIf="cell.record?.remark">{{ cell.record?.remark }}</nz-descriptions-item>
+      </nz-descriptions>
+    </ng-container>
+  </ng-container>
+</nz-modal>

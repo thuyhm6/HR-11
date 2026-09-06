@@ -40,10 +40,9 @@ public class EssInfoApplyAttendanceController {
     @Autowired
     private EssCoordApplyAttendanceService coordApplyAttendanceService;
 
-    @GetMapping("/viewSSTApplyAttendance")
-    public String viewSSTApplyAttendance() {
-        return "ess/infoApplyAttendance/viewSSTApplyAttendance";
-    }
+    // Trang Thymeleaf viewSSTApplyAttendance.html đã được thay bằng Angular route
+    // /sst-apply-attendance (xem frontend-ng/src/app/sst-apply-attendance/ và MIGRATED_ROUTES trong
+    // app-shell.component.ts) - các API /api/vacationInfo, /api/leaveLength bên dưới vẫn giữ nguyên.
 
     @GetMapping("/api/vacationInfo")
     @ResponseBody
@@ -61,15 +60,9 @@ public class EssInfoApplyAttendanceController {
         return ResponseEntity.ok(essLeaveApplyService.calculateLeaveLength(fromDateTime, toDateTime, leaveTypeCode));
     }
 
-    @GetMapping("/viewAttendanceExForBatchInfoList")
-    public String viewAttendanceExForBatchInfoList() {
-        return "ess/infoApplyAttendance/viewAttendanceExForBatchInfoList";
-    }
+    // Trang Thymeleaf viewAttendanceExForBatchInfoList.html đã được thay bằng Angular route /attendance-ex-batch-info
 
-    @GetMapping("/viewCheckAttencetanceExForBatchList")
-    public String viewCheckAttencetanceExForBatchList() {
-        return "ess/infoApplyAttendance/viewCheckAttencetanceExForBatchList";
-    }
+    // Trang Thymeleaf viewCheckAttencetanceExForBatchList.html đã được thay bằng Angular route /check-attendance-ex-for-batch
 
     @GetMapping("/api/attendanceEx/list")
     @ResponseBody
@@ -121,15 +114,11 @@ public class EssInfoApplyAttendanceController {
         return ResponseEntity.ok(service.getCardApplyDetail(applyNo, applyType));
     }
 
-    @GetMapping("/viewApplyAttendanceInfoList")
-    public String viewApplyAttendanceInfoList() {
-        return "ess/infoApplyAttendance/viewApplyAttendanceInfoList";
-    }
+    // Trang Thymeleaf viewApplyAttendanceInfoList.html đã được thay bằng Angular route
+    // /apply-attendance-info-list (xem frontend-ng/src/app/apply-attendance-info-list/ và
+    // MIGRATED_ROUTES trong app-shell.component.ts) - các API /api/myLeaveApply/** bên dưới vẫn giữ nguyên.
 
-    @GetMapping("/viewApplyAttenanceBatchInfoList")
-    public String viewApplyAttenanceBatchInfoList() {
-        return "ess/infoApplyAttendance/viewApplyAttenanceBatchInfoList";
-    }
+    // Trang Thymeleaf viewApplyAttenanceBatchInfoList.html đã được thay bằng Angular route /apply-attendance-batch-info
 
     @GetMapping("/api/myLeaveApply/list")
     @ResponseBody
@@ -166,10 +155,10 @@ public class EssInfoApplyAttendanceController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/viewAttendancePersonalInfoList")
-    public String viewAttendancePersonalInfoList() {
-        return "ess/infoApplyAttendance/viewAttendancePersonalInfoList";
-    }
+    // Trang Thymeleaf viewAttendancePersonalInfoList.html đã được thay bằng Angular route
+    // /attendance-personal-info-list (xem frontend-ng/src/app/attendance-personal-info-list/ và
+    // MIGRATED_ROUTES trong app-shell.component.ts) - các API /api/attendancePersonal/** bên dưới vẫn
+    // giữ nguyên (DashboardService cũng đang gọi chung /api/attendancePersonal/list cho biểu đồ).
 
     @GetMapping("/api/attendancePersonal/list")
     @ResponseBody
@@ -190,10 +179,7 @@ public class EssInfoApplyAttendanceController {
         return ResponseEntity.ok(personalInfoService.getAttendanceItemList());
     }
 
-    @GetMapping("/viewCoordApplyAttendanceInfoList")
-    public String viewCoordApplyAttendanceInfoList() {
-        return "ess/infoApplyAttendance/viewCoordApplyAttendanceInfoList";
-    }
+    // Trang Thymeleaf viewCoordApplyAttendanceInfoList.html đã được thay bằng Angular route /coord-apply-attendance-info
 
     @GetMapping("/api/coordApply/list")
     @ResponseBody

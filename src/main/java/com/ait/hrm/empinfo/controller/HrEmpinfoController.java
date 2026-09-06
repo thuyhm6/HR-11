@@ -27,7 +27,6 @@ import com.ait.sy.sys.dto.DataTablesResponse;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import jakarta.servlet.http.HttpServletResponse;
-import com.ait.sy.sys.service.PermissionService;
 import com.ait.sy.sys.service.HrAuthenticationService.HrUserInfo;
 
 import org.slf4j.Logger;
@@ -94,85 +93,34 @@ public class HrEmpinfoController {
     @Autowired
     private HrExpInsideService hrExpInsideService;
 
-    /**
-     * Trang xem thông tin cá nhân nhân viên
-     */
-    @GetMapping("/viewPersonalInfo")
-    public String viewPersonalInfo(Model model, HttpSession session) {
-        // Lấy thông tin user từ session (đã được kiểm tra bởi interceptor)
-        HrUserInfo currentHrUser = (HrUserInfo) session.getAttribute("currentHrUser");
-        PermissionService.UserPermissionInfo permissionInfo = (PermissionService.UserPermissionInfo) session
-                .getAttribute("currentPermissionInfo");
-
-        // Lấy thông tin personal info chi tiết
-        HrPersonalInfo personalInfo = hrPersonalInfoService.getPersonalInfoFromHrUserInfo(currentHrUser);
-
-        model.addAttribute("currentHrUser", currentHrUser);
-        model.addAttribute("permissionInfo", permissionInfo);
-        model.addAttribute("personalInfo", personalInfo);
-        model.addAttribute("title", "Hồ sơ nhân viên - HR System");
-
-        return "hrm/empinfo/viewPersonalInfo";
-    }
+    // Trang Thymeleaf viewPersonalInfo.html (vốn chỉ là template demo Larkon hardcode, chưa từng bind
+    // dữ liệu thật) đã được thay bằng Angular route /view-personal-info (xem ViewPersonalInfoComponent).
+    // Trang mới cho phép tra cứu 1 nhân viên bất kỳ rồi hiển thị thông tin cá nhân/địa chỉ/gia đình/
+    // khẩn cấp bằng nz-table, gọi lại nguyên API /api/address, /api/family, /api/emergency-address bên
+    // dưới - chỉ thêm API /api/personalInfo để lấy HrPersonalInfo theo personId.
 
     /**
-     * Hiển thị danh sách nhân viên nữ với DataTables
+     * API lấy thông tin cá nhân (HR_PERSONAL_INFO) theo personId - dùng cho trang tra cứu thông tin cá
+     * nhân nhân viên (Angular /view-personal-info)
      */
-    @GetMapping("/viewTempEmpInfoList")
-    public String viewTempEmpInfoList(Model model, HttpSession session) {
-        // Lấy thông tin user từ session
-        HrUserInfo currentHrUser = (HrUserInfo) session.getAttribute("currentHrUser");
-        model.addAttribute("currentHrUser", currentHrUser);
-        model.addAttribute("title", "Quản lý nhân viên nữ");
-
-        return "hrm/empinfo/viewTempEmpInfoList";
-    }
-
-    /**
-     * Xuất kết quả tìm kiếm nhân viên nữ
-     */
-    @GetMapping("/export")
-    public String exportFemaleEmployees(
-            @RequestParam(value = "localName", required = false) String localName,
-            @RequestParam(value = "empId", required = false) String empId,
-            @RequestParam(value = "deptNo", required = false) String deptNo,
-            @RequestParam(value = "position", required = false) String position,
-            @RequestParam(value = "createDateFrom", required = false) String createDateFrom,
-            @RequestParam(value = "createDateTo", required = false) String createDateTo,
-            @RequestParam(value = "activity", required = false) String activity,
-            @RequestParam(value = "otFlag", required = false) String otFlag,
-            Model model, HttpSession session) {
-
-        // Lấy thông tin user từ session
-        HrUserInfo currentHrUser = (HrUserInfo) session.getAttribute("currentHrUser");
-        if (currentHrUser == null) {
-            return "redirect:/login";
-        }
-
+    @GetMapping("/api/personalInfo")
+    @ResponseBody
+    public ResponseEntity<?> getPersonalInfo(@RequestParam("personId") String personId) {
         try {
-            // Lấy dữ liệu với điều kiện tìm kiếm
-            List<HrSpecialMatter> employees = hrSpecialMatterService.searchFemaleEmployeesWithConditions(
-                    localName, empId, deptNo, position, createDateFrom, createDateTo, activity, otFlag);
-
-            model.addAttribute("employees", employees);
-            model.addAttribute("searchParams", java.util.Map.of(
-                    "localName", localName != null ? localName : "",
-                    "empId", empId != null ? empId : "",
-                    "deptNo", deptNo != null ? deptNo : "",
-                    "position", position != null ? position : "",
-                    "createDateFrom", createDateFrom != null ? createDateFrom : "",
-                    "createDateTo", createDateTo != null ? createDateTo : "",
-                    "activity", activity != null ? activity : "",
-                    "otFlag", otFlag != null ? otFlag : ""));
-            model.addAttribute("exportDate", java.time.LocalDateTime.now());
-            model.addAttribute("title", "Xuất danh sách nhân viên nữ");
-
-            return "hrm/empinfo/exportFemaleEmployees";
+            HrPersonalInfo info = hrPersonalInfoService.getPersonalInfoByPersonId(personId);
+            if (info == null) {
+                return ResponseEntity.status(404).body("Không tìm thấy thông tin");
+            }
+            return ResponseEntity.ok(info);
         } catch (Exception e) {
-            model.addAttribute("error", "Loi he thong khi xu ly du lieu.");
-            return "hrm/empinfo/tempEmpInfoList";
+            log.error("Lỗi lấy thông tin cá nhân personId={}: ", personId, e);
+            return ResponseEntity.status(500).body("Loi he thong. Vui long thu lai.");
         }
     }
+
+    // Trang Thymeleaf viewTempEmpInfoList.html đã được thay bằng Angular route /view-temp-emp-info-list
+    // (GET /export cũ trỏ tới view hrm/empinfo/exportFemaleEmployees không tồn tại trong repo - đã bỏ,
+    // trang Angular xuất Excel client-side qua POST /female-employees, xem ViewTempEmpInfoListComponent)
 
     /**
      * API lấy thông tin chi tiết nhân viên theo specialNo
@@ -310,16 +258,8 @@ public class HrEmpinfoController {
         }
     }
 
-    /**
-     * Trang xem thông tin công việc (kinh nghiệm làm việc)
-     */
-    @GetMapping("/viewWorkInformation")
-    public String viewWorkInformation(Model model, HttpSession session) {
-        HrUserInfo currentHrUser = (HrUserInfo) session.getAttribute("currentHrUser");
-        model.addAttribute("currentHrUser", currentHrUser);
-        model.addAttribute("title", "Thông tin công việc");
-        return "hrm/empinfo/viewWorkInformation";
-    }
+    // Trang Thymeleaf viewWorkInformation.html đã được thay bằng Angular route /work-experience-info
+    // (xem WorkExperienceInfoComponent) - các API JSON bên dưới vẫn giữ nguyên, không đổi backend.
 
     /**
      * API tìm kiếm thông tin kinh nghiệm làm việc
@@ -398,16 +338,8 @@ public class HrEmpinfoController {
         }
     }
 
-    /**
-     * Trang tìm kiếm quá trình học tập
-     */
-    @GetMapping("/educationSearch")
-    public String viewEducationSearch(Model model, HttpSession session) {
-        HrUserInfo currentHrUser = (HrUserInfo) session.getAttribute("currentHrUser");
-        model.addAttribute("currentHrUser", currentHrUser);
-        model.addAttribute("title", "Quá trình học tập");
-        return "hrm/empinfo/educationSearch";
-    }
+    // Trang Thymeleaf educationSearch.html đã được thay bằng Angular route /education-info (xem
+    // EducationInfoComponent) - các API JSON bên dưới vẫn giữ nguyên, không đổi backend.
 
     /**
      * API tìm kiếm quá trình học tập
@@ -488,16 +420,8 @@ public class HrEmpinfoController {
         }
     }
 
-    /**
-     * Trang tra cứu địa chỉ
-     */
-    @GetMapping("/addressSearch")
-    public String viewAddressSearch(Model model, HttpSession session) {
-        HrUserInfo currentHrUser = (HrUserInfo) session.getAttribute("currentHrUser");
-        model.addAttribute("currentHrUser", currentHrUser);
-        model.addAttribute("title", "Tra cứu địa chỉ");
-        return "hrm/empinfo/addressSearch";
-    }
+    // Trang Thymeleaf addressSearch.html đã được thay bằng Angular route /address-info (xem
+    // AddressInfoComponent) - các API JSON bên dưới vẫn giữ nguyên, không đổi backend.
 
     /**
      * API tra cứu địa chỉ
@@ -578,16 +502,8 @@ public class HrEmpinfoController {
         }
     }
 
-    /**
-     * Trang tra cứu gia đình
-     */
-    @GetMapping("/familySearch")
-    public String viewFamilySearch(Model model, HttpSession session) {
-        HrUserInfo currentHrUser = (HrUserInfo) session.getAttribute("currentHrUser");
-        model.addAttribute("currentHrUser", currentHrUser);
-        model.addAttribute("title", "Tra cứu gia đình");
-        return "hrm/empinfo/familySearch";
-    }
+    // Trang Thymeleaf familySearch.html đã được thay bằng Angular route /family-info (xem
+    // FamilyInfoComponent) - các API JSON bên dưới vẫn giữ nguyên, không đổi backend.
 
     /**
      * API tra cứu gia đình
@@ -668,16 +584,9 @@ public class HrEmpinfoController {
         }
     }
 
-    /**
-     * Trang tra cứu địa chỉ khẩn cấp
-     */
-    @GetMapping("/emergencyAddressSearch")
-    public String viewEmergencyAddressSearch(Model model, HttpSession session) {
-        HrUserInfo currentHrUser = (HrUserInfo) session.getAttribute("currentHrUser");
-        model.addAttribute("currentHrUser", currentHrUser);
-        model.addAttribute("title", "Tra cứu địa chỉ khẩn cấp");
-        return "hrm/empinfo/emergencyAddressSearch";
-    }
+    // Trang Thymeleaf emergencyAddressSearch.html đã được thay bằng Angular route
+    // /emergency-address-info (xem EmergencyAddressInfoComponent) - các API JSON bên dưới vẫn giữ
+    // nguyên, không đổi backend.
 
     /**
      * API tra cứu địa chỉ khẩn cấp
@@ -758,16 +667,8 @@ public class HrEmpinfoController {
         }
     }
 
-    /**
-     * Trang tra cứu khen thưởng
-     */
-    @GetMapping("/recognitionSearch")
-    public String recognitionSearch(Model model, HttpSession session) {
-        HrUserInfo currentHrUser = (HrUserInfo) session.getAttribute("currentHrUser");
-        model.addAttribute("currentHrUser", currentHrUser);
-        model.addAttribute("title", "Tra cứu khen thưởng");
-        return "hrm/empinfo/recognitionSearch";
-    }
+    // Trang Thymeleaf recognitionSearch.html đã được thay bằng Angular route /recognition-info (xem
+    // RecognitionInfoComponent) - các API JSON bên dưới vẫn giữ nguyên, không đổi backend.
 
     /**
      * API tra cứu khen thưởng
@@ -808,16 +709,8 @@ public class HrEmpinfoController {
         }
     }
 
-    /**
-     * Trang tra cứu chứng chỉ
-     */
-    @GetMapping("/viewQualification")
-    public String viewQualification(Model model, HttpSession session) {
-        HrUserInfo currentHrUser = (HrUserInfo) session.getAttribute("currentHrUser");
-        model.addAttribute("currentHrUser", currentHrUser);
-        model.addAttribute("title", "Tra cứu chứng chỉ");
-        return "hrm/empinfo/viewQualification";
-    }
+    // Trang Thymeleaf viewQualification.html đã được thay bằng Angular route /manage-qualification-info
+    // (xem ManageQualificationInfoComponent) - các API JSON bên dưới vẫn giữ nguyên, không đổi backend.
 
     /**
      * API tra cứu chứng chỉ
@@ -934,16 +827,8 @@ public class HrEmpinfoController {
         }
     }
 
-    /**
-     * Trang tra cứu kỷ luật
-     */
-    @GetMapping("/punishmentSearch")
-    public String punishmentSearch(Model model, HttpSession session) {
-        HrUserInfo currentHrUser = (HrUserInfo) session.getAttribute("currentHrUser");
-        model.addAttribute("currentHrUser", currentHrUser);
-        model.addAttribute("title", "Tra cứu kỷ luật");
-        return "hrm/empinfo/punishmentSearch";
-    }
+    // Trang Thymeleaf punishmentSearch.html đã được thay bằng Angular route /punishment-info (xem
+    // PunishmentInfoComponent) - các API JSON bên dưới vẫn giữ nguyên, không đổi backend.
 
     /**
      * API tra cứu kỷ luật
@@ -1022,16 +907,7 @@ public class HrEmpinfoController {
         }
     }
 
-    /**
-     * Trang import ảnh đại diện nhân viên
-     */
-    @GetMapping("/photoImport")
-    public String photoImport(Model model, HttpSession session) {
-        HrUserInfo currentHrUser = (HrUserInfo) session.getAttribute("currentHrUser");
-        model.addAttribute("currentHrUser", currentHrUser);
-        model.addAttribute("title", "Import ảnh đại diện");
-        return "hrm/empinfo/photoImport";
-    }
+    // Trang Thymeleaf photoImport.html đã được thay bằng Angular route /photo-import
 
     /**
      * API kiểm tra danh sách ảnh trước khi lưu (không lưu file, không cập nhật DB)
@@ -1066,14 +942,7 @@ public class HrEmpinfoController {
     }
 
     // ── Quyết định nhân sự (HR_EXPERIENCE_INSIDE) ─────────────────────────────
-
-    @GetMapping("/viewStartPoint")
-    public String viewStartPoint(Model model, HttpSession session) {
-        HrUserInfo currentHrUser = (HrUserInfo) session.getAttribute("currentHrUser");
-        model.addAttribute("currentHrUser", currentHrUser);
-        model.addAttribute("title", "Quyết định nhân sự");
-        return "hrm/empinfo/viewStartPoint";
-    }
+    // Trang Thymeleaf viewStartPoint.html đã được thay bằng Angular route /view-start-point
 
     @GetMapping("/api/startpoint/employee/search")
     @ResponseBody
@@ -1217,16 +1086,7 @@ public class HrEmpinfoController {
         }
     }
 
-    /**
-     * Trang Thẻ nhân sự
-     */
-    @GetMapping("/viewHTSVCardInfoList")
-    public String viewHTSVCardInfoList(Model model, HttpSession session) {
-        HrUserInfo currentHrUser = (HrUserInfo) session.getAttribute("currentHrUser");
-        model.addAttribute("currentHrUser", currentHrUser);
-        model.addAttribute("title", "Thẻ nhân sự");
-        return "hrm/empinfo/viewHTSVCardInfoList";
-    }
+    // Trang Thymeleaf viewHTSVCardInfoList.html đã được thay bằng Angular route /hr-card-info
 
     /**
      * API lấy chi tiết Thẻ nhân sự để in

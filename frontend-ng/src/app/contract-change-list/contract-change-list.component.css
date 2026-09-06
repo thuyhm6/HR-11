@@ -1,0 +1,11 @@
+.ccl-row-clickable {
+  cursor: pointer;
+}
+.ccl-row-clickable:hover {
+  background: #fafafa;
+}
+
+.ccl-btn-export {
+  color: #52c41a;
+  border-color: #52c41a;
+}

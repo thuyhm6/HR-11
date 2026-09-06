@@ -101,13 +101,9 @@ public class EssEmpInfoController {
     @Autowired
     private HrRewardService hrRewardService;
 
-    /**
-     * Mở giao diện Tra cứu chi tiết thay đổi thông tin
-     */
-    @GetMapping("/viewEssApplyInfo")
-    public String viewEssApplyInfo(Model model, HttpSession session) {
-        return "ess/empinfo/viewEssApplyInfo";
-    }
+    // Trang Thymeleaf ess/empinfo/viewEssApplyInfo.html đã được thay bằng Angular route /apply-info
+    // (xem frontend-ng/src/app/apply-info/ và MIGRATED_ROUTES trong app-shell.component.ts) - các API
+    // /api/apply/** bên dưới vẫn giữ nguyên.
 
     /**
      * API: Lấy danh sách phân trang các apply của nhân viên đang đăng nhập
@@ -149,21 +145,13 @@ public class EssEmpInfoController {
         }
     }
 
-    /**
-     * Mở giao diện xem thông tin cá nhân
-     */
-    @GetMapping("/viewPersonalInfoForEss")
-    public String viewPersonalInfoForEss(Model model, HttpSession session) {
-        return "ess/empinfo/viewPersonalInfoForEss";
-    }
+    // Trang Thymeleaf ess/empinfo/viewPersonalInfoForEss.html đã được thay bằng Angular route
+    // /personal-info (xem frontend-ng/src/app/personal-info/ và MIGRATED_ROUTES trong
+    // app-shell.component.ts) - các API /api/personalInfo/** bên dưới vẫn giữ nguyên.
 
-    /**
-     * Mở giao diện Thông tin Công việc
-     */
-    @GetMapping("/viewEssPersonalInfo")
-    public String viewEssPersonalInfo(Model model, HttpSession session) {
-        return "ess/empinfo/viewEssPersonalInfo";
-    }
+    // Trang Thymeleaf ess/empinfo/viewEssPersonalInfo.html đã được thay bằng Angular route /work-info
+    // (xem frontend-ng/src/app/work-info/ và MIGRATED_ROUTES trong app-shell.component.ts) - các API
+    // /api/workInfo/** bên dưới vẫn giữ nguyên.
 
     // ==================== Thông tin công việc ====================
 
@@ -239,11 +227,9 @@ public class EssEmpInfoController {
     }
 
     // ==================== Thông tin chứng chỉ ====================
-
-    @GetMapping("/viewQualificationInfo")
-    public String viewQualificationInfo(Model model, HttpSession session) {
-        return "ess/empinfo/viewQualificationInfo";
-    }
+    // Trang Thymeleaf ess/empinfo/viewQualificationInfo.html đã được thay bằng Angular route
+    // /qualification-info (xem frontend-ng/src/app/qualification-info/ và MIGRATED_ROUTES trong
+    // app-shell.component.ts) - các API /api/qualInfo/** bên dưới vẫn giữ nguyên.
 
     @GetMapping("/api/qualInfo/myEducation")
     @ResponseBody

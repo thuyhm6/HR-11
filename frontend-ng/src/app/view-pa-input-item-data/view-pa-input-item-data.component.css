@@ -1,0 +1,27 @@
+.vpid-row-clickable {
+  cursor: pointer;
+}
+
+.vpid-left-card {
+  height: calc(100vh - 220px);
+  display: flex;
+  flex-direction: column;
+}
+
+.vpid-item-list {
+  overflow-y: auto;
+  flex: 1;
+}
+
+.vpid-item-row {
+  cursor: pointer;
+}
+
+.vpid-item-row:hover {
+  background-color: var(--bs-light, #f5f5f5);
+}
+
+.vpid-item-row.active {
+  background-color: #1677ff;
+  color: #fff;
+}

@@ -21,6 +21,17 @@ public interface PermissionService {
     List<SyRoleGroup> getUserRoleGroups(String userNo);
 
     /**
+     * Kiểm tra user có thuộc ít nhất 1 role group (SY_ROLE_GROUP) với SYS_TYPE tương ứng hay không -
+     * dùng để xác định quyền truy cập HR Management System (SYS_TYPE = 0). Tái sử dụng
+     * {@link #getUserRoleGroups(String)} thay vì viết lại query join SY_USER_RELATION + SY_ROLE_GROUP.
+     *
+     * @param userNo  Mã người dùng
+     * @param sysType Giá trị SY_ROLE_GROUP.SYS_TYPE cần kiểm tra
+     * @return true nếu có ít nhất một role group thỏa điều kiện
+     */
+    boolean hasRoleGroupWithSysType(String userNo, Integer sysType);
+
+    /**
      * Lấy danh sách roles của user
      * 
      * @param userNo Mã người dùng

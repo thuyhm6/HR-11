@@ -1,0 +1,126 @@
+<div class="row">
+  <div class="col-12">
+
+    <!-- ===== Thông tin nhân viên (tương đương fragments/essEmpInfoCard.html) ===== -->
+    <div class="card mb-3" *ngIf="basicInfo() as info">
+      <div class="card-body p-0">
+        <table class="table table-bordered table-sm align-middle mb-0" style="table-layout:fixed;">
+          <colgroup>
+            <col style="width:15%;"><col style="width:35%;"><col style="width:15%;"><col style="width:35%;">
+          </colgroup>
+          <tbody>
+            <tr>
+              <th class="table-light text-center">{{ 'essEmpCard.localName' | translate:'Họ tên' }}</th>
+              <td>{{ info.localName }}</td>
+              <th class="table-light text-center">{{ 'essEmpCard.empId' | translate:'Mã nhân viên' }}</th>
+              <td>{{ info.empId }}</td>
+            </tr>
+            <tr>
+              <th class="table-light text-center">{{ 'essEmpCard.deptName' | translate:'Phòng ban' }}</th>
+              <td>{{ info.deptName }}</td>
+              <th class="table-light text-center">{{ 'essEmpCard.headDept' | translate:'Trưởng phòng' }}</th>
+              <td>{{ info.headDepartment }}</td>
+            </tr>
+            <tr>
+              <th class="table-light text-center">{{ 'essEmpCard.postFamily' | translate:'Nhóm nhân viên' }}</th>
+              <td>{{ info.postFamilyName }}</td>
+              <th class="table-light text-center">{{ 'essEmpCard.postGrade' | translate:'Chức vụ' }}</th>
+              <td>{{ info.postGradeName }}</td>
+            </tr>
+            <tr>
+              <th class="table-light text-center">{{ 'essEmpCard.positionName' | translate:'Chức danh' }}</th>
+              <td>{{ info.positionNoName }}</td>
+              <th class="table-light text-center">{{ 'essEmpCard.dateStarted' | translate:'Ngày vào làm' }}</th>
+              <td>{{ info.dateStarted }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== Điều kiện tìm kiếm ===== -->
+    <div class="card mb-3">
+      <div class="card-body">
+        <form class="row gy-3" (ngSubmit)="search()">
+          <div class="col-md-4">
+            <div class="border rounded p-2 h-100">
+              <div class="small text-muted mb-2">{{ 'poai.field.otCategory' | translate:'Phân loại tăng ca' }}</div>
+              <nz-select class="w-100" [(ngModel)]="itemNoSearch" name="itemNoSearch" nzAllowClear
+                         [nzPlaceHolder]="'poai.opt.all' | translate:'-- Tất cả --'">
+                <nz-option *ngFor="let c of itemOptions()" [nzValue]="c.itemNo" [nzLabel]="c.itemName || c.itemNo"></nz-option>
+              </nz-select>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="border rounded p-2 h-100">
+              <div class="small text-muted mb-2">{{ 'poai.field.durationGte' | translate:'Thời lượng (>=)' }}</div>
+              <nz-input-number style="max-width:140px;" [(ngModel)]="minQuantity" name="minQuantity"
+                                [nzMin]="0" [nzStep]="0.5" nzPlaceHolder="0"></nz-input-number>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="border rounded p-2 h-100">
+              <div class="small text-muted mb-2">{{ 'poai.field.dateRange' | translate:'Thời gian' }}</div>
+              <div class="d-flex flex-wrap align-items-center gap-2">
+                <nz-date-picker style="width:130px;" [(ngModel)]="startDate" name="startDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
+                <span>~</span>
+                <nz-date-picker style="width:130px;" [(ngModel)]="endDate" name="endDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
+                <button nz-button nzType="primary" nzSize="small" type="submit">
+                  <i class="bi bi-search"></i> {{ 'poai.btn.search' | translate:'Tra cứu' }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ===== Toolbar lọc nhanh ===== -->
+    <div class="d-flex align-items-center gap-2 mb-2">
+      <span class="small">{{ 'poai.label.quickFilter' | translate:'Lọc nhanh' }}</span>
+      <input nz-input style="max-width:200px;" [(ngModel)]="quickFilterKeyword">
+    </div>
+
+    <!-- ===== Bảng danh sách ===== -->
+    <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+    <nz-table [nzData]="filteredRows()" [nzLoading]="loading()" [nzPageSize]="25" [nzShowSizeChanger]="true"
+              [nzPageSizeOptions]="[25, 50, 100, 200]" [nzShowTotal]="poaiTotalTpl"
+              [nzScroll]="{ x: '1400px' }" class="table-nowrap" #poaiTable>
+      <thead>
+        <tr>
+          <th class="text-center" nzWidth="50px">{{ 'common.no.serial' | translate:'NO' }}</th>
+          <th class="text-center" nzWidth="100px">{{ 'common.date' | translate:'Ngày' }}</th>
+          <th class="text-center" nzWidth="55px">{{ 'poai.col.dayOfWeek' | translate:'Thứ' }}</th>
+          <th nzWidth="140px">{{ 'poai.col.ot' | translate:'Tăng ca' }}</th>
+          <th nzWidth="120px">{{ 'common.shift' | translate:'Ca' }}</th>
+          <th class="text-center" nzWidth="140px">{{ 'poai.col.workTime' | translate:'Thời gian làm việc' }}</th>
+          <th class="text-center" nzWidth="65px">{{ 'poai.col.checkIn' | translate:'Vào' }}</th>
+          <th class="text-center" nzWidth="65px">{{ 'poai.col.checkOut' | translate:'Ra' }}</th>
+          <th class="text-center" nzWidth="170px">{{ 'poai.col.otStartTime' | translate:'Thời gian bắt đầu tăng ca' }}</th>
+          <th class="text-center" nzWidth="170px">{{ 'poai.col.otEndTime' | translate:'Thời gian kết thúc' }}</th>
+          <th class="text-center" nzWidth="120px">{{ 'poai.col.otDuration' | translate:'Thời lượng tăng ca' }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of poaiTable.data; let i = index">
+          <td class="text-center">{{ i + 1 }}</td>
+          <td class="text-center">{{ row.arDateStr }}</td>
+          <td class="text-center">{{ dayOfWeek(row.arDateStr) }}</td>
+          <td [attr.title]="row.itemName || row.itemNo || null">{{ row.itemName || row.itemNo }}</td>
+          <td [attr.title]="row.shiftName || row.shiftNo || null">{{ row.shiftName || row.shiftNo }}</td>
+          <td class="text-center">{{ row.workTime }}</td>
+          <td class="text-center">{{ row.indoorTime }}</td>
+          <td class="text-center">{{ row.outdoorTime }}</td>
+          <td class="text-center">{{ row.otStartTime }}</td>
+          <td class="text-center">{{ row.otEndTime }}</td>
+          <td class="text-center">{{ row.workHour }}</td>
+        </tr>
+      </tbody>
+      <ng-template #poaiTotalTpl let-total>
+        {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+      </ng-template>
+    </nz-table>
+
+  </div>
+</div>

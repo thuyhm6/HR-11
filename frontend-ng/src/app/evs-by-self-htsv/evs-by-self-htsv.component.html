@@ -1,0 +1,136 @@
+<div class="row">
+  <div class="col-12">
+    <!-- Điều kiện tìm kiếm -->
+    <nz-card class="mb-3">
+      <form class="row g-3 align-items-end" (ngSubmit)="search()">
+        <div class="col-md-4">
+          <label class="form-label">{{ 'evs.viewEvsBySelfHTSV.evalName' | translate:'Tên đánh giá' }}</label>
+          <nz-select class="w-100" [(ngModel)]="resumeSeq" name="resumeSeq"
+                     [nzPlaceHolder]="'common.select' | translate:'Chọn'">
+            <nz-option *ngFor="let r of resumeOptions()" [nzValue]="r.seq" [nzLabel]="r.resumeName"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-2">
+          <button nz-button nzType="primary" type="submit" [nzLoading]="loading()">
+            <i class="bx bx-search"></i> {{ 'evs.viewEvsBySelfHTSV.btnSearch' | translate:'Tra cứu' }}
+          </button>
+        </div>
+      </form>
+    </nz-card>
+
+    <!-- Không trong khoảng thời gian đánh giá -->
+    <nz-alert *ngIf="noticeVisible()" nzType="warning" nzShowIcon
+              [nzMessage]="'evs.viewConfirmTarget1.msg.notInEvalPeriod' | translate:'Không trong khoảng thời gian đánh giá hoặc bạn không phải là người đánh giá, xin liên hệ Phòng nhân sự!'">
+    </nz-alert>
+
+    <ng-container *ngIf="!noticeVisible() && personalInfo() as info">
+      <!-- Thông tin cá nhân -->
+      <nz-card class="mb-3">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <nz-descriptions nzBordered nzSize="small" [nzColumn]="1"
+                              [nzTitle]="'evs.viewEvsBySelfHTSV.basicInfo' | translate:'Thông tin cơ bản'">
+              <nz-descriptions-item [nzTitle]="'evs.viewEvsBySelfHTSV.fullName' | translate:'Họ tên'">{{ info.localName }}</nz-descriptions-item>
+              <nz-descriptions-item [nzTitle]="'evs.viewEvsBySelfHTSV.position' | translate:'Chức vụ'">{{ info.postGradeName }}</nz-descriptions-item>
+              <nz-descriptions-item [nzTitle]="'evs.viewEvsBySelfHTSV.dept' | translate:'Phòng ban'">{{ info.deptname }}</nz-descriptions-item>
+              <nz-descriptions-item [nzTitle]="'evs.viewEvsBySelfHTSV.hireDate' | translate:'Ngày vào làm'">{{ info.dateStarted }}</nz-descriptions-item>
+            </nz-descriptions>
+          </div>
+          <div class="col-md-6">
+            <nz-descriptions nzBordered nzSize="small" [nzColumn]="1"
+                              [nzTitle]="'evs.viewEvsBySelfHTSV.evalCategory' | translate:'Hạng mục đánh giá'">
+              <nz-descriptions-item [nzTitle]="'evs.viewEvsBySelfHTSV.evalYear' | translate:'Năm đánh giá'">{{ info.evsYear }}</nz-descriptions-item>
+              <nz-descriptions-item [nzTitle]="'evs.viewEvsBySelfHTSV.period' | translate:'Thời gian'">{{ info.evsStartDate }}{{ info.evsEndDate ? '~' + info.evsEndDate : '' }}</nz-descriptions-item>
+              <nz-descriptions-item [nzTitle]="'evs.viewEvsBySelfHTSV.appraiser1' | translate:'Người đánh giá lần 1'">{{ info.localName1 }}</nz-descriptions-item>
+              <nz-descriptions-item [nzTitle]="'evs.viewEvsBySelfHTSV.appraiser2' | translate:'Người đánh giá lần 2'">{{ info.localName2 }}</nz-descriptions-item>
+            </nz-descriptions>
+          </div>
+        </div>
+      </nz-card>
+
+      <!-- Bảng mục tiêu đánh giá bản thân -->
+      <nz-card class="mb-3">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <span class="fw-bold">{{ 'evs.viewEvsBySelfHTSV.objectiveTitle' | translate:'Mục tiêu đánh giá bản thân' }}</span>
+          <div class="d-flex gap-1" *ngIf="isEditable">
+            <button nz-button nzSize="small" type="button" (click)="save('0')">
+              {{ 'evs.viewEvsBySelfHTSV.btnSaveDraft' | translate:'Lưu tạm thời' }}
+            </button>
+            <button nz-button nzType="primary" nzSize="small" type="button" (click)="save('1')">
+              {{ 'evs.viewEvsBySelfHTSV.btnExecute' | translate:'Thực hiện' }}
+            </button>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <nz-table [nzData]="rows()" [nzShowPagination]="false" nzSize="small">
+            <thead>
+              <tr>
+                <th class="text-center" style="width:48px;">{{ 'evs.viewEvsBySelfHTSV.col.no' | translate:'No' }}</th>
+                <th style="width:220px;">{{ 'evs.viewEvsBySelfHTSV.col.evalItem' | translate:'Hạng mục đánh giá' }}</th>
+                <th>{{ 'evs.viewEvsBySelfHTSV.col.target' | translate:'Mục tiêu' }}</th>
+                <th class="text-center" style="width:90px;">{{ 'evs.viewEvsBySelfHTSV.col.ratio' | translate:'Tỷ lệ(%)' }}</th>
+                <th class="text-center" style="width:130px;">{{ 'evs.viewEvsBySelfHTSV.col.selfScore' | translate:'Điểm đánh giá bản thân (%)' }}</th>
+                <th class="text-center" style="width:100px;">{{ 'evs.viewEvsBySelfHTSV.col.total' | translate:'Tổng' }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngIf="rows().length === 0">
+                <td colspan="6" class="text-center text-muted">0</td>
+              </tr>
+              <tr *ngFor="let row of rows(); let i = index">
+                <td class="text-center">{{ i + 1 }}</td>
+                <td>{{ row.itemName }}</td>
+                <td class="vebsh-rich-content"><div [innerHTML]="row.itemContent"></div></td>
+                <td class="text-center">{{ row.ratio }}</td>
+                <td class="text-center">
+                  <input nz-input type="number" min="0" [attr.max]="row.ratio" step="0.01"
+                         class="vebsh-score-input" [(ngModel)]="row.evsScore" [readonly]="!isEditable"
+                         (ngModelChange)="onScoreInput(row)">
+                </td>
+                <td class="text-center">{{ row.rowTotal > 0 ? row.rowTotal : '-' }}</td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="5" class="text-end fw-bold small">Total</td>
+                <td class="text-center fw-bold">{{ totalScore() }}</td>
+              </tr>
+            </tfoot>
+          </nz-table>
+        </div>
+      </nz-card>
+
+      <!-- Phần 2: Thành tích và Hạn chế của bản thân -->
+      <nz-card>
+        <div class="fw-bold mb-2 border-bottom pb-1">{{ 'evs.viewEvsBySelfHTSV.part2' | translate:'Phần 2: Thành tích và Hạn chế của bản thân' }}</div>
+        <table class="table table-bordered table-sm mb-0">
+          <thead class="table-light text-center">
+            <tr>
+              <th style="width:160px;"></th>
+              <th>{{ 'evs.viewEvsBySelfHTSV.col.achievement' | translate:'Thành tích' }}</th>
+              <th>{{ 'evs.viewEvsBySelfHTSV.col.limitation' | translate:'Hạn chế' }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="text-muted small align-middle">{{ 'evs.result.col.self' | translate:'Bản thân' }}</td>
+              <td><textarea nz-input rows="3" style="resize:none;" [(ngModel)]="achiev0" [readonly]="!isEditable"></textarea></td>
+              <td><textarea nz-input rows="3" style="resize:none;" [(ngModel)]="limit0" [readonly]="!isEditable"></textarea></td>
+            </tr>
+            <tr>
+              <td class="text-muted small align-middle">{{ 'evs.viewEvsBySelfHTSV.appraiser1Comment' | translate:'Người đánh giá cấp 1' }}</td>
+              <td><textarea nz-input rows="3" readonly style="resize:none;">{{ info.affirmC1L1 }}</textarea></td>
+              <td><textarea nz-input rows="3" readonly style="resize:none;">{{ info.affirmC2L1 }}</textarea></td>
+            </tr>
+            <tr>
+              <td class="text-muted small align-middle">{{ 'evs.viewEvsBySelfHTSV.appraiser2Comment' | translate:'Người đánh giá cấp 2' }}</td>
+              <td><textarea nz-input rows="3" readonly style="resize:none;">{{ info.affirmC1L2 }}</textarea></td>
+              <td><textarea nz-input rows="3" readonly style="resize:none;">{{ info.affirmC2L2 }}</textarea></td>
+            </tr>
+          </tbody>
+        </table>
+      </nz-card>
+    </ng-container>
+  </div>
+</div>

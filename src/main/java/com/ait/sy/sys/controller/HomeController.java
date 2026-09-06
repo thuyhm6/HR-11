@@ -2,10 +2,7 @@ package com.ait.sy.sys.controller;
 
 import com.ait.hrm.empinfo.dto.EmpMonthlyStatsDto;
 import com.ait.hrm.empinfo.service.HrEmployeeService;
-import com.ait.sy.sys.dto.MenuDTO;
 import com.ait.sy.sys.service.HrAuthenticationService.HrUserInfo;
-import com.ait.sy.sys.service.MenuService;
-import com.ait.sy.sys.service.PermissionService.UserPermissionInfo;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.time.LocalDate;
@@ -35,9 +32,6 @@ import jakarta.servlet.http.HttpServletResponse;
 public class HomeController {
 
     @Autowired
-    private MenuService menuService;
-
-    @Autowired
     private com.ait.hrm.contract.service.HrContractService hrContractService;
 
     @Autowired
@@ -57,24 +51,28 @@ public class HomeController {
     }
 
     /**
-     * Dashboard mac dinh cua he thong
-     */
-    @GetMapping("/dashboard")
-    public String dashboard(Model model, HttpSession session) {
-        return buildDashboardPage(model, session, "1", "Dashboard - HR System");
-    }
-
-    /**
-     * Trang chu HRM mo trong tab moi voi bo menu SYS_TYPE = 0
+     * Trang chu HRM (bo menu SYS_TYPE = 0) - da chuyen sang Angular (HrmDashboardComponent), redirect
+     * de link cu (topbar Thymeleaf, bookmark...) van vao dung trang qua AngularSpaConfig fallback.
      */
     @GetMapping("/sys/hrm")
-    public String dashboardSysTypeZero(Model model, HttpSession session) {
-        return buildHrmPage(model, session);
+    public String dashboardSysTypeZero() {
+        return "redirect:/hrm-dashboard";
     }
 
     @GetMapping("/sys/viewSysTypeZeroMenuList")
     public String redirectLegacySysTypeZeroPage() {
         return "redirect:/sys/hrm";
+    }
+
+    /**
+     * So luong hop dong sap het han (7 ngay toi) - dung cho the canh bao tren HrmDashboardComponent
+     * (Angular). Tai su dung nguyen HrContractService#countExpiringContracts, truoc day chi duoc tinh
+     * qua Model luc render trang Thymeleaf login/hrm.html (da xoa).
+     */
+    @GetMapping("/hrm/api/expiringContracts/count")
+    @ResponseBody
+    public int getExpiringContractsCount() {
+        return hrContractService.countExpiringContracts(7);
     }
 
     @GetMapping("/hrm/api/empMonthlyStats")
@@ -171,50 +169,4 @@ public class HomeController {
         }
     }
 
-    private String buildHrmPage(Model model, HttpSession session) {
-        HrUserInfo currentHrUser = (HrUserInfo) session.getAttribute("currentHrUser");
-        UserPermissionInfo permissionInfo = (UserPermissionInfo) session.getAttribute("currentPermissionInfo");
-
-        if (currentHrUser == null || currentHrUser.getSyUser() == null) {
-            return "redirect:/login";
-        }
-
-        List<MenuDTO> userMenus = menuService.getMenusByUserPermissionBySysType(currentHrUser.getSyUser().getUserNo(), "0");
-        int expiringContractsCount = hrContractService.countExpiringContracts(7);
-
-        model.addAttribute("currentHrUser", currentHrUser);
-        model.addAttribute("permissionInfo", permissionInfo);
-        model.addAttribute("userMenus", userMenus);
-        model.addAttribute("title", "HR Management System");
-        model.addAttribute("message", "Chào mừng " + currentHrUser.getEmployeeName() + " đến với hệ thống HR!");
-        model.addAttribute("expiringContractsCount", expiringContractsCount);
-        model.addAttribute("sysMode", "hrm");
-        session.setAttribute("sysMode", "hrm");
-
-        return "login/hrm";
-    }
-
-    private String buildDashboardPage(Model model, HttpSession session, String sysType, String title) {
-        HrUserInfo currentHrUser = (HrUserInfo) session.getAttribute("currentHrUser");
-        UserPermissionInfo permissionInfo = (UserPermissionInfo) session.getAttribute("currentPermissionInfo");
-
-        if (currentHrUser == null || currentHrUser.getSyUser() == null) {
-            return "redirect:/login";
-        }
-
-        List<MenuDTO> userMenus = menuService.getMenusByUserPermissionBySysType(currentHrUser.getSyUser().getUserNo(),
-                sysType);
-        int expiringContractsCount = hrContractService.countExpiringContracts(7);
-
-        model.addAttribute("currentHrUser", currentHrUser);
-        model.addAttribute("permissionInfo", permissionInfo);
-        model.addAttribute("userMenus", userMenus);
-        model.addAttribute("title", title);
-        model.addAttribute("message", "Chào mừng " + currentHrUser.getEmployeeName() + " đến với hệ thống HR!");
-        model.addAttribute("expiringContractsCount", expiringContractsCount);
-        model.addAttribute("sysMode", "ess");
-        session.setAttribute("sysMode", "ess");
-
-        return "login/dashboard";
-    }
 }

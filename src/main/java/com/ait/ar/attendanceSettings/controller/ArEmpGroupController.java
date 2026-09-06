@@ -22,11 +22,6 @@ public class ArEmpGroupController {
     @Autowired
     private ArEmpGroupService service;
 
-    @GetMapping("/viewDynamicGroup")
-    public String viewDynamicGroup() {
-        return "ar/attendanceSettings/viewDynamicGroup";
-    }
-
     @GetMapping("/api/dynamicGroup/list")
     public ResponseEntity<List<ArEmpGroupDto>> getList(
             @RequestParam(required = false) String empId) {

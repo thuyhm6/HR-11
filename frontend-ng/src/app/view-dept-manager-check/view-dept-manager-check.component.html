@@ -1,0 +1,101 @@
+<div class="row">
+  <div class="col-12">
+    <nz-card [nzTitle]="'org.orgManage.viewDeptManagerCheck.title' | translate:'Kiểm tra trưởng phòng ban'" [nzExtra]="vdmcExtra">
+      <ng-template #vdmcExtra>
+        <button nz-button nzSize="small" type="button" id="vdmcBtnExportExcel" (click)="exportExcel()">
+          <i class="bx bx-file-blank"></i> {{ 'common.exportExcel' | translate:'Xuất Excel' }}
+        </button>
+      </ng-template>
+
+      <div class="row align-items-center mb-3">
+        <div class="col-md-auto">
+          <label class="fw-bold">{{ 'orgResumeProcess.versionName' | translate:'Tên phiên bản' }}</label>
+        </div>
+        <div class="col-md-4">
+          <nz-select class="w-100" id="vdmcResumeSelect" [(ngModel)]="selectedResumeNo" (ngModelChange)="onResumeChange($event)"
+                     [nzLoading]="loadingResume()" nzShowSearch nzAllowClear
+                     [nzPlaceHolder]="'orgResumeProcess.selectPlaceholder' | translate:'-- Chọn phiên bản thay đổi --'">
+            <nz-option *ngFor="let r of resumeOptions()" [nzValue]="r.no" [nzLabel]="resumeLabel(r)"></nz-option>
+          </nz-select>
+        </div>
+      </div>
+
+      <nz-table [nzData]="rows()" [nzLoading]="loadingRows()" [nzShowPagination]="false"
+                [nzScroll]="{ y: '600px' }" #vdmcTable>
+        <thead>
+          <tr>
+            <th nzWidth="30%">{{ 'orgDeptMgr.deptColumn' | translate:'Mã bộ phận - Tên bộ phận' }}</th>
+            <th>{{ 'org.orgManage.DEPARTMENT_INFORMATION.Z' | translate:'Trưởng phòng' }}</th>
+            <th>{{ 'org.title.BUSINESS_NAME' | translate:'Chức vụ' }}</th>
+            <th>{{ 'org.title.POSITION_NO' | translate:'Chức danh' }}</th>
+            <th class="text-center">{{ 'orgCompose.isPartTime' | translate:'Kiêm nhiệm' }}</th>
+            <th class="text-center">{{ 'orgDeptMgr.vacancyColumn' | translate:'Trống (Vacancy)' }}</th>
+            <th class="text-center" nzWidth="5%">{{ 'common.edit' | translate:'Sửa' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!loadingRows() && rows().length === 0">
+            <td colspan="7" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+          </tr>
+          <tr *ngFor="let row of vdmcTable.data">
+            <td>
+              <div [style.padding-left]="deptIndentPx(row)">{{ row.DEPTNO }} - {{ row.ORG_NAME_LOCAL }}</div>
+            </td>
+            <td>
+              <span *ngIf="row.MANAGER_NAME; else vdmcNoManager">{{ row.MANAGER_NAME }}</span>
+              <ng-template #vdmcNoManager>
+                <span class="text-muted">{{ 'orgDeptMgr.noManager' | translate:'Chưa có' }}</span>
+              </ng-template>
+            </td>
+            <td>{{ row.POST_GRADE_NAME }}</td>
+            <td>{{ row.POSITION_NAME }}</td>
+            <td class="text-center">
+              <i *ngIf="isPartTimeRow(row)" class="bx bx-check text-success fs-5"></i>
+            </td>
+            <td class="text-center">
+              <span class="badge" [class.bg-danger]="isVacant(row)" [class.bg-success]="!isVacant(row)">
+                {{ isVacant(row) ? ('orgDeptMgr.vacant' | translate:'Trống') : ('orgDeptMgr.appointed' | translate:'Đã bổ nhiệm') }}
+              </span>
+            </td>
+            <td class="text-center">
+              <button nz-button nzType="text" nzSize="small" [title]="'common.edit' | translate:'Sửa'" (click)="openEditModal(row)">
+                <i class="bx bx-edit text-warning"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>
+
+<!-- Modal cập nhật trưởng bộ phận -->
+<nz-modal [nzVisible]="modalVisible()" [nzTitle]="'orgDeptMgr.modalTitle' | translate:'Cập nhật trưởng bộ phận'"
+          (nzOnCancel)="closeModal()" (nzOnOk)="saveManager()" [nzOkLoading]="saving()"
+          [nzOkText]="'common.save' | translate:'Lưu'" [nzCancelText]="'common.cancel' | translate:'Hủy'">
+  <ng-container *nzModalContent>
+    <div class="mb-3">
+      <label class="form-label">{{ 'org.orgManage.title.deptName' | translate:'Phòng ban' }}</label>
+      <input nz-input [ngModel]="form.deptLabel" name="vdmcDeptLabel" readonly>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">{{ 'org.orgManage.DEPARTMENT_INFORMATION.Z' | translate:'Trưởng phòng' }}</label>
+      <div class="input-group">
+        <input nz-input [ngModel]="empKeyword" name="vdmcEmpKeyword" (ngModelChange)="onEmpKeywordChange($event)"
+               [nzAutocomplete]="vdmcEmpAuto" [placeholder]="'hrm.empinfo.workexp.selectEmp' | translate:'Chọn nhân viên...'">
+        <button nz-button type="button" (click)="clearSelectedManager()">
+          <i class="bx bx-x"></i>
+        </button>
+        <nz-autocomplete #vdmcEmpAuto>
+          <nz-auto-option *ngFor="let opt of empOptions()" [nzValue]="opt" (click)="onEmpSelected(opt)">
+            {{ opt.empId }} - {{ opt.localName }} <small class="text-muted">({{ opt.deptName }})</small>
+          </nz-auto-option>
+        </nz-autocomplete>
+      </div>
+    </div>
+    <label class="form-check-label">
+      <input type="checkbox" [(ngModel)]="form.isPartTime" name="vdmcIsPartTime">
+      {{ 'orgCompose.isPartTime' | translate:'Kiêm nhiệm' }}
+    </label>
+  </ng-container>
+</nz-modal>

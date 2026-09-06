@@ -14,6 +14,8 @@
         <result property="otRegular150Month"              column="REGULAR_150_MONTH"              jdbcType="DECIMAL"/>
         <result property="otRegular200Month"              column="REGULAR_200_MONTH"              jdbcType="DECIMAL"/>
         <result property="otRegular210Month"              column="REGULAR_210_MONTH"              jdbcType="DECIMAL"/>
+        <result property="otSaturday200Month"              column="SATURDAY_200_MONTH"              jdbcType="DECIMAL"/>
+        <result property="otSaturday270Month"              column="SATURDAY_270_MONTH"              jdbcType="DECIMAL"/>
         <result property="otWeekend200Month"              column="WEEKEND_200_MONTH"              jdbcType="DECIMAL"/>
         <result property="otWeekend270Month"              column="WEEKEND_270_MONTH"              jdbcType="DECIMAL"/>
         <result property="otHoliday300Month"              column="HOLIDAY_300_MONTH"              jdbcType="DECIMAL"/>
@@ -21,6 +23,8 @@
         <result property="otRegular150ExcessOfficial"     column="REGULAR_150_EXCESS_OFFICIAL"    jdbcType="DECIMAL"/>
         <result property="otRegular200ExcessOfficial"     column="REGULAR_200_EXCESS_OFFICIAL"    jdbcType="DECIMAL"/>
         <result property="otRegular210ExcessOfficial"     column="REGULAR_210_EXCESS_OFFICIAL"    jdbcType="DECIMAL"/>
+        <result property="otSaturday200ExcessOfficial"     column="SATURDAY_200_EXCESS_OFFICIAL"    jdbcType="DECIMAL"/>
+        <result property="otSaturday270ExcessOfficial"     column="SATURDAY_270_EXCESS_OFFICIAL"    jdbcType="DECIMAL"/>
         <result property="otWeekend200ExcessOfficial"     column="WEEKEND_200_EXCESS_OFFICIAL"    jdbcType="DECIMAL"/>
         <result property="otWeekend270ExcessOfficial"     column="WEEKEND_270_EXCESS_OFFICIAL"    jdbcType="DECIMAL"/>
         <result property="otHoliday300ExcessOfficial"     column="HOLIDAY_300_EXCESS_OFFICIAL"    jdbcType="DECIMAL"/>
@@ -28,6 +32,8 @@
         <result property="otRegular150ExcessProbation"    column="REGULAR_150_EXCESS_PROBATION"   jdbcType="DECIMAL"/>
         <result property="otRegular200ExcessProbation"    column="REGULAR_200_EXCESS_PROBATION"   jdbcType="DECIMAL"/>
         <result property="otRegular210ExcessProbation"    column="REGULAR_210_EXCESS_PROBATION"   jdbcType="DECIMAL"/>
+        <result property="otSaturday200ExcessProbation"    column="SATURDAY_200_EXCESS_PROBATION"   jdbcType="DECIMAL"/>
+        <result property="otSaturday270ExcessProbation"    column="SATURDAY_270_EXCESS_PROBATION"   jdbcType="DECIMAL"/>
         <result property="otWeekend200ExcessProbation"    column="WEEKEND_200_EXCESS_PROBATION"   jdbcType="DECIMAL"/>
         <result property="otWeekend270ExcessProbation"    column="WEEKEND_270_EXCESS_PROBATION"   jdbcType="DECIMAL"/>
         <result property="otHoliday300ExcessProbation"    column="HOLIDAY_300_EXCESS_PROBATION"   jdbcType="DECIMAL"/>
@@ -80,7 +86,7 @@
     </sql>
 
     <sql id="selectColumns">
-        H.EMPID                                    AS EMPID,
+        H.EMPID                                     AS EMPID,
         H.LOCAL_NAME                                AS LOCAL_NAME,
         GET_DEPT_NAME(H.DEPTNO, #{lang, jdbcType=VARCHAR}) AS DEPT_NAME,
         NVL(V.TOTAL_OT_MONTH, 0)                    AS TOTAL_OT_MONTH,
@@ -89,6 +95,8 @@
         NVL(V.REGULAR_150_MONTH, 0)              AS REGULAR_150_MONTH,
         NVL(V.REGULAR_200_MONTH, 0)              AS REGULAR_200_MONTH,
         NVL(V.REGULAR_210_MONTH, 0)              AS REGULAR_210_MONTH,
+        NVL(V.SATURDAY_200_MONTH, 0)              AS SATURDAY_200_MONTH,
+        NVL(V.SATURDAY_270_MONTH, 0)              AS SATURDAY_270_MONTH,
         NVL(V.WEEKEND_200_MONTH, 0)              AS WEEKEND_200_MONTH,
         NVL(V.WEEKEND_270_MONTH, 0)              AS WEEKEND_270_MONTH,
         NVL(V.HOLIDAY_300_MONTH, 0)              AS HOLIDAY_300_MONTH,
@@ -96,6 +104,8 @@
         NVL(V.REGULAR_150_EXCESS_OFFICIAL, 0)    AS REGULAR_150_EXCESS_OFFICIAL,
         NVL(V.REGULAR_200_EXCESS_OFFICIAL, 0)    AS REGULAR_200_EXCESS_OFFICIAL,
         NVL(V.REGULAR_210_EXCESS_OFFICIAL, 0)    AS REGULAR_210_EXCESS_OFFICIAL,
+        NVL(V.SATURDAY_200_EXCESS_OFFICIAL, 0)    AS SATURDAY_200_EXCESS_OFFICIAL,
+        NVL(V.SATURDAY_270_EXCESS_OFFICIAL, 0)    AS SATURDAY_270_EXCESS_OFFICIAL,
         NVL(V.WEEKEND_200_EXCESS_OFFICIAL, 0)    AS WEEKEND_200_EXCESS_OFFICIAL,
         NVL(V.WEEKEND_270_EXCESS_OFFICIAL, 0)    AS WEEKEND_270_EXCESS_OFFICIAL,
         NVL(V.HOLIDAY_300_EXCESS_OFFICIAL, 0)    AS HOLIDAY_300_EXCESS_OFFICIAL,
@@ -103,10 +113,48 @@
         NVL(V.REGULAR_150_EXCESS_PROBATION, 0)   AS REGULAR_150_EXCESS_PROBATION,
         NVL(V.REGULAR_200_EXCESS_PROBATION, 0)   AS REGULAR_200_EXCESS_PROBATION,
         NVL(V.REGULAR_210_EXCESS_PROBATION, 0)   AS REGULAR_210_EXCESS_PROBATION,
+        NVL(V.SATURDAY_200_EXCESS_PROBATION, 0)   AS SATURDAY_200_EXCESS_PROBATION,
+        NVL(V.SATURDAY_270_EXCESS_PROBATION, 0)   AS SATURDAY_270_EXCESS_PROBATION,
         NVL(V.WEEKEND_200_EXCESS_PROBATION, 0)   AS WEEKEND_200_EXCESS_PROBATION,
         NVL(V.WEEKEND_270_EXCESS_PROBATION, 0)   AS WEEKEND_270_EXCESS_PROBATION,
         NVL(V.HOLIDAY_300_EXCESS_PROBATION, 0)   AS HOLIDAY_300_EXCESS_PROBATION,
         NVL(V.HOLIDAY_390_EXCESS_PROBATION, 0)   AS HOLIDAY_390_EXCESS_PROBATION
+    </sql>
+
+    <sql id="exportSelectColumns">
+        TO_NUMBER(H.EMPID)                          AS EMPID,
+        H.LOCAL_NAME                                AS LOCAL_NAME,
+        GET_DEPT_NAME(H.DEPTNO, #{lang, jdbcType=VARCHAR}) AS DEPT_NAME,
+        NVL(V.TOTAL_OT_MONTH, 0)                    AS TOTAL_OT_MONTH,
+        NVL(V.PRE_MONTHLY_TOTAL_QTY, 0)             AS PRE_MONTHLY_TOTAL_QTY,
+        NVL(V.TOTAL_OT_YEAR, 0)                     AS TOTAL_OT_YEAR,
+        NVL(V.REGULAR_150_MONTH, 0)                 AS REGULAR_150_MONTH,
+        NVL(V.REGULAR_200_MONTH, 0)                 AS REGULAR_200_MONTH,
+        NVL(V.REGULAR_210_MONTH, 0)                 AS REGULAR_210_MONTH,
+        NVL(V.SATURDAY_200_MONTH, 0)                AS SATURDAY_200_MONTH,
+        NVL(V.SATURDAY_270_MONTH, 0)                AS SATURDAY_270_MONTH,
+        NVL(V.WEEKEND_200_MONTH, 0)                 AS WEEKEND_200_MONTH,
+        NVL(V.WEEKEND_270_MONTH, 0)                 AS WEEKEND_270_MONTH,
+        NVL(V.HOLIDAY_300_MONTH, 0)                 AS HOLIDAY_300_MONTH,
+        NVL(V.HOLIDAY_390_MONTH, 0)                 AS HOLIDAY_390_MONTH,
+        NVL(V.REGULAR_150_EXCESS_OFFICIAL, 0)       AS REGULAR_150_EXCESS_OFFICIAL,
+        NVL(V.REGULAR_200_EXCESS_OFFICIAL, 0)       AS REGULAR_200_EXCESS_OFFICIAL,
+        NVL(V.REGULAR_210_EXCESS_OFFICIAL, 0)       AS REGULAR_210_EXCESS_OFFICIAL,
+        NVL(V.SATURDAY_200_EXCESS_OFFICIAL, 0)      AS SATURDAY_200_EXCESS_OFFICIAL,
+        NVL(V.SATURDAY_270_EXCESS_OFFICIAL, 0)      AS SATURDAY_270_EXCESS_OFFICIAL,
+        NVL(V.WEEKEND_200_EXCESS_OFFICIAL, 0)       AS WEEKEND_200_EXCESS_OFFICIAL,
+        NVL(V.WEEKEND_270_EXCESS_OFFICIAL, 0)       AS WEEKEND_270_EXCESS_OFFICIAL,
+        NVL(V.HOLIDAY_300_EXCESS_OFFICIAL, 0)       AS HOLIDAY_300_EXCESS_OFFICIAL,
+        NVL(V.HOLIDAY_390_EXCESS_OFFICIAL, 0)       AS HOLIDAY_390_EXCESS_OFFICIAL,
+        NVL(V.REGULAR_150_EXCESS_PROBATION, 0)      AS REGULAR_150_EXCESS_PROBATION,
+        NVL(V.REGULAR_200_EXCESS_PROBATION, 0)      AS REGULAR_200_EXCESS_PROBATION,
+        NVL(V.REGULAR_210_EXCESS_PROBATION, 0)      AS REGULAR_210_EXCESS_PROBATION,
+        NVL(V.SATURDAY_200_EXCESS_PROBATION, 0)     AS SATURDAY_200_EXCESS_PROBATION,
+        NVL(V.SATURDAY_270_EXCESS_PROBATION, 0)     AS SATURDAY_270_EXCESS_PROBATION,
+        NVL(V.WEEKEND_200_EXCESS_PROBATION, 0)      AS WEEKEND_200_EXCESS_PROBATION,
+        NVL(V.WEEKEND_270_EXCESS_PROBATION, 0)      AS WEEKEND_270_EXCESS_PROBATION,
+        NVL(V.HOLIDAY_300_EXCESS_PROBATION, 0)      AS HOLIDAY_300_EXCESS_PROBATION,
+        NVL(V.HOLIDAY_390_EXCESS_PROBATION, 0)      AS HOLIDAY_390_EXCESS_PROBATION
     </sql>
 
     <!-- ===== Đếm danh sách (dùng cho phân trang) ===== -->
@@ -134,7 +182,7 @@
          thức ${reports.FIELD} trong file mẫu templates/1_OtReport.xlsx, không dùng resultMap vì đích đến
          không phải DTO/POJO. -->
     <select id="selectExportReport" parameterType="com.ait.ess.infoApply.dto.EssOtReportDto" resultType="java.util.LinkedHashMap">
-        SELECT <include refid="selectColumns"/>
+        SELECT <include refid="exportSelectColumns"/>
         FROM V_HR_OT_REPORT V, HR_EMPLOYEE H, <include refid="accessibleDeptJoin"/>
         WHERE <include refid="filterCondition"/>
         ORDER BY H.EMPID ASC

@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ait.ess.infoApply.mapper.EssDeptOtApplyInfoMapper">
+
+    <resultMap id="EssDeptOtApplyInfoResultMap" type="com.ait.ess.infoApply.dto.EssDeptOtApplyInfoDto">
+        <result property="empId"        column="EMPID"          jdbcType="VARCHAR"/>
+        <result property="localName"    column="LOCAL_NAME"     jdbcType="VARCHAR"/>
+        <result property="deptName"     column="DEPT_NAME"      jdbcType="VARCHAR"/>
+        <result property="m01Approved"  column="M01_APPROVED"   jdbcType="DECIMAL"/>
+        <result property="m01Apply"     column="M01_APPLY"      jdbcType="DECIMAL"/>
+        <result property="m02Approved"  column="M02_APPROVED"   jdbcType="DECIMAL"/>
+        <result property="m02Apply"     column="M02_APPLY"      jdbcType="DECIMAL"/>
+        <result property="m03Approved"  column="M03_APPROVED"   jdbcType="DECIMAL"/>
+        <result property="m03Apply"     column="M03_APPLY"      jdbcType="DECIMAL"/>
+        <result property="m04Approved"  column="M04_APPROVED"   jdbcType="DECIMAL"/>
+        <result property="m04Apply"     column="M04_APPLY"      jdbcType="DECIMAL"/>
+        <result property="m05Approved"  column="M05_APPROVED"   jdbcType="DECIMAL"/>
+        <result property="m05Apply"     column="M05_APPLY"      jdbcType="DECIMAL"/>
+        <result property="m06Approved"  column="M06_APPROVED"   jdbcType="DECIMAL"/>
+        <result property="m06Apply"     column="M06_APPLY"      jdbcType="DECIMAL"/>
+        <result property="m07Approved"  column="M07_APPROVED"   jdbcType="DECIMAL"/>
+        <result property="m07Apply"     column="M07_APPLY"      jdbcType="DECIMAL"/>
+        <result property="m08Approved"  column="M08_APPROVED"   jdbcType="DECIMAL"/>
+        <result property="m08Apply"     column="M08_APPLY"      jdbcType="DECIMAL"/>
+        <result property="m09Approved"  column="M09_APPROVED"   jdbcType="DECIMAL"/>
+        <result property="m09Apply"     column="M09_APPLY"      jdbcType="DECIMAL"/>
+        <result property="m10Approved"  column="M10_APPROVED"   jdbcType="DECIMAL"/>
+        <result property="m10Apply"     column="M10_APPLY"      jdbcType="DECIMAL"/>
+        <result property="m11Approved"  column="M11_APPROVED"   jdbcType="DECIMAL"/>
+        <result property="m11Apply"     column="M11_APPLY"      jdbcType="DECIMAL"/>
+        <result property="m12Approved"  column="M12_APPROVED"   jdbcType="DECIMAL"/>
+        <result property="m12Apply"     column="M12_APPLY"      jdbcType="DECIMAL"/>
+    </resultMap>
+
+    <!--
+        Danh sách DEPTNO mà admin đang đăng nhập được phép xem, tính SẴN 1 LẦN dưới dạng inline view rồi
+        JOIN bằng H.DEPTNO = ACC.DEPTNO (không đặt trong EXISTS + CONNATE BY tương quan với H, tránh Oracle
+        phải duyệt lại cây phân cấp phòng ban cho từng dòng nhân viên - cùng kỹ thuật với EssOtReportMapper).
+    -->
+    <sql id="accessibleDeptJoin">
+        (
+            SELECT B1.DEPTNO
+            FROM HR_DEPARTMENT B1
+            START WITH B1.DEPTNO IN (
+                SELECT HRD.DEPTID
+                FROM HR_DEPARTMENT HRD
+                WHERE HRD.MANAGER_EMP_ID = #{adminID, jdbcType=VARCHAR}
+            )
+            CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+            UNION
+            SELECT ASI.DEPTNO
+            FROM AR_SUPERVISOR_INFO ASI
+            WHERE ASI.PERSON_ID = #{adminID, jdbcType=VARCHAR}
+        ) ACC
+    </sql>
+
+    <!-- ===== Điều kiện lọc dùng chung ===== -->
+    <sql id="filterCondition">
+        H.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+        AND H.DEPTNO = ACC.DEPTNO
+        AND H.EMPID NOT LIKE '111111%'
+        <if test="year != null and year != ''">
+            AND TRUNC(H.DATE_STARTED) &lt;= TO_DATE(#{year, jdbcType=VARCHAR} || '1231', 'YYYYMMDD')
+            AND (H.DATE_LEFT IS NULL
+                 OR TRUNC(H.DATE_LEFT) &gt;= TO_DATE(#{year, jdbcType=VARCHAR} || '0101', 'YYYYMMDD'))
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND (
+                UPPER(H.EMPID) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%'
+                OR CONVERTTOUNSIGN(UPPER(H.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{keyword, jdbcType=VARCHAR})) || '%'
+            )
+        </if>
+        <if test="deptNos != null and deptNos != ''">
+            AND INSTR(',' || #{deptNos, jdbcType=VARCHAR} || ',', ',' || H.DEPTNO || ',') &gt; 0
+        </if>
+    </sql>
+
+    <!--
+        Tổng OT Đã duyệt (statusCode='200') / Xin phép (statusCode='400') của từng tháng trong năm, lấy từ
+        GET_AR_OT_TOTAIL(ngày 01 của tháng tương ứng, cpnyId, personId, statusCode) - hàm chỉ trả về 1 giá
+        trị scalar cho đúng tháng chứa ngày truyền vào nên phải gọi riêng cho từng tháng/từng trạng thái.
+    -->
+    <sql id="otColumns">
+        H.EMPID                                             AS EMPID,
+        H.LOCAL_NAME                                        AS LOCAL_NAME,
+        GET_DEPT_NAME(H.DEPTNO, #{lang, jdbcType=VARCHAR})  AS DEPT_NAME,
+        NVL(GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0101'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '31'), 0) AS M01_APPROVED,
+        NVL(GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0101'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '311'), 0) AS M01_APPLY,
+        NVL(GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0102'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '31'), 0) AS M02_APPROVED,
+        NVL(GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0102'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '311'), 0) AS M02_APPLY,
+        NVL(GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0103'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '31'), 0) AS M03_APPROVED,
+        NVL(GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0103'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '311'), 0) AS M03_APPLY,
+        NVL(GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0104'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '31'), 0) AS M04_APPROVED,
+        NVL(GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0104'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '311'), 0) AS M04_APPLY,
+        NVL(GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0105'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '31'), 0) AS M05_APPROVED,
+        NVL(GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0105'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '311'), 0) AS M05_APPLY,
+        NVL(GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0106'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '31'), 0) AS M06_APPROVED,
+        NVL(GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0106'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '311'), 0) AS M06_APPLY,
+        NVL(GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0107'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '31'), 0) AS M07_APPROVED,
+        NVL(GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0107'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '311'), 0) AS M07_APPLY,
+        NVL(GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0108'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '31'), 0) AS M08_APPROVED,
+        NVL(GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0108'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '311'), 0) AS M08_APPLY,
+        NVL(GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0109'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '31'), 0) AS M09_APPROVED,
+        NVL(GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0109'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '311'), 0) AS M09_APPLY,
+        NVL(GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0110'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '31'), 0) AS M10_APPROVED,
+        NVL(GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0110'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '311'), 0) AS M10_APPLY,
+        NVL(GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0111'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '31'), 0) AS M11_APPROVED,
+        NVL(GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0111'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '311'), 0) AS M11_APPLY,
+        NVL(GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0112'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '31'), 0) AS M12_APPROVED,
+        NVL(GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0112'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '311'), 0) AS M12_APPLY
+    </sql>
+
+    <!-- ===== Đếm danh sách (dùng cho phân trang) ===== -->
+    <select id="countList" parameterType="com.ait.ess.infoApply.dto.EssDeptOtApplyInfoDto" resultType="int">
+        SELECT COUNT(*)
+        FROM HR_EMPLOYEE H, <include refid="accessibleDeptJoin"/>
+        WHERE <include refid="filterCondition"/>
+    </select>
+
+    <!-- ===== Danh sách tổng hợp OT theo tháng có phân trang ===== -->
+    <select id="selectListPage" parameterType="com.ait.ess.infoApply.dto.EssDeptOtApplyInfoDto"
+            resultMap="EssDeptOtApplyInfoResultMap">
+        SELECT * FROM (
+            SELECT INNER_Q.*, ROWNUM AS RN FROM (
+                SELECT <include refid="otColumns"/>
+                FROM HR_EMPLOYEE H, <include refid="accessibleDeptJoin"/>
+                WHERE <include refid="filterCondition"/>
+                ORDER BY H.EMPID ASC
+            ) INNER_Q
+            WHERE ROWNUM &lt;= #{start, jdbcType=INTEGER} + #{length, jdbcType=INTEGER}
+        ) WHERE RN &gt; #{start, jdbcType=INTEGER}
+    </select>
+
+    <!-- ===== Danh sách đầy đủ (không phân trang) dùng để xuất báo cáo Excel ===== -->
+    <select id="selectExportList" parameterType="com.ait.ess.infoApply.dto.EssDeptOtApplyInfoDto"
+            resultMap="EssDeptOtApplyInfoResultMap">
+        SELECT <include refid="otColumns"/>
+        FROM HR_EMPLOYEE H, <include refid="accessibleDeptJoin"/>
+        WHERE <include refid="filterCondition"/>
+        ORDER BY H.EMPID ASC
+    </select>
+
+</mapper>

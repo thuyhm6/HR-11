@@ -1,0 +1,125 @@
+<div class="row">
+  <!-- Cây tổ chức bên trái -->
+  <div class="col-md-3 mb-3">
+    <nz-card [nzTitle]="'org.orgManage.viewOrgBusiness.title' | translate:'Thông tin kinh doanh tổ chức'" [nzBodyStyle]="{ padding: '12px' }">
+      <div class="mb-2">
+        <label class="form-label fw-bold">{{ 'orgResumeProcess.versionName' | translate:'Tên phiên bản' }}</label>
+        <nz-select class="w-100" id="vob_resumeSelect" [(ngModel)]="selectedResumeNo" (ngModelChange)="onResumeChange($event)"
+                   [nzLoading]="loadingResume()" nzShowSearch nzAllowClear
+                   [nzPlaceHolder]="'orgResumeProcess.selectPlaceholder' | translate:'-- Chọn phiên bản thay đổi --'">
+          <nz-option *ngFor="let r of resumeOptions()" [nzValue]="r.no" [nzLabel]="resumeLabel(r)"></nz-option>
+        </nz-select>
+      </div>
+
+      <input nz-input class="mb-2" id="vob_treeSearch" [(ngModel)]="treeSearchValue" name="vob_treeSearch"
+             [placeholder]="'orgCompose.searchTreePlaceholder' | translate:'Tìm kiếm phòng ban...'">
+
+      <div class="mb-2 btn-group">
+        <button nz-button nzSize="small" type="button" id="vob_btnExpandAll" (click)="expandAllNodes()">
+          {{ 'orgCompose.expandAll' | translate:'Mở tất cả' }}
+        </button>
+        <button nz-button nzSize="small" type="button" id="vob_btnCollapseAll" (click)="collapseAllNodes()">
+          {{ 'orgCompose.collapseAll' | translate:'Đóng tất cả' }}
+        </button>
+      </div>
+
+      <nz-spin [nzSpinning]="loadingTree()">
+        <div class="vob-tree-scroll">
+          <nz-tree [nzData]="treeNodes()" [nzSearchValue]="treeSearchValue" nzSelectMode
+                   [(nzExpandedKeys)]="expandedKeys" [nzSelectedKeys]="selectedDeptKey ? [selectedDeptKey] : []"
+                   (nzClick)="onTreeClick($event)"></nz-tree>
+          <div *ngIf="!loadingTree() && treeNodes().length === 0" class="text-muted fst-italic p-2">
+            {{ 'orgCompose.msg.noOrgData' | translate:'Không có dữ liệu tổ chức' }}
+          </div>
+        </div>
+      </nz-spin>
+    </nz-card>
+  </div>
+
+  <!-- Danh sách nghiệp vụ phòng ban bên phải -->
+  <div class="col-md-9 mb-3">
+    <nz-card [nzTitle]="'orgBusiness.listTitle' | translate:'Danh sách nghiệp vụ phòng ban'" [nzExtra]="vobActions">
+      <ng-template #vobActions>
+        <button nz-button nzSize="small" nzType="primary" type="button" id="vob_btnNew"
+                [disabled]="!selectedDeptKey" (click)="openAddModal()">
+          <i class="bx bx-plus"></i> {{ 'common.addNew' | translate:'Thêm mới' }}
+        </button>
+        <button nz-button nzSize="small" type="button" id="vob_btnEdit"
+                [disabled]="!selectedSeq()" (click)="openEditModal()">
+          <i class="bx bx-edit"></i> {{ 'common.edit' | translate:'Sửa' }}
+        </button>
+        <button nz-button nzSize="small" nzDanger type="button" id="vob_btnDelete"
+                [disabled]="!selectedSeq()" (click)="openDeleteConfirm()">
+          <i class="bx bx-trash"></i> {{ 'common.delete' | translate:'Xóa' }}
+        </button>
+      </ng-template>
+
+      <nz-table [nzData]="businessList()" [nzLoading]="loadingList()" [nzPageSize]="20" [nzShowSizeChanger]="true"
+                [nzPageSizeOptions]="pageSizeOptions" #vobTable>
+        <thead>
+          <tr>
+            <th class="text-center" nzWidth="60px">{{ 'common.stt' | translate:'STT' }}</th>
+            <th>{{ 'org.orgManage.title.deptName' | translate:'Phòng ban' }}</th>
+            <th>{{ 'orgBusiness.codeNo' | translate:'Mã Công việc (Code No)' }}</th>
+            <th class="text-center">{{ 'orgBusiness.isDefault' | translate:'Mặc định' }}</th>
+            <th>{{ 'orgBusiness.updatedBy' | translate:'Người thay đổi' }}</th>
+            <th>{{ 'orgBusiness.updateDate' | translate:'Thời gian thay đổi' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!loadingList() && businessList().length === 0">
+            <td colspan="6" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+          </tr>
+          <tr *ngFor="let row of vobTable.data; let i = index" class="vob-row"
+              [class.vob-row-selected]="selectedSeq() === row.seq" (click)="selectRow(row)">
+            <td class="text-center">{{ i + 1 }}</td>
+            <td>{{ row.deptName }}</td>
+            <td>{{ row.businessName || row.codeNo }}</td>
+            <td class="text-center">
+              <i *ngIf="row.isDefault === '1'" class="bx bx-check text-success fs-4"></i>
+            </td>
+            <td>{{ row.updatedBy }}</td>
+            <td>{{ row.updateDate | date:'dd/MM/yyyy HH:mm' }}</td>
+          </tr>
+        </tbody>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>
+
+<!-- Modal Thêm/Sửa nghiệp vụ -->
+<nz-modal [nzVisible]="modalVisible()"
+          [nzTitle]="(modalMode() === 'NEW' ? 'orgBusiness.modalAddTitle' : 'orgBusiness.modalEditTitle') | translate:(modalMode() === 'NEW' ? 'Thêm nghiệp vụ' : 'Cập nhật nghiệp vụ')"
+          (nzOnCancel)="closeModal()" (nzOnOk)="save()" [nzOkLoading]="saving()"
+          [nzOkText]="'common.save' | translate:'Lưu'" [nzCancelText]="'common.close' | translate:'Đóng'">
+  <ng-container *nzModalContent>
+    <form>
+      <div class="mb-3">
+        <label class="form-label">{{ 'org.orgManage.title.deptName' | translate:'Phòng ban' }}</label>
+        <input nz-input id="vob_displayDeptName" [ngModel]="selectedDeptName" name="vob_displayDeptName" readonly>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">{{ 'orgBusiness.codeNo' | translate:'Mã Công việc (Code No)' }} <span class="text-danger">*</span></label>
+        <input nz-input id="vob_codeNo" [(ngModel)]="form.codeNo" name="vob_codeNo">
+        <small class="text-muted">{{ 'orgBusiness.codeNoHint' | translate:'Nhập mã công việc để hệ thống lấy tên tương ứng.' }}</small>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">{{ 'orgBusiness.orderNo' | translate:'Thứ tự hiển thị' }}</label>
+        <nz-input-number class="w-100" id="vob_orderNo" [(ngModel)]="form.orderNo" name="vob_orderNo" [nzMin]="0"></nz-input-number>
+      </div>
+      <label nz-checkbox id="vob_isDefault" [(ngModel)]="form.isDefault" name="vob_isDefault">
+        {{ 'orgBusiness.isDefault' | translate:'Mặc định' }}
+      </label>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal xác nhận xóa -->
+<nz-modal [nzVisible]="deleteConfirmVisible()" [nzTitle]="'common.confirm' | translate:'Xác nhận'"
+          (nzOnCancel)="closeDeleteConfirm()" (nzOnOk)="confirmDelete()" [nzOkLoading]="deleting()"
+          [nzOkText]="'common.confirm' | translate:'Xác nhận'" [nzCancelText]="'common.cancel' | translate:'Hủy'">
+  <ng-container *nzModalContent>
+    <p class="mb-1">{{ 'orgBusiness.msg.confirmDelete' | translate:'Bạn có chắc chắn muốn xóa nghiệp vụ này?' }}</p>
+    <p class="fw-bold mb-0">{{ selectedRow()?.businessName || selectedRow()?.codeNo }}</p>
+  </ng-container>
+</nz-modal>

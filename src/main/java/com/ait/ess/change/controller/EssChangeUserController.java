@@ -3,14 +3,11 @@ package com.ait.ess.change.controller;
 import com.ait.sy.sys.service.HrAuthenticationService;
 import com.ait.sy.sys.service.HrAuthenticationService.HrUserInfo;
 import com.ait.sy.sys.service.PermissionService;
-import com.ait.sy.sys.service.MenuService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -31,13 +28,7 @@ public class EssChangeUserController {
     @Autowired
     private PermissionService permissionService;
 
-    @Autowired
-    private MenuService menuService;
-
-    @GetMapping("/changeUser")
-    public String changeUserPage(Model model, HttpSession session) {
-        return "ess/change/changeUser";
-    }
+    // Trang Thymeleaf changeUser.html đã được thay bằng Angular route /change-user
 
     /**
      * Thay đổi người đăng nhập sang personId của nhân viên được chọn.
@@ -69,7 +60,7 @@ public class EssChangeUserController {
                 String userNo = newUserInfo.getSyUser().getUserNo();
                 session.setAttribute("currentPermissionInfo", permissionService.getUserPermissionInfo(userNo));
                 session.setAttribute("hasSysTypeZeroMenus",
-                        menuService.hasMenusByUserPermissionBySysType(userNo, "0"));
+                        permissionService.hasRoleGroupWithSysType(userNo, 0));
                 log.info("EssChangeUser: full switch from [{}] to [{}] (userNo={})", previousAdminId, trimmedPersonId, userNo);
             } else {
                 // Người B không có tài khoản hệ thống: chỉ đổi adminID để ESS queries dùng đúng dữ liệu

@@ -1,0 +1,126 @@
+<div class="row">
+  <!-- Cột trái: Danh sách User -->
+  <div class="col-md-7 mb-3">
+    <nz-card>
+      <form class="row g-3 mb-3" (ngSubmit)="search()">
+        <div class="col-md-6">
+          <label class="form-label">{{ 'sys.role.viewLoginUser.search.keyword' | translate:'Từ khóa (ID, Tên)' }}</label>
+          <input nz-input [(ngModel)]="searchKeyword" name="vluSearchKeyword"
+                 [placeholder]="'sys.role.viewLoginUser.search.keyword.placeholder' | translate:'Nhập ID, Mã NV hoặc Tên'">
+        </div>
+        <div class="col-md-6 d-flex align-items-end gap-2 flex-wrap">
+          <button nz-button nzType="primary" type="submit">
+            <i class="bx bx-search"></i> {{ 'common.search' | translate:'Tìm kiếm' }}
+          </button>
+          <button nz-button type="button" (click)="clearSearch()">
+            <i class="bx bx-x"></i> {{ 'common.clearFilter' | translate:'Xóa lọc' }}
+          </button>
+          <button nz-button nzType="default" type="button" class="vlu-btn-export" (click)="exportExcel()">
+            <i class="bx bx-export"></i> {{ 'common.exportExcel' | translate:'Xuất Excel' }}
+          </button>
+        </div>
+      </form>
+
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+      <nz-table [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="20" [nzShowSizeChanger]="true"
+                [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="vluTotalTpl"
+                [nzScroll]="{ y: 'calc(100vh - 420px)' }" #vluTable>
+        <thead>
+          <tr>
+            <th class="text-center" nzWidth="60px">{{ 'sys.role.viewLoginUser.col.no' | translate:'STT' }}</th>
+            <th nzWidth="130px">{{ 'sys.role.viewLoginUser.col.loginId' | translate:'ID Đăng nhập' }}</th>
+            <th>{{ 'sys.role.viewLoginUser.col.fullName' | translate:'Họ tên' }}</th>
+            <th>{{ 'sys.role.viewLoginUser.col.dept' | translate:'Phòng ban' }}</th>
+            <th nzWidth="110px">{{ 'sys.role.viewLoginUser.col.empCode' | translate:'Mã NV' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'sys.role.viewLoginUser.col.accountType' | translate:'Loại TK' }}</th>
+            <th class="text-center" nzWidth="90px">{{ 'sys.role.viewLoginUser.col.action' | translate:'Thao tác' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!loading() && rows().length === 0">
+            <td colspan="7" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+          </tr>
+          <tr *ngFor="let row of vluTable.data; let i = index" class="vlu-row-clickable"
+              [class.table-active]="selectedUserNo() === row.userNo" (click)="selectUser(row)">
+            <td class="text-center">{{ i + 1 }}</td>
+            <td [attr.title]="row.userName || null">{{ row.userName }}</td>
+            <td [attr.title]="row.empName || null">{{ row.empName || row.userName }}</td>
+            <td [attr.title]="row.deptName || null">{{ row.deptName }}</td>
+            <td class="text-center">{{ row.personId }}</td>
+            <td class="text-center">{{ row.userType }}</td>
+            <td class="text-center">
+              <button nz-button nzType="text" nzSize="small" title="Reset Password"
+                      (click)="openResetPassword(row); $event.stopPropagation()">
+                <i class="bx bx-key text-warning"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+        <ng-template #vluTotalTpl let-total>
+          {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+        </ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+
+  <!-- Cột phải: Gán Nhóm quyền cho User -->
+  <div class="col-md-5 mb-3">
+    <nz-card>
+      <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+        <h6 class="mb-0 fw-bold">
+          <ng-container *ngIf="selectedUserLabel(); else vluNoSelTitle">
+            {{ 'sys.role.viewLoginUser.rolePanel.titlePrefix' | translate:'Nhóm quyền -' }}
+            <span class="text-primary">{{ selectedUserLabel() }}</span>
+          </ng-container>
+          <ng-template #vluNoSelTitle>{{ 'sys.role.viewLoginUser.rolePanel.title' | translate:'Nhóm quyền' }}</ng-template>
+        </h6>
+        <button nz-button nzType="primary" nzSize="small" type="button"
+                [disabled]="!selectedUserNo()" [nzLoading]="savingRelations()" (click)="saveRelations()">
+          <i class="bx bx-save"></i> {{ 'sys.role.viewLoginUser.btn.saveRoleGroup' | translate:'Lưu nhóm quyền' }}
+        </button>
+      </div>
+
+      <div *ngIf="!selectedUserNo()" class="p-2 bg-light border text-muted">
+        <i class="bx bx-info-circle"></i> {{ 'sys.role.viewLoginUser.hint.selectUser' | translate:'Vui lòng chọn một người dùng bên trái để phân nhóm quyền.' }}
+      </div>
+      <div *ngIf="selectedUserNo() && relationsLoading()" class="p-2 bg-light border text-muted">
+        <i class="bx bx-loader-alt bx-spin"></i>
+      </div>
+
+      <div *ngIf="selectedUserNo() && !relationsLoading()" class="vlu-rolegroups-scroll mt-2">
+        <div *ngIf="allRoleGroups().length === 0" class="text-center text-muted p-3">
+          {{ 'sys.role.viewLoginUser.noRoleData' | translate:'Không có dữ liệu nhóm quyền.' }}
+        </div>
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item" *ngFor="let group of allRoleGroups()">
+            <label nz-checkbox [ngModel]="isRoleGroupChecked(group.roleGroupNo)"
+                    (ngModelChange)="toggleRoleGroup(group.roleGroupNo, $event)" [name]="'vluRgChk' + group.roleGroupNo">
+              {{ group.nameVi || group.roleGroupNo }} <small class="text-muted">({{ group.roleGroupId }})</small>
+            </label>
+          </li>
+        </ul>
+      </div>
+    </nz-card>
+  </div>
+</div>
+
+<!-- Modal Reset mật khẩu -->
+<nz-modal [nzVisible]="resetVisible()" [nzTitle]="'sys.role.viewLoginUser.modal.resetPassword.title' | translate:'Reset Mật khẩu'"
+          (nzOnCancel)="closeResetPassword()" (nzOnOk)="confirmResetPassword()" [nzOkLoading]="resetting()"
+          [nzOkText]="'common.confirm' | translate:'Xác nhận'" [nzCancelText]="'common.close' | translate:'Đóng'">
+  <ng-container *nzModalContent>
+    <div class="mb-3">
+      <label class="form-label">{{ 'sys.role.viewLoginUser.modal.resetPassword.loginId' | translate:'ID Đăng nhập' }}</label>
+      <input nz-input [ngModel]="resetUserName" name="vluResetUserName" readonly>
+    </div>
+    <div class="mb-1">
+      <label class="form-label">
+        {{ 'sys.role.viewLoginUser.modal.resetPassword.newPassword' | translate:'Mật khẩu mới' }}
+        <span class="text-danger">*</span>
+      </label>
+      <input nz-input [(ngModel)]="resetNewPassword" name="vluResetNewPassword" required>
+      <div class="form-text">{{ 'sys.role.viewLoginUser.modal.resetPassword.defaultNote' | translate:'Mật khẩu mặc định là 123456A@. Bạn có thể tự thay đổi.' }}</div>
+    </div>
+  </ng-container>
+</nz-modal>

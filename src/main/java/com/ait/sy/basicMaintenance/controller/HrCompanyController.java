@@ -24,10 +24,8 @@ public class HrCompanyController {
     @Autowired
     private HrCompanyService hrCompanyService;
 
-    @GetMapping("/basicMaintenance/viewCompany")
-    public String viewCompany() {
-        return "sys/basicMaintenance/viewCompany";
-    }
+    // Trang Thymeleaf viewCompany.html đã được thay bằng Angular route /view-company (xem
+    // ViewCompanyComponent) - các API JSON bên dưới vẫn giữ nguyên, không đổi backend.
 
     @GetMapping("/api/company/list")
     @ResponseBody

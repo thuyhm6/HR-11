@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ait.ess.tempEmp.mapper.YearUseInfoListMapper">
+
+    <resultMap id="YearUseInfoListResultMap" type="com.ait.ess.tempEmp.dto.YearUseInfoListDto">
+        <result column="EMPID"        property="empId"      jdbcType="VARCHAR" />
+        <result column="LOCAL_NAME"   property="localName"  jdbcType="VARCHAR" />
+        <result column="DEPTNO"       property="deptNo"     jdbcType="VARCHAR" />
+        <result column="DEPTNAME"     property="deptName"   jdbcType="VARCHAR" />
+        <result column="DATE_STARTED" property="dateStarted" jdbcType="VARCHAR" />
+        <result column="YEAR"         property="year"       jdbcType="VARCHAR" />
+        <result column="STRT_DATE"    property="strtDate"   jdbcType="VARCHAR" />
+        <result column="END_DATE"     property="endDate"    jdbcType="VARCHAR" />
+        <result column="TOTAL_VAC"    property="totalVac"   jdbcType="VARCHAR" />
+        <result column="ADD_VAC"      property="addVac"     jdbcType="VARCHAR" />
+        <result column="SPECIAL_VAC"  property="specialVac" jdbcType="VARCHAR" />
+        <result column="LAST_YEAR_VAC" property="lastYearVac" jdbcType="VARCHAR" />
+        <result column="USED_VAC"     property="usedVac"    jdbcType="VARCHAR" />
+        <result column="REMAIN_VAC"   property="remainVac"  jdbcType="VARCHAR" />
+    </resultMap>
+
+    <!--
+        Danh sách nghỉ phép năm nhiều nhân viên - công thức tính các cột phép giữ NGUYÊN như
+        YearUseInfoMapper.selectVacationRowsByYear (trang ESS tự xem của chính mình), chỉ khác:
+          - JOIN thêm HR_EMPLOYEE/HR_DEPARTMENT để lấy thông tin nhân viên + lọc nhiều người thay vì
+            1 người (A.PERSON_ID = #{adminID})
+          - Giới hạn phạm vi xem theo cây phòng ban quản lý (EXISTS ...) giống hệt
+            ManageEmpPositionInfoMapper.selectManageEmpPositionInfoList
+          - Điều kiện lọc "Loại nhân viên" (MTSVN/THOIVU) giữ nguyên logic
+            MonthDetailListMapper.filterCondition (EMP_TYPE_CODE=14016053 là THOIVU)
+        TOTAL_VAC = TOT_VAC_CNT + ADD_VAC + LAST_YEAR_VAC (đúng công thức TOTAL gốc).
+        USED_VAC gộp cả 3 thành phần trừ trong REMAIN_VAC gốc (USE_VAC_CNT + CONFIRM + AFFIRM) thành
+        1 cột hiển thị duy nhất "Đã nghỉ" để REMAIN_VAC = TOTAL_VAC - USED_VAC luôn đúng trên giao diện.
+    -->
+    <select id="selectList" parameterType="com.ait.ess.tempEmp.dto.YearUseInfoListDto"
+            resultMap="YearUseInfoListResultMap">
+        SELECT
+            H.EMPID                                                    AS EMPID,
+            H.LOCAL_NAME                                                AS LOCAL_NAME,
+            H.DEPTNO                                                    AS DEPTNO,
+            GET_DEPT_NAME(H.DEPTNO, #{lang, jdbcType=VARCHAR})          AS DEPTNAME,
+            TO_CHAR(H.DATE_STARTED, 'DD/MM/YYYY')                      AS DATE_STARTED,
+            TO_CHAR(A.STRT_DATE, 'YYYY')                               AS YEAR,
+            TO_CHAR(A.STRT_DATE, 'DD/MM/YYYY')                         AS STRT_DATE,
+            TO_CHAR(A.END_DATE,  'DD/MM/YYYY')                         AS END_DATE,
+            TO_CHAR(A.TOT_VAC_CNT + A.ADD_VAC + A.LAST_YEAR_VAC)       AS TOTAL_VAC,
+            TO_CHAR(A.ADD_VAC)                                          AS ADD_VAC,
+            TO_CHAR(A.TOT_VAC_CNT)                                      AS SPECIAL_VAC,
+            TO_CHAR(A.LAST_YEAR_VAC)                                    AS LAST_YEAR_VAC,
+            TO_CHAR(
+                A.USE_VAC_CNT
+                + AR_USE_VACATION(TO_CHAR(A.STRT_DATE, 'YYYY/MM/DD'), TO_CHAR(A.END_DATE, 'YYYY/MM/DD'), A.CPNY_ID, A.PERSON_ID, 'CONFIRM')
+                + AR_USE_VACATION(TO_CHAR(A.STRT_DATE, 'YYYY/MM/DD'), TO_CHAR(A.END_DATE, 'YYYY/MM/DD'), A.CPNY_ID, A.PERSON_ID, 'AFFIRM')
+            ) AS USED_VAC,
+            TO_CHAR(
+                A.TOT_VAC_CNT + A.ADD_VAC + A.LAST_YEAR_VAC
+                - A.USE_VAC_CNT
+                - AR_USE_VACATION(TO_CHAR(A.STRT_DATE, 'YYYY/MM/DD'), TO_CHAR(A.END_DATE, 'YYYY/MM/DD'), A.CPNY_ID, A.PERSON_ID, 'CONFIRM')
+                - AR_USE_VACATION(TO_CHAR(A.STRT_DATE, 'YYYY/MM/DD'), TO_CHAR(A.END_DATE, 'YYYY/MM/DD'), A.CPNY_ID, A.PERSON_ID, 'AFFIRM')
+            ) AS REMAIN_VAC
+        FROM AR_VAC_EMP A
+        INNER JOIN HR_EMPLOYEE H ON A.PERSON_ID = H.PERSON_ID
+        WHERE A.CPNY_ID   = #{cpnyId, jdbcType=VARCHAR}
+          AND A.ACTIVITY  = 1
+          AND H.EMPID NOT LIKE '111111%'
+          AND TO_CHAR(A.STRT_DATE, 'YYYY') = #{year, jdbcType=VARCHAR}
+          AND EXISTS (
+              SELECT B1.DEPTID
+              FROM HR_DEPARTMENT B1
+              WHERE B1.DEPTNO = H.DEPTNO
+              START WITH B1.DEPTNO IN (
+                  SELECT HRD.DEPTID
+                  FROM HR_DEPARTMENT HRD
+                  WHERE HRD.MANAGER_EMP_ID = #{adminID, jdbcType=VARCHAR}
+              )
+              CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+              UNION
+              SELECT ASI.DEPTNO
+              FROM AR_SUPERVISOR_INFO ASI
+              WHERE ASI.DEPTNO = H.DEPTNO
+                AND ASI.PERSON_ID = #{adminID, jdbcType=VARCHAR}
+          )
+        <if test="keyword != null and keyword != ''">
+            AND (
+                UPPER(H.EMPID) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%'
+                OR CONVERTTOUNSIGN(UPPER(H.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{keyword, jdbcType=VARCHAR})) || '%'
+            )
+        </if>
+        <if test="deptNos != null and deptNos != ''">
+            AND INSTR(',' || #{deptNos, jdbcType=VARCHAR} || ',', ',' || H.DEPTNO || ',') &gt; 0
+        </if>
+        <if test="empOffice != null and empOffice != ''">
+            AND H.EMP_OFFICE = #{empOffice, jdbcType=VARCHAR}
+        </if>
+        <choose>
+            <when test="empTypeCode == 'THOIVU'">
+                AND H.EMP_TYPE_CODE = '14016053'
+            </when>
+            <when test="empTypeCode == 'MTSVN'">
+                AND H.EMP_TYPE_CODE &lt;&gt; '14016053'
+                AND (SELECT HPI.NATIONALITY_CODE FROM HR_PERSONAL_INFO HPI WHERE HPI.PERSON_ID = H.PERSON_ID) &lt;&gt; '872'
+            </when>
+        </choose>
+        ORDER BY H.DEPTNO, H.EMPID
+    </select>
+
+</mapper>

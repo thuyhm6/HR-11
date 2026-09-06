@@ -1,0 +1,29 @@
+<div class="row">
+  <div class="col-12">
+    <nz-card [nzTitle]="'evs.viewEvsResultEmp.PINGJIAJIEGUOLVLI.a' | translate:'Lịch sử kết quả đánh giá'">
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+      <nz-table [nzData]="rows()" [nzLoading]="loading()" [nzShowPagination]="false" nzSize="small" #ereTable>
+        <thead>
+          <tr>
+            <th class="text-center" style="width:60px">{{ 'common.stt' | translate:'STT' }}</th>
+            <th class="text-center">{{ 'evs.viewEvsResultEmp.evalYear' | translate:'Năm đánh giá' }}</th>
+            <th class="text-center">{{ 'evs.viewEvsResultEmp.performance' | translate:'Thành tích' }}</th>
+            <th class="text-center">{{ 'evs.viewEvsResultEmp.ability' | translate:'Năng lực' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!loading() && ereTable.data.length === 0">
+            <td colspan="4" class="text-center text-muted">{{ 'evs.viewEvsResultEmp.noData' | translate:'Không có dữ liệu' }}</td>
+          </tr>
+          <tr *ngFor="let row of ereTable.data; let i = index">
+            <td class="text-center">{{ i + 1 }}</td>
+            <td class="text-center">{{ row.evsYear }}</td>
+            <td class="text-center">{{ row.evsPerformance }}</td>
+            <td class="text-center">{{ row.evsAbility }}</td>
+          </tr>
+        </tbody>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>

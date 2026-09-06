@@ -33,10 +33,8 @@ public class ArOvertimeManagentController {
     @Autowired
     private SyAffirmEmailService affirmorService;
 
-    @GetMapping("/viewArOvertimeManagent_fast")
-    public String view() {
-        return "ar/attendanceMintenance/viewArOvertimeManagent_fast";
-    }
+    // Trang Thymeleaf viewArOvertimeManagent_fast.html đã được thay bằng Angular route /ot-apply-batch-info
+    // (dùng chung component/API với /ess/infoApply/viewPiciOtAffirmLBatchList)
 
     @GetMapping("/viewImportOtTempList")
     public String viewImportOtTempList() {
@@ -49,12 +47,16 @@ public class ArOvertimeManagentController {
             @RequestParam(required = false) String empId,
             @RequestParam(required = false) String localName,
             @RequestParam(required = false) String fromDate,
-            @RequestParam(required = false) String toDate) {
+            @RequestParam(required = false) String toDate,
+            @RequestParam(required = false) String affirmFlag,
+            @RequestParam(required = false) String confirmFlag) {
         ArOvertimeManagentDto dto = new ArOvertimeManagentDto();
         dto.setEmpId(empId);
         dto.setLocalName(localName);
         dto.setFromDate(fromDate);
         dto.setToDate(toDate);
+        dto.setAffirmFlag(affirmFlag);
+        dto.setConfirmFlag(confirmFlag);
         return ResponseEntity.ok(service.getList(dto));
     }
 

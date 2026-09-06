@@ -1,0 +1,378 @@
+<div class="row">
+  <div class="col-12">
+    <!-- Điều kiện tìm kiếm - đứng im khi cuộn (xem .sticky-filter-card trong styles.css) -->
+    <nz-card class="mb-3 sticky-filter-card">
+      <form class="row g-3" (ngSubmit)="search()">
+        <div class="col-md-2">
+          <label class="form-label">{{ 'hrm.viewContract.title.contractNo' | translate:'Số hợp đồng' }}</label>
+          <input nz-input [(ngModel)]="contractNo" name="cilContractNo"
+                 [placeholder]="'hrm.viewContract.title.contractNoPlaceholder' | translate:'Nhập số hợp đồng'">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'hrm.viewContract.title.empId' | translate:'Mã nhân viên' }}</label>
+          <input nz-input [(ngModel)]="empId" name="cilEmpId"
+                 [placeholder]="'hrm.viewContract.title.empIdPlaceholder' | translate:'Nhập mã nhân viên'">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'hrm.viewContract.title.contractType' | translate:'Loại hợp đồng' }}</label>
+          <nz-select class="w-100" [(ngModel)]="contractType" name="cilContractType" nzAllowClear
+                     [nzPlaceHolder]="'common.selectAll' | translate:'-- Tất cả --'">
+            <nz-option nzValue="FULL_TIME" [nzLabel]="'hrm.editContract.title.fullTime' | translate:'Toàn thời gian'"></nz-option>
+            <nz-option nzValue="PART_TIME" [nzLabel]="'hrm.editContract.title.partTime' | translate:'Bán thời gian'"></nz-option>
+            <nz-option nzValue="INTERN" [nzLabel]="'hrm.editContract.title.intern' | translate:'Thực tập'"></nz-option>
+            <nz-option nzValue="CONSULTANT" [nzLabel]="'hrm.editContract.title.consultant' | translate:'Tư vấn'"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'hrm.viewContract.title.dept' | translate:'Phòng ban' }}</label>
+          <input nz-input [(ngModel)]="department" name="cilDepartment"
+                 [placeholder]="'hrm.viewContract.title.deptPlaceholder' | translate:'Nhập phòng ban'">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'hrm.viewContract.title.startDateFrom' | translate:'Ngày bắt đầu từ' }}</label>
+          <nz-date-picker class="w-100" [(ngModel)]="startDateFrom" name="cilStartDateFrom" nzFormat="dd/MM/yyyy"></nz-date-picker>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'hrm.viewContract.title.startDateTo' | translate:'Ngày bắt đầu đến' }}</label>
+          <nz-date-picker class="w-100" [(ngModel)]="startDateTo" name="cilStartDateTo" nzFormat="dd/MM/yyyy"></nz-date-picker>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'hrm.viewContract.title.endDateFrom' | translate:'Ngày kết thúc từ' }}</label>
+          <nz-date-picker class="w-100" [(ngModel)]="endDateFrom" name="cilEndDateFrom" nzFormat="dd/MM/yyyy"></nz-date-picker>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'hrm.viewContract.title.endDateTo' | translate:'Ngày kết thúc đến' }}</label>
+          <nz-date-picker class="w-100" [(ngModel)]="endDateTo" name="cilEndDateTo" nzFormat="dd/MM/yyyy"></nz-date-picker>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'hrm.viewContract.title.activity' | translate:'Hoạt động' }}</label>
+          <nz-select class="w-100" [(ngModel)]="activity" name="cilActivity" nzAllowClear
+                     [nzPlaceHolder]="'common.selectAll' | translate:'-- Tất cả --'">
+            <nz-option nzValue="ACTIVE" [nzLabel]="'hrm.editContract.title.active' | translate:'Hoạt động'"></nz-option>
+            <nz-option nzValue="INACTIVE" [nzLabel]="'hrm.editContract.title.inactive' | translate:'Không hoạt động'"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'hrm.viewContract.title.workPosition' | translate:'Vị trí làm việc' }}</label>
+          <input nz-input [(ngModel)]="workPosition" name="cilWorkPosition"
+                 [placeholder]="'hrm.viewContract.title.workPositionPlaceholder' | translate:'Nhập vị trí làm việc'">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'hrm.viewContract.title.salaryFrom' | translate:'Lương từ' }}</label>
+          <nz-input-number class="w-100" [(ngModel)]="salaryFrom" name="cilSalaryFrom" [nzMin]="0"
+                            [nzPlaceHolder]="'hrm.viewContract.title.salaryFromPlaceholder' | translate:'Nhập lương tối thiểu'"></nz-input-number>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'hrm.viewContract.title.salaryTo' | translate:'Lương đến' }}</label>
+          <nz-input-number class="w-100" [(ngModel)]="salaryTo" name="cilSalaryTo" [nzMin]="0"
+                            [nzPlaceHolder]="'hrm.viewContract.title.salaryToPlaceholder' | translate:'Nhập lương tối đa'"></nz-input-number>
+        </div>
+        <div class="col-12 d-flex align-items-end gap-2 flex-wrap">
+          <button nz-button nzType="primary" type="button" (click)="openAddModal()">
+            <i class="bx bx-plus"></i> {{ 'hrm.editContract.title.addNew' | translate:'Thêm mới' }}
+          </button>
+          <button nz-button nzType="default" type="submit">
+            <i class="bx bx-search"></i> {{ 'hrm.viewContract.title.search' | translate:'Tìm kiếm' }}
+          </button>
+          <button nz-button type="button" (click)="clearSearch()">
+            <i class="bx bx-x"></i> {{ 'hrm.viewContract.title.clearFilter' | translate:'Xóa bộ lọc' }}
+          </button>
+          <button nz-button nzType="default" type="button" class="cil-btn-export" [nzLoading]="exporting()" (click)="exportExcel()">
+            <i class="bx bx-export"></i> {{ 'common.export' | translate:'Xuất' }} Excel
+          </button>
+        </div>
+      </form>
+    </nz-card>
+
+    <nz-card>
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+      <nz-table [nzData]="rows()" [nzFrontPagination]="false" [nzLoading]="loading()"
+                [nzTotal]="recordsFiltered()" [nzPageIndex]="pageIndex" [nzPageSize]="pageSize"
+                [nzPageSizeOptions]="pageSizeOptions" nzShowSizeChanger [nzShowTotal]="cilTotalTpl"
+                (nzPageIndexChange)="onPageIndexChange($event)" (nzPageSizeChange)="onPageSizeChange($event)"
+                [nzScroll]="{ x: '1500px' }" class="table-nowrap">
+        <thead>
+          <tr>
+            <th class="text-center" nzWidth="60px">{{ 'common.stt' | translate:'STT' }}</th>
+            <th nzWidth="130px">{{ 'hrm.viewContract.title.contractNo' | translate:'Số hợp đồng' }}</th>
+            <th nzWidth="110px">{{ 'hrm.viewContract.title.empId' | translate:'Mã nhân viên' }}</th>
+            <th nzWidth="180px">{{ 'hrm.viewContract.title.contractName' | translate:'Tên hợp đồng' }}</th>
+            <th nzWidth="130px">{{ 'hrm.viewContract.title.contractType' | translate:'Loại hợp đồng' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'hrm.viewContract.title.startDate' | translate:'Ngày bắt đầu' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'hrm.viewContract.title.endDate' | translate:'Ngày kết thúc' }}</th>
+            <th nzWidth="120px">{{ 'hrm.viewContract.title.dept' | translate:'Phòng ban' }}</th>
+            <th nzWidth="140px">{{ 'hrm.viewContract.title.position' | translate:'Vị trí' }}</th>
+            <th class="text-end" nzWidth="130px">{{ 'hrm.viewContract.title.salary' | translate:'Lương' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'hrm.viewContract.title.activity' | translate:'Hoạt động' }}</th>
+            <th class="text-center" nzWidth="150px">{{ 'hrm.viewContract.title.createDate' | translate:'Ngày tạo' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'common.action' | translate:'Thao tác' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!loading() && rows().length === 0">
+            <td colspan="13" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+          </tr>
+          <tr *ngFor="let row of rows(); let i = index" class="cil-row-clickable" (click)="openDetail(row)">
+            <td class="text-center">{{ (pageIndex - 1) * pageSize + i + 1 }}</td>
+            <td>{{ row.contractNo }}</td>
+            <td>{{ row.empId }}</td>
+            <td [attr.title]="row.contractName || null">{{ row.contractName }}</td>
+            <td>{{ row.contractTypeName }}</td>
+            <td class="text-center">{{ formatDisplayDate(row.startContractDate) }}</td>
+            <td class="text-center">{{ formatDisplayDate(row.endContractDate) }}</td>
+            <td>{{ row.deptNo }}</td>
+            <td [attr.title]="row.workPosition || null">{{ row.workPosition }}</td>
+            <td class="text-end">{{ formatSalary(row.salary) }}</td>
+            <td class="text-center">
+              <span class="badge" [class.bg-success]="row.activity === 'ACTIVE'" [class.bg-secondary]="row.activity !== 'ACTIVE'">
+                {{ row.activity === 'ACTIVE' ? ('hrm.editContract.title.active' | translate:'Hoạt động') : ('hrm.editContract.title.inactive' | translate:'Không hoạt động') }}
+              </span>
+            </td>
+            <td class="text-center">{{ formatDisplayDateTime(row.createDate) }}</td>
+            <td class="text-center" (click)="$event.stopPropagation()">
+              <button nz-button nzType="text" nzSize="small" title="Chỉnh sửa" (click)="openEditModal(row)">
+                <i class="bx bx-edit text-warning"></i>
+              </button>
+              <button nz-button nzType="text" nzSize="small" title="Xóa" (click)="openDeleteConfirm(row)">
+                <i class="bx bx-trash text-danger"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+        <ng-template #cilTotalTpl let-total>
+          {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+        </ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>
+
+<!-- Modal xem chi tiết hợp đồng -->
+<nz-modal [nzVisible]="detailVisible()" [nzTitle]="'hrm.viewContract.title.detailTitle' | translate:'Chi tiết hợp đồng'" nzWidth="60vw"
+          [nzBodyStyle]="{ 'max-height': '75vh', 'overflow-y': 'auto' }"
+          (nzOnCancel)="closeDetail()" [nzFooter]="null">
+  <ng-container *nzModalContent>
+    <ng-container *ngIf="detailRow() as row">
+      <nz-descriptions nzBordered [nzColumn]="2" nzSize="small">
+        <nz-descriptions-item [nzTitle]="'hrm.viewContract.title.contractNo' | translate:'Số hợp đồng'">{{ row.contractNo }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'hrm.viewContract.title.contractName' | translate:'Tên hợp đồng'">{{ row.contractName }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'hrm.viewContract.title.empId' | translate:'Mã nhân viên'">{{ row.empId }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'common.empName' | translate:'Họ tên'">{{ row.localName }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'hrm.viewContract.title.contractType' | translate:'Loại hợp đồng'">{{ row.contractTypeName }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'hrm.editContract.title.contractTypeCode' | translate:'Mã loại hợp đồng'">{{ row.contractTypeCode }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'hrm.viewContract.title.startDate' | translate:'Ngày bắt đầu'">{{ formatDisplayDate(row.startContractDate) }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'hrm.viewContract.title.endDate' | translate:'Ngày kết thúc'">{{ formatDisplayDate(row.endContractDate) }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'hrm.viewContract.title.dept' | translate:'Phòng ban'">{{ row.deptNo }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'hrm.viewContract.title.position' | translate:'Vị trí'">{{ row.workPosition }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'hrm.viewContract.title.salary' | translate:'Lương'">{{ formatSalary(row.salary) }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'hrm.editContract.title.workTime' | translate:'Thời gian làm việc'">{{ row.workTime }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'hrm.editContract.title.workHourType' | translate:'Loại giờ làm việc'">{{ row.workHourType }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'hrm.viewContract.title.activity' | translate:'Hoạt động'">
+          {{ row.activity === 'ACTIVE' ? ('hrm.editContract.title.active' | translate:'Hoạt động') : ('hrm.editContract.title.inactive' | translate:'Không hoạt động') }}
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'hrm.viewContract.title.createDate' | translate:'Ngày tạo'" [nzSpan]="2">{{ formatDisplayDateTime(row.createDate) }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'hrm.editContract.title.workContent' | translate:'Nội dung công việc'" [nzSpan]="2">{{ row.workContent || '-' }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'hrm.editContract.title.remark' | translate:'Ghi chú'" [nzSpan]="2">{{ row.remark || '-' }}</nz-descriptions-item>
+      </nz-descriptions>
+    </ng-container>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal Thêm mới / Chỉnh sửa -->
+<nz-modal [nzVisible]="modalVisible()" [nzTitle]="modalTitle()" nzWidth="900px"
+          [nzBodyStyle]="{ 'max-height': '75vh', 'overflow-y': 'auto' }"
+          (nzOnCancel)="closeModal()" (nzOnOk)="saveForm()" [nzOkLoading]="saving()">
+  <ng-container *nzModalContent>
+    <div class="row g-3">
+      <div class="col-md-6">
+        <h6 class="text-primary mb-2">{{ 'hrm.editContract.title.basicInfo' | translate:'Thông tin cơ bản' }}</h6>
+
+        <div class="mb-2">
+          <label class="form-label">{{ 'hrm.editContract.title.contractNo' | translate:'Số hợp đồng' }} <span class="text-danger">*</span></label>
+          <input nz-input [(ngModel)]="form.contractNo" name="cilFormContractNo" [readOnly]="!isNew()">
+        </div>
+
+        <div class="mb-2">
+          <label class="form-label">{{ 'hrm.editContract.title.empId' | translate:'Mã nhân viên' }} <span *ngIf="isNew()" class="text-danger">*</span></label>
+          <div class="input-group">
+            <input nz-input [ngModel]="form.empId" name="cilFormEmpId" readonly>
+            <button *ngIf="isNew()" nz-button type="button" [title]="'tempEmp.pickEmp' | translate:'Chọn nhân viên'" (click)="openPicker()">
+              <i class="bx bx-search"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="mb-2" *ngIf="form.localName">
+          <label class="form-label">{{ 'common.empName' | translate:'Họ tên' }}</label>
+          <input nz-input [ngModel]="form.localName" name="cilFormLocalName" readonly>
+        </div>
+
+        <div class="mb-2">
+          <label class="form-label">{{ 'hrm.editContract.title.contractName' | translate:'Tên hợp đồng' }} <span class="text-danger">*</span></label>
+          <input nz-input [(ngModel)]="form.contractName" name="cilFormContractName">
+        </div>
+
+        <div class="mb-2">
+          <label class="form-label">{{ 'hrm.editContract.title.contractType' | translate:'Loại hợp đồng' }}</label>
+          <nz-select class="w-100" [(ngModel)]="form.contractType" name="cilFormContractType">
+            <nz-option nzValue="FULL_TIME" [nzLabel]="'hrm.editContract.title.fullTime' | translate:'Toàn thời gian'"></nz-option>
+            <nz-option nzValue="PART_TIME" [nzLabel]="'hrm.editContract.title.partTime' | translate:'Bán thời gian'"></nz-option>
+            <nz-option nzValue="INTERN" [nzLabel]="'hrm.editContract.title.intern' | translate:'Thực tập'"></nz-option>
+            <nz-option nzValue="CONSULTANT" [nzLabel]="'hrm.editContract.title.consultant' | translate:'Tư vấn'"></nz-option>
+          </nz-select>
+        </div>
+
+        <div class="mb-2">
+          <label class="form-label">{{ 'hrm.editContract.title.contractTypeCode' | translate:'Mã loại hợp đồng' }}</label>
+          <input nz-input [(ngModel)]="form.contractTypeCode" name="cilFormContractTypeCode">
+        </div>
+
+        <div class="mb-2">
+          <label class="form-label">{{ 'hrm.editContract.title.startContractDate' | translate:'Ngày bắt đầu hợp đồng' }}</label>
+          <nz-date-picker class="w-100" [(ngModel)]="form.startContractDate" name="cilFormStartContractDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
+        </div>
+
+        <div class="mb-2">
+          <label class="form-label">{{ 'hrm.editContract.title.endContractDate' | translate:'Ngày kết thúc hợp đồng' }}</label>
+          <nz-date-picker class="w-100" [(ngModel)]="form.endContractDate" name="cilFormEndContractDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
+        </div>
+
+        <div class="mb-2">
+          <label class="form-label">{{ 'hrm.editContract.title.changeDate' | translate:'Ngày thay đổi' }}</label>
+          <nz-date-picker class="w-100" [(ngModel)]="form.changeDate" name="cilFormChangeDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <h6 class="text-primary mb-2">{{ 'hrm.editContract.title.workInfo' | translate:'Thông tin công việc' }}</h6>
+
+        <div class="mb-2">
+          <label class="form-label">{{ 'hrm.editContract.title.dept' | translate:'Phòng ban' }}</label>
+          <input nz-input [(ngModel)]="form.deptNo" name="cilFormDeptNo">
+        </div>
+
+        <div class="mb-2">
+          <label class="form-label">{{ 'hrm.editContract.title.workPosition' | translate:'Vị trí làm việc' }}</label>
+          <input nz-input [(ngModel)]="form.workPosition" name="cilFormWorkPosition">
+        </div>
+
+        <div class="mb-2">
+          <label class="form-label">{{ 'hrm.editContract.title.positionNo' | translate:'Mã chức vụ' }}</label>
+          <input nz-input [(ngModel)]="form.positionNo" name="cilFormPositionNo">
+        </div>
+
+        <div class="mb-2">
+          <label class="form-label">{{ 'hrm.editContract.title.postGradeNo' | translate:'Mã cấp bậc' }}</label>
+          <input nz-input [(ngModel)]="form.postGradeNo" name="cilFormPostGradeNo">
+        </div>
+
+        <div class="mb-2">
+          <label class="form-label">{{ 'hrm.editContract.title.salary' | translate:'Lương' }}</label>
+          <nz-input-number class="w-100" [(ngModel)]="form.salary" name="cilFormSalary" [nzMin]="0"></nz-input-number>
+        </div>
+
+        <div class="mb-2">
+          <label class="form-label">{{ 'hrm.editContract.title.workTime' | translate:'Thời gian làm việc' }}</label>
+          <input nz-input [(ngModel)]="form.workTime" name="cilFormWorkTime">
+        </div>
+
+        <div class="mb-2">
+          <label class="form-label">{{ 'hrm.editContract.title.workHourType' | translate:'Loại giờ làm việc' }}</label>
+          <nz-select class="w-100" [(ngModel)]="form.workHourType" name="cilFormWorkHourType" nzAllowClear
+                     [nzPlaceHolder]="'hrm.editContract.title.selectWorkHourType' | translate:'Chọn loại giờ làm việc'">
+            <nz-option nzValue="FULL_TIME" [nzLabel]="'hrm.editContract.title.fullTime' | translate:'Toàn thời gian'"></nz-option>
+            <nz-option nzValue="PART_TIME" [nzLabel]="'hrm.editContract.title.partTime' | translate:'Bán thời gian'"></nz-option>
+            <nz-option nzValue="OVERTIME" [nzLabel]="'hrm.editContract.title.overtime' | translate:'Tăng ca'"></nz-option>
+            <nz-option nzValue="FLEXIBLE" [nzLabel]="'hrm.editContract.title.flexible' | translate:'Linh hoạt'"></nz-option>
+          </nz-select>
+        </div>
+
+        <div class="mb-2">
+          <label class="form-label">{{ 'hrm.editContract.title.totalPeriod' | translate:'Tổng thời gian' }}</label>
+          <input nz-input [(ngModel)]="form.totalPeriod" name="cilFormTotalPeriod">
+        </div>
+
+        <div class="mb-2">
+          <label class="form-label">{{ 'hrm.editContract.title.totalPeriod08' | translate:'Tổng thời gian 08' }}</label>
+          <input nz-input [(ngModel)]="form.totalPeriod08" name="cilFormTotalPeriod08">
+        </div>
+
+        <div class="mb-2">
+          <label class="form-label">{{ 'hrm.editContract.title.activity' | translate:'Trạng thái hoạt động' }}</label>
+          <nz-select class="w-100" [(ngModel)]="form.activity" name="cilFormActivity">
+            <nz-option nzValue="ACTIVE" [nzLabel]="'hrm.editContract.title.active' | translate:'Hoạt động'"></nz-option>
+            <nz-option nzValue="INACTIVE" [nzLabel]="'hrm.editContract.title.inactive' | translate:'Không hoạt động'"></nz-option>
+          </nz-select>
+        </div>
+      </div>
+
+      <div class="col-12">
+        <h6 class="text-primary mb-2">{{ 'hrm.editContract.title.contentAndRemark' | translate:'Nội dung và ghi chú' }}</h6>
+
+        <div class="mb-2">
+          <label class="form-label">{{ 'hrm.editContract.title.workContent' | translate:'Nội dung công việc' }}</label>
+          <textarea nz-input [(ngModel)]="form.workContent" name="cilFormWorkContent" rows="3"
+                    [placeholder]="'hrm.editContract.title.workContentPlaceholder' | translate:'Mô tả chi tiết nội dung công việc...'"></textarea>
+        </div>
+
+        <div class="mb-2">
+          <label class="form-label">{{ 'hrm.editContract.title.remark' | translate:'Ghi chú' }}</label>
+          <textarea nz-input [(ngModel)]="form.remark" name="cilFormRemark" rows="2"
+                    [placeholder]="'hrm.editContract.title.remarkPlaceholder' | translate:'Ghi chú thêm về hợp đồng...'"></textarea>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal chọn nhân viên (chỉ dùng khi thêm mới) -->
+<nz-modal [nzVisible]="pickerVisible()" [nzTitle]="'empSearch.title' | translate:'Tìm kiếm nhân viên'"
+          nzWidth="800px" (nzOnCancel)="closePicker()" [nzFooter]="null">
+  <ng-container *nzModalContent>
+    <form class="row g-2 align-items-end mb-3" (ngSubmit)="pickerSearch()">
+      <div class="col-md-8">
+        <label class="form-label">{{ 'empSearch.field.keyword' | translate:'Mã nhân viên / Họ tên' }}</label>
+        <input nz-input [(ngModel)]="pickerKeyword" name="cilPickerKeyword"
+               [placeholder]="'empSearch.placeholder.keyword' | translate:'Nhập mã hoặc họ tên'"
+               (keydown.enter)="$event.preventDefault(); pickerSearch()">
+      </div>
+      <div class="col-md-4">
+        <button nz-button nzType="primary" type="submit">
+          <i class="bx bx-search"></i> {{ 'hrm.viewContract.title.search' | translate:'Tìm kiếm' }}
+        </button>
+      </div>
+    </form>
+
+    <nz-table [nzData]="pickerRows()" [nzLoading]="pickerLoading()" [nzPageSize]="10" nzSize="small" #cilPickerTable>
+      <thead>
+        <tr>
+          <th class="text-center" nzWidth="60px">{{ 'empSearch.col.no' | translate:'STT' }}</th>
+          <th nzWidth="110px">{{ 'common.empId' | translate:'Mã nhân viên' }}</th>
+          <th>{{ 'common.empName' | translate:'Họ tên' }}</th>
+          <th>{{ 'common.deptName' | translate:'Phòng ban' }}</th>
+          <th>{{ 'epi.field.position' | translate:'Chức vụ' }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of cilPickerTable.data; let i = index" class="cil-row-clickable" (click)="selectPickedEmployee(row)">
+          <td class="text-center">{{ i + 1 }}</td>
+          <td>{{ row.empId }}</td>
+          <td>{{ row.localName }}</td>
+          <td>{{ row.deptName || row.deptNo }}</td>
+          <td>{{ row.position }}</td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal xác nhận xóa -->
+<nz-modal [nzVisible]="deleteVisible()" [nzTitle]="'common.confirm' | translate:'Xác nhận'"
+          (nzOnCancel)="closeDeleteConfirm()" (nzOnOk)="confirmDelete()" [nzOkLoading]="deleting()"
+          [nzOkText]="'common.confirm' | translate:'Xác nhận'" [nzCancelText]="'common.cancel' | translate:'Hủy'">
+  <ng-container *nzModalContent>
+    <p class="mb-1">{{ 'hrm.viewContract.title.deleteConfirmContent' | translate:'Bạn có chắc chắn muốn xóa hợp đồng này? Hành động này không thể hoàn tác!' }}</p>
+    <p class="fw-bold mb-0">{{ deleteTargetName }}</p>
+  </ng-container>
+</nz-modal>

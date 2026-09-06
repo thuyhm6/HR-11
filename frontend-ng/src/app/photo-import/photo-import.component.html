@@ -1,0 +1,80 @@
+<nz-card [nzTitle]="'hrm.photoImport.title' | translate:'Import ảnh đại diện nhân viên'" [nzBodyStyle]="{ padding: '16px' }">
+  <div class="alert alert-info mb-3">
+    <strong>{{ 'hrm.photoImport.instruction' | translate:'Hướng dẫn sử dụng' }}:</strong>
+    <ul class="mb-0 mt-1">
+      <li>{{ 'hrm.photoImport.filename.rule' | translate:'Tên file phải chứa mã nhân viên (ví dụ: NV001.jpg, nv001_photo.png)' }}</li>
+      <li>{{ 'hrm.photoImport.accept.formats' | translate:'Định dạng cho phép: .jpg, .jpeg, .png' }}</li>
+      <li>{{ 'hrm.photoImport.max.size' | translate:'Ảnh sẽ tự động được cắt về kích thước 600x800px khi lưu' }}</li>
+      <li>{{ 'hrm.photoImport.overwrite.note' | translate:'Ảnh mới sẽ ghi đè ảnh cũ của cùng nhân viên' }}</li>
+    </ul>
+  </div>
+
+  <div class="row g-3 align-items-end">
+    <div class="col-md-8">
+      <label for="phoImp_fileInput" class="form-label fw-semibold">
+        {{ 'hrm.photoImport.selectFiles' | translate:'Chọn file ảnh (có thể chọn nhiều)' }}
+      </label>
+      <input #fileInput type="file" class="form-control" id="phoImp_fileInput"
+             accept=".jpg,.jpeg,.png" multiple (change)="onFileSelected($event)">
+      <div class="form-text text-muted mt-1">
+        <ng-container *ngIf="selectedFiles().length > 0; else phoImpNoFiles">
+          {{ selectedFiles().length }} {{ 'hrm.photoImport.selected.count' | translate:'file đã được chọn' }}
+        </ng-container>
+        <ng-template #phoImpNoFiles>{{ 'hrm.photoImport.noFilesSelected' | translate:'Chưa chọn file nào' }}</ng-template>
+      </div>
+    </div>
+    <div class="col-md-4 d-flex gap-2">
+      <button nz-button nzType="primary" [nzLoading]="checking()" (click)="preview()">
+        <i class="bx bx-search"></i> {{ 'hrm.photoImport.btnPreview' | translate:'Kiểm tra' }}
+      </button>
+      <button nz-button (click)="reset()">
+        <i class="bx bx-undo"></i> {{ 'hrm.photoImport.btnReset' | translate:'Chọn lại' }}
+      </button>
+    </div>
+  </div>
+</nz-card>
+
+<nz-card *ngIf="resultVisible()" class="mt-3" [nzBodyStyle]="{ padding: '10px' }">
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+    <h6 class="mb-0" id="phoImp_resultTitle">
+      {{ 'hrm.photoImport.result.title' | translate:'Kết quả kiểm tra' }}
+      &nbsp;—&nbsp;
+      <span class="text-success fw-bold">{{ successCount }}</span>
+      {{ 'hrm.photoImport.result.valid' | translate:' hợp lệ' }}
+      &nbsp;/&nbsp;
+      <span class="text-danger fw-bold">{{ failCount }}</span>
+      {{ 'hrm.photoImport.result.invalid' | translate:' lỗi' }}
+    </h6>
+    <button *ngIf="!isSaveResult() && successCount > 0" nz-button nzType="primary"
+            [nzLoading]="saving()" (click)="confirmSave()">
+      <i class="bx bx-check"></i> {{ 'hrm.photoImport.btnConfirm' | translate:'Xác nhận lưu' }}
+    </button>
+  </div>
+
+  <nz-table [nzData]="results()" [nzFrontPagination]="false" [nzShowPagination]="false" nzSize="small">
+    <thead>
+      <tr>
+        <th class="text-center" nzWidth="50px">{{ 'hrm.photoImport.col.no' | translate:'STT' }}</th>
+        <th>{{ 'hrm.photoImport.col.fileName' | translate:'Tên file' }}</th>
+        <th nzWidth="120px">{{ 'hrm.photoImport.col.empId' | translate:'Mã nhân viên' }}</th>
+        <th>{{ 'hrm.photoImport.col.empName' | translate:'Tên nhân viên' }}</th>
+        <th class="text-center" nzWidth="120px">{{ 'hrm.photoImport.col.status' | translate:'Trạng thái' }}</th>
+        <th>{{ 'hrm.photoImport.col.errorReason' | translate:'Lý do lỗi' }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let r of results(); let i = index">
+        <td class="text-center">{{ i + 1 }}</td>
+        <td>{{ r.fileName }}</td>
+        <td>{{ r.empId }}</td>
+        <td>{{ r.localName }}</td>
+        <td class="text-center">
+          <nz-tag [nzColor]="r.success ? 'success' : 'error'">
+            {{ (r.success ? 'hrm.photoImport.status.success' : 'hrm.photoImport.status.failed') | translate:(r.success ? 'Hợp lệ' : 'Lỗi') }}
+          </nz-tag>
+        </td>
+        <td class="text-danger small">{{ r.success ? '' : r.errorMessage }}</td>
+      </tr>
+    </tbody>
+  </nz-table>
+</nz-card>

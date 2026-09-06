@@ -1,0 +1,34 @@
+.lock-screen-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 99999;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+}
+
+.lock-screen-avatar {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.lock-screen-subtitle {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.lock-screen-input-group ::ng-deep input,
+.lock-screen-input-group ::ng-deep .ant-input-group-addon,
+.lock-screen-input-group ::ng-deep.ant-input-affix-wrapper {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+  color: white !important;
+}
+.lock-screen-input-group ::ng-deep .ant-input-affix-wrapper {
+  padding: 0 11px;
+}
+.lock-screen-input-group ::ng-deep iconify-icon {
+  color: rgba(255, 255, 255, 0.7);
+}

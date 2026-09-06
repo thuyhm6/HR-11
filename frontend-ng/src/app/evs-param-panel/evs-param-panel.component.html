@@ -1,0 +1,555 @@
+<div class="row">
+  <div class="col-12">
+    <!-- Điều kiện tìm kiếm -->
+    <nz-card class="mb-3 sticky-filter-card">
+      <form class="d-flex align-items-end gap-3 flex-wrap" (ngSubmit)="search()">
+        <div style="min-width:280px;">
+          <label class="form-label">{{ 'evsParam.label.evalName' | translate:'Tên đánh giá' }}</label>
+          <nz-select class="w-100" [(ngModel)]="resumeSeq" name="eppResumeSeq"
+                     [nzPlaceHolder]="'common.select' | translate:'-- Chọn --'">
+            <nz-option *ngFor="let r of resumeOptions()" [nzValue]="r.seq" [nzLabel]="r.resumeName"></nz-option>
+          </nz-select>
+        </div>
+        <button nz-button nzType="primary" type="submit">
+          <i class="bx bx-search"></i> {{ 'evsParam.btn.search' | translate:'Tra cứu' }}
+        </button>
+      </form>
+    </nz-card>
+
+    <nz-card>
+      <nz-tabs>
+        <!-- ── Tab Cấp đánh giá ── -->
+        <nz-tab [nzTitle]="'evsParam.tab.grade' | translate:'Cấp đánh giá'">
+          <div class="d-flex align-items-center justify-content-between mt-2 mb-2 flex-wrap gap-2">
+            <input nz-input style="width:200px;" [ngModel]="grade.filterText()" (ngModelChange)="onFilterChange('grade', $event)"
+                   [placeholder]="'evsParam.label.quickFilter' | translate:'Lọc nhanh'">
+            <div class="d-flex align-items-center gap-2">
+              <button nz-button nzType="primary" nzSize="small" type="button" (click)="addRow('grade')">
+                <i class="bx bx-plus"></i> {{ 'evsParam.btn.addNew' | translate:'Thêm mới' }}
+              </button>
+              <button nz-button nzDanger nzSize="small" type="button" (click)="openDeleteConfirm('grade')">
+                <i class="bx bx-trash"></i> {{ 'evsParam.btn.delete' | translate:'Xóa' }}
+              </button>
+              <button nz-button nzType="primary" nzSize="small" type="button" [nzLoading]="grade.saving()" (click)="saveTab('grade')">
+                <i class="bx bx-save"></i> {{ 'evsParam.btn.save' | translate:'Lưu' }}
+              </button>
+            </div>
+          </div>
+
+          <nz-table [nzData]="grade.filteredRows()" [nzLoading]="grade.loading()" [nzPageSize]="10" [nzShowSizeChanger]="true"
+                    [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="eppTotalTpl" [nzScroll]="{ x: '1100px' }" #gradeTable="nzTable">
+            <thead>
+              <tr>
+                <th class="text-center" nzWidth="40px">
+                  <label nz-checkbox [ngModel]="allCheckedOnPage('grade', gradeTable.data)"
+                         [nzIndeterminate]="someCheckedOnPage('grade', gradeTable.data)"
+                         (ngModelChange)="toggleAllOnPage('grade', gradeTable.data, $event)"></label>
+                </th>
+                <th class="text-center" nzWidth="50px">{{ 'common.stt' | translate:'No.' }}</th>
+                <th nzWidth="150px">{{ 'evsParam.col.evalType' | translate:'Loại ĐG' }}</th>
+                <th nzWidth="140px">{{ 'evsParam.col.evalGrade' | translate:'Cấp ĐG' }}</th>
+                <th class="text-center" nzWidth="80px">{{ 'evsParam.col.include' | translate:'Bao gồm' }}</th>
+                <th class="text-center" nzWidth="100px">{{ 'evsParam.col.startScore' | translate:'Điểm đầu' }}</th>
+                <th class="text-center" nzWidth="100px">{{ 'evsParam.col.endScore' | translate:'Điểm cuối' }}</th>
+                <th class="text-center" nzWidth="90px">{{ 'evsParam.col.score' | translate:'Điểm' }}</th>
+                <th nzWidth="200px">{{ 'evsParam.col.remark' | translate:'Ghi chú' }}</th>
+                <th nzWidth="200px">{{ 'evsParam.col.updatedBy' | translate:'Người thay đổi' }}</th>
+                <th class="text-center" nzWidth="120px">{{ 'evsParam.col.updateTime' | translate:'Thời gian TĐ' }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngIf="!grade.loading() && gradeTable.data.length === 0">
+                <td colspan="11" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+              </tr>
+              <tr *ngFor="let row of gradeTable.data; let i = index"
+                  [class.epp-row-edit]="row.editing" [class.epp-row-new]="row.isNew" (click)="rowClick('grade', row)">
+                <td class="text-center" (click)="$event.stopPropagation()">
+                  <label nz-checkbox [ngModel]="isChecked('grade', row)" (ngModelChange)="toggleChecked('grade', row, $event)"></label>
+                </td>
+                <td class="text-center">{{ i + 1 }}</td>
+                <td (click)="$event.stopPropagation()">
+                  <nz-select *ngIf="row.editing; else evalTypeView" class="w-100" [(ngModel)]="row.evsType"
+                             (ngModelChange)="onEvsTypeChange(row, $event)" [nzPlaceHolder]="'evsParam.js.defaultSelect' | translate:'-- Chọn --'">
+                    <nz-option *ngFor="let o of evalTypeOptions()" [nzValue]="o.codeNo" [nzLabel]="o.codeName"></nz-option>
+                  </nz-select>
+                  <ng-template #evalTypeView>{{ row.evsTypeName || row.evsType }}</ng-template>
+                </td>
+                <td (click)="$event.stopPropagation()">
+                  <nz-select *ngIf="row.editing; else evalGradeView" class="w-100" [(ngModel)]="row.evsGrade"
+                             (ngModelChange)="onEvsGradeChange(row, $event)" [nzPlaceHolder]="'evsParam.js.defaultSelect' | translate:'-- Chọn --'">
+                    <nz-option *ngFor="let o of evalGradeOptions()" [nzValue]="o.codeNo" [nzLabel]="o.description || o.codeName"></nz-option>
+                  </nz-select>
+                  <ng-template #evalGradeView>{{ row.evsGradeName || row.evsGrade }}</ng-template>
+                </td>
+                <td class="text-center" (click)="$event.stopPropagation()">
+                  <label nz-checkbox [ngModel]="isIncludeOn(row)" [nzDisabled]="!row.editing" (ngModelChange)="setIncludeOn(row, $event)"></label>
+                </td>
+                <td class="text-center" (click)="$event.stopPropagation()">
+                  <input *ngIf="row.editing; else startScoreView" nz-input type="number" [(ngModel)]="row.startScore">
+                  <ng-template #startScoreView>{{ row.startScore }}</ng-template>
+                </td>
+                <td class="text-center" (click)="$event.stopPropagation()">
+                  <input *ngIf="row.editing; else endScoreView" nz-input type="number" [(ngModel)]="row.endScore">
+                  <ng-template #endScoreView>{{ row.endScore }}</ng-template>
+                </td>
+                <td class="text-center" (click)="$event.stopPropagation()">
+                  <input *ngIf="row.editing; else scoreView" nz-input type="number" [(ngModel)]="row.score">
+                  <ng-template #scoreView>{{ row.score }}</ng-template>
+                </td>
+                <td (click)="$event.stopPropagation()">
+                  <input *ngIf="row.editing; else remarkView" nz-input [(ngModel)]="row.remark">
+                  <ng-template #remarkView>{{ row.remark }}</ng-template>
+                </td>
+                <td class="small">{{ row.updatedBy }}</td>
+                <td class="text-center small">{{ toDmy(row.updateDate) }}</td>
+              </tr>
+            </tbody>
+          </nz-table>
+        </nz-tab>
+
+        <!-- ── Tab Cấp hạng mục đánh giá ── -->
+        <nz-tab [nzTitle]="'evsParam.tab.item' | translate:'Cấp hạng mục đánh giá'">
+          <div class="d-flex align-items-center justify-content-between mt-2 mb-2 flex-wrap gap-2">
+            <input nz-input style="width:200px;" [ngModel]="item.filterText()" (ngModelChange)="onFilterChange('item', $event)"
+                   [placeholder]="'evsParam.label.quickFilter' | translate:'Lọc nhanh'">
+            <div class="d-flex align-items-center gap-2">
+              <button nz-button nzType="primary" nzSize="small" type="button" (click)="addRow('item')">
+                <i class="bx bx-plus"></i> {{ 'evsParam.btn.addNew' | translate:'Thêm mới' }}
+              </button>
+              <button nz-button nzDanger nzSize="small" type="button" (click)="openDeleteConfirm('item')">
+                <i class="bx bx-trash"></i> {{ 'evsParam.btn.delete' | translate:'Xóa' }}
+              </button>
+              <button nz-button nzType="primary" nzSize="small" type="button" [nzLoading]="item.saving()" (click)="saveTab('item')">
+                <i class="bx bx-save"></i> {{ 'evsParam.btn.save' | translate:'Lưu' }}
+              </button>
+            </div>
+          </div>
+
+          <nz-table [nzData]="item.filteredRows()" [nzLoading]="item.loading()" [nzPageSize]="10" [nzShowSizeChanger]="true"
+                    [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="eppTotalTpl" [nzScroll]="{ x: '700px' }" #itemTable="nzTable">
+            <thead>
+              <tr>
+                <th class="text-center" nzWidth="40px">
+                  <label nz-checkbox [ngModel]="allCheckedOnPage('item', itemTable.data)"
+                         [nzIndeterminate]="someCheckedOnPage('item', itemTable.data)"
+                         (ngModelChange)="toggleAllOnPage('item', itemTable.data, $event)"></label>
+                </th>
+                <th class="text-center" nzWidth="50px">{{ 'common.stt' | translate:'No.' }}</th>
+                <th nzWidth="140px">{{ 'evsParam.col.code' | translate:'Mã' }}</th>
+                <th nzWidth="220px">{{ 'evsParam.col.name' | translate:'Tên' }}</th>
+                <th class="text-center" nzWidth="100px">{{ 'evsParam.col.score' | translate:'Điểm' }}</th>
+                <th nzWidth="200px">{{ 'evsParam.col.updatedBy' | translate:'Người thay đổi' }}</th>
+                <th class="text-center" nzWidth="120px">{{ 'evsParam.col.updateTime' | translate:'Thời gian TĐ' }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngIf="!item.loading() && itemTable.data.length === 0">
+                <td colspan="7" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+              </tr>
+              <tr *ngFor="let row of itemTable.data; let i = index"
+                  [class.epp-row-edit]="row.editing" [class.epp-row-new]="row.isNew" (click)="rowClick('item', row)">
+                <td class="text-center" (click)="$event.stopPropagation()">
+                  <label nz-checkbox [ngModel]="isChecked('item', row)" (ngModelChange)="toggleChecked('item', row, $event)"></label>
+                </td>
+                <td class="text-center">{{ i + 1 }}</td>
+                <td (click)="$event.stopPropagation()">
+                  <input *ngIf="row.editing; else itemCodeNoView" nz-input [(ngModel)]="row.codeNo" maxlength="20">
+                  <ng-template #itemCodeNoView>{{ row.codeNo }}</ng-template>
+                </td>
+                <td (click)="$event.stopPropagation()">
+                  <input *ngIf="row.editing; else itemCodeNameView" nz-input [(ngModel)]="row.codeName" maxlength="200">
+                  <ng-template #itemCodeNameView>{{ row.codeName }}</ng-template>
+                </td>
+                <td class="text-center" (click)="$event.stopPropagation()">
+                  <input *ngIf="row.editing; else itemScoreView" nz-input type="number" [(ngModel)]="row.evsScore">
+                  <ng-template #itemScoreView>{{ row.evsScore }}</ng-template>
+                </td>
+                <td class="small">{{ row.updatedBy }}</td>
+                <td class="text-center small">{{ toDmy(row.updateDate) }}</td>
+              </tr>
+            </tbody>
+          </nz-table>
+        </nz-tab>
+
+        <!-- ── Tab Đối tượng đánh giá ── -->
+        <nz-tab [nzTitle]="'evsParam.tab.object' | translate:'Đối tượng đánh giá'">
+          <div class="d-flex align-items-center justify-content-between mt-2 mb-2 flex-wrap gap-2">
+            <input nz-input style="width:200px;" [ngModel]="object.filterText()" (ngModelChange)="onFilterChange('object', $event)"
+                   [placeholder]="'evsParam.label.quickFilter' | translate:'Lọc nhanh'">
+            <div class="d-flex align-items-center gap-2">
+              <button nz-button nzType="primary" nzSize="small" type="button" (click)="addRow('object')">
+                <i class="bx bx-plus"></i> {{ 'evsParam.btn.addNew' | translate:'Thêm mới' }}
+              </button>
+              <button nz-button nzDanger nzSize="small" type="button" (click)="openDeleteConfirm('object')">
+                <i class="bx bx-trash"></i> {{ 'evsParam.btn.delete' | translate:'Xóa' }}
+              </button>
+              <button nz-button nzType="primary" nzSize="small" type="button" [nzLoading]="object.saving()" (click)="saveTab('object')">
+                <i class="bx bx-save"></i> {{ 'evsParam.btn.save' | translate:'Lưu' }}
+              </button>
+            </div>
+          </div>
+
+          <nz-table [nzData]="object.filteredRows()" [nzLoading]="object.loading()" [nzPageSize]="10" [nzShowSizeChanger]="true"
+                    [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="eppTotalTpl" [nzScroll]="{ x: '1150px' }" #objectTable="nzTable">
+            <thead>
+              <tr>
+                <th class="text-center" nzWidth="40px">
+                  <label nz-checkbox [ngModel]="allCheckedOnPage('object', objectTable.data)"
+                         [nzIndeterminate]="someCheckedOnPage('object', objectTable.data)"
+                         (ngModelChange)="toggleAllOnPage('object', objectTable.data, $event)"></label>
+                </th>
+                <th class="text-center" nzWidth="50px">{{ 'common.stt' | translate:'No.' }}</th>
+                <th nzWidth="140px">{{ 'evsParam.col.code' | translate:'Mã' }}</th>
+                <th nzWidth="220px">{{ 'evsParam.col.name' | translate:'Tên' }}</th>
+                <th class="text-center" nzWidth="80px">{{ 'evsParam.col.include' | translate:'Bao gồm' }}</th>
+                <th nzWidth="140px">{{ 'evsParam.col.defaultGrade' | translate:'Cấp mặc định' }}</th>
+                <th nzWidth="220px">{{ 'evsParam.col.formula' | translate:'Hình thức tiêu chuẩn' }}</th>
+                <th nzWidth="200px">{{ 'evsParam.col.updatedBy' | translate:'Người thay đổi' }}</th>
+                <th class="text-center" nzWidth="120px">{{ 'evsParam.col.updateTime' | translate:'Thời gian TĐ' }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngIf="!object.loading() && objectTable.data.length === 0">
+                <td colspan="9" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+              </tr>
+              <tr *ngFor="let row of objectTable.data; let i = index"
+                  [class.epp-row-edit]="row.editing" [class.epp-row-new]="row.isNew" (click)="rowClick('object', row)">
+                <td class="text-center" (click)="$event.stopPropagation()">
+                  <label nz-checkbox [ngModel]="isChecked('object', row)" (ngModelChange)="toggleChecked('object', row, $event)"></label>
+                </td>
+                <td class="text-center">{{ i + 1 }}</td>
+                <td (click)="$event.stopPropagation()">
+                  <input *ngIf="row.editing; else objCodeNoView" nz-input [(ngModel)]="row.codeNo" maxlength="20">
+                  <ng-template #objCodeNoView>{{ row.codeNo }}</ng-template>
+                </td>
+                <td (click)="$event.stopPropagation()">
+                  <input *ngIf="row.editing; else objCodeNameView" nz-input [(ngModel)]="row.codeName" maxlength="200">
+                  <ng-template #objCodeNameView>{{ row.codeName }}</ng-template>
+                </td>
+                <td class="text-center" (click)="$event.stopPropagation()">
+                  <label nz-checkbox [ngModel]="isIncludeOn(row)" [nzDisabled]="!row.editing" (ngModelChange)="setIncludeOn(row, $event)"></label>
+                </td>
+                <td (click)="$event.stopPropagation()">
+                  <nz-select *ngIf="row.editing; else objGradeView" class="w-100" [(ngModel)]="row.evsGrade"
+                             (ngModelChange)="onEvsGradeChange(row, $event)" [nzPlaceHolder]="'evsParam.js.defaultSelect' | translate:'-- Chọn --'">
+                    <nz-option *ngFor="let o of evalGradeOptions()" [nzValue]="o.codeNo" [nzLabel]="o.description || o.codeName"></nz-option>
+                  </nz-select>
+                  <ng-template #objGradeView>{{ row.evsGradeName || row.evsGrade }}</ng-template>
+                </td>
+                <td (click)="$event.stopPropagation()">
+                  <nz-select *ngIf="row.editing; else objFormulaView" class="w-100" [(ngModel)]="row.formula"
+                             (ngModelChange)="onFormulaChange(row, $event)" [nzPlaceHolder]="'evsParam.js.defaultSelect' | translate:'-- Chọn --'">
+                    <nz-option *ngFor="let o of formulaOptions()" [nzValue]="o.codeNo" [nzLabel]="o.codeName"></nz-option>
+                  </nz-select>
+                  <ng-template #objFormulaView>{{ formulaLabel(row.formula) }}</ng-template>
+                </td>
+                <td class="small">{{ row.updatedBy }}</td>
+                <td class="text-center small">{{ toDmy(row.updateDate) }}</td>
+              </tr>
+            </tbody>
+          </nz-table>
+        </nz-tab>
+
+        <!-- ── Tab Bảng đánh giá ── -->
+        <nz-tab [nzTitle]="'evsParam.tab.list' | translate:'Bảng đánh giá'">
+          <div class="d-flex align-items-center justify-content-between mt-2 mb-2 flex-wrap gap-2">
+            <input nz-input style="width:200px;" [ngModel]="list.filterText()" (ngModelChange)="onFilterChange('list', $event)"
+                   [placeholder]="'evsParam.label.quickFilter' | translate:'Lọc nhanh'">
+            <div class="d-flex align-items-center gap-2">
+              <button nz-button nzType="primary" nzSize="small" type="button" (click)="addRow('list')">
+                <i class="bx bx-plus"></i> {{ 'evsParam.btn.addNew' | translate:'Thêm mới' }}
+              </button>
+              <button nz-button nzDanger nzSize="small" type="button" (click)="openDeleteConfirm('list')">
+                <i class="bx bx-trash"></i> {{ 'evsParam.btn.delete' | translate:'Xóa' }}
+              </button>
+              <button nz-button nzType="primary" nzSize="small" type="button" [nzLoading]="list.saving()" (click)="saveTab('list')">
+                <i class="bx bx-save"></i> {{ 'evsParam.btn.save' | translate:'Lưu' }}
+              </button>
+            </div>
+          </div>
+
+          <nz-table [nzData]="list.filteredRows()" [nzLoading]="list.loading()" [nzPageSize]="10" [nzShowSizeChanger]="true"
+                    [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="eppTotalTpl" [nzScroll]="{ x: '1100px' }" #listTable="nzTable">
+            <thead>
+              <tr>
+                <th class="text-center" nzWidth="40px">
+                  <label nz-checkbox [ngModel]="allCheckedOnPage('list', listTable.data)"
+                         [nzIndeterminate]="someCheckedOnPage('list', listTable.data)"
+                         (ngModelChange)="toggleAllOnPage('list', listTable.data, $event)"></label>
+                </th>
+                <th class="text-center" nzWidth="50px">{{ 'common.stt' | translate:'No.' }}</th>
+                <th nzWidth="140px">{{ 'evsParam.col.code' | translate:'Mã' }}</th>
+                <th nzWidth="200px">{{ 'evsParam.col.name' | translate:'Tên' }}</th>
+                <th nzWidth="220px">{{ 'evsParam.col.formula' | translate:'Hình thức tiêu chuẩn' }}</th>
+                <th class="text-center" nzWidth="160px">{{ 'evsParam.col.initialStatus' | translate:'Trạng thái ban đầu' }}</th>
+                <th nzWidth="200px">{{ 'evsParam.col.updatedBy' | translate:'Người thay đổi' }}</th>
+                <th class="text-center" nzWidth="120px">{{ 'evsParam.col.updateTime' | translate:'Thời gian TĐ' }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngIf="!list.loading() && listTable.data.length === 0">
+                <td colspan="8" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+              </tr>
+              <tr *ngFor="let row of listTable.data; let i = index"
+                  [class.epp-row-edit]="row.editing" [class.epp-row-new]="row.isNew" (click)="rowClick('list', row)">
+                <td class="text-center" (click)="$event.stopPropagation()">
+                  <label nz-checkbox [ngModel]="isChecked('list', row)" (ngModelChange)="toggleChecked('list', row, $event)"></label>
+                </td>
+                <td class="text-center">{{ i + 1 }}</td>
+                <td (click)="$event.stopPropagation()">
+                  <input *ngIf="row.editing; else listCodeNoView" nz-input [(ngModel)]="row.codeNo" maxlength="20">
+                  <ng-template #listCodeNoView>{{ row.codeNo }}</ng-template>
+                </td>
+                <td (click)="$event.stopPropagation()">
+                  <input *ngIf="row.editing; else listCodeNameView" nz-input [(ngModel)]="row.codeName" maxlength="200">
+                  <ng-template #listCodeNameView>{{ row.codeName }}</ng-template>
+                </td>
+                <td (click)="$event.stopPropagation()">
+                  <nz-select *ngIf="row.editing; else listFormulaView" class="w-100" [(ngModel)]="row.formula"
+                             (ngModelChange)="onFormulaChange(row, $event)" [nzPlaceHolder]="'evsParam.js.defaultSelect' | translate:'-- Chọn --'">
+                    <nz-option *ngFor="let o of formulaOptions()" [nzValue]="o.codeNo" [nzLabel]="o.codeName"></nz-option>
+                  </nz-select>
+                  <ng-template #listFormulaView>{{ formulaLabel(row.formula) }}</ng-template>
+                </td>
+                <td class="text-center" (click)="$event.stopPropagation()">
+                  <nz-select *ngIf="row.editing; else listStartStepView" class="w-100" [(ngModel)]="row.startStep"
+                             (ngModelChange)="onStartStepChange(row, $event)" [nzPlaceHolder]="'evsParam.js.defaultSelect' | translate:'-- Chọn --'">
+                    <nz-option *ngFor="let o of startStepOptions()" [nzValue]="o.codeNo" [nzLabel]="o.codeName"></nz-option>
+                  </nz-select>
+                  <ng-template #listStartStepView>{{ row.startStepName || row.startStep }}</ng-template>
+                </td>
+                <td class="small">{{ row.updatedBy }}</td>
+                <td class="text-center small">{{ toDmy(row.updateDate) }}</td>
+              </tr>
+            </tbody>
+          </nz-table>
+        </nz-tab>
+
+        <!-- ── Tab Nhóm nhân viên ── -->
+        <nz-tab [nzTitle]="'evsParam.tab.group' | translate:'Nhóm nhân viên'">
+          <div class="d-flex align-items-center justify-content-between mt-2 mb-2 flex-wrap gap-2">
+            <input nz-input style="width:200px;" [ngModel]="group.filterText()" (ngModelChange)="onFilterChange('group', $event)"
+                   [placeholder]="'evsParam.label.quickFilter' | translate:'Lọc nhanh'">
+            <div class="d-flex align-items-center gap-2">
+              <button nz-button nzType="primary" nzSize="small" type="button" (click)="addRow('group')">
+                <i class="bx bx-plus"></i> {{ 'evsParam.btn.addNew' | translate:'Thêm mới' }}
+              </button>
+              <button nz-button nzDanger nzSize="small" type="button" (click)="openDeleteConfirm('group')">
+                <i class="bx bx-trash"></i> {{ 'evsParam.btn.delete' | translate:'Xóa' }}
+              </button>
+              <button nz-button nzType="primary" nzSize="small" type="button" [nzLoading]="group.saving()" (click)="saveTab('group')">
+                <i class="bx bx-save"></i> {{ 'evsParam.btn.save' | translate:'Lưu' }}
+              </button>
+            </div>
+          </div>
+
+          <nz-table [nzData]="group.filteredRows()" [nzLoading]="group.loading()" [nzPageSize]="10" [nzShowSizeChanger]="true"
+                    [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="eppTotalTpl" [nzScroll]="{ x: '950px' }" #groupTable="nzTable">
+            <thead>
+              <tr>
+                <th class="text-center" nzWidth="40px">
+                  <label nz-checkbox [ngModel]="allCheckedOnPage('group', groupTable.data)"
+                         [nzIndeterminate]="someCheckedOnPage('group', groupTable.data)"
+                         (ngModelChange)="toggleAllOnPage('group', groupTable.data, $event)"></label>
+                </th>
+                <th class="text-center" nzWidth="50px">{{ 'common.stt' | translate:'No.' }}</th>
+                <th nzWidth="140px">{{ 'evsParam.col.code' | translate:'Mã' }}</th>
+                <th nzWidth="200px">{{ 'evsParam.col.name' | translate:'Tên' }}</th>
+                <th nzWidth="220px">{{ 'evsParam.col.formula' | translate:'Hình thức tiêu chuẩn' }}</th>
+                <th nzWidth="200px">{{ 'evsParam.col.updatedBy' | translate:'Người thay đổi' }}</th>
+                <th class="text-center" nzWidth="120px">{{ 'evsParam.col.updateTime' | translate:'Thời gian TĐ' }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngIf="!group.loading() && groupTable.data.length === 0">
+                <td colspan="7" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+              </tr>
+              <tr *ngFor="let row of groupTable.data; let i = index"
+                  [class.epp-row-edit]="row.editing" [class.epp-row-new]="row.isNew" (click)="rowClick('group', row)">
+                <td class="text-center" (click)="$event.stopPropagation()">
+                  <label nz-checkbox [ngModel]="isChecked('group', row)" (ngModelChange)="toggleChecked('group', row, $event)"></label>
+                </td>
+                <td class="text-center">{{ i + 1 }}</td>
+                <td (click)="$event.stopPropagation()">
+                  <input *ngIf="row.editing; else groupCodeNoView" nz-input [(ngModel)]="row.codeNo" maxlength="20">
+                  <ng-template #groupCodeNoView>{{ row.codeNo }}</ng-template>
+                </td>
+                <td (click)="$event.stopPropagation()">
+                  <input *ngIf="row.editing; else groupCodeNameView" nz-input [(ngModel)]="row.codeName" maxlength="200">
+                  <ng-template #groupCodeNameView>{{ row.codeName }}</ng-template>
+                </td>
+                <td (click)="$event.stopPropagation()">
+                  <nz-select *ngIf="row.editing; else groupFormulaView" class="w-100" [(ngModel)]="row.formula"
+                             (ngModelChange)="onFormulaChange(row, $event)" [nzPlaceHolder]="'evsParam.js.defaultSelect' | translate:'-- Chọn --'">
+                    <nz-option *ngFor="let o of formulaOptions()" [nzValue]="o.codeNo" [nzLabel]="o.codeName"></nz-option>
+                  </nz-select>
+                  <ng-template #groupFormulaView>{{ formulaLabel(row.formula) }}</ng-template>
+                </td>
+                <td class="small">{{ row.updatedBy }}</td>
+                <td class="text-center small">{{ toDmy(row.updateDate) }}</td>
+              </tr>
+            </tbody>
+          </nz-table>
+        </nz-tab>
+
+        <!-- ── Tab Nhóm chức vụ ── -->
+        <nz-tab [nzTitle]="'evsParam.tab.family' | translate:'Nhóm chức vụ'">
+          <div class="d-flex align-items-center justify-content-between mt-2 mb-2 flex-wrap gap-2">
+            <input nz-input style="width:200px;" [ngModel]="family.filterText()" (ngModelChange)="onFilterChange('family', $event)"
+                   [placeholder]="'evsParam.label.quickFilter' | translate:'Lọc nhanh'">
+            <div class="d-flex align-items-center gap-2">
+              <button nz-button nzType="primary" nzSize="small" type="button" (click)="addRow('family')">
+                <i class="bx bx-plus"></i> {{ 'evsParam.btn.addNew' | translate:'Thêm mới' }}
+              </button>
+              <button nz-button nzDanger nzSize="small" type="button" (click)="openDeleteConfirm('family')">
+                <i class="bx bx-trash"></i> {{ 'evsParam.btn.delete' | translate:'Xóa' }}
+              </button>
+              <button nz-button nzType="primary" nzSize="small" type="button" [nzLoading]="family.saving()" (click)="saveTab('family')">
+                <i class="bx bx-save"></i> {{ 'evsParam.btn.save' | translate:'Lưu' }}
+              </button>
+            </div>
+          </div>
+
+          <nz-table [nzData]="family.filteredRows()" [nzLoading]="family.loading()" [nzPageSize]="10" [nzShowSizeChanger]="true"
+                    [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="eppTotalTpl" [nzScroll]="{ x: '950px' }" #familyTable="nzTable">
+            <thead>
+              <tr>
+                <th class="text-center" nzWidth="40px">
+                  <label nz-checkbox [ngModel]="allCheckedOnPage('family', familyTable.data)"
+                         [nzIndeterminate]="someCheckedOnPage('family', familyTable.data)"
+                         (ngModelChange)="toggleAllOnPage('family', familyTable.data, $event)"></label>
+                </th>
+                <th class="text-center" nzWidth="50px">{{ 'common.stt' | translate:'No.' }}</th>
+                <th nzWidth="140px">{{ 'evsParam.col.code' | translate:'Mã' }}</th>
+                <th nzWidth="200px">{{ 'evsParam.col.name' | translate:'Tên' }}</th>
+                <th nzWidth="220px">{{ 'evsParam.col.formula' | translate:'Hình thức tiêu chuẩn' }}</th>
+                <th nzWidth="200px">{{ 'evsParam.col.updatedBy' | translate:'Người thay đổi' }}</th>
+                <th class="text-center" nzWidth="120px">{{ 'evsParam.col.updateTime' | translate:'Thời gian TĐ' }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngIf="!family.loading() && familyTable.data.length === 0">
+                <td colspan="7" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+              </tr>
+              <tr *ngFor="let row of familyTable.data; let i = index"
+                  [class.epp-row-edit]="row.editing" [class.epp-row-new]="row.isNew" (click)="rowClick('family', row)">
+                <td class="text-center" (click)="$event.stopPropagation()">
+                  <label nz-checkbox [ngModel]="isChecked('family', row)" (ngModelChange)="toggleChecked('family', row, $event)"></label>
+                </td>
+                <td class="text-center">{{ i + 1 }}</td>
+                <td (click)="$event.stopPropagation()">
+                  <input *ngIf="row.editing; else familyCodeNoView" nz-input [(ngModel)]="row.codeNo" maxlength="20">
+                  <ng-template #familyCodeNoView>{{ row.codeNo }}</ng-template>
+                </td>
+                <td (click)="$event.stopPropagation()">
+                  <input *ngIf="row.editing; else familyCodeNameView" nz-input [(ngModel)]="row.codeName" maxlength="200">
+                  <ng-template #familyCodeNameView>{{ row.codeName }}</ng-template>
+                </td>
+                <td (click)="$event.stopPropagation()">
+                  <nz-select *ngIf="row.editing; else familyFormulaView" class="w-100" [(ngModel)]="row.formula"
+                             (ngModelChange)="onFormulaChange(row, $event)" [nzPlaceHolder]="'evsParam.js.defaultSelect' | translate:'-- Chọn --'">
+                    <nz-option *ngFor="let o of formulaOptions()" [nzValue]="o.codeNo" [nzLabel]="o.codeName"></nz-option>
+                  </nz-select>
+                  <ng-template #familyFormulaView>{{ formulaLabel(row.formula) }}</ng-template>
+                </td>
+                <td class="small">{{ row.updatedBy }}</td>
+                <td class="text-center small">{{ toDmy(row.updateDate) }}</td>
+              </tr>
+            </tbody>
+          </nz-table>
+        </nz-tab>
+
+        <!-- ── Tab Người đánh giá ── -->
+        <nz-tab [nzTitle]="'evsParam.tab.affirm' | translate:'Người đánh giá'">
+          <div class="d-flex align-items-center justify-content-between mt-2 mb-2 flex-wrap gap-2">
+            <input nz-input style="width:200px;" [ngModel]="affirm.filterText()" (ngModelChange)="onFilterChange('affirm', $event)"
+                   [placeholder]="'evsParam.label.quickFilter' | translate:'Lọc nhanh'">
+            <div class="d-flex align-items-center gap-2">
+              <button nz-button nzType="primary" nzSize="small" type="button" (click)="addRow('affirm')">
+                <i class="bx bx-plus"></i> {{ 'evsParam.btn.addNew' | translate:'Thêm mới' }}
+              </button>
+              <button nz-button nzDanger nzSize="small" type="button" (click)="openDeleteConfirm('affirm')">
+                <i class="bx bx-trash"></i> {{ 'evsParam.btn.delete' | translate:'Xóa' }}
+              </button>
+              <button nz-button nzType="primary" nzSize="small" type="button" [nzLoading]="affirm.saving()" (click)="saveTab('affirm')">
+                <i class="bx bx-save"></i> {{ 'evsParam.btn.save' | translate:'Lưu' }}
+              </button>
+            </div>
+          </div>
+
+          <nz-table [nzData]="affirm.filteredRows()" [nzLoading]="affirm.loading()" [nzPageSize]="10" [nzShowSizeChanger]="true"
+                    [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="eppTotalTpl" [nzScroll]="{ x: '950px' }" #affirmTable="nzTable">
+            <thead>
+              <tr>
+                <th class="text-center" nzWidth="40px">
+                  <label nz-checkbox [ngModel]="allCheckedOnPage('affirm', affirmTable.data)"
+                         [nzIndeterminate]="someCheckedOnPage('affirm', affirmTable.data)"
+                         (ngModelChange)="toggleAllOnPage('affirm', affirmTable.data, $event)"></label>
+                </th>
+                <th class="text-center" nzWidth="50px">{{ 'common.stt' | translate:'No.' }}</th>
+                <th nzWidth="200px">{{ 'evsParam.col.evaluator' | translate:'Người đánh giá' }}</th>
+                <th nzWidth="220px">{{ 'evsParam.col.evalGroup' | translate:'Nhóm đánh giá' }}</th>
+                <th nzWidth="180px">{{ 'evsParam.col.ruleId' | translate:'ID quy tắc' }}</th>
+                <th nzWidth="200px">{{ 'evsParam.col.updatedBy' | translate:'Người thay đổi' }}</th>
+                <th class="text-center" nzWidth="120px">{{ 'evsParam.col.updateTime' | translate:'Thời gian TĐ' }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngIf="!affirm.loading() && affirmTable.data.length === 0">
+                <td colspan="7" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+              </tr>
+              <tr *ngFor="let row of affirmTable.data; let i = index"
+                  [class.epp-row-edit]="row.editing" [class.epp-row-new]="row.isNew" (click)="rowClick('affirm', row)">
+                <td class="text-center" (click)="$event.stopPropagation()">
+                  <label nz-checkbox [ngModel]="isChecked('affirm', row)" (ngModelChange)="toggleChecked('affirm', row, $event)"></label>
+                </td>
+                <td class="text-center">{{ i + 1 }}</td>
+                <td (click)="$event.stopPropagation()">
+                  <nz-select *ngIf="row.editing; else evsStepView" class="w-100" [(ngModel)]="row.evsStep"
+                             (ngModelChange)="onEvsStepChange(row, $event)" [nzPlaceHolder]="'evsParam.js.defaultSelect' | translate:'-- Chọn --'">
+                    <nz-option *ngFor="let o of evsStepOptions()" [nzValue]="o.codeNo" [nzLabel]="o.codeName"></nz-option>
+                  </nz-select>
+                  <ng-template #evsStepView>{{ row.evsStepName || row.evsStep }}</ng-template>
+                </td>
+                <td (click)="$event.stopPropagation()">
+                  <nz-select *ngIf="row.editing; else evsGroupView" class="w-100" [(ngModel)]="row.evsGroup"
+                             (ngModelChange)="onEvsGroupChange(row, $event)" [nzPlaceHolder]="'evsParam.js.defaultSelect' | translate:'-- Chọn --'">
+                    <nz-option *ngFor="let o of groupOptions()" [nzValue]="o.codeNo" [nzLabel]="o.codeName"></nz-option>
+                  </nz-select>
+                  <ng-template #evsGroupView>{{ row.evsGroupName || row.evsGroup }}</ng-template>
+                </td>
+                <td (click)="$event.stopPropagation()">
+                  <nz-select *ngIf="row.editing; else ruleIdView" class="w-100" [(ngModel)]="row.ruleId"
+                             (ngModelChange)="onRuleIdChange(row, $event)" [nzPlaceHolder]="'evsParam.js.defaultSelect' | translate:'-- Chọn --'">
+                    <nz-option *ngFor="let o of ruleIdOptions()" [nzValue]="o.codeNo" [nzLabel]="o.codeName"></nz-option>
+                  </nz-select>
+                  <ng-template #ruleIdView>{{ row.ruleName || row.ruleId }}</ng-template>
+                </td>
+                <td class="small">{{ row.updatedBy }}</td>
+                <td class="text-center small">{{ toDmy(row.updateDate) }}</td>
+              </tr>
+            </tbody>
+          </nz-table>
+        </nz-tab>
+      </nz-tabs>
+    </nz-card>
+  </div>
+</div>
+
+<ng-template #eppTotalTpl let-total>
+  {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+</ng-template>
+
+<!-- Modal xác nhận xóa -->
+<nz-modal [nzVisible]="deleteVisible()" [nzTitle]="'evsParam.modal.deleteTitle' | translate:'Xác nhận xóa'"
+          (nzOnCancel)="closeDeleteConfirm()" (nzOnOk)="confirmDelete()" [nzOkLoading]="deleting()"
+          [nzOkText]="'evsParam.btn.delete' | translate:'Xóa'" nzOkDanger
+          [nzCancelText]="'evsParam.btn.cancel' | translate:'Hủy'">
+  <ng-container *nzModalContent>
+    <p class="mb-0">
+      {{ 'evsParam.modal.deleteBodyPrefix' | translate:'Bạn có chắc muốn xóa' }}
+      <strong>{{ pendingDeleteCount }}</strong>
+      {{ 'evsParam.modal.deleteBodySuffix' | translate:'dòng đã chọn?' }}
+    </p>
+  </ng-container>
+</nz-modal>

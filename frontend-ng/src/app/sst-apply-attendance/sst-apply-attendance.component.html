@@ -1,0 +1,127 @@
+<div class="row">
+  <div class="col-12">
+
+    <!-- ===== Thông tin nhân viên (tương đương fragments/essEmpInfoCard.html) ===== -->
+    <div class="card mb-3" *ngIf="basicInfo() as info">
+      <div class="card-body p-0">
+        <table class="table table-bordered table-sm align-middle mb-0" style="table-layout:fixed;">
+          <colgroup>
+            <col style="width:15%;"><col style="width:35%;"><col style="width:15%;"><col style="width:35%;">
+          </colgroup>
+          <tbody>
+            <tr>
+              <th class="table-light text-center">{{ 'essEmpCard.localName' | translate:'Họ tên' }}</th>
+              <td>{{ info.localName }}</td>
+              <th class="table-light text-center">{{ 'essEmpCard.empId' | translate:'Mã nhân viên' }}</th>
+              <td>{{ info.empId }}</td>
+            </tr>
+            <tr>
+              <th class="table-light text-center">{{ 'essEmpCard.deptName' | translate:'Phòng ban' }}</th>
+              <td>{{ info.deptName }}</td>
+              <th class="table-light text-center">{{ 'essEmpCard.headDept' | translate:'Trưởng phòng' }}</th>
+              <td>{{ info.headDepartment }}</td>
+            </tr>
+            <tr>
+              <th class="table-light text-center">{{ 'essEmpCard.postFamily' | translate:'Nhóm nhân viên' }}</th>
+              <td>{{ info.postFamilyName }}</td>
+              <th class="table-light text-center">{{ 'essEmpCard.postGrade' | translate:'Chức vụ' }}</th>
+              <td>{{ info.postGradeName }}</td>
+            </tr>
+            <tr>
+              <th class="table-light text-center">{{ 'essEmpCard.positionName' | translate:'Chức danh' }}</th>
+              <td>{{ info.positionNoName }}</td>
+              <th class="table-light text-center">{{ 'essEmpCard.dateStarted' | translate:'Ngày vào làm' }}</th>
+              <td>{{ info.dateStarted }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== Form xin nghỉ phép ===== -->
+    <div class="card mb-3">
+      <div class="card-body p-0">
+        <table class="table table-bordered table-sm align-middle mb-0" style="table-layout:fixed;">
+          <colgroup>
+            <col style="width:15%;"><col style="width:85%;">
+          </colgroup>
+          <tbody>
+            <tr>
+              <th class="table-light text-center">{{ 'sa.label.leaveType' | translate:'Loại nghỉ phép' }}</th>
+              <td>
+                <div class="d-flex align-items-center flex-wrap gap-2">
+                  <nz-select style="width:220px;" [(ngModel)]="leaveTypeCode" (ngModelChange)="onLeaveTypeChange()"
+                             nzAllowClear [nzPlaceHolder]="'sa.placeholder.leaveType' | translate:'-- Chọn loại nghỉ --'">
+                    <nz-option *ngFor="let c of leaveTypeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+                  </nz-select>
+                  <span class="text-muted small">{{ vacationInfoText() }}</span>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <th class="table-light text-center">{{ 'sa.label.startTime' | translate:'Thời gian bắt đầu' }}</th>
+              <td>
+                <nz-date-picker style="width:220px;" [(ngModel)]="fromTime" (ngModelChange)="onTimeChange()"
+                                 nzFormat="yyyy-MM-dd HH:mm" [nzShowTime]="{ nzFormat: 'HH:mm' }"></nz-date-picker>
+              </td>
+            </tr>
+            <tr>
+              <th class="table-light text-center">{{ 'sa.label.endTime' | translate:'Thời gian kết thúc' }}</th>
+              <td>
+                <nz-date-picker style="width:220px;" [(ngModel)]="toTime" (ngModelChange)="onTimeChange()"
+                                 nzFormat="yyyy-MM-dd HH:mm" [nzShowTime]="{ nzFormat: 'HH:mm' }"></nz-date-picker>
+              </td>
+            </tr>
+            <tr>
+              <th class="table-light text-center">{{ 'sa.label.duration' | translate:'Thời lượng' }}</th>
+              <td>{{ duration() }}</td>
+            </tr>
+            <tr>
+              <th class="table-light text-center">{{ 'sa.label.reason' | translate:'Lý do' }}</th>
+              <td>
+                <textarea nz-input [(ngModel)]="reason" rows="4" style="resize:vertical;"></textarea>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== Danh sách người phê duyệt ===== -->
+    <nz-table [nzData]="approvers()" [nzLoading]="approversLoading()" [nzShowPagination]="false"
+              nzSize="small" class="mb-3" #saApproverTable>
+      <thead>
+        <tr>
+          <th class="text-center" style="width:50px">{{ 'sa.col.stt' | translate:'STT' }}</th>
+          <th>{{ 'sa.col.approver' | translate:'Người duyệt' }}</th>
+          <th class="text-center" style="width:130px">{{ 'sa.col.empId' | translate:'Mã nhân viên' }}</th>
+          <th>{{ 'sa.col.dept' | translate:'Phòng ban' }}</th>
+          <th>{{ 'sa.col.position' | translate:'Chức danh' }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngIf="!approversLoading() && saApproverTable.data.length === 0">
+          <td colspan="5" class="text-center text-muted">
+            {{ (approversLoaded() ? 'sa.msg.noApprovalData' : 'sa.msg.selectLeaveTypeFirst')
+               | translate: (approversLoaded() ? 'Không có dữ liệu phê duyệt' : 'Chọn loại nghỉ phép để xem người phê duyệt') }}
+          </td>
+        </tr>
+        <tr *ngFor="let item of saApproverTable.data; let i = index">
+          <td class="text-center">{{ item.affirmLevel || i + 1 }}</td>
+          <td>{{ item.localName }}</td>
+          <td class="text-center">{{ item.empId }}</td>
+          <td>{{ item.deptName }}</td>
+          <td>{{ item.postionName || item.positionName }}</td>
+        </tr>
+      </tbody>
+    </nz-table>
+
+    <!-- ===== Nút xin phép ===== -->
+    <div class="text-end mb-3">
+      <button nz-button nzType="primary" [nzLoading]="submitting()" (click)="submit()">
+        {{ 'sa.btn.submit' | translate:'Xin phép' }}
+      </button>
+    </div>
+
+  </div>
+</div>

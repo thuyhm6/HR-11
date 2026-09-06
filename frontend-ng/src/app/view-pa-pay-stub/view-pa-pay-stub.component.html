@@ -1,0 +1,192 @@
+<div class="row">
+  <div class="col-12">
+    <nz-card class="mb-2">
+      <form class="row g-2 align-items-end" (ngSubmit)="search()">
+        <div class="col-md-3">
+          <label class="form-label mb-1 small fw-semibold">{{ 'pa.payStub.paySchedule' | translate:'Kế hoạch trả lương' }}</label>
+          <nz-select class="w-100" [(ngModel)]="payScheduleNo" name="vppsPayScheduleNo" nzAllowClear nzShowSearch>
+            <nz-option *ngFor="let s of schedules()" [nzValue]="s.payScheduleNo"
+                       [nzLabel]="s.payDate + (s.salaryDistinName ? ' ' + s.salaryDistinName : '')"></nz-option>
+          </nz-select>
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label mb-1 small fw-semibold">{{ 'pa.payStub.dept' | translate:'Phòng ban' }}</label>
+          <nz-tree-select class="w-100" [nzNodes]="deptNodes()" [(ngModel)]="deptNos" name="vppsDeptNos"
+                           nzCheckable nzShowSearch nzAllowClear
+                           [nzPlaceHolder]="'pa.payStub.deptPlaceholder' | translate:'Mã / Tên phòng ban'"></nz-tree-select>
+          <div *ngIf="deptTreeErrorMessage()" class="text-danger small mt-1">{{ deptTreeErrorMessage() }}</div>
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label mb-1 small fw-semibold">{{ 'pa.payStub.empSearch' | translate:'Họ tên / Mã NV' }}</label>
+          <input nz-input [(ngModel)]="empSearch" name="vppsEmpSearch"
+                 [placeholder]="'pa.payStub.empSearchPlaceholder' | translate:'Họ tên hoặc Mã nhân viên'">
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label mb-1 small fw-semibold">{{ 'pa.payStub.empOffice' | translate:'Trạng thái làm việc' }}</label>
+          <nz-select class="w-100" [(ngModel)]="empOfficeSearch" name="vppsEmpOfficeSearch" nzAllowClear
+                     [nzPlaceHolder]="'common.selectAll' | translate:'-- Tất cả --'">
+            <nz-option *ngFor="let c of empOfficeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+          </nz-select>
+        </div>
+
+        <div class="col-md-2 d-flex gap-2 align-items-end">
+          <button nz-button nzType="primary" nzSize="small" type="submit">
+            <i class="bx bx-search"></i> {{ 'pa.payStub.search' | translate:'Tra cứu' }}
+          </button>
+          <button *ngIf="stubs().length > 0" nz-button nzSize="small" type="button"
+                  [nzLoading]="recalculating()" (click)="recalculate()">
+            <i class="bx bx-calculator"></i> {{ 'pa.payStub.recalculate' | translate:'Tính lại lương' }}
+          </button>
+          <button *ngIf="stubs().length > 0" nz-button nzSize="small" type="button" (click)="print()">
+            <i class="bx bx-printer"></i> {{ 'pa.payStub.print' | translate:'In' }}
+          </button>
+        </div>
+      </form>
+    </nz-card>
+
+    <div *ngIf="loading()" class="text-center py-5">
+      <nz-spin nzSize="large"></nz-spin>
+      <div class="mt-2 text-muted">{{ 'pa.payStub.loading' | translate:'Đang tải phiếu lương...' }}</div>
+    </div>
+
+    <nz-empty *ngIf="!loading() && searched() && stubs().length === 0"
+              class="py-5"
+              [nzNotFoundContent]="'pa.payStub.noData' | translate:'Không có dữ liệu'"></nz-empty>
+
+    <div #printArea>
+      <div class="vpps-pay-stub" *ngFor="let stub of stubs()">
+        <div class="vpps-stub-header">
+          <div class="vpps-logo">
+            <img src="/assets/images/logo.png" alt="Logo">
+            <span class="vpps-title">{{ 'pa.payStub.slipTitle' | translate:'PHIẾU LƯƠNG THÁNG' }} {{ monthYear(stub.hrEndDate) }}</span>
+          </div>
+        </div>
+
+        <div class="vpps-section-title">{{ 'pa.payStub.basicInfo' | translate:'Thông tin Cơ bản' }}</div>
+        <table class="vpps-info-table">
+          <tr>
+            <th>{{ 'pa.payStub.empName' | translate:'Họ tên' }}</th><td>{{ stub.localName }}</td>
+            <th>{{ 'pa.payStub.empId' | translate:'Mã nhân viên' }}</th><td>{{ stub.empId }}</td>
+            <th>{{ 'pa.payStub.dept' | translate:'Phòng ban' }}</th><td>{{ stub.deptName }}</td>
+            <th>{{ 'pa.payStub.empType' | translate:'Loại nhân viên' }}</th><td>{{ stub.empTypeName }}</td>
+          </tr>
+          <tr>
+            <th>{{ 'pa.payStub.empGroup' | translate:'Nhóm nhân viên' }}</th><td>{{ stub.postFamily }}</td>
+            <th>{{ 'pa.payStub.position' | translate:'Chức vụ' }}</th><td>{{ stub.positionName }}</td>
+            <th>{{ 'pa.payStub.grade' | translate:'Chức danh' }}</th><td>{{ stub.postGrade }}</td>
+            <th>{{ 'pa.payStub.workStatus' | translate:'Loại hợp đồng' }}</th><td>{{ stub.empOfficeName }}</td>
+          </tr>
+          <tr>
+            <th colspan="2">{{ 'pa.payStub.dependent' | translate:'Số người phụ thuộc' }}</th>
+            <td colspan="6">{{ stub.dependentCount || 0 }}</td>
+          </tr>
+          <tr>
+            <th colspan="2">{{ 'pa.payStub.socialInsuranceNo' | translate:'Số thẻ bảo hiểm xã hội' }}</th>
+            <td colspan="6">{{ stub.socialInsuranceNo }}</td>
+          </tr>
+        </table>
+
+        <div class="vpps-section-title">{{ 'pa.payStub.account' | translate:'Tài khoản' }}</div>
+        <table class="vpps-detail-table">
+          <thead>
+            <tr>
+              <th class="text-center">{{ 'pa.payStub.bankName' | translate:'Ngân hàng' }}</th>
+              <th class="text-center">{{ 'pa.payStub.accountNo' | translate:'Tài khoản' }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="text-center">{{ stub.bankName }}</td>
+              <td class="text-center">{{ stub.bankAccountNo || stub.accountNo }}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Hạng mục tiêu chuẩn - chỉ hiển thị nếu có dữ liệu (giống bản gốc). -->
+        <ng-container *ngIf="stub.standardItems?.length">
+          <div class="vpps-section-title">{{ 'pa.payStub.standardItems' | translate:'Hạng mục tiêu chuẩn' }}</div>
+          <nz-table [nzData]="stub.standardItems" [nzShowPagination]="false" nzSize="small" class="vpps-detail-table">
+            <thead>
+              <tr>
+                <th>{{ 'pa.payStub.itemName' | translate:'Hạng mục' }}</th>
+                <th class="text-end">{{ 'pa.payStub.amount' | translate:'Số tiền' }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of stub.standardItems">
+                <td>{{ item.itemName }}</td>
+                <td class="text-end">{{ formatNumber(item.itemValue) }}</td>
+              </tr>
+            </tbody>
+          </nz-table>
+        </ng-container>
+
+        <!-- Bảng 3 cột: Chấm công / Lương / Khoản trừ. -->
+        <nz-table [nzData]="tripleRows(stub)" [nzShowPagination]="false" nzSize="small" class="vpps-triple-table">
+          <thead>
+            <tr>
+              <th colspan="2" class="text-center vpps-att-header">■ {{ 'pa.payStub.attendanceItems' | translate:'Chi tiết chấm công' }}</th>
+              <th colspan="2" class="text-center vpps-sal-header">■ {{ 'pa.payStub.salaryItems' | translate:'Chi tiết lương' }}</th>
+              <th colspan="2" class="text-center vpps-ded-header">■ {{ 'pa.payStub.deductionItems' | translate:'Chi tiết khoản trừ' }}</th>
+            </tr>
+            <tr>
+              <th>{{ 'pa.payStub.attendanceItem' | translate:'Hạng mục chấm công' }}</th>
+              <th class="text-end">{{ 'pa.payStub.value' | translate:'Giá trị' }}</th>
+              <th>{{ 'pa.payStub.salaryItem' | translate:'Hạng mục' }}</th>
+              <th class="text-end">{{ 'pa.payStub.amount' | translate:'Số tiền' }}</th>
+              <th>{{ 'pa.payStub.deductionItem' | translate:'Hạng mục' }}</th>
+              <th class="text-end">{{ 'pa.payStub.amount' | translate:'Số tiền' }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let r of tripleRows(stub)">
+              <td>{{ r.att?.itemName }}</td>
+              <td class="text-end">{{ r.att ? formatNumber(r.att.itemValue) : '' }}</td>
+              <td>{{ r.sal?.itemName }}</td>
+              <td class="text-end">{{ r.sal ? formatNumber(r.sal.itemValue) : '' }}</td>
+              <td>{{ r.ded?.itemName }}</td>
+              <td class="text-end">{{ r.ded ? formatNumber(r.ded.itemValue) : '' }}</td>
+            </tr>
+            <tr *ngIf="tripleRows(stub).length === 0">
+              <td colspan="6" class="text-center text-muted">-</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="2"></td>
+              <td class="fw-bold">{{ 'pa.payStub.total' | translate:'Tổng' }}</td>
+              <td class="text-end fw-bold">{{ formatNumber(sum(stub.salaryItems)) }}</td>
+              <td class="fw-bold">{{ 'pa.payStub.total' | translate:'Tổng' }}</td>
+              <td class="text-end fw-bold">{{ formatNumber(sum(stub.deductionItems)) }}</td>
+            </tr>
+          </tfoot>
+        </nz-table>
+
+        <table class="vpps-net-table">
+          <tr>
+            <td class="fw-bold">{{ 'pa.payStub.netSalary' | translate:'Lương thực lĩnh' }}</td>
+            <td class="text-end fw-bold">{{ formatNumber(netSalary(stub)) }}</td>
+          </tr>
+        </table>
+
+        <!-- Hạng mục khác - chỉ hiển thị dòng có giá trị hoặc ghi chú (giống bản gốc). -->
+        <ng-container *ngIf="visibleOtherItems(stub).length">
+          <div class="vpps-section-title">{{ 'pa.payStub.otherItems' | translate:'Hạng mục khác' }}</div>
+          <table class="vpps-detail-table">
+            <tbody>
+              <tr *ngFor="let o of visibleOtherItems(stub)">
+                <td>{{ o.remark }}</td>
+                <td class="text-end">{{ formatNumber(o.returnValue) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </ng-container>
+
+        <div class="vpps-note">{{ selectedScheduleOpinion || ('pa.payStub.note' | translate:'※ Mọi thắc mắc về nội dung trên phiếu lương, vui lòng liên hệ phòng Nhân sự!') }}</div>
+      </div>
+    </div>
+  </div>
+</div>

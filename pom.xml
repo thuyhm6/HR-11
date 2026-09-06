@@ -41,10 +41,6 @@
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-thymeleaf</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
         <dependency>
@@ -264,7 +260,27 @@
                             </resources>
                         </configuration>
                     </execution>
-                    
+
+                    <!-- Copy Angular SPA đã build (frontend-ng/ -> src/main/resources/static/ng-app/)
+                         sang classpath thật (WEB-INF/classes) - execution riêng vì
+                         copy-main-resources ở trên chỉ include properties/xml/sql/yml, không có
+                         html/js/css. Chỉ copy nếu thư mục đã tồn tại (đã chạy `ng build` trước đó ở
+                         frontend-ng/), không tự động build Angular ở bước này. -->
+                    <execution>
+                        <id>copy-angular-static</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>src/main/webapp/WEB-INF/classes/static/ng-app</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>src/main/resources/static/ng-app</directory>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
 
                 </executions>
             </plugin>

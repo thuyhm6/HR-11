@@ -1,0 +1,138 @@
+<div class="row">
+  <div class="col-12">
+    <!-- Điều kiện tìm kiếm -->
+    <nz-card class="mb-3 sticky-filter-card">
+      <form class="row g-3" (ngSubmit)="search()">
+        <div class="col-md-3">
+          <label class="form-label">{{ 'evs.manage.viewEvsFormulaList.search.code' | translate:'Mã' }}</label>
+          <input nz-input [(ngModel)]="searchCodeNo" name="eflSearchCodeNo" maxlength="20">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'evs.manage.viewEvsFormulaList.search.name' | translate:'Tên' }}</label>
+          <input nz-input [(ngModel)]="searchCodeName" name="eflSearchCodeName" maxlength="200">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'evs.manage.viewEvsFormulaList.search.status' | translate:'Trạng thái' }}</label>
+          <nz-select class="w-100" [(ngModel)]="searchActivity" name="eflSearchActivity" nzAllowClear
+                     [nzPlaceHolder]="'evs.manage.viewEvsFormulaList.search.allOption' | translate:'-- Tất cả --'">
+            <nz-option nzValue="1" [nzLabel]="'evs.manage.viewEvsFormulaList.search.active' | translate:'Sử dụng'"></nz-option>
+            <nz-option nzValue="0" [nzLabel]="'evs.manage.viewEvsFormulaList.search.inactive' | translate:'Không sử dụng'"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-4 d-flex align-items-end gap-2 flex-wrap">
+          <button nz-button nzType="primary" type="submit">
+            <i class="bx bx-search"></i> {{ 'evs.manage.viewEvsFormulaList.btn.search' | translate:'Tra cứu' }}
+          </button>
+          <button nz-button type="button" (click)="clearSearch()">
+            <i class="bx bx-x"></i> {{ 'evs.manage.viewEvsFormulaList.btn.clearFilter' | translate:'Xóa lọc' }}
+          </button>
+          <button nz-button nzType="primary" type="button" (click)="openAddModal()">
+            <i class="bx bx-plus"></i> {{ 'evs.manage.viewEvsFormulaList.btn.addNew' | translate:'Thêm mới' }}
+          </button>
+        </div>
+      </form>
+    </nz-card>
+
+    <nz-card>
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+      <nz-table [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="25" [nzShowSizeChanger]="true"
+                [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="eflTotalTpl"
+                [nzScroll]="{ x: '1200px' }" #eflTable="nzTable">
+        <thead>
+          <tr>
+            <th class="text-center" nzWidth="60px">{{ 'evs.manage.viewEvsFormulaList.col.no' | translate:'No.' }}</th>
+            <th class="text-center" nzWidth="120px">{{ 'evs.manage.viewEvsFormulaList.col.code' | translate:'Mã' }}</th>
+            <th nzWidth="200px">{{ 'evs.manage.viewEvsFormulaList.col.name' | translate:'Tên' }}</th>
+            <th nzWidth="320px">{{ 'evs.manage.viewEvsFormulaList.col.formula' | translate:'Công thức' }}</th>
+            <th nzWidth="220px">{{ 'evs.manage.viewEvsFormulaList.col.remark' | translate:'Ghi chú' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'evs.manage.viewEvsFormulaList.col.status' | translate:'Trạng thái' }}</th>
+            <th class="text-center" nzWidth="80px">{{ 'evs.manage.viewEvsFormulaList.col.orderNo' | translate:'Thứ tự' }}</th>
+            <th class="text-center" nzWidth="90px">{{ 'evs.manage.viewEvsFormulaList.col.action' | translate:'Thao tác' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!loading() && rows().length === 0">
+            <td colspan="8" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+          </tr>
+          <tr *ngFor="let row of eflTable.data; let i = index" class="efl-row-clickable" (click)="openEditModal(row)">
+            <td class="text-center">{{ i + 1 }}</td>
+            <td class="text-center">{{ row.codeNo }}</td>
+            <td [attr.title]="row.codeName || null">{{ row.codeName }}</td>
+            <td class="efl-mono" [attr.title]="row.formula || null">{{ preview(row.formula) }}</td>
+            <td [attr.title]="row.remark || null">{{ preview(row.remark, 50) }}</td>
+            <td class="text-center">
+              <nz-tag [nzColor]="activityTagColor(row.activity)">
+                {{ row.activity === '1' ? ('evs.manage.viewEvsFormulaList.badge.active' | translate:'Sử dụng') : ('evs.manage.viewEvsFormulaList.badge.inactive' | translate:'Không sử dụng') }}
+              </nz-tag>
+            </td>
+            <td class="text-center">{{ row.orderNo }}</td>
+            <td class="text-center">
+              <button nz-button nzType="text" nzSize="small" [title]="'evs.manage.viewEvsFormulaList.btn.edit' | translate:'Sửa'"
+                      (click)="$event.stopPropagation(); openEditModal(row)">
+                <i class="bx bx-edit text-warning"></i>
+              </button>
+              <button nz-button nzType="text" nzSize="small" [title]="'evs.manage.viewEvsFormulaList.btn.delete' | translate:'Xóa'"
+                      (click)="$event.stopPropagation(); openDeleteConfirm(row)">
+                <i class="bx bx-trash text-danger"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+        <ng-template #eflTotalTpl let-total>
+          {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+        </ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>
+
+<!-- Modal Thêm mới / Cập nhật -->
+<nz-modal [nzVisible]="modalVisible()" [nzTitle]="modalTitle()" nzWidth="700px"
+          (nzOnCancel)="closeModal()" (nzOnOk)="saveForm()" [nzOkLoading]="saving()"
+          [nzOkText]="'common.save' | translate:'Lưu'" [nzCancelText]="'common.close' | translate:'Đóng'">
+  <ng-container *nzModalContent>
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'evs.manage.viewEvsFormulaList.modal.code' | translate:'Mã' }} <span class="text-danger">*</span></label>
+        <input nz-input [(ngModel)]="form.codeNo" name="eflFormCodeNo" maxlength="20" [readonly]="!isNew()">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'evs.manage.viewEvsFormulaList.modal.name' | translate:'Tên' }} <span class="text-danger">*</span></label>
+        <input nz-input [(ngModel)]="form.codeName" name="eflFormCodeName" maxlength="200">
+      </div>
+      <div class="col-12">
+        <label class="form-label fw-semibold">{{ 'evs.manage.viewEvsFormulaList.modal.formula' | translate:'Công thức' }}</label>
+        <textarea nz-input class="efl-mono" [(ngModel)]="form.formula" name="eflFormFormula" rows="5" maxlength="4000"></textarea>
+      </div>
+      <div class="col-12">
+        <label class="form-label fw-semibold">{{ 'evs.manage.viewEvsFormulaList.modal.remark' | translate:'Ghi chú' }}</label>
+        <textarea nz-input [(ngModel)]="form.remark" name="eflFormRemark" rows="3" maxlength="4000"></textarea>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'evs.manage.viewEvsFormulaList.modal.orderNo' | translate:'Thứ tự' }}</label>
+        <nz-input-number class="w-100" [(ngModel)]="form.orderNo" name="eflFormOrderNo" [nzMin]="0" [nzMax]="9999"></nz-input-number>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold d-block">{{ 'evs.manage.viewEvsFormulaList.modal.status' | translate:'Trạng thái' }}</label>
+        <nz-switch [(ngModel)]="form.activity" name="eflFormActivity"></nz-switch>
+        <span class="ms-2 small text-muted">{{ 'evs.manage.viewEvsFormulaList.modal.activeLabel' | translate:'Sử dụng' }}</span>
+      </div>
+      <div class="col-12" *ngIf="form.updatedBy">
+        <span class="small text-muted">
+          {{ 'evs.manage.viewEvsFormulaList.modal.auditInfo' | translate:'Thông tin cập nhật' }}: {{ form.updatedBy }} — {{ form.updateDate }}
+        </span>
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal xác nhận xóa -->
+<nz-modal [nzVisible]="deleteVisible()" [nzTitle]="'evs.manage.viewEvsFormulaList.modal.deleteTitle' | translate:'Xác nhận xóa'"
+          (nzOnCancel)="closeDeleteConfirm()" (nzOnOk)="confirmDelete()" [nzOkLoading]="deleting()"
+          [nzOkText]="'evs.manage.viewEvsFormulaList.btn.delete' | translate:'Xóa'" nzOkDanger
+          [nzCancelText]="'common.cancel' | translate:'Hủy'">
+  <ng-container *nzModalContent>
+    <p class="mb-0">{{ deleteConfirmMessage }}</p>
+  </ng-container>
+</nz-modal>

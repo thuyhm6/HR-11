@@ -23,10 +23,9 @@ public class EssInfoApplyLeaveController {
     @Autowired
     private EssCardApplyListService service;
 
-    @GetMapping("/viewApplyLeaveInfoList")
-    public String viewApplyLeaveInfoList() {
-        return "ess/infoApplyLeave/viewApplyLeaveInfoList";
-    }
+    // Trang Thymeleaf viewApplyLeaveInfoList.html đã được thay bằng Angular route /apply-leave-info-list
+    // (xem frontend-ng/src/app/apply-leave-info-list/ và MIGRATED_ROUTES trong app-shell.component.ts) -
+    // API /api/myCardApply/** bên dưới vẫn giữ nguyên.
 
     @GetMapping("/api/myCardApply/list")
     @ResponseBody

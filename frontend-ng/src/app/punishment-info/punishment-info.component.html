@@ -1,0 +1,177 @@
+<div class="row">
+  <div class="col-12">
+    <!-- Điều kiện tìm kiếm - đứng im khi cuộn (xem .sticky-filter-card trong styles.css) -->
+    <nz-card class="mb-3 sticky-filter-card">
+      <form class="row g-3" (ngSubmit)="search()">
+        <div class="col-md-3">
+          <label class="form-label">{{ 'common.empId' | translate:'Mã nhân viên' }}</label>
+          <input nz-input [(ngModel)]="searchEmpId" name="piSearchEmpId"
+                 [placeholder]="'common.placeholder.enterEmpId' | translate:'Nhập mã nhân viên'">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'common.empName' | translate:'Họ tên' }}</label>
+          <input nz-input [(ngModel)]="searchLocalName" name="piSearchLocalName"
+                 [placeholder]="'common.placeholder.enterEmpName' | translate:'Nhập họ tên'">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'hrm.empinfo.punish.searchCode' | translate:'Loại kỷ luật' }}</label>
+          <input nz-input [(ngModel)]="searchPunishCode" name="piSearchPunishCode"
+                 [placeholder]="'hrm.empinfo.punish.searchCode' | translate:'Nhập loại kỷ luật'">
+        </div>
+        <div class="col-md-3 d-flex align-items-end gap-2 flex-wrap">
+          <button nz-button nzType="primary" type="submit">
+            <i class="bx bx-search"></i> {{ 'essDept.search' | translate:'Tra cứu' }}
+          </button>
+          <button nz-button type="button" (click)="clearSearch()">
+            <i class="bx bx-x"></i> {{ 'essDept.clearFilter' | translate:'Xóa lọc' }}
+          </button>
+        </div>
+        <div class="col-12 d-flex gap-2 flex-wrap">
+          <button nz-button nzType="primary" type="button" (click)="openAddModal()">
+            <i class="bx bx-plus"></i> {{ 'common.addNew' | translate:'Thêm mới' }}
+          </button>
+          <button nz-button nzType="default" type="button" class="pi-btn-export" (click)="exportExcel()">
+            <i class="bx bx-export"></i> {{ 'essDept.exportExcel' | translate:'Xuất excel' }}
+          </button>
+        </div>
+      </form>
+    </nz-card>
+
+    <nz-card>
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+      <!-- nzWidth khai báo cho từng cột để đồng bộ độ rộng header/body khi dùng nzScroll. -->
+      <nz-table [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="25" [nzShowSizeChanger]="true"
+                [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="piTotalTpl"
+                [nzScroll]="{ x: '1300px', y: 'calc(100vh - 420px)' }" #piTable>
+        <thead>
+          <tr>
+            <th class="text-center" nzWidth="60px">{{ 'common.stt' | translate:'STT' }}</th>
+            <th class="text-center" nzWidth="100px">{{ 'common.empId' | translate:'Mã NV' }}</th>
+            <th nzWidth="150px">{{ 'common.empName' | translate:'Họ tên' }}</th>
+            <th nzWidth="160px">{{ 'common.deptName' | translate:'Phòng ban' }}</th>
+            <th nzWidth="120px">{{ 'hrm.empinfo.punish.colPunishCode' | translate:'Loại KL' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'hrm.empinfo.punish.colPunishDate' | translate:'Ngày KL' }}</th>
+            <th nzWidth="200px">{{ 'hrm.empinfo.punish.colReason' | translate:'Lý do' }}</th>
+            <th nzWidth="150px">{{ 'hrm.empinfo.punish.colDept' | translate:'Bộ phận KL' }}</th>
+            <th class="text-center" nzWidth="90px">{{ 'hrm.empinfo.punish.colScore' | translate:'Điểm' }}</th>
+            <th nzWidth="160px">{{ 'hrm.empinfo.punish.remarks' | translate:'Ghi chú' }}</th>
+            <th class="text-center" nzWidth="90px">{{ 'common.action' | translate:'Thao tác' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!loading() && rows().length === 0">
+            <td colspan="11" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+          </tr>
+          <tr *ngFor="let row of piTable.data; let i = index">
+            <td class="text-center">{{ i + 1 }}</td>
+            <td class="text-center" [attr.title]="row.empId || null">{{ row.empId }}</td>
+            <td [attr.title]="row.localName || null">{{ row.localName }}</td>
+            <td [attr.title]="row.deptName || null">{{ row.deptName }}</td>
+            <td [attr.title]="row.punishCode || null">{{ row.punishCode }}</td>
+            <td class="text-center">{{ row.punishDate }}</td>
+            <td [attr.title]="row.punishReason || null">{{ row.punishReason }}</td>
+            <td [attr.title]="row.punishDepartment || null">{{ row.punishDepartment }}</td>
+            <td class="text-center">{{ row.punishScore }}</td>
+            <td [attr.title]="row.remarks || null">{{ row.remarks }}</td>
+            <td class="text-center">
+              <button nz-button nzType="text" nzSize="small" [title]="'common.edit' | translate:'Sửa'" (click)="openEditModal(row)">
+                <i class="bx bx-edit text-warning"></i>
+              </button>
+              <button nz-button nzType="text" nzSize="small" [title]="'common.delete' | translate:'Xóa'" (click)="openDeleteConfirm(row)">
+                <i class="bx bx-trash text-danger"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+        <ng-template #piTotalTpl let-total>
+          {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+        </ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>
+
+<!-- Modal Thêm mới / Cập nhật -->
+<nz-modal [nzVisible]="modalVisible()" [nzTitle]="modalTitle()" nzWidth="800px"
+          (nzOnCancel)="closeModal()" (nzOnOk)="saveForm()" [nzOkLoading]="saving()"
+          [nzOkText]="'common.save' | translate:'Lưu'" [nzCancelText]="'common.close' | translate:'Đóng'">
+  <ng-container *nzModalContent>
+    <div class="row g-3">
+      <div class="col-md-12">
+        <label class="form-label fw-semibold">{{ 'hrm.empinfo.punish.employee' | translate:'Nhân viên' }} <span class="text-danger">*</span></label>
+        <input nz-input [ngModel]="empKeyword" (ngModelChange)="onEmpKeywordChange($event)"
+               [nzAutocomplete]="piEmpAuto" [placeholder]="'hrm.empinfo.workexp.selectEmp' | translate:'Chọn nhân viên...'">
+        <nz-autocomplete #piEmpAuto>
+          <nz-auto-option *ngFor="let opt of empOptions()" [nzValue]="opt" (click)="onEmpSelected(opt)">
+            {{ opt.empId }} - {{ opt.localName }} <small class="text-muted">({{ opt.deptName }})</small>
+          </nz-auto-option>
+        </nz-autocomplete>
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'hrm.empinfo.punish.punishCodeLabel' | translate:'Loại kỷ luật (Mã)' }}</label>
+        <input nz-input [(ngModel)]="form.punishCode">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'hrm.empinfo.punish.punishDate' | translate:'Ngày kỷ luật' }}</label>
+        <nz-date-picker class="w-100" [(ngModel)]="form.punishDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
+      </div>
+
+      <div class="col-12">
+        <label class="form-label fw-semibold">{{ 'hrm.empinfo.punish.punishReason' | translate:'Lý do kỷ luật' }}</label>
+        <textarea nz-input [(ngModel)]="form.punishReason" rows="2"></textarea>
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'hrm.empinfo.punish.releaseDate' | translate:'Ngày gỡ bỏ/Hết hạn' }}</label>
+        <nz-date-picker class="w-100" [(ngModel)]="form.releaseDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'hrm.empinfo.punish.punishDept' | translate:'Bộ phận/Cơ quan kỷ luật' }}</label>
+        <input nz-input [(ngModel)]="form.punishDepartment">
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'hrm.empinfo.punish.punishScore' | translate:'Điểm kỷ luật/phạt' }}</label>
+        <input nz-input [(ngModel)]="form.punishScore">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'hrm.empinfo.punish.faultTypeCode' | translate:'Mã loại lỗi' }}</label>
+        <input nz-input [(ngModel)]="form.faultTypeCode">
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'hrm.empinfo.punish.paycutStartDate' | translate:'Ngày bắt đầu giảm lương' }}</label>
+        <nz-date-picker class="w-100" [(ngModel)]="form.paycutStartDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'hrm.empinfo.punish.paycutEndDate' | translate:'Ngày kết thúc giảm lương' }}</label>
+        <nz-date-picker class="w-100" [(ngModel)]="form.paycutEndDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label fw-semibold d-block">{{ 'hrm.empinfo.punish.personnelCardInquiry' | translate:'Hiển thị thẻ nhân sự' }}</label>
+        <nz-select class="w-100" [(ngModel)]="form.personnelCardInquiry">
+          <nz-option nzValue="N" [nzLabel]="'common.no' | translate:'Không'"></nz-option>
+          <nz-option nzValue="Y" [nzLabel]="'common.yes' | translate:'Có'"></nz-option>
+        </nz-select>
+      </div>
+
+      <div class="col-12">
+        <label class="form-label fw-semibold">{{ 'hrm.empinfo.punish.remarks' | translate:'Ghi chú' }}</label>
+        <textarea nz-input [(ngModel)]="form.remarks" rows="2"></textarea>
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal xác nhận xóa -->
+<nz-modal [nzVisible]="deleteVisible()" [nzTitle]="'common.confirm' | translate:'Xác nhận'"
+          (nzOnCancel)="closeDeleteConfirm()" (nzOnOk)="confirmDelete()" [nzOkLoading]="deleting()"
+          [nzOkText]="'common.confirm' | translate:'Xác nhận'" [nzCancelText]="'common.cancel' | translate:'Hủy'">
+  <ng-container *nzModalContent>
+    <p class="mb-1">{{ 'hrm.empinfo.punish.confirmDelete' | translate:'Bạn có chắc chắn muốn xóa bản ghi này?' }}</p>
+    <p class="fw-bold mb-0">{{ deleteTargetName }}</p>
+  </ng-container>
+</nz-modal>

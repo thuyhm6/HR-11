@@ -1,0 +1,90 @@
+<div class="topbar-item" nz-dropdown nzTrigger="click" [nzDropdownMenu]="notifMenu">
+  <nz-badge [nzCount]="notifications.counts().total" [nzOverflowCount]="99">
+    <span class="topbar-button">
+      <iconify-icon icon="solar:bell-bing-bold-duotone" class="fs-24 align-middle"></iconify-icon>
+    </span>
+  </nz-badge>
+</div>
+
+<nz-dropdown-menu #notifMenu="nzDropdownMenu">
+  <div class="notif-panel">
+    <div class="notif-header">
+      <h6 class="m-0 fs-16 fw-semibold">{{ 'topbar.notifications' | translate:'Thông báo' }}</h6>
+    </div>
+    <div class="notif-list">
+      <!-- Chế độ HRM: Chi tiết thay đổi + Nghỉ phép + Nghỉ bất thường chờ xác nhận -->
+      <ng-container *ngIf="mode() === 'hrm'; else essNotifItems">
+        <a href="javascript:void(0)" class="notif-item" (click)="openPersonalChangeApproval()">
+          <div class="d-flex align-items-center gap-2">
+            <span class="notif-icon-wrap">
+              <iconify-icon icon="solar:user-id-bold-duotone" class="fs-18 text-success"></iconify-icon>
+            </span>
+            <span>{{ 'topbar.notification.personalChange' | translate:'Chi tiết thay đổi thông tin' }}</span>
+          </div>
+          <nz-badge [nzCount]="notifications.counts().personalChange" nzStandalone></nz-badge>
+        </a>
+        <a href="javascript:void(0)" class="notif-item" (click)="openLeaveConfirm()">
+          <div class="d-flex align-items-center gap-2">
+            <span class="notif-icon-wrap">
+              <iconify-icon icon="solar:calendar-mark-bold-duotone" class="fs-18 text-primary"></iconify-icon>
+            </span>
+            <span>{{ 'topbar.notification.leave' | translate:'Nghỉ phép' }}</span>
+          </div>
+          <nz-badge [nzCount]="notifications.counts().leave" nzStandalone></nz-badge>
+        </a>
+        <a href="javascript:void(0)" class="notif-item" (click)="openAttendanceExConfirm()">
+          <div class="d-flex align-items-center gap-2">
+            <span class="notif-icon-wrap">
+              <iconify-icon icon="solar:notification-unread-bold-duotone" class="fs-18 text-danger"></iconify-icon>
+            </span>
+            <span>{{ 'topbar.notification.anomaly' | translate:'Nghỉ bất thường' }}</span>
+          </div>
+          <nz-badge [nzCount]="notifications.counts().anomaly" nzStandalone></nz-badge>
+        </a>
+      </ng-container>
+
+      <!-- Chế độ ESS: Nghỉ phép + Tăng ca + Nghỉ bất thường chờ phê duyệt -->
+      <ng-template #essNotifItems>
+        <a href="javascript:void(0)" class="notif-item" (click)="openApprovalEmail('21')">
+          <div class="d-flex align-items-center gap-2">
+            <span class="notif-icon-wrap">
+              <iconify-icon icon="solar:calendar-mark-bold-duotone" class="fs-18 text-primary"></iconify-icon>
+            </span>
+            <span>{{ 'topbar.notification.leave' | translate:'Nghỉ phép' }}</span>
+          </div>
+          <nz-badge [nzCount]="notifications.counts().leave" nzStandalone></nz-badge>
+        </a>
+        <a href="javascript:void(0)" class="notif-item" (click)="openApprovalEmail('31')">
+          <div class="d-flex align-items-center gap-2">
+            <span class="notif-icon-wrap">
+              <iconify-icon icon="solar:clock-circle-bold-duotone" class="fs-18 text-warning"></iconify-icon>
+            </span>
+            <span>{{ 'topbar.notification.ot' | translate:'Tăng ca' }}</span>
+          </div>
+          <nz-badge [nzCount]="notifications.counts().ot" nzStandalone></nz-badge>
+        </a>
+        <a href="javascript:void(0)" class="notif-item" (click)="openApprovalEmail('218197')">
+          <div class="d-flex align-items-center gap-2">
+            <span class="notif-icon-wrap">
+              <iconify-icon icon="solar:notification-unread-bold-duotone" class="fs-18 text-danger"></iconify-icon>
+            </span>
+            <span>{{ 'topbar.notification.anomaly' | translate:'Nghỉ bất thường' }}</span>
+          </div>
+          <nz-badge [nzCount]="notifications.counts().anomaly" nzStandalone></nz-badge>
+        </a>
+      </ng-template>
+    </div>
+    <div class="text-center py-3">
+      <a *ngIf="mode() === 'hrm'; else essViewAll" href="javascript:void(0)" nz-button nzType="primary" nzSize="small" (click)="openLeaveConfirm()">
+        {{ 'topbar.viewAllNotification' | translate:'Xem tất cả thông báo' }}
+        <i class="bx bx-right-arrow-alt ms-1"></i>
+      </a>
+      <ng-template #essViewAll>
+        <a href="javascript:void(0)" nz-button nzType="primary" nzSize="small" (click)="openApprovalEmail()">
+          {{ 'topbar.viewAllNotification' | translate:'Xem tất cả thông báo' }}
+          <i class="bx bx-right-arrow-alt ms-1"></i>
+        </a>
+      </ng-template>
+    </div>
+  </div>
+</nz-dropdown-menu>

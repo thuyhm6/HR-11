@@ -1,0 +1,104 @@
+<div class="row">
+  <div class="col-12">
+
+    <!-- ===== Thông tin nhân viên (tương đương fragments/essEmpInfoCard.html) ===== -->
+    <div class="card mb-3" *ngIf="basicInfo() as info">
+      <div class="card-body p-0">
+        <table class="table table-bordered table-sm align-middle mb-0" style="table-layout:fixed;">
+          <colgroup>
+            <col style="width:15%;"><col style="width:35%;"><col style="width:15%;"><col style="width:35%;">
+          </colgroup>
+          <tbody>
+            <tr>
+              <th class="table-light text-center">{{ 'essEmpCard.localName' | translate:'Họ tên' }}</th>
+              <td>{{ info.localName }}</td>
+              <th class="table-light text-center">{{ 'essEmpCard.empId' | translate:'Mã nhân viên' }}</th>
+              <td>{{ info.empId }}</td>
+            </tr>
+            <tr>
+              <th class="table-light text-center">{{ 'essEmpCard.deptName' | translate:'Phòng ban' }}</th>
+              <td>{{ info.deptName }}</td>
+              <th class="table-light text-center">{{ 'essEmpCard.headDept' | translate:'Trưởng phòng' }}</th>
+              <td>{{ info.headDepartment }}</td>
+            </tr>
+            <tr>
+              <th class="table-light text-center">{{ 'essEmpCard.postFamily' | translate:'Nhóm nhân viên' }}</th>
+              <td>{{ info.postFamilyName }}</td>
+              <th class="table-light text-center">{{ 'essEmpCard.postGrade' | translate:'Chức vụ' }}</th>
+              <td>{{ info.postGradeName }}</td>
+            </tr>
+            <tr>
+              <th class="table-light text-center">{{ 'essEmpCard.positionName' | translate:'Chức danh' }}</th>
+              <td>{{ info.positionNoName }}</td>
+              <th class="table-light text-center">{{ 'essEmpCard.dateStarted' | translate:'Ngày vào làm' }}</th>
+              <td>{{ info.dateStarted }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== Điều kiện tìm kiếm + Bảng dữ liệu ===== -->
+    <div class="card">
+      <div class="card-body">
+
+        <form class="row g-3 mb-4" (ngSubmit)="search()">
+          <div class="col-md-2">
+            <label class="form-label">{{ 'ps.label.fromDate' | translate:'Thời gian từ' }}</label>
+            <nz-date-picker class="w-100" [(ngModel)]="fromDate" name="fromDate" nzFormat="yyyy-MM-dd"></nz-date-picker>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">{{ 'ps.label.toDate' | translate:'Thời gian đến' }}</label>
+            <nz-date-picker class="w-100" [(ngModel)]="toDate" name="toDate" nzFormat="yyyy-MM-dd"></nz-date-picker>
+          </div>
+          <div class="col-md-4 d-flex align-items-end gap-2 flex-wrap">
+            <button nz-button nzType="primary" type="submit">
+              <i class="bx bx-search"></i> {{ 'ps.btn.search' | translate:'Tra cứu' }}
+            </button>
+            <button nz-button type="button" (click)="clearSearch()">
+              <i class="bx bx-x"></i> {{ 'ps.btn.clearFilter' | translate:'Xóa lọc' }}
+            </button>
+          </div>
+        </form>
+
+        <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+        <nz-table [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="50" [nzShowSizeChanger]="true"
+                  [nzPageSizeOptions]="[50, 100, 200, 500]" [nzShowTotal]="pslTotalTpl"
+                  class="table-nowrap" #pslTable>
+          <thead>
+            <tr>
+              <th class="text-center" nzWidth="60px">{{ 'common.stt' | translate:'STT' }}</th>
+              <th class="text-center" nzWidth="110px">{{ 'ps.col.date' | translate:'Ngày' }}</th>
+              <th class="text-center" nzWidth="110px">{{ 'ps.col.dateName' | translate:'Loại ngày' }}</th>
+              <th>{{ 'ps.col.workStatus' | translate:'Trạng thái làm việc' }}</th>
+              <th class="text-center" nzWidth="120px">{{ 'ps.col.startTime' | translate:'Thời gian bắt đầu' }}</th>
+              <th class="text-center" nzWidth="120px">{{ 'ps.col.endTime' | translate:'Thời gian kết thúc' }}</th>
+              <th class="text-center" nzWidth="100px">{{ 'ps.col.indoorTime' | translate:'Giờ vào' }}</th>
+              <th class="text-center" nzWidth="100px">{{ 'ps.col.outdoorTime' | translate:'Giờ ra' }}</th>
+              <th class="text-center" nzWidth="120px">{{ 'ps.col.workHours' | translate:'Số giờ làm việc' }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of pslTable.data; let i = index">
+              <td class="text-center">{{ i + 1 }}</td>
+              <td class="text-center">{{ row.ddateStr }}</td>
+              <td class="text-center">{{ row.dateName }}</td>
+              <td>{{ row.overTypeIdName }}</td>
+              <td class="text-center">{{ row.shiftStartTime }}</td>
+              <td class="text-center">{{ row.shiftEndTime }}</td>
+              <td class="text-center">{{ row.indoorTime }}</td>
+              <td class="text-center">{{ row.outdoorTime }}</td>
+              <td class="text-center">{{ row.workHours }}</td>
+            </tr>
+          </tbody>
+          <ng-template #pslTotalTpl let-total>
+            {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+          </ng-template>
+        </nz-table>
+
+      </div>
+    </div>
+
+  </div>
+</div>

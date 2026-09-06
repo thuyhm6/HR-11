@@ -1,0 +1,13 @@
+.vrg-btn-export {
+  color: #52c41a;
+  border-color: #52c41a;
+}
+
+.vrg-row-clickable {
+  cursor: pointer;
+}
+
+.vrg-tree-scroll {
+  max-height: 560px;
+  overflow-y: auto;
+}

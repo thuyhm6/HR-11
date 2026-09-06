@@ -21,10 +21,10 @@ public interface MenuMapper {
     List<MenuDTO> getMenusByUserPermission(@Param("userNo") String userNo);
 
     /**
-     * Lấy danh sách menu theo quyền của user và SYS_TYPE của role
+     * Lấy danh sách menu theo quyền của user và SYS_TYPE của nhóm quyền (SY_ROLE_GROUP.SYS_TYPE)
      *
      * @param userNo  Mã người dùng
-     * @param sysType SYS_TYPE của role
+     * @param sysType SYS_TYPE của nhóm quyền (SY_ROLE_GROUP)
      * @return Danh sách menu có quyền truy cập
      */
     List<MenuDTO> getMenusByUserPermissionBySysType(@Param("userNo") String userNo,
@@ -47,16 +47,6 @@ public interface MenuMapper {
      * @return Danh sách menu gốc
      */
     List<MenuDTO> getRootMenusByUserPermission(@Param("userNo") String userNo);
-
-    /**
-     * Đếm số menu theo quyền của user và SYS_TYPE của role
-     *
-     * @param userNo  Mã người dùng
-     * @param sysType SYS_TYPE của role
-     * @return Số lượng menu
-     */
-    int countMenusByUserPermissionBySysType(@Param("userNo") String userNo,
-            @Param("sysType") String sysType);
 
     /**
      * Lấy danh sách menu con theo parent và quyền của user

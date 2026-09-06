@@ -1,0 +1,457 @@
+<div class="row">
+  <div class="col-12">
+
+    <!-- ===== Thông tin nhân viên (tương đương fragments/essEmpInfoCard.html - dùng lại data đã tải từ myInfo) ===== -->
+    <div class="card mb-3" *ngIf="basicInfo() as info">
+      <div class="card-body p-0">
+        <table class="table table-bordered table-sm align-middle mb-0" style="table-layout:fixed;">
+          <colgroup>
+            <col style="width:15%;"><col style="width:35%;"><col style="width:15%;"><col style="width:35%;">
+          </colgroup>
+          <tbody>
+            <tr>
+              <th class="table-light text-center">{{ 'essEmpCard.localName' | translate:'Họ tên' }}</th>
+              <td>{{ info.localName }}</td>
+              <th class="table-light text-center">{{ 'essEmpCard.empId' | translate:'Mã nhân viên' }}</th>
+              <td>{{ info.empId }}</td>
+            </tr>
+            <tr>
+              <th class="table-light text-center">{{ 'essEmpCard.deptName' | translate:'Phòng ban' }}</th>
+              <td>{{ info.deptName }}</td>
+              <th class="table-light text-center">{{ 'essEmpCard.headDept' | translate:'Trưởng phòng' }}</th>
+              <td>{{ info.headDepartment }}</td>
+            </tr>
+            <tr>
+              <th class="table-light text-center">{{ 'essEmpCard.postFamily' | translate:'Nhóm nhân viên' }}</th>
+              <td>{{ info.postFamilyName }}</td>
+              <th class="table-light text-center">{{ 'essEmpCard.postGrade' | translate:'Chức vụ' }}</th>
+              <td>{{ info.postGradeName }}</td>
+            </tr>
+            <tr>
+              <th class="table-light text-center">{{ 'essEmpCard.positionName' | translate:'Chức danh' }}</th>
+              <td>{{ info.positionNoName }}</td>
+              <th class="table-light text-center">{{ 'essEmpCard.dateStarted' | translate:'Ngày vào làm' }}</th>
+              <td>{{ info.dateStarted }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== Cá nhân ===== -->
+    <div class="card mb-3">
+      <div class="card-header bg-light py-2 d-flex justify-content-between align-items-center">
+        <strong><i class="bx bx-id-card me-1"></i>{{ 'epi.section.personal' | translate:'Cá nhân' }}</strong>
+        <button nz-button nzType="default" nzSize="small" [disabled]="!basicInfo()" (click)="openPersonalModal()">
+          <i class="bx bx-edit me-1"></i>{{ 'epi.btn.edit' | translate:'Chỉnh sửa' }}
+        </button>
+      </div>
+      <div class="card-body p-0" *ngIf="basicInfo() as info">
+        <table class="table table-bordered table-sm align-middle mb-0">
+          <tbody>
+            <tr>
+              <th class="table-light text-center" style="width:150px;">{{ 'epi.field.dob' | translate:'Ngày sinh' }}</th>
+              <td>{{ formatDisplayDate(info.dob) }}</td>
+              <th class="table-light text-center" style="width:150px;">{{ 'epi.field.gender' | translate:'Giới tính' }}</th>
+              <td>{{ info.sexName }}</td>
+              <th class="table-light text-center" style="width:170px;">{{ 'epi.field.maritalStatus' | translate:'Tình trạng hôn nhân' }}</th>
+              <td>{{ info.maritalStatusName }}</td>
+              <th class="table-light text-center" style="width:100px;">{{ 'epi.field.ethnicity' | translate:'Dân tộc' }}</th>
+              <td>{{ info.nationName }}</td>
+              <th class="table-light text-center" style="width:80px;">{{ 'epi.field.houseTp' | translate:'Hộ khẩu' }}</th>
+              <td>{{ info.houseTp }}</td>
+            </tr>
+            <tr>
+              <th class="table-light text-center">{{ 'epi.field.homePhone' | translate:'ĐT gia đình' }}</th>
+              <td>{{ info.homePhone }}</td>
+              <th class="table-light text-center">{{ 'epi.field.companyPhone' | translate:'ĐT công ty' }}</th>
+              <td>{{ info.companyPhone }}</td>
+              <th class="table-light text-center">{{ 'epi.field.phone' | translate:'Điện thoại' }}</th>
+              <td>{{ info.cellphone }}</td>
+              <th class="table-light text-center">{{ 'epi.field.residence' | translate:'Chỗ ở' }}</th>
+              <td>{{ info.residentialDistinction }}</td>
+              <th class="table-light text-center">{{ 'epi.field.existSingle' | translate:'EagleM' }}</th>
+              <td>{{ info.existSingle === '1' ? ('common.yes' | translate:'Yes') : (info.existSingle === '0' ? ('common.no' | translate:'No') : '') }}</td>
+            </tr>
+            <tr>
+              <th class="table-light text-center">{{ 'epi.field.email' | translate:'Email' }}</th>
+              <td>{{ info.email }}</td>
+              <th class="table-light text-center">{{ 'epi.field.companyEmail' | translate:'Email công ty' }}</th>
+              <td>{{ info.emailSecond }}</td>
+              <th class="table-light text-center">{{ 'epi.field.nationality' | translate:'Quốc tịch' }}</th>
+              <td>{{ info.nationalityName }}</td>
+              <th class="table-light text-center">EagleM ID</th>
+              <td colspan="3">{{ info.singId }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== Loại địa chỉ ===== -->
+    <div class="card mb-3">
+      <div class="card-header bg-light py-2 d-flex justify-content-between align-items-center">
+        <strong><i class="bx bx-map me-1"></i>{{ 'epi.section.address' | translate:'Loại địa chỉ' }}</strong>
+        <button nz-button nzType="primary" nzSize="small" (click)="openAddressModal(null)">
+          <i class="bx bx-plus me-1"></i>{{ 'epi.btn.addNew' | translate:'Thêm mới' }}
+        </button>
+      </div>
+      <div class="card-body p-0">
+        <nz-alert *ngIf="addressError()" nzType="error" [nzMessage]="addressError() ?? ''" class="m-2"></nz-alert>
+        <nz-table [nzData]="addressList()" [nzLoading]="addressLoading()" [nzShowPagination]="false" nzSize="small" #piAddrTable>
+          <thead>
+            <tr>
+              <th>{{ 'epi.field.addressType' | translate:'Loại địa chỉ' }}</th>
+              <th>{{ 'epi.field.effectiveDate' | translate:'Ngày hiệu lực' }}</th>
+              <th>{{ 'epi.field.address' | translate:'Địa chỉ' }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="!addressLoading() && piAddrTable.data.length === 0">
+              <td colspan="3" class="text-center text-muted">{{ 'epi.msg.noData' | translate:'Không có dữ liệu' }}</td>
+            </tr>
+            <tr *ngFor="let row of piAddrTable.data" class="pi-row-clickable" (click)="openAddressModal(row)">
+              <td>{{ row.addressTypeName || row.addressType }}</td>
+              <td>{{ formatDisplayDate(row.effectiveStartDate) }}</td>
+              <td>{{ row.addressContent }}</td>
+            </tr>
+          </tbody>
+        </nz-table>
+      </div>
+    </div>
+
+    <!-- ===== Thông tin gia đình ===== -->
+    <div class="card mb-3">
+      <div class="card-header bg-light py-2 d-flex justify-content-between align-items-center">
+        <strong><i class="bx bx-group me-1"></i>{{ 'epi.section.family' | translate:'Thông tin gia đình' }}</strong>
+        <button nz-button nzType="primary" nzSize="small" (click)="openFamilyModal(null)">
+          <i class="bx bx-plus me-1"></i>{{ 'epi.btn.addNew' | translate:'Thêm mới' }}
+        </button>
+      </div>
+      <div class="card-body p-0">
+        <nz-alert *ngIf="familyError()" nzType="error" [nzMessage]="familyError() ?? ''" class="m-2"></nz-alert>
+        <nz-table [nzData]="familyList()" [nzLoading]="familyLoading()" [nzShowPagination]="false" nzSize="small" #piFamTable>
+          <thead>
+            <tr>
+              <th>{{ 'epi.field.relationship' | translate:'Quan hệ' }}</th>
+              <th>{{ 'epi.field.fullName' | translate:'Họ tên' }}</th>
+              <th>{{ 'epi.field.gender' | translate:'Giới tính' }}</th>
+              <th>{{ 'epi.field.dob' | translate:'Ngày sinh' }}</th>
+              <th>{{ 'epi.field.familyPhone' | translate:'Điện thoại gia đình' }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="!familyLoading() && piFamTable.data.length === 0">
+              <td colspan="5" class="text-center text-muted">{{ 'epi.msg.noData' | translate:'Không có dữ liệu' }}</td>
+            </tr>
+            <tr *ngFor="let row of piFamTable.data" class="pi-row-clickable" (click)="openFamilyModal(row)">
+              <td>{{ row.famTypeName || row.famTypeCode }}</td>
+              <td>{{ row.famName }}</td>
+              <td>{{ row.genderName }}</td>
+              <td>{{ formatDisplayDate(row.famBorndate) }}</td>
+              <td>{{ row.famPhone }}</td>
+            </tr>
+          </tbody>
+        </nz-table>
+      </div>
+    </div>
+
+    <!-- ===== Người liên hệ khẩn cấp ===== -->
+    <div class="card mb-3">
+      <div class="card-header bg-light py-2 d-flex justify-content-between align-items-center">
+        <strong><i class="bx bx-phone-call me-1"></i>{{ 'epi.section.emergency' | translate:'Người liên hệ khẩn cấp' }}</strong>
+        <button nz-button nzType="primary" nzSize="small" (click)="openEmergencyModal(null)">
+          <i class="bx bx-plus me-1"></i>{{ 'epi.btn.addNew' | translate:'Thêm mới' }}
+        </button>
+      </div>
+      <div class="card-body p-0">
+        <nz-alert *ngIf="emergencyError()" nzType="error" [nzMessage]="emergencyError() ?? ''" class="m-2"></nz-alert>
+        <nz-table [nzData]="emergencyList()" [nzLoading]="emergencyLoading()" [nzShowPagination]="false" nzSize="small" #piEmerTable>
+          <thead>
+            <tr>
+              <th>{{ 'epi.field.fullName' | translate:'Họ tên' }}</th>
+              <th>{{ 'epi.field.relationship' | translate:'Quan hệ' }}</th>
+              <th>{{ 'epi.field.phone' | translate:'Điện thoại' }}</th>
+              <th>{{ 'epi.field.email' | translate:'Email' }}</th>
+              <th>{{ 'epi.field.address' | translate:'Địa chỉ' }}</th>
+              <th class="text-center" style="width:90px;">{{ 'epi.field.primaryContact' | translate:'Liên hệ chính' }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="!emergencyLoading() && piEmerTable.data.length === 0">
+              <td colspan="6" class="text-center text-muted">{{ 'epi.msg.noData' | translate:'Không có dữ liệu' }}</td>
+            </tr>
+            <tr *ngFor="let row of piEmerTable.data" class="pi-row-clickable" (click)="openEmergencyModal(row)">
+              <td>{{ row.emerName }}</td>
+              <td>{{ row.emerTypeName }}</td>
+              <td>{{ row.emerPhone }}</td>
+              <td>{{ row.emerEmail }}</td>
+              <td>{{ row.emerAddress }}</td>
+              <td class="text-center"><input type="checkbox" [checked]="row.isEmergencyAddress === '1' || row.isEmergencyAddress === 'Y'" disabled></td>
+            </tr>
+          </tbody>
+        </nz-table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== Modal: Chỉnh sửa Cá nhân ===== -->
+<nz-modal [nzVisible]="personalModalVisible()" [nzTitle]="'epi.modal.editPersonal' | translate:'Chỉnh sửa thông tin cá nhân'"
+          nzWidth="1100px" [nzBodyStyle]="{ 'max-height': '72vh', 'overflow-y': 'auto' }"
+          (nzOnCancel)="closePersonalModal()" (nzOnOk)="savePersonal()" [nzOkLoading]="personalSaving()"
+          [nzOkText]="'epi.btn.submitRequest' | translate:'Gửi yêu cầu'" [nzCancelText]="'common.close' | translate:'Đóng'">
+  <ng-container *nzModalContent>
+    <div class="row g-2">
+      <div class="col-md-3">
+        <label class="form-label fw-semibold">{{ 'epi.field.fullName' | translate:'Họ tên' }}</label>
+        <input nz-input [ngModel]="personalForm.localName" readonly>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label fw-semibold">{{ 'epi.field.engName' | translate:'Tên tiếng Anh' }}</label>
+        <input nz-input [ngModel]="personalForm.engName" readonly>
+      </div>
+      <div class="col-md-3 d-flex align-items-end pb-1">
+        <label nz-checkbox [(ngModel)]="personalForm.armyOrNot">{{ 'epi.field.militaryService' | translate:'Tham gia quân đội' }}</label>
+      </div>
+      <div class="col-md-3 d-flex align-items-end pb-1">
+        <label nz-checkbox [(ngModel)]="personalForm.obstacleOrNot">{{ 'epi.field.disability' | translate:'Khuyết tật' }}</label>
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label fw-semibold">{{ 'epi.field.idcardNo' | translate:'CMND' }}</label>
+        <input nz-input [(ngModel)]="personalForm.idcardNo">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label fw-semibold">{{ 'epi.field.idcardDate' | translate:'Ngày cấp' }}</label>
+        <nz-date-picker class="w-100" [(ngModel)]="personalForm.idcardStartDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label fw-semibold">{{ 'epi.field.issuingAuthority' | translate:'Nơi cấp' }}</label>
+        <input nz-input [(ngModel)]="personalForm.issuingAuthority">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label fw-semibold">{{ 'epi.field.cvUpdateStatus' | translate:'CV update status' }}</label>
+        <nz-select class="w-100" [(ngModel)]="personalForm.cvUpdateStatus" nzAllowClear [nzPlaceHolder]="'epi.select.choose' | translate:'-- Chọn --'">
+          <nz-option *ngFor="let c of cvUpdateStatusOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+        </nz-select>
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label fw-semibold">{{ 'epi.field.dob' | translate:'Ngày sinh' }}</label>
+        <nz-date-picker class="w-100" [(ngModel)]="personalForm.dob" nzFormat="dd/MM/yyyy" (ngModelChange)="calcAge()"></nz-date-picker>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label fw-semibold">{{ 'epi.field.age' | translate:'Độ tuổi' }}</label>
+        <input nz-input [ngModel]="personalForm.age" readonly>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label fw-semibold">{{ 'epi.field.birthPlace' | translate:'Nơi sinh' }}</label>
+        <input nz-input [(ngModel)]="personalForm.regPlace">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label fw-semibold">{{ 'epi.field.gender' | translate:'Giới tính' }}</label>
+        <nz-select class="w-100" [(ngModel)]="personalForm.sexCode" nzAllowClear [nzPlaceHolder]="'epi.select.choose' | translate:'-- Chọn --'">
+          <nz-option *ngFor="let c of sexOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+        </nz-select>
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label fw-semibold">{{ 'epi.field.education' | translate:'Trình độ học vấn' }}</label>
+        <nz-select class="w-100" [(ngModel)]="personalForm.finalDegreeCode" nzAllowClear [nzPlaceHolder]="'epi.select.choose' | translate:'-- Chọn --'">
+          <nz-option *ngFor="let c of finalDegreeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label fw-semibold">{{ 'epi.field.nationality' | translate:'Quốc tịch' }}</label>
+        <nz-select class="w-100" [(ngModel)]="personalForm.nationalityCode" nzAllowClear [nzPlaceHolder]="'epi.select.choose' | translate:'-- Chọn --'">
+          <nz-option *ngFor="let c of nationalityOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label fw-semibold">{{ 'epi.field.ethnicity' | translate:'Dân tộc' }}</label>
+        <nz-select class="w-100" [(ngModel)]="personalForm.nationCode" nzAllowClear [nzPlaceHolder]="'epi.select.choose' | translate:'-- Chọn --'">
+          <nz-option *ngFor="let c of nationOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label fw-semibold">{{ 'epi.field.religion' | translate:'Tôn giáo' }}</label>
+        <input nz-input [(ngModel)]="personalForm.religion">
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label fw-semibold">{{ 'epi.field.phone' | translate:'Điện thoại' }}</label>
+        <input nz-input [(ngModel)]="personalForm.cellphone">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label fw-semibold">{{ 'epi.field.maritalStatus' | translate:'Tình trạng hôn nhân' }}</label>
+        <nz-select class="w-100" [(ngModel)]="personalForm.maritalStatusCode" nzAllowClear [nzPlaceHolder]="'epi.select.choose' | translate:'-- Chọn --'">
+          <nz-option *ngFor="let c of maritalStatusOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label fw-semibold">{{ 'epi.field.weddingDate' | translate:'Ngày kết hôn' }}</label>
+        <nz-date-picker class="w-100" [(ngModel)]="personalForm.weddingDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label fw-semibold">{{ 'epi.field.politicalStatus' | translate:'Tình trạng chính trị' }}</label>
+        <input nz-input [(ngModel)]="personalForm.politicalStatus">
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label fw-semibold">{{ 'epi.field.existSingle' | translate:'EagleM' }}</label>
+        <nz-select class="w-100" [(ngModel)]="personalForm.existSingle" nzAllowClear [nzPlaceHolder]="'epi.select.choose' | translate:'-- Chọn --'">
+          <nz-option value="1" [nzLabel]="'common.yes' | translate:'Yes'"></nz-option>
+          <nz-option value="0" [nzLabel]="'common.no' | translate:'No'"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label fw-semibold">{{ 'epi.field.homePhone' | translate:'ĐT gia đình' }}</label>
+        <input nz-input [(ngModel)]="personalForm.homePhone">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label fw-semibold">{{ 'epi.field.companyPhone' | translate:'ĐT công ty' }}</label>
+        <input nz-input [(ngModel)]="personalForm.companyPhone">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label fw-semibold">{{ 'epi.field.residence' | translate:'Chỗ ở' }}</label>
+        <nz-select class="w-100" [(ngModel)]="personalForm.residentialDistinction" nzAllowClear [nzPlaceHolder]="'epi.select.choose' | translate:'-- Chọn --'">
+          <nz-option *ngFor="let c of residentialDistinctionOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+        </nz-select>
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label fw-semibold">EagleM ID</label>
+        <input nz-input [(ngModel)]="personalForm.singId">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label fw-semibold">{{ 'epi.field.houseTp' | translate:'Hộ khẩu' }}</label>
+        <input nz-input [(ngModel)]="personalForm.houseTp">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label fw-semibold">{{ 'epi.field.email' | translate:'Email' }}</label>
+        <input nz-input type="email" [(ngModel)]="personalForm.email">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label fw-semibold">{{ 'epi.field.companyEmail' | translate:'Email công ty' }}</label>
+        <input nz-input type="email" [(ngModel)]="personalForm.emailSecond">
+      </div>
+    </div>
+
+    <div class="mt-2">
+      <nz-alert nzType="info" [nzMessage]="'epi.msg.applyNote' | translate:'Yêu cầu sẽ được gửi đến người quản lý để xét duyệt, không cập nhật trực tiếp hồ sơ.'" class="mb-2"></nz-alert>
+      <label class="form-label fw-semibold">{{ 'epi.field.attachFiles' | translate:'File đính kèm' }}</label>
+      <input #personalFileInput type="file" class="form-control form-control-sm" multiple
+             accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg" (change)="onPersonalFilesChange($event)">
+      <div class="form-text">{{ 'epi.msg.uploadHint' | translate:'Hỗ trợ: PDF, Word, Excel, hình ảnh. Có thể chọn nhiều file.' }}</div>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- ===== Modal: Thêm/Sửa Địa chỉ ===== -->
+<nz-modal [nzVisible]="addressModalVisible()" [nzTitle]="addressModalTitle()"
+          (nzOnCancel)="closeAddressModal()" (nzOnOk)="saveAddress()" [nzOkLoading]="addressSaving()"
+          [nzOkText]="'common.save' | translate:'Lưu'" [nzCancelText]="'common.close' | translate:'Đóng'">
+  <ng-container *nzModalContent>
+    <div class="mb-2">
+      <label class="form-label fw-semibold">{{ 'epi.field.addressType' | translate:'Loại địa chỉ' }} <span class="text-danger">*</span></label>
+      <nz-select class="w-100" [(ngModel)]="addressForm.addressType" nzAllowClear [nzPlaceHolder]="'epi.select.chooseAddressType' | translate:'-- Chọn loại địa chỉ --'">
+        <nz-option *ngFor="let c of addressTypeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+      </nz-select>
+    </div>
+    <div class="mb-2">
+      <label class="form-label fw-semibold">{{ 'epi.field.effectiveDate' | translate:'Ngày hiệu lực' }}</label>
+      <nz-date-picker class="w-100" [(ngModel)]="addressForm.effectiveStartDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
+    </div>
+    <div class="mb-2">
+      <label class="form-label fw-semibold">{{ 'epi.field.address' | translate:'Địa chỉ' }}</label>
+      <textarea nz-input [(ngModel)]="addressForm.addressContent" rows="3"></textarea>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- ===== Modal: Thêm/Sửa Gia đình ===== -->
+<nz-modal [nzVisible]="familyModalVisible()" [nzTitle]="familyModalTitle()"
+          (nzOnCancel)="closeFamilyModal()" (nzOnOk)="saveFamily()" [nzOkLoading]="familySaving()"
+          [nzOkText]="'epi.btn.submitRequest' | translate:'Gửi yêu cầu'" [nzCancelText]="'common.close' | translate:'Đóng'">
+  <ng-container *nzModalContent>
+    <div class="row g-2">
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'epi.field.relationship' | translate:'Quan hệ' }} <span class="text-danger">*</span></label>
+        <nz-select class="w-100" [(ngModel)]="familyForm.famTypeCode" nzAllowClear [nzPlaceHolder]="'epi.select.chooseRelationship' | translate:'-- Chọn quan hệ --'">
+          <nz-option *ngFor="let c of famTypeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'epi.field.fullName' | translate:'Họ tên' }} <span class="text-danger">*</span></label>
+        <input nz-input [(ngModel)]="familyForm.famName">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-semibold">{{ 'epi.field.gender' | translate:'Giới tính' }}</label>
+        <nz-select class="w-100" [(ngModel)]="familyForm.gender" nzAllowClear [nzPlaceHolder]="'epi.select.choose' | translate:'-- Chọn --'">
+          <nz-option *ngFor="let c of sexOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-semibold">{{ 'epi.field.dob' | translate:'Ngày sinh' }}</label>
+        <nz-date-picker class="w-100" [(ngModel)]="familyForm.famBorndate" nzFormat="dd/MM/yyyy"></nz-date-picker>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-semibold">{{ 'epi.field.phone' | translate:'Điện thoại' }}</label>
+        <input nz-input [(ngModel)]="familyForm.famPhone">
+      </div>
+      <div class="col-12 mt-1">
+        <nz-alert nzType="info" [nzMessage]="'epi.msg.applyNote' | translate:'Yêu cầu sẽ được gửi đến người quản lý để xét duyệt, không cập nhật trực tiếp hồ sơ.'" class="mb-2"></nz-alert>
+        <label class="form-label fw-semibold">{{ 'epi.field.attachFiles' | translate:'File đính kèm' }}</label>
+        <input #familyFileInput type="file" class="form-control form-control-sm" multiple
+               accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg" (change)="onFamilyFilesChange($event)">
+        <div class="form-text">{{ 'epi.msg.uploadHint' | translate:'Hỗ trợ: PDF, Word, Excel, hình ảnh. Có thể chọn nhiều file.' }}</div>
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- ===== Modal: Thêm/Sửa Liên hệ khẩn cấp ===== -->
+<nz-modal [nzVisible]="emergencyModalVisible()" [nzTitle]="emergencyModalTitle()"
+          (nzOnCancel)="closeEmergencyModal()" (nzOnOk)="saveEmergency()" [nzOkLoading]="emergencySaving()"
+          [nzOkText]="'epi.btn.submitRequest' | translate:'Gửi yêu cầu'" [nzCancelText]="'common.close' | translate:'Đóng'">
+  <ng-container *nzModalContent>
+    <div class="row g-2">
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'epi.field.fullName' | translate:'Họ tên' }} <span class="text-danger">*</span></label>
+        <input nz-input [(ngModel)]="emergencyForm.emerName">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'epi.field.relationship' | translate:'Quan hệ' }}</label>
+        <nz-select class="w-100" [(ngModel)]="emergencyForm.emerTypeCode" nzAllowClear [nzPlaceHolder]="'epi.select.chooseRelationship' | translate:'-- Chọn quan hệ --'">
+          <nz-option *ngFor="let c of emerTypeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'epi.field.phone' | translate:'Điện thoại' }}</label>
+        <input nz-input [(ngModel)]="emergencyForm.emerPhone">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'epi.field.email' | translate:'Email' }}</label>
+        <input nz-input type="email" [(ngModel)]="emergencyForm.emerEmail">
+      </div>
+      <div class="col-12">
+        <label class="form-label fw-semibold">{{ 'epi.field.address' | translate:'Địa chỉ' }}</label>
+        <input nz-input [(ngModel)]="emergencyForm.emerAddress">
+      </div>
+      <div class="col-12">
+        <label nz-checkbox class="mt-1" [(ngModel)]="emergencyForm.isEmergencyAddress">
+          {{ 'epi.field.isPrimaryContact' | translate:'Là liên hệ chính' }}
+        </label>
+      </div>
+      <div class="col-12 mt-2">
+        <nz-alert nzType="info" [nzMessage]="'epi.msg.applyNote' | translate:'Yêu cầu sẽ được gửi đến người quản lý để xét duyệt, không cập nhật trực tiếp hồ sơ.'" class="mb-2"></nz-alert>
+        <label class="form-label fw-semibold">{{ 'epi.field.attachFiles' | translate:'File đính kèm' }}</label>
+        <input #emergencyFileInput type="file" class="form-control form-control-sm" multiple
+               accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg" (change)="onEmergencyFilesChange($event)">
+        <div class="form-text">{{ 'epi.msg.uploadHint' | translate:'Hỗ trợ: PDF, Word, Excel, hình ảnh. Có thể chọn nhiều file.' }}</div>
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>

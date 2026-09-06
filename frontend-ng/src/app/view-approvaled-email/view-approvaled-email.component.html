@@ -1,0 +1,203 @@
+<div class="row">
+  <div class="col-12">
+    <!-- Điều kiện tìm kiếm -->
+    <nz-card class="mb-3">
+      <form class="row g-3" (ngSubmit)="search()">
+        <div class="col-md-4">
+          <label class="form-label">{{ 'vaed.search.title' | translate:'Tiêu đề' }}</label>
+          <input nz-input [(ngModel)]="titleFilter" name="titleFilter">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'vaed.search.applyType' | translate:'Loại đơn' }}</label>
+          <nz-select class="w-100" [(ngModel)]="applyTypeFilter" name="applyTypeFilter" nzAllowClear
+                     [nzPlaceHolder]="'vaed.search.applyType.all' | translate:'-- Tất cả --'">
+            <nz-option *ngFor="let o of applyTypeOptions" [nzValue]="o.value"
+                       [nzLabel]="o.labelKey | translate:o.fallback"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-5 d-flex align-items-end justify-content-end gap-2 flex-wrap">
+          <button nz-button nzType="primary" type="submit">
+            <i class="bx bx-search"></i> {{ 'vaed.btn.search' | translate:'Tra cứu' }}
+          </button>
+        </div>
+      </form>
+    </nz-card>
+
+    <nz-card>
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+      <nz-table [nzData]="displayRows()" [nzLoading]="loading()" [nzPageSize]="25" [nzShowSizeChanger]="true"
+                [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="vaedTotalTpl" class="table-nowrap" #vaedTable>
+        <thead>
+          <tr>
+            <th class="text-center" nzWidth="60px">{{ 'vaed.col.no' | translate:'NO' }}</th>
+            <th>{{ 'vaed.col.title' | translate:'Tiêu đề' }}</th>
+            <th class="text-center" nzWidth="20%">{{ 'vaed.col.applyPerson' | translate:'Người xin phép' }}</th>
+            <th class="text-center" nzWidth="12%">{{ 'vaed.col.updateDate' | translate:'Ngày thực hiện' }}</th>
+            <th class="text-center" nzWidth="12%">{{ 'vaed.col.affirmStatus' | translate:'Trạng thái duyệt' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of vaedTable.data; let i = index">
+            <td class="text-center">{{ i + 1 }}</td>
+            <td>
+              <a *ngIf="row.affirmUrl; else plainTitle" href="javascript:void(0)" (click)="openDetail(row)">{{ row.title }}</a>
+              <ng-template #plainTitle>{{ row.title }}</ng-template>
+            </td>
+            <td class="text-center">{{ row.applyPersonInfo }}</td>
+            <td class="text-center">{{ row.updateDate }}</td>
+            <td class="text-center"><nz-tag [nzColor]="statusColor(row.affirmFlag)">{{ row.applyAffirmFlag }}</nz-tag></td>
+          </tr>
+          <tr *ngIf="!loading() && vaedTable.data.length === 0">
+            <td colspan="5" class="text-center text-muted py-3">{{ 'vaed.msg.noData' | translate:'Không có dữ liệu' }}</td>
+          </tr>
+        </tbody>
+        <ng-template #vaedTotalTpl let-total>
+          {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+        </ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>
+
+<!-- Modal chi tiết đơn (chỉ đọc) - dùng chung cho cả 3 loại (tăng ca / nghỉ phép / điều chỉnh chấm công) -->
+<nz-modal [nzVisible]="detailVisible()" [nzTitle]="detailModalTitle(detailData())" nzWidth="70vw"
+          [nzBodyStyle]="{ 'max-height': '75vh', 'overflow-y': 'auto' }"
+          (nzOnCancel)="closeDetail()" [nzFooter]="null">
+  <ng-container *nzModalContent>
+    <nz-alert *ngIf="detailErrorMessage()" nzType="error" [nzMessage]="detailErrorMessage() ?? ''" class="mb-3"></nz-alert>
+
+    <ng-container *ngIf="detailData() as d; else detailLoadingTpl">
+      <div class="table-responsive mb-3">
+        <table class="table table-bordered table-sm align-middle mb-0">
+          <tbody>
+            <tr>
+              <th class="table-light text-center" style="width:160px;">
+                {{ (detailKind === 'ot' ? 'arOtf.applyTitle' : 'applyAtt.subject') | translate:'Tiêu đề' }}
+              </th>
+              <td>{{ detailApplyTitle(d) }}</td>
+            </tr>
+            <tr>
+              <th class="table-light text-center">
+                {{ (detailKind === 'ot' ? 'arOtf.applicant' : 'applyAtt.applicant') | translate:'Người đăng ký' }}
+              </th>
+              <td>{{ detailApplicant(d) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-responsive mb-4">
+        <table class="table table-bordered table-sm align-middle mb-0">
+          <thead class="table-light text-center">
+            <tr>
+              <th style="width:50px;">{{ 'common.stt' | translate:'STT' }}</th>
+              <th style="width:90px;">{{ 'arOtf.approvalSeq' | translate:'Trình tự duyệt' }}</th>
+              <th style="width:110px;">{{ 'arOtf.approvalStatus' | translate:'Trạng thái duyệt' }}</th>
+              <th>{{ 'common.empName' | translate:'Họ tên' }}</th>
+              <th>{{ 'arOtf.opinion' | translate:'Ý kiến' }}</th>
+              <th style="width:170px;">{{ 'arOtf.actionTime' | translate:'Thời gian thực hiện' }}</th>
+              <th style="width:120px;">{{ 'common.deptName' | translate:'Phòng ban' }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="!d.approvalList?.length">
+              <td colspan="7" class="text-center text-muted">{{ 'arOtf.noApprovalData' | translate:'Không có dữ liệu phê duyệt' }}</td>
+            </tr>
+            <tr *ngFor="let item of d.approvalList; let i = index">
+              <td class="text-center">{{ approvalStt(item.affirmLevel, i) }}</td>
+              <td class="text-center">{{ item.affirmTypeName }}</td>
+              <td class="text-center">{{ item.affirmFlagName }}</td>
+              <td>{{ item.affirmName }}</td>
+              <td>{{ item.affirmContent }}</td>
+              <td class="text-center">{{ item.updateDate }}</td>
+              <td class="text-center">{{ item.deptName }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h6 class="fw-bold mb-2">{{ (detailKind === 'ot' ? 'arOtf.empInfo' : 'applyAtt.empInfo') | translate:'Thông tin nhân viên' }}</h6>
+      <div class="table-responsive mb-4">
+        <table class="table table-bordered table-sm align-middle mb-0">
+          <tbody>
+            <tr>
+              <th class="table-light text-center" style="width:100px;">{{ 'common.empName' | translate:'Họ tên' }}</th>
+              <td>{{ detailEmployeeInfo(d)['localName'] }}</td>
+              <th class="table-light text-center" style="width:100px;">{{ 'common.empId' | translate:'Mã nhân viên' }}</th>
+              <td>{{ detailEmployeeInfo(d)['empId'] }}</td>
+            </tr>
+            <tr>
+              <th class="table-light text-center">{{ 'common.deptName' | translate:'Phòng ban' }}</th>
+              <td>{{ detailEmployeeInfo(d)['deptName'] }}</td>
+              <th class="table-light text-center">{{ 'common.position' | translate:'Chức vụ' }}</th>
+              <td>{{ detailEmployeeInfo(d)['postGradeName'] }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <ng-container *ngIf="detailKind === 'ot'; else leaveInfoTpl">
+        <h6 class="fw-bold mb-2">{{ 'arOtf.otInfo' | translate:'Thông tin tăng ca' }}</h6>
+        <div class="table-responsive">
+          <table class="table table-bordered table-sm align-middle mb-0">
+            <thead class="table-light text-center">
+              <tr>
+                <th>{{ 'arOtf.otType' | translate:'Loại tăng ca' }}</th>
+                <th style="width:140px;">{{ 'arOtf.otDate' | translate:'Ngày tăng ca' }}</th>
+                <th style="width:170px;">{{ 'arOtf.otBegin' | translate:'Bắt đầu' }}</th>
+                <th style="width:170px;">{{ 'arOtf.otEnd' | translate:'Kết thúc' }}</th>
+                <th style="width:140px;">{{ 'common.hours' | translate:'Số giờ' }}</th>
+                <th>{{ 'common.reason' | translate:'Lý do' }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="text-center">{{ detailInfo(d)['otTypeName'] }}</td>
+                <td class="text-center">{{ detailInfo(d)['applyOtDate'] }}</td>
+                <td class="text-center">{{ detailInfo(d)['detailFromDateTime'] }}</td>
+                <td class="text-center">{{ detailInfo(d)['detailToDateTime'] }}</td>
+                <td class="text-center">{{ detailInfo(d)['otApplyHour'] }}</td>
+                <td class="text-center">{{ detailInfo(d)['applyOtRemark'] }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </ng-container>
+      <ng-template #leaveInfoTpl>
+        <h6 class="fw-bold mb-2">{{ 'applyAtt.leaveInfo' | translate:'Thông tin xin phép' }}</h6>
+        <div class="table-responsive">
+          <table class="table table-bordered table-sm align-middle mb-0">
+            <thead class="table-light text-center">
+              <tr>
+                <th>{{ 'applyAtt.leaveTypeFull' | translate:'Loại nghỉ phép' }}</th>
+                <th style="width:170px;">{{ 'common.startTime' | translate:'Thời gian bắt đầu' }}</th>
+                <th style="width:170px;">{{ 'common.endTime' | translate:'Thời gian kết thúc' }}</th>
+                <th style="width:140px;">{{ 'applyAtt.leaveDuration' | translate:'Thời lượng' }}</th>
+                <th>{{ 'common.reason' | translate:'Lý do' }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="text-center">{{ detailInfo(d)['leaveTypeName'] }}</td>
+                <td class="text-center">{{ detailInfo(d)['leaveFromTime'] }}</td>
+                <td class="text-center">{{ detailInfo(d)['leaveToTime'] }}</td>
+                <td class="text-center">{{ detailDuration(d) }}</td>
+                <td class="text-center">{{ detailInfo(d)['leaveReason'] }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </ng-template>
+
+      <div class="d-flex justify-content-end mt-3">
+        <button nz-button type="button" (click)="closeDetail()">{{ 'common.close' | translate:'Đóng' }}</button>
+      </div>
+    </ng-container>
+    <ng-template #detailLoadingTpl>
+      <div class="text-center text-muted py-3" *ngIf="detailLoading()">
+        {{ 'arOtf.loadingData' | translate:'Đang tải dữ liệu...' }}
+      </div>
+    </ng-template>
+  </ng-container>
+</nz-modal>

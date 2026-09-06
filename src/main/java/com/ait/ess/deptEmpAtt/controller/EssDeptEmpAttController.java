@@ -21,13 +21,6 @@ public class EssDeptEmpAttController {
     @Autowired
     private ArShiftGroupManagementService service;
 
-    // ===== VIEW =====
-
-    @GetMapping("/viewArShiftGroupList")
-    public String viewArShiftGroupList() {
-        return "ess/deptEmpAtt/viewArShiftGroupList";
-    }
-
     // ===== API =====
 
     /** Lấy danh sách lịch sử thay đổi ca */

@@ -1,0 +1,113 @@
+<div class="row">
+  <div class="col-12">
+
+    <!-- ===== Thông tin nhân viên (tương đương fragments/essEmpInfoCard.html) ===== -->
+    <div class="card mb-3" *ngIf="basicInfo() as info">
+      <div class="card-body p-0">
+        <table class="table table-bordered table-sm align-middle mb-0" style="table-layout:fixed;">
+          <colgroup>
+            <col style="width:15%;"><col style="width:35%;"><col style="width:15%;"><col style="width:35%;">
+          </colgroup>
+          <tbody>
+            <tr>
+              <th class="table-light text-center">{{ 'essEmpCard.localName' | translate:'Họ tên' }}</th>
+              <td>{{ info.localName }}</td>
+              <th class="table-light text-center">{{ 'essEmpCard.empId' | translate:'Mã nhân viên' }}</th>
+              <td>{{ info.empId }}</td>
+            </tr>
+            <tr>
+              <th class="table-light text-center">{{ 'essEmpCard.deptName' | translate:'Phòng ban' }}</th>
+              <td>{{ info.deptName }}</td>
+              <th class="table-light text-center">{{ 'essEmpCard.headDept' | translate:'Trưởng phòng' }}</th>
+              <td>{{ info.headDepartment }}</td>
+            </tr>
+            <tr>
+              <th class="table-light text-center">{{ 'essEmpCard.postFamily' | translate:'Nhóm nhân viên' }}</th>
+              <td>{{ info.postFamilyName }}</td>
+              <th class="table-light text-center">{{ 'essEmpCard.postGrade' | translate:'Chức vụ' }}</th>
+              <td>{{ info.postGradeName }}</td>
+            </tr>
+            <tr>
+              <th class="table-light text-center">{{ 'essEmpCard.positionName' | translate:'Chức danh' }}</th>
+              <td>{{ info.positionNoName }}</td>
+              <th class="table-light text-center">{{ 'essEmpCard.dateStarted' | translate:'Ngày vào làm' }}</th>
+              <td>{{ info.dateStarted }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== Điều kiện tìm kiếm ===== -->
+    <div class="card mb-3">
+      <div class="card-body">
+        <form class="row g-3" (ngSubmit)="search()">
+          <div class="col-md-3">
+            <label class="form-label">{{ 'atpi.label.category' | translate:'Phân loại' }}</label>
+            <nz-select class="w-100" [(ngModel)]="itemNoSearch" name="itemNoSearch" nzAllowClear
+                       [nzPlaceHolder]="'atpi.select.allOption' | translate:'-- Tất cả --'">
+              <nz-option *ngFor="let c of itemOptions()" [nzValue]="c.itemNo" [nzLabel]="c.itemName || c.itemNo"></nz-option>
+            </nz-select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">{{ 'atpi.label.time' | translate:'Thời gian' }}</label>
+            <div class="d-flex align-items-center gap-2">
+              <nz-date-picker style="width:150px;" [(ngModel)]="startDate" name="startDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
+              <span>~</span>
+              <nz-date-picker style="width:150px;" [(ngModel)]="endDate" name="endDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
+            </div>
+          </div>
+          <div class="col-md-2 d-flex align-items-end">
+            <button nz-button nzType="primary" type="submit">
+              <i class="bx bx-search"></i> {{ 'atpi.btn.search' | translate:'Tra cứu' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ===== Toolbar lọc nhanh ===== -->
+    <div class="d-flex align-items-center gap-2 mb-2">
+      <input nz-input style="max-width:220px;" [(ngModel)]="quickFilterKeyword"
+             [placeholder]="'atpi.placeholder.quickFilter' | translate:'Lọc nhanh...'">
+    </div>
+
+    <!-- ===== Bảng danh sách ===== -->
+    <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+    <nz-table [nzData]="filteredRows()" [nzLoading]="loading()" [nzPageSize]="25" [nzShowSizeChanger]="true"
+              [nzPageSizeOptions]="[25, 50, 100, 200]" [nzShowTotal]="atpiTotalTpl"
+              [nzScroll]="{ x: '1200px' }" class="table-nowrap" #atpiTable>
+      <thead>
+        <tr>
+          <th class="text-center" nzWidth="50px">{{ 'common.stt' | translate:'STT' }}</th>
+          <th nzWidth="150px">{{ 'atpi.col.fullName' | translate:'Họ tên' }}</th>
+          <th class="text-center" nzWidth="110px">{{ 'atpi.col.empId' | translate:'Mã nhân viên' }}</th>
+          <th nzWidth="150px">{{ 'atpi.col.deptName' | translate:'Phòng ban' }}</th>
+          <th nzWidth="150px">{{ 'atpi.col.category' | translate:'Phân loại' }}</th>
+          <th class="text-center" nzWidth="100px">{{ 'atpi.col.duration' | translate:'Thời lượng' }}</th>
+          <th class="text-center" nzWidth="110px">{{ 'atpi.col.time' | translate:'Thời gian' }}</th>
+          <th class="text-center" nzWidth="130px">{{ 'atpi.col.startTime' | translate:'Thời gian bắt đầu' }}</th>
+          <th class="text-center" nzWidth="130px">{{ 'atpi.col.endTime' | translate:'Thời gian kết thúc' }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of atpiTable.data; let i = index">
+          <td class="text-center">{{ i + 1 }}</td>
+          <td [attr.title]="row.localName || null">{{ row.localName }}</td>
+          <td class="text-center">{{ row.empId }}</td>
+          <td [attr.title]="row.deptName || null">{{ row.deptName }}</td>
+          <td [attr.title]="row.itemName || row.itemNo || null">{{ row.itemName || row.itemNo }}</td>
+          <td class="text-center">{{ row.workHour }}</td>
+          <td class="text-center">{{ row.arDateStr }}</td>
+          <td class="text-center">{{ row.indoorTime }}</td>
+          <td class="text-center">{{ row.outdoorTime }}</td>
+        </tr>
+      </tbody>
+      <ng-template #atpiTotalTpl let-total>
+        {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+      </ng-template>
+    </nz-table>
+
+  </div>
+</div>

@@ -185,36 +185,24 @@
         ORDER BY SORT_NO
     </select>
 
-    <!-- ===== Đếm danh sách nhân viên (dùng cho phân trang) ===== -->
-    <select id="countList" parameterType="com.ait.ess.viewDept.dto.ManageCountInfoEmpDto"
-            resultType="int">
-        SELECT COUNT(*)
+    <!-- ===== Danh sách nhân viên chi tiết (không phân trang server - phân trang ở client bằng nz-table,
+         giống ManageEmpPositionInfoMapper.selectManageEmpPositionInfoList) ===== -->
+    <select id="selectList" parameterType="com.ait.ess.viewDept.dto.ManageCountInfoEmpDto"
+            resultMap="ManageCountInfoEmpResultMap">
+        SELECT
+            H.EMPID                                                          AS EMPID,
+            H.LOCAL_NAME                                                     AS LOCAL_NAME,
+            GET_DEPT_NAME(H.DEPTNO, #{lang, jdbcType=VARCHAR})               AS DEPTNAME,
+            GET_GLOBAL_NAME(H.POST_FAMILY, #{lang, jdbcType=VARCHAR})        AS POST_FAMILY_NAME,
+            GET_GLOBAL_NAME(H.POST_GRADE_NO, #{lang, jdbcType=VARCHAR})      AS POST_GRADE_NO,
+            GET_GLOBAL_NAME(H.EMP_TYPE_CODE, #{lang, jdbcType=VARCHAR})      AS EMP_TYPE_NAME,
+            TO_CHAR(HP.DOB, 'DD/MM/YYYY')                                    AS DOB,
+            GET_GLOBAL_NAME(HP.SEXCODE, #{lang, jdbcType=VARCHAR})           AS SEX_NAME,
+            TO_CHAR(H.DATE_STARTED, 'DD/MM/YYYY')                           AS DATE_STARTED,
+            GET_GLOBAL_NAME(H.EMP_OFFICE, #{lang, jdbcType=VARCHAR})         AS EMP_OFFICE_NAME
         FROM HR_EMPLOYEE H, HR_DEPARTMENT D, HR_PERSONAL_INFO HP
         WHERE <include refid="filterCondition"/>
-    </select>
-
-    <!-- ===== Danh sách nhân viên có phân trang ===== -->
-    <select id="selectListPage" parameterType="com.ait.ess.viewDept.dto.ManageCountInfoEmpDto"
-            resultMap="ManageCountInfoEmpResultMap">
-        SELECT * FROM (
-            SELECT INNER_Q.*, ROWNUM AS RN FROM (
-                SELECT
-                    H.EMPID                                                          AS EMPID,
-                    H.LOCAL_NAME                                                     AS LOCAL_NAME,
-                    GET_DEPT_NAME(H.DEPTNO, #{lang, jdbcType=VARCHAR})               AS DEPTNAME,
-                    GET_GLOBAL_NAME(H.POST_FAMILY, #{lang, jdbcType=VARCHAR})        AS POST_FAMILY_NAME,
-                    GET_GLOBAL_NAME(H.POST_GRADE_NO, #{lang, jdbcType=VARCHAR})      AS POST_GRADE_NO,
-                    GET_GLOBAL_NAME(H.EMP_TYPE_CODE, #{lang, jdbcType=VARCHAR})      AS EMP_TYPE_NAME,
-                    HP.DOB                                                           AS DOB,
-                    GET_GLOBAL_NAME(HP.SEXCODE, #{lang, jdbcType=VARCHAR})           AS SEX_NAME,
-                    TO_CHAR(H.DATE_STARTED, 'DD/MM/YYYY')                           AS DATE_STARTED,
-                    GET_GLOBAL_NAME(H.EMP_OFFICE, #{lang, jdbcType=VARCHAR})         AS EMP_OFFICE_NAME
-                FROM HR_EMPLOYEE H, HR_DEPARTMENT D, HR_PERSONAL_INFO HP
-                WHERE <include refid="filterCondition"/>
-                ORDER BY H.EMPID ASC
-            ) INNER_Q
-            WHERE ROWNUM &lt;= #{start, jdbcType=INTEGER} + #{length, jdbcType=INTEGER}
-        ) WHERE RN &gt; #{start, jdbcType=INTEGER}
+        ORDER BY H.EMPID ASC
     </select>
 
 </mapper>

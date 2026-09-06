@@ -1,0 +1,50 @@
+table td, table th {
+  white-space: nowrap;
+}
+
+/* Tiêu đề được phép xuống dòng khi tên cột dài hơn độ rộng cột (dữ liệu td vẫn giữ nowrap). */
+table th {
+  white-space: normal;
+  word-break: break-word;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.ot-metric-col {
+  width: 90px;
+  min-width: 90px;
+  max-width: 90px;
+}
+
+.otr-col-stt {
+  width: 55px;
+  min-width: 55px;
+}
+
+.otr-col-emp-id {
+  width: 110px;
+  min-width: 110px;
+}
+
+.otr-col-emp-name {
+  width: 160px;
+  min-width: 160px;
+}
+
+.otr-col-dept {
+  width: 200px;
+  min-width: 200px;
+}
+
+.otr-col-total {
+  width: 110px;
+  min-width: 110px;
+}
+
+td.ot-metric-col {
+  white-space: nowrap;
+}
+
+.table-scroll-wrapper {
+  overflow-x: auto;
+}

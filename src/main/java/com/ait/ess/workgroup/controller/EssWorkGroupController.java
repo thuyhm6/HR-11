@@ -30,15 +30,13 @@ public class EssWorkGroupController {
     @Autowired
     private PersonShiftService personShiftService;
 
-    @GetMapping("/viewWorkGroupExperList")
-    public String viewWorkGroupExperList() {
-        return "ess/workgroup/viewWorkGroupExperList";
-    }
+    // Trang Thymeleaf ess/workgroup/viewWorkGroupExperList.html đã được thay bằng Angular route
+    // /workgroup-exper-list (xem frontend-ng/src/app/workgroup-exper-list/ và MIGRATED_ROUTES trong
+    // app-shell.component.ts) - API /api/workGroup/myList bên dưới vẫn giữ nguyên.
 
-    @GetMapping("/viewPersonShiftList")
-    public String viewPersonShiftList() {
-        return "ess/workgroup/viewPersonShiftList";
-    }
+    // Trang Thymeleaf ess/workgroup/viewPersonShiftList.html đã được thay bằng Angular route
+    // /person-shift-list (xem frontend-ng/src/app/person-shift-list/ và MIGRATED_ROUTES trong
+    // app-shell.component.ts) - API /api/personShift/myList bên dưới vẫn giữ nguyên.
 
     @GetMapping("/api/personShift/myList")
     @ResponseBody

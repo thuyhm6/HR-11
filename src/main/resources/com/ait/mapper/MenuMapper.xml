@@ -32,18 +32,22 @@
         INNER JOIN SY_ROLE_RELATION rr ON m.MENU_NO = rr.MENU_NO
         INNER JOIN SY_ROLE r ON rr.ROLE_NO = r.ROLE_NO
         INNER JOIN SY_ROLE_GROUP_RELATION rgr ON rr.ROLE_NO = rgr.ROLE_NO
+        INNER JOIN SY_ROLE_GROUP rg ON rgr.ROLE_GROUP_NO = rg.ROLE_GROUP_NO
         INNER JOIN SY_USER_RELATION ur ON rgr.ROLE_GROUP_NO = ur.ROLE_GROUP_NO
     </sql>
 
+    <!-- SYS_TYPE quyết định menu thuộc bộ HRM (0) hay ESS (1) được lấy từ SY_ROLE_GROUP.SYS_TYPE (nhóm
+         quyền), KHÔNG phải SY_ROLE.SYS_TYPE - theo đúng nghiệp vụ phân loại nhóm quyền Hub(0)/Partner(1). -->
     <sql id="MenuPermissionWhereBySysType">
         WHERE ur.USER_NO = #{userNo, jdbcType=VARCHAR}
           AND m.ACTIVITY = 1
           AND rr.ACTIVITY = 1
           AND r.ACTIVITY = 1
           AND rgr.ACTIVITY = 1
+          AND rg.ACTIVITY = 1
           AND ur.ACTIVITY = 1
           AND rr.SELECTR = 1
-          AND NVL(TO_CHAR(r.SYS_TYPE), '0') = #{sysType, jdbcType=VARCHAR}
+          AND NVL(TO_CHAR(rg.SYS_TYPE), '0') = #{sysType, jdbcType=VARCHAR}
     </sql>
 
     <select id="getMenusByUserPermission" resultMap="MenuResultMap">
@@ -55,9 +59,10 @@
           AND rr.ACTIVITY = 1
           AND r.ACTIVITY = 1
           AND rgr.ACTIVITY = 1
+          AND rg.ACTIVITY = 1
           AND ur.ACTIVITY = 1
           AND rr.SELECTR = 1
-          AND NVL(TO_CHAR(r.SYS_TYPE), '0') = '1'
+          AND NVL(TO_CHAR(rg.SYS_TYPE), '0') = '1'
         ORDER BY m.DEPTH, m.ORDERNO
     </select>
 
@@ -86,9 +91,10 @@
           AND rr.ACTIVITY = 1
           AND r.ACTIVITY = 1
           AND rgr.ACTIVITY = 1
+          AND rg.ACTIVITY = 1
           AND ur.ACTIVITY = 1
           AND rr.SELECTR = 1
-          AND NVL(TO_CHAR(r.SYS_TYPE), '0') = '1'
+          AND NVL(TO_CHAR(rg.SYS_TYPE), '0') = '1'
         ORDER BY m.DEPTH, m.ORDERNO
     </select>
 
@@ -101,9 +107,10 @@
           AND rr.ACTIVITY = 1
           AND r.ACTIVITY = 1
           AND rgr.ACTIVITY = 1
+          AND rg.ACTIVITY = 1
           AND ur.ACTIVITY = 1
           AND rr.SELECTR = 1
-          AND NVL(TO_CHAR(r.SYS_TYPE), '0') = '1'
+          AND NVL(TO_CHAR(rg.SYS_TYPE), '0') = '1'
           AND m.MENU_PARENT_NO = '2417'
         ORDER BY m.ORDERNO
     </select>
@@ -117,17 +124,12 @@
           AND rr.ACTIVITY = 1
           AND r.ACTIVITY = 1
           AND rgr.ACTIVITY = 1
+          AND rg.ACTIVITY = 1
           AND ur.ACTIVITY = 1
           AND rr.SELECTR = 1
-          AND NVL(TO_CHAR(r.SYS_TYPE), '0') = '1'
+          AND NVL(TO_CHAR(rg.SYS_TYPE), '0') = '1'
           AND m.MENU_PARENT_NO = #{parentMenuNo, jdbcType=VARCHAR}
         ORDER BY m.ORDERNO
-    </select>
-
-    <select id="countMenusByUserPermissionBySysType" resultType="int">
-        SELECT COUNT(DISTINCT m.MENU_NO)
-        <include refid="MenuPermissionJoin" />
-        <include refid="MenuPermissionWhereBySysType" />
     </select>
 
 </mapper>

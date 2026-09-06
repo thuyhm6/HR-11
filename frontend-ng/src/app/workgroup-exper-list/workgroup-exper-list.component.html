@@ -1,0 +1,101 @@
+<div class="row">
+  <div class="col-12">
+
+    <!-- ===== Thông tin nhân viên (tương đương fragments/essEmpInfoCard.html) ===== -->
+    <div class="card mb-3" *ngIf="basicInfo() as info">
+      <div class="card-body p-0">
+        <table class="table table-bordered table-sm align-middle mb-0" style="table-layout:fixed;">
+          <colgroup>
+            <col style="width:15%;"><col style="width:35%;"><col style="width:15%;"><col style="width:35%;">
+          </colgroup>
+          <tbody>
+            <tr>
+              <th class="table-light text-center">{{ 'essEmpCard.localName' | translate:'Họ tên' }}</th>
+              <td>{{ info.localName }}</td>
+              <th class="table-light text-center">{{ 'essEmpCard.empId' | translate:'Mã nhân viên' }}</th>
+              <td>{{ info.empId }}</td>
+            </tr>
+            <tr>
+              <th class="table-light text-center">{{ 'essEmpCard.deptName' | translate:'Phòng ban' }}</th>
+              <td>{{ info.deptName }}</td>
+              <th class="table-light text-center">{{ 'essEmpCard.headDept' | translate:'Trưởng phòng' }}</th>
+              <td>{{ info.headDepartment }}</td>
+            </tr>
+            <tr>
+              <th class="table-light text-center">{{ 'essEmpCard.postFamily' | translate:'Nhóm nhân viên' }}</th>
+              <td>{{ info.postFamilyName }}</td>
+              <th class="table-light text-center">{{ 'essEmpCard.postGrade' | translate:'Chức vụ' }}</th>
+              <td>{{ info.postGradeName }}</td>
+            </tr>
+            <tr>
+              <th class="table-light text-center">{{ 'essEmpCard.positionName' | translate:'Chức danh' }}</th>
+              <td>{{ info.positionNoName }}</td>
+              <th class="table-light text-center">{{ 'essEmpCard.dateStarted' | translate:'Ngày vào làm' }}</th>
+              <td>{{ info.dateStarted }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== Điều kiện tìm kiếm + Bảng dữ liệu ===== -->
+    <div class="card">
+      <div class="card-body">
+
+        <form class="row g-3 mb-4" (ngSubmit)="search()">
+          <div class="col-md-3">
+            <label class="form-label">{{ 'wg.label.shiftNo' | translate:'Ca làm' }}</label>
+            <nz-select class="w-100" [(ngModel)]="shiftNo" name="shiftNo" nzAllowClear
+                       [nzPlaceHolder]="'common.selectAll' | translate:'-- Tất cả --'">
+              <nz-option *ngFor="let c of shiftOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+            </nz-select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">{{ 'wg.label.fromDate' | translate:'Thời gian từ' }}</label>
+            <nz-date-picker class="w-100" [(ngModel)]="fromDate" name="fromDate" nzFormat="yyyy-MM-dd"></nz-date-picker>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">{{ 'wg.label.toDate' | translate:'Thời gian đến' }}</label>
+            <nz-date-picker class="w-100" [(ngModel)]="toDate" name="toDate" nzFormat="yyyy-MM-dd"></nz-date-picker>
+          </div>
+          <div class="col-md-5 d-flex align-items-end gap-2 flex-wrap">
+            <button nz-button nzType="primary" type="submit">
+              <i class="bx bx-search"></i> {{ 'wg.btn.search' | translate:'Tra cứu' }}
+            </button>
+            <button nz-button type="button" (click)="clearSearch()">
+              <i class="bx bx-x"></i> {{ 'wg.btn.clearFilter' | translate:'Xóa lọc' }}
+            </button>
+          </div>
+        </form>
+
+        <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+        <nz-table [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="15" [nzShowSizeChanger]="true"
+                  [nzPageSizeOptions]="[15, 25, 50, 100]" [nzShowTotal]="wgeTotalTpl"
+                  class="table-nowrap" #wgeTable>
+          <thead>
+            <tr>
+              <th class="text-center" nzWidth="60px">{{ 'wg.col.seq' | translate:'STT' }}</th>
+              <th class="text-center" nzWidth="140px">{{ 'wg.col.startDate' | translate:'Ngày bắt đầu' }}</th>
+              <th>{{ 'wg.col.shift' | translate:'Ca' }}</th>
+              <th>{{ 'wg.col.reason' | translate:'Nguyên nhân' }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of wgeTable.data; let i = index">
+              <td class="text-center">{{ i + 1 }}</td>
+              <td class="text-center">{{ row.startDate }}</td>
+              <td>{{ shiftName(row) }}</td>
+              <td>{{ row.remark }}</td>
+            </tr>
+          </tbody>
+          <ng-template #wgeTotalTpl let-total>
+            {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+          </ng-template>
+        </nz-table>
+
+      </div>
+    </div>
+
+  </div>
+</div>

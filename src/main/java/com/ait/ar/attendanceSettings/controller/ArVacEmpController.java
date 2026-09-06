@@ -19,21 +19,22 @@ public class ArVacEmpController {
     @Autowired
     private ArVacEmpService arVacEmpService;
 
-    @GetMapping("/viewVacEmpList")
-    public String viewVacEmpList() {
-        return "ar/attendanceSettings/viewVacEmpList";
-    }
+    // Trang view đã migrate sang Angular (/view-vac-emp-list) - xem MIGRATED_ROUTES trong
+    // app-shell.component.ts. API /api/vacEmp/list bên dưới vẫn giữ nguyên vì Angular gọi lại nguyên
+    // backend.
 
     @GetMapping("/api/vacEmp/list")
     @ResponseBody
     public ResponseEntity<List<ArVacEmpDto>> getVacEmpList(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String deptNos,
-            @RequestParam(required = false) String vacId) {
+            @RequestParam(required = false) String vacId,
+            @RequestParam(required = false) String empOffice) {
         ArVacEmpDto params = new ArVacEmpDto();
         params.setKeyword(keyword);
         params.setDeptNos(deptNos);
         params.setVacId(vacId);
+        params.setEmpOffice(empOffice);
         return ResponseEntity.ok(arVacEmpService.getVacEmpList(params));
     }
 }

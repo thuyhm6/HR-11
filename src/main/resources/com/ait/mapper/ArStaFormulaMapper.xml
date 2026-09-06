@@ -28,13 +28,13 @@
     </select>
 
     <select id="getParamItemsForLeftTree" resultType="java.util.Map">
-        SELECT p.ITEM_NO as id,
-               p.ITEM_NO as itemNo,
-               gvi.CONTENT as nameVi,
-               gen.CONTENT as nameEn,
-               gzh.CONTENT as nameZh,
-               gko.CONTENT as nameKo,
-               p.CAL_ORDER as calOrder
+        SELECT p.ITEM_NO as "id",
+               p.ITEM_NO as "itemNo",
+               gvi.CONTENT as "nameVi",
+               gen.CONTENT as "nameEn",
+               gzh.CONTENT as "nameZh",
+               gko.CONTENT as "nameKo",
+               p.CAL_ORDER as "calOrder"
         FROM AR_STA_ITEM_PARAM p
         LEFT JOIN SY_GLOBAL_NAME gvi ON p.ITEM_NO = gvi.NO AND gvi.LANGUAGE = 'vi'
         LEFT JOIN SY_GLOBAL_NAME gen ON p.ITEM_NO = gen.NO AND gen.LANGUAGE = 'en'

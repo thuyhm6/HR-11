@@ -1,0 +1,35 @@
+.vpf-tree-scroll {
+  max-height: 700px;
+  overflow-y: auto;
+}
+
+.vpf-cell-wrap {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.vpf-row {
+  cursor: pointer;
+}
+
+.vpf-mono {
+  font-family: monospace;
+  font-size: 0.875rem;
+}
+
+.vpf-tool-header {
+  font-size: 0.9rem;
+}
+
+.vpf-tool-body {
+  height: 180px;
+  font-size: 0.85rem;
+}
+
+.vpf-tool-item {
+  cursor: pointer;
+}
+
+.vpf-tool-item:hover {
+  background-color: #f5f5f5;
+}

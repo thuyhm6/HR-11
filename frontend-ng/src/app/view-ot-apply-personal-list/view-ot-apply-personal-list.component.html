@@ -1,0 +1,134 @@
+<div class="row">
+  <div class="col-12">
+    <!-- Điều kiện tìm kiếm - đứng im khi cuộn (xem .sticky-filter-card trong styles.css) -->
+    <nz-card class="mb-3 sticky-filter-card">
+      <form class="row g-3 align-items-end" (ngSubmit)="search()">
+        <div class="col-md-3">
+          <label class="form-label">{{ 'essDept.dept' | translate:'Phòng ban' }}</label>
+          <nz-tree-select class="w-100" [nzNodes]="deptNodes()" [(ngModel)]="deptNos" name="deptNos"
+                           nzCheckable nzShowSearch nzAllowClear
+                           [nzPlaceHolder]="'vdp.search.dept.placeholder' | translate:'Chọn phòng ban'"
+                           nzDropdownClassName="voapl-dept-tree-dropdown"></nz-tree-select>
+          <div *ngIf="deptTreeErrorMessage()" class="text-danger small mt-1">{{ deptTreeErrorMessage() }}</div>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'essDept.keyword' | translate:'Mã nhân viên / Họ tên' }}</label>
+          <input nz-input [(ngModel)]="keyword" name="keyword"
+                 [placeholder]="'vdp.search.empKeyword.placeholder' | translate:'Nhập mã hoặc họ tên'">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'vapl.label.empType' | translate:'Loại nhân viên' }}</label>
+          <nz-select class="w-100" [(ngModel)]="empTypeCode" name="empTypeCode" nzAllowClear
+                     [nzPlaceHolder]="'common.selectAll' | translate:'-- Tất cả --'">
+            <nz-option *ngFor="let c of empTypeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'vapl.label.startDate' | translate:'Ngày bắt đầu' }}</label>
+          <nz-date-picker class="w-100" [(ngModel)]="startDate" name="startDate" nzFormat="yyyy/MM/dd"
+                           [nzAllowClear]="false"></nz-date-picker>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'vapl.label.endDate' | translate:'Ngày kết thúc' }}</label>
+          <nz-date-picker class="w-100" [(ngModel)]="endDate" name="endDate" nzFormat="yyyy/MM/dd"
+                           [nzAllowClear]="false"></nz-date-picker>
+        </div>
+        <div class="col-12 d-flex align-items-end gap-2 flex-wrap">
+          <button nz-button nzType="primary" type="submit">
+            <i class="bx bx-search"></i> {{ 'essDept.search' | translate:'Tra cứu' }}
+          </button>
+          <button nz-button nzType="default" type="button" class="btn-export" (click)="exportExcel()">
+            <i class="bx bx-export"></i> {{ 'essDept.exportExcel' | translate:'Xuất Excel' }}
+          </button>
+        </div>
+      </form>
+    </nz-card>
+
+    <!-- Bảng: mỗi hàng = 1 nhân viên, cột tăng ca dynamic từ AR_ITEM (itemGroup=1433) -->
+    <nz-card>
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+      <div class="table-scroll-wrapper">
+        <nz-table [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="25" nzShowSizeChanger
+                  [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="voaplTotalTpl"
+                  class="voapl-table" #voaplTable>
+          <thead>
+            <tr>
+              <th class="voapl-sticky voapl-sticky-0 text-center">{{ 'common.stt' | translate:'STT' }}</th>
+              <th class="voapl-sticky voapl-sticky-1 text-center">{{ 'common.empId' | translate:'Mã nhân viên' }}</th>
+              <th class="voapl-sticky voapl-sticky-2">{{ 'common.empName' | translate:'Họ tên' }}</th>
+              <th class="voapl-sticky voapl-sticky-3">{{ 'common.deptName' | translate:'Phòng ban' }}</th>
+              <th class="voapl-nowrap">{{ 'vapl.msg.position' | translate:'Chức vụ' }}</th>
+              <th class="voapl-num" *ngFor="let it of items()">{{ it.itemName }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="!loading() && voaplTable.data.length === 0">
+              <td [attr.colspan]="5 + items().length" class="text-center text-muted">
+                {{ 'vapl.msg.noData' | translate:'Không có dữ liệu' }}
+              </td>
+            </tr>
+            <tr *ngFor="let row of voaplTable.data; let i = index">
+              <td class="voapl-sticky voapl-sticky-0 text-center">{{ i + 1 }}</td>
+              <td class="voapl-sticky voapl-sticky-1 text-center" [attr.title]="row['EMPID'] || null">{{ row['EMPID'] }}</td>
+              <td class="voapl-sticky voapl-sticky-2" [attr.title]="row['LOCAL_NAME'] || null">{{ row['LOCAL_NAME'] }}</td>
+              <td class="voapl-sticky voapl-sticky-3" [attr.title]="row['DEPT_NAME'] || null">{{ row['DEPT_NAME'] }}</td>
+              <td class="voapl-nowrap" [attr.title]="row['POSITION_NAME'] || null">{{ row['POSITION_NAME'] }}</td>
+              <td class="voapl-num text-center" *ngFor="let it of items()">
+                <a *ngIf="qty(row, it.itemId) > 0; else voaplZeroTpl" href="javascript:void(0)"
+                   class="fw-bold" (click)="openDetail(row, it)">{{ fmtQty(row[it.itemId]) }}</a>
+                <ng-template #voaplZeroTpl><span class="text-muted">0</span></ng-template>
+              </td>
+            </tr>
+          </tbody>
+          <ng-template #voaplTotalTpl let-total>
+            {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+          </ng-template>
+        </nz-table>
+      </div>
+    </nz-card>
+  </div>
+</div>
+
+<!-- Modal chi tiết tăng ca -->
+<nz-modal [nzVisible]="detailVisible()"
+          [nzTitle]="detailTitle() || ('otsl.modal.detailTitle' | translate:'Chi tiết tăng ca')"
+          nzWidth="900px" [nzBodyStyle]="{ 'max-height': '70vh', 'overflow-y': 'auto' }"
+          (nzOnCancel)="closeDetail()" [nzFooter]="null">
+  <ng-container *nzModalContent>
+    <nz-alert *ngIf="detailErrorMessage()" nzType="error" [nzMessage]="detailErrorMessage() ?? ''" class="mb-2"></nz-alert>
+    <nz-table [nzData]="detailRows()" [nzLoading]="detailLoading()" [nzShowPagination]="false" nzSize="small">
+      <thead>
+        <tr>
+          <th class="text-center" style="width:50px">{{ 'common.stt' | translate:'STT' }}</th>
+          <th class="text-center" style="width:110px">{{ 'common.empId' | translate:'Mã nhân viên' }}</th>
+          <th style="min-width:140px">{{ 'common.empName' | translate:'Họ tên' }}</th>
+          <th style="min-width:120px">{{ 'otsl.col.shift' | translate:'Ca' }}</th>
+          <th class="text-center" style="width:110px">{{ 'otsl.col.date' | translate:'Ngày' }}</th>
+          <th style="min-width:150px">{{ 'otsl.col.otType' | translate:'Loại tăng ca' }}</th>
+          <th class="text-center" style="width:120px">{{ 'otsl.col.startTime' | translate:'Thời gian bắt đầu' }}</th>
+          <th class="text-center" style="width:120px">{{ 'otsl.col.endTime' | translate:'Thời gian kết thúc' }}</th>
+          <th class="text-center" style="width:90px">{{ 'otsl.col.duration' | translate:'Thời lượng' }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngIf="!detailLoading() && detailRows().length === 0">
+          <td colspan="9" class="text-center text-muted">
+            {{ 'otsl.msg.selectHint' | translate:'Chọn vào từng con số để xem chi tiết.' }}
+          </td>
+        </tr>
+        <tr *ngFor="let d of detailRows(); let i = index">
+          <td class="text-center">{{ i + 1 }}</td>
+          <td class="text-center">{{ d.empId }}</td>
+          <td>{{ d.localName }}</td>
+          <td class="text-center">{{ d.shiftName || d.shiftNo }}</td>
+          <td class="text-center">{{ formatDetailDate(d.arDateStr) }}</td>
+          <td>{{ d.itemName }}</td>
+          <td class="text-center">{{ d.fromTimeStr }}</td>
+          <td class="text-center">{{ d.toTimeStr }}</td>
+          <td class="text-center">{{ fmtQty(d.quantity) }}</td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </ng-container>
+</nz-modal>

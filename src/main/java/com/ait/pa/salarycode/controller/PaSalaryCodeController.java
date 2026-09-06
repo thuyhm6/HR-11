@@ -22,11 +22,6 @@ public class PaSalaryCodeController {
     @Autowired
     private PaSalaryCodeService paSalaryCodeService;
 
-    @GetMapping("/viewSalaryCodeList")
-    public String viewSalaryCodeList() {
-        return "pa/salarycode/viewSalaryCodeList";
-    }
-
     @GetMapping("/api/list")
     @ResponseBody
     public ResponseEntity<?> getList(

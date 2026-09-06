@@ -1,0 +1,120 @@
+<div class="row">
+  <div class="col-12">
+    <!-- Điều kiện tìm kiếm - đứng im khi cuộn (xem .sticky-filter-card trong styles.css) -->
+    <nz-card class="mb-3 sticky-filter-card">
+      <form class="row g-3" (ngSubmit)="search()">
+        <div class="col-md-3">
+          <label class="form-label">{{ 'common.search.empIdOrName' | translate:'Mã nhân viên / Họ tên' }}</label>
+          <input nz-input [(ngModel)]="keyword" name="keyword" id="sot-keyword"
+                 [placeholder]="'common.placeholder.enterEmpId' | translate:'Nhập mã hoặc họ tên'">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'common.deptName' | translate:'Phòng ban' }}</label>
+          <nz-tree-select class="w-100" id="sot-deptNo" [nzNodes]="deptNodes()" [(ngModel)]="deptNos" name="deptNos"
+                           nzCheckable nzShowSearch nzAllowClear
+                           [nzPlaceHolder]="'common.select' | translate:'Chọn phòng ban'"
+                           nzDropdownClassName="sot-dept-tree-dropdown"></nz-tree-select>
+          <div *ngIf="deptTreeErrorMessage()" class="text-danger small mt-1">{{ deptTreeErrorMessage() }}</div>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'common.fromDate' | translate:'Ngày bắt đầu' }}</label>
+          <nz-date-picker class="w-100" id="sot-fromDate" [(ngModel)]="fromDate" name="fromDate" nzFormat="yyyy-MM-dd"></nz-date-picker>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'common.toDate' | translate:'Ngày kết thúc' }}</label>
+          <nz-date-picker class="w-100" id="sot-toDate" [(ngModel)]="toDate" name="toDate" nzFormat="yyyy-MM-dd"></nz-date-picker>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'attSearch.empGroup' | translate:'Nhóm nhân viên' }}</label>
+          <nz-select class="w-100" id="sot-postFamily" [(ngModel)]="postFamily" name="postFamily" nzAllowClear
+                     [nzPlaceHolder]="'attSearch.all' | translate:'-- Tất cả --'">
+            <nz-option *ngFor="let c of postFamilyOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'attSearch.shiftType' | translate:'Ca làm việc' }}</label>
+          <nz-select class="w-100" id="sot-shiftNo" [(ngModel)]="shiftNo" name="shiftNo" nzAllowClear
+                     [nzPlaceHolder]="'attSearch.all' | translate:'-- Tất cả --'">
+            <nz-option *ngFor="let s of shiftOptions()" [nzValue]="s.shiftNo" [nzLabel]="s.nameVi || s.shiftName || s.shiftNo"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'applyOt.otType' | translate:'Loại tăng ca' }}</label>
+          <nz-select class="w-100" id="sot-itemNo" [(ngModel)]="itemNo" name="itemNo" nzAllowClear
+                     [nzPlaceHolder]="'attSearch.all' | translate:'-- Tất cả --'">
+            <nz-option *ngFor="let it of itemOptions()" [nzValue]="it.itemNo" [nzLabel]="it.itemName"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-12 d-flex align-items-end gap-2 flex-wrap">
+          <button nz-button nzType="primary" type="submit" id="sot-btn-search">
+            <i class="bx bx-search"></i> {{ 'common.search' | translate:'Tra cứu' }}
+          </button>
+          <button nz-button type="button" id="sot-btn-clear" (click)="clearSearch()">
+            <i class="bx bx-x"></i> {{ 'common.clearFilter' | translate:'Xóa lọc' }}
+          </button>
+          <button nz-button nzType="default" type="button" class="btn-export" id="sot-btn-export" (click)="exportExcel()">
+            <i class="bx bx-export"></i> {{ 'common.exportExcel' | translate:'Xuất excel' }}
+          </button>
+        </div>
+      </form>
+    </nz-card>
+
+    <nz-card>
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+      <nz-table [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="25" [nzShowSizeChanger]="true"
+                [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="sotTotalTpl"
+                [nzScroll]="{ x: '2000px', y: 'calc(100vh - 420px)' }"
+                class="table-nowrap" #sotTable>
+        <!-- nzWidth khai báo cho từng cột để đồng bộ độ rộng header/body khi dùng nzScroll. -->
+        <thead>
+          <tr>
+            <th class="text-center" nzWidth="60px">{{ 'common.stt' | translate:'STT' }}</th>
+            <th class="text-center" nzWidth="100px">{{ 'attSearch.workDate' | translate:'Ngày công' }}</th>
+            <th nzWidth="140px">{{ 'attSearch.dateTypeReal' | translate:'Loại ngày công' }}</th>
+            <th class="text-center" nzWidth="100px">{{ 'common.empId' | translate:'Mã nhân viên' }}</th>
+            <th nzWidth="150px">{{ 'common.empName' | translate:'Tên nhân viên' }}</th>
+            <th nzWidth="160px">{{ 'common.deptName' | translate:'Phòng ban' }}</th>
+            <th nzWidth="120px">{{ 'attSearch.position' | translate:'Chức vụ' }}</th>
+            <th nzWidth="130px">{{ 'attSearch.empGroup' | translate:'Nhóm nhân viên' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'attSearch.shiftType' | translate:'Ca làm việc' }}</th>
+            <th nzWidth="140px">{{ 'applyOt.otType' | translate:'Loại tăng ca' }}</th>
+            <th class="text-center" nzWidth="100px">{{ 'attSearch.fromTime' | translate:'Từ thời gian' }}</th>
+            <th class="text-center" nzWidth="100px">{{ 'attSearch.toTime' | translate:'Đến thời gian' }}</th>
+            <th class="text-end" nzWidth="90px">{{ 'attSearch.quantity' | translate:'Số lượng' }}</th>
+            <th class="text-center" nzWidth="80px">{{ 'attSearch.unit' | translate:'Đơn vị' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'common.status' | translate:'Trạng thái' }}</th>
+            <th nzWidth="180px">{{ 'common.remark' | translate:'Ghi chú' }}</th>
+            <th nzWidth="140px">{{ 'applyOt.updater' | translate:'Người cập nhật' }}</th>
+            <th class="text-center" nzWidth="150px">{{ 'applyOt.updateTime' | translate:'Thời gian cập nhật' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of sotTable.data; let i = index">
+            <td class="text-center">{{ i + 1 }}</td>
+            <td class="text-center">{{ row.arDateStr }}</td>
+            <td [attr.title]="row.dateTypeRealName || null">{{ row.dateTypeRealName }}</td>
+            <td class="text-center" [attr.title]="row.empId || null">{{ row.empId }}</td>
+            <td [attr.title]="row.localName || null">{{ row.localName }}</td>
+            <td [attr.title]="row.deptName || null">{{ row.deptName }}</td>
+            <td [attr.title]="row.postGradeName || null">{{ row.postGradeName }}</td>
+            <td [attr.title]="row.postFamilyName || null">{{ row.postFamilyName }}</td>
+            <td class="text-center" [attr.title]="row.shiftName || null">{{ row.shiftName }}</td>
+            <td [attr.title]="row.itemName || null">{{ row.itemName }}</td>
+            <td class="text-center">{{ row.fromTime }}</td>
+            <td class="text-center">{{ row.toTime }}</td>
+            <td class="text-end">{{ row.quantity }}</td>
+            <td class="text-center">{{ row.unit }}</td>
+            <td class="text-center" [attr.title]="row.statusName || null">{{ row.statusName }}</td>
+            <td [attr.title]="row.remark || null">{{ row.remark }}</td>
+            <td [attr.title]="row.updatedBy || null">{{ row.updatedBy }}</td>
+            <td class="text-center">{{ row.updateDate }}</td>
+          </tr>
+        </tbody>
+        <ng-template #sotTotalTpl let-total>
+          {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+        </ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>

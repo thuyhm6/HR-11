@@ -1,0 +1,67 @@
+::ng-deep tr.ver-ticked {
+  background-color: #fff3cd !important;
+}
+
+::ng-deep .ver-grade-badge {
+  display: inline-block;
+  min-width: 36px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.78rem;
+  border-radius: 4px;
+  padding: 1px 6px;
+}
+
+::ng-deep .ver-grade-EX {
+  background-color: #d1ecf1;
+  color: #0c5460;
+}
+
+::ng-deep .ver-grade-VG {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+::ng-deep .ver-grade-GD {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+::ng-deep .ver-grade-NI {
+  background-color: #fde2e2;
+  color: #721c24;
+}
+
+::ng-deep .ver-grade-UN {
+  background-color: #f8d7da;
+  color: #491217;
+}
+
+::ng-deep .ver-status-evaluated {
+  color: #28a745;
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+::ng-deep .ver-status-not-eval {
+  color: #dc3545;
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+::ng-deep .ver-grade-sel {
+  min-width: 130px;
+}
+
+::ng-deep .ver-content-inp {
+  min-width: 160px;
+}
+
+::ng-deep .ver-picker-row {
+  cursor: pointer;
+}
+
+.ver-btn-export {
+  color: #52c41a;
+  border-color: #52c41a;
+}

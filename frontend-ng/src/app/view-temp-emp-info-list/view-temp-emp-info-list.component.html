@@ -1,0 +1,236 @@
+<div class="row">
+  <div class="col-12">
+    <!-- Điều kiện tìm kiếm - đứng im khi cuộn (xem .sticky-filter-card trong styles.css) -->
+    <nz-card class="mb-3 sticky-filter-card">
+      <form class="row g-3" (ngSubmit)="search()">
+        <div class="col-md-2">
+          <label class="form-label">{{ 'alert.pa.pasalarycanshu.xingming' | translate:'Họ tên' }}</label>
+          <input nz-input [(ngModel)]="localName" name="vteiLocalName">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'hr.enpinfo.title.EMP.EMPNUMBER' | translate:'Mã nhân viên' }}</label>
+          <input nz-input [(ngModel)]="empId" name="vteiEmpId">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'ar.addempshift.title.bydept' | translate:'Phòng ban' }}</label>
+          <input nz-input [(ngModel)]="deptNo" name="vteiDeptNo">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'ess.trans.title.postGradeName' | translate:'Chức vụ' }}</label>
+          <input nz-input [(ngModel)]="position" name="vteiPosition">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'ess.empInfo.start_date' | translate:'Ngày bắt đầu' }}</label>
+          <nz-date-picker class="w-100" [(ngModel)]="createDateFrom" name="vteiCreateDateFrom" nzFormat="dd/MM/yyyy"></nz-date-picker>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'ess.empInfo.end_date' | translate:'Ngày kết thúc' }}</label>
+          <nz-date-picker class="w-100" [(ngModel)]="createDateTo" name="vteiCreateDateTo" nzFormat="dd/MM/yyyy"></nz-date-picker>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'common.status' | translate:'Trạng thái' }}</label>
+          <nz-select class="w-100" [(ngModel)]="activity" name="vteiActivity" nzAllowClear
+                     [nzPlaceHolder]="'common.selectAll' | translate:'-- Tất cả --'">
+            <nz-option [nzValue]="1" [nzLabel]="'common.active' | translate:'Hoạt động'"></nz-option>
+            <nz-option [nzValue]="0" [nzLabel]="'common.inactive' | translate:'Không hoạt động'"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'tempEmp.otStatus' | translate:'Trạng thái OT' }}</label>
+          <nz-select class="w-100" [(ngModel)]="otFlag" name="vteiOtFlag" nzAllowClear
+                     [nzPlaceHolder]="'common.selectAll' | translate:'-- Tất cả --'">
+            <nz-option [nzValue]="1" [nzLabel]="'tempEmp.hasOt' | translate:'Có OT'"></nz-option>
+            <nz-option [nzValue]="0" [nzLabel]="'tempEmp.noOt' | translate:'Không OT'"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-12 d-flex align-items-end gap-2 flex-wrap">
+          <button nz-button nzType="primary" type="button" (click)="openAddModal()">
+            <i class="bx bx-plus"></i> {{ 'common.create' | translate:'Thêm mới' }}
+          </button>
+          <button nz-button nzType="default" type="submit">
+            <i class="bx bx-search"></i> {{ 'common.search' | translate:'Tìm kiếm' }}
+          </button>
+          <button nz-button type="button" (click)="clearSearch()">
+            <i class="bx bx-x"></i> {{ 'common.clear' | translate:'Xóa' }}
+          </button>
+          <button nz-button nzType="default" type="button" class="vtei-btn-export" [nzLoading]="exporting()" (click)="exportExcel()">
+            <i class="bx bx-export"></i> {{ 'common.export' | translate:'Xuất' }} Excel
+          </button>
+        </div>
+      </form>
+    </nz-card>
+
+    <nz-card>
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+      <nz-table [nzData]="rows()" [nzFrontPagination]="false" [nzLoading]="loading()"
+                [nzTotal]="recordsFiltered()" [nzPageIndex]="pageIndex" [nzPageSize]="pageSize"
+                [nzPageSizeOptions]="pageSizeOptions" nzShowSizeChanger [nzShowTotal]="vteiTotalTpl"
+                (nzPageIndexChange)="onPageIndexChange($event)" (nzPageSizeChange)="onPageSizeChange($event)"
+                [nzScroll]="{ x: '1400px' }" class="table-nowrap">
+        <thead>
+          <tr>
+            <th class="text-center" nzWidth="60px">{{ 'ar.viewcycle.title.xuhao' | translate:'STT' }}</th>
+            <th nzWidth="110px">{{ 'hr.enpinfo.title.EMP.EMPNUMBER' | translate:'Mã nhân viên' }}</th>
+            <th nzWidth="160px">{{ 'alert.pa.pasalarycanshu.xingming' | translate:'Họ tên' }}</th>
+            <th nzWidth="120px">{{ 'ar.addempshift.title.bydept' | translate:'Phòng ban' }}</th>
+            <th nzWidth="120px">{{ 'ess.trans.title.postGradeName' | translate:'Chức vụ' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'common.status' | translate:'Trạng thái' }}</th>
+            <th class="text-center" nzWidth="150px">{{ 'ar.excelexport.title.createdate' | translate:'Ngày tạo' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'ess.empInfo.start_date' | translate:'Ngày bắt đầu' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'ess.empInfo.end_date' | translate:'Ngày kết thúc' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'tempEmp.otStatus' | translate:'Trạng thái OT' }}</th>
+            <th class="text-center" nzWidth="100px">{{ 'common.action' | translate:'Thao tác' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!loading() && rows().length === 0">
+            <td colspan="11" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+          </tr>
+          <tr *ngFor="let row of rows(); let i = index">
+            <td class="text-center">{{ (pageIndex - 1) * pageSize + i + 1 }}</td>
+            <td>{{ row.empId }}</td>
+            <td>{{ row.localName }}</td>
+            <td>{{ row.deptNo }}</td>
+            <td>{{ row.position }}</td>
+            <td class="text-center">
+              <span class="badge" [class.bg-success]="row.activity === 1" [class.bg-secondary]="row.activity !== 1">
+                {{ row.activity === 1 ? ('common.active' | translate:'Hoạt động') : ('common.inactive' | translate:'Không hoạt động') }}
+              </span>
+            </td>
+            <td class="text-center">{{ formatDisplayDateTime(row.createDate) }}</td>
+            <td class="text-center">{{ formatDisplayDate(row.startDate) }}</td>
+            <td class="text-center">{{ formatDisplayDate(row.endDate) }}</td>
+            <td class="text-center">
+              <span class="badge" [class.bg-warning]="row.otFlag === 1" [class.bg-light]="row.otFlag !== 1" [class.text-dark]="row.otFlag !== 1">
+                {{ row.otFlag === 1 ? ('tempEmp.hasOt' | translate:'Có OT') : ('tempEmp.noOt' | translate:'Không OT') }}
+              </span>
+            </td>
+            <td class="text-center">
+              <button nz-button nzType="text" nzSize="small" title="Chỉnh sửa" (click)="openEditModal(row)">
+                <i class="bx bx-edit text-warning"></i>
+              </button>
+              <button nz-button nzType="text" nzSize="small" title="Xóa" (click)="openDeleteConfirm(row)">
+                <i class="bx bx-trash text-danger"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+        <ng-template #vteiTotalTpl let-total>
+          {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+        </ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>
+
+<!-- Modal Thêm mới / Chỉnh sửa -->
+<nz-modal [nzVisible]="modalVisible()" [nzTitle]="modalTitle()" nzWidth="700px"
+          (nzOnCancel)="closeModal()" (nzOnOk)="saveForm()" [nzOkLoading]="saving()">
+  <ng-container *nzModalContent>
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'hr.enpinfo.title.EMP.EMPNUMBER' | translate:'Mã nhân viên' }} <span *ngIf="isNew()" class="text-danger">*</span></label>
+        <div class="input-group">
+          <input nz-input [ngModel]="form.empId" readonly>
+          <button *ngIf="isNew()" nz-button type="button" [title]="'tempEmp.pickEmp' | translate:'Chọn nhân viên'" (click)="openPicker()">
+            <i class="bx bx-search"></i>
+          </button>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'alert.pa.pasalarycanshu.xingming' | translate:'Họ tên' }}</label>
+        <input nz-input [ngModel]="form.localName" readonly>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'ar.addempshift.title.bydept' | translate:'Phòng ban' }}</label>
+        <input nz-input [ngModel]="form.deptNo" readonly>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'ess.trans.title.postGradeName' | translate:'Chức vụ' }}</label>
+        <input nz-input [ngModel]="form.position" readonly>
+      </div>
+      <div class="col-md-6" *ngIf="!isNew()">
+        <label class="form-label fw-semibold">{{ 'tempEmp.specialNo' | translate:'Số đặc biệt' }}</label>
+        <input nz-input [ngModel]="form.specialNo" readonly>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'common.status' | translate:'Trạng thái' }}</label>
+        <nz-select class="w-100" [(ngModel)]="form.activity">
+          <nz-option [nzValue]="1" [nzLabel]="'common.active' | translate:'Hoạt động'"></nz-option>
+          <nz-option [nzValue]="0" [nzLabel]="'common.inactive' | translate:'Không hoạt động'"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'ess.empInfo.start_date' | translate:'Ngày bắt đầu' }}</label>
+        <nz-date-picker class="w-100" [(ngModel)]="form.startDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'ess.empInfo.end_date' | translate:'Ngày kết thúc' }}</label>
+        <nz-date-picker class="w-100" [(ngModel)]="form.endDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'tempEmp.otStatus' | translate:'Trạng thái OT' }}</label>
+        <nz-select class="w-100" [(ngModel)]="form.otFlag">
+          <nz-option [nzValue]="1" [nzLabel]="'tempEmp.hasOt' | translate:'Có OT'"></nz-option>
+          <nz-option [nzValue]="0" [nzLabel]="'tempEmp.noOt' | translate:'Không OT'"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-12">
+        <label class="form-label fw-semibold">{{ 'tempEmp.specialContent' | translate:'Nội dung đặc biệt' }}</label>
+        <textarea nz-input [(ngModel)]="form.specialContent" rows="3"></textarea>
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal chọn nhân viên (chỉ dùng khi thêm mới) -->
+<nz-modal [nzVisible]="pickerVisible()" [nzTitle]="'empSearch.title' | translate:'Tìm kiếm nhân viên'"
+          nzWidth="800px" (nzOnCancel)="closePicker()" [nzFooter]="null">
+  <ng-container *nzModalContent>
+    <form class="row g-2 align-items-end mb-3" (ngSubmit)="pickerSearch()">
+      <div class="col-md-8">
+        <label class="form-label">{{ 'empSearch.field.keyword' | translate:'Mã nhân viên / Họ tên' }}</label>
+        <input nz-input [(ngModel)]="pickerKeyword" name="vteiPickerKeyword"
+               [placeholder]="'empSearch.placeholder.keyword' | translate:'Nhập mã hoặc họ tên'"
+               (keydown.enter)="$event.preventDefault(); pickerSearch()">
+      </div>
+      <div class="col-md-4">
+        <button nz-button nzType="primary" type="submit">
+          <i class="bx bx-search"></i> {{ 'common.search' | translate:'Tìm kiếm' }}
+        </button>
+      </div>
+    </form>
+
+    <nz-table [nzData]="pickerRows()" [nzLoading]="pickerLoading()" [nzPageSize]="10" nzSize="small" #vteiPickerTable>
+      <thead>
+        <tr>
+          <th class="text-center" nzWidth="60px">{{ 'empSearch.col.no' | translate:'STT' }}</th>
+          <th nzWidth="110px">{{ 'common.empId' | translate:'Mã nhân viên' }}</th>
+          <th>{{ 'common.empName' | translate:'Họ tên' }}</th>
+          <th>{{ 'common.deptName' | translate:'Phòng ban' }}</th>
+          <th>{{ 'epi.field.position' | translate:'Chức vụ' }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of vteiPickerTable.data; let i = index" class="vtei-row-clickable" (click)="selectPickedEmployee(row)">
+          <td class="text-center">{{ i + 1 }}</td>
+          <td>{{ row.empId }}</td>
+          <td>{{ row.localName }}</td>
+          <td>{{ row.deptName || row.deptNo }}</td>
+          <td>{{ row.position }}</td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal xác nhận xóa -->
+<nz-modal [nzVisible]="deleteVisible()" [nzTitle]="'common.confirm' | translate:'Xác nhận'"
+          (nzOnCancel)="closeDeleteConfirm()" (nzOnOk)="confirmDelete()" [nzOkLoading]="deleting()"
+          [nzOkText]="'common.confirm' | translate:'Xác nhận'" [nzCancelText]="'common.cancel' | translate:'Hủy'">
+  <ng-container *nzModalContent>
+    <p class="mb-1">{{ 'tempEmp.deleteConfirmContent' | translate:'Bạn có chắc chắn muốn xóa nhân viên này? Hành động này không thể hoàn tác!' }}</p>
+    <p class="fw-bold mb-0">{{ deleteTargetName }}</p>
+  </ng-container>
+</nz-modal>

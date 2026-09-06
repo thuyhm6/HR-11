@@ -21,11 +21,6 @@ public class ArStaItemController {
     @Autowired
     private ArStaItemService arStaItemService;
 
-    @GetMapping("/viewSummaryItem")
-    public String viewSummaryItem() {
-        return "ar/attendanceSettings/viewSummaryItem";
-    }
-
     @GetMapping("/api/arStaItem")
     @ResponseBody
     public ResponseEntity<List<ArStaItemDto>> getItems(@RequestParam(required = false) String searchText) {

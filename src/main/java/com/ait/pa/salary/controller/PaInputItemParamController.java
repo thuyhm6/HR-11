@@ -22,11 +22,6 @@ public class PaInputItemParamController {
     @Autowired
     private PaInputItemParamService paInputItemParamService;
 
-    @GetMapping("/viewPaInputItemParam")
-    public String viewPaInputItemParam() {
-        return "pa/salary/viewPaInputItemParam";
-    }
-
     @GetMapping("/inputitemparam/api/list")
     @ResponseBody
     public ResponseEntity<?> getList(

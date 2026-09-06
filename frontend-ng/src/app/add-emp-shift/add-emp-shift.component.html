@@ -1,0 +1,211 @@
+<div class="row">
+  <div class="col-12">
+    <!-- Điều kiện tìm kiếm - đứng im khi cuộn (xem .sticky-filter-card trong styles.css) -->
+    <nz-card class="mb-3 sticky-filter-card">
+      <form class="row g-3" (ngSubmit)="search()">
+        <div class="col-md-3">
+          <label class="form-label">{{ 'addShift.month' | translate:'Tháng' }}</label>
+          <nz-date-picker class="w-100" [(ngModel)]="searchMonth" name="aesSearchMonth"
+                           nzMode="month" nzFormat="MM/yyyy" [nzAllowClear]="false"></nz-date-picker>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'addShift.employee' | translate:'Nhân viên' }}</label>
+          <input nz-input [(ngModel)]="searchEmpId" name="aesSearchEmpId"
+                 [placeholder]="'addShift.placeholder.empIdOrName' | translate:'Nhập mã / tên nhân viên'">
+        </div>
+        <div class="col-md-6 d-flex align-items-end gap-2 flex-wrap">
+          <button nz-button nzType="primary" type="submit">
+            <i class="bx bx-search"></i> {{ 'common.search' | translate:'Tìm kiếm' }}
+          </button>
+          <button nz-button type="button" (click)="clearSearch()">
+            <i class="bx bx-x"></i> {{ 'common.clearFilter' | translate:'Xóa lọc' }}
+          </button>
+        </div>
+        <div class="col-12 d-flex gap-2 flex-wrap">
+          <button nz-button nzType="primary" type="button" (click)="openAddModal()">
+            <i class="bx bx-plus"></i> {{ 'common.addNew' | translate:'Thêm mới' }}
+          </button>
+          <button nz-button nzType="default" type="button" (click)="downloadTemplate()">
+            <i class="bx bx-download"></i> {{ 'common.downloadTemplate' | translate:'Tải File Mẫu' }}
+          </button>
+          <button nz-button nzType="default" type="button" [nzLoading]="importingExcel()"
+                  (click)="aesFileInput.click()">
+            <i class="bx bx-upload"></i> {{ 'common.importExcel' | translate:'Import Excel' }}
+          </button>
+          <input #aesFileInput type="file" hidden accept=".xlsx,.xls" (change)="onExcelFileSelected($event)">
+          <button nz-button nzType="default" type="button" class="aes-btn-export" (click)="exportExcel()">
+            <i class="bx bx-export"></i> {{ 'essDept.exportExcel' | translate:'Xuất excel' }}
+          </button>
+        </div>
+      </form>
+    </nz-card>
+
+    <nz-card>
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+      <nz-table [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="25" [nzShowSizeChanger]="true"
+                [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="aesTotalTpl"
+                [nzScroll]="{ x: '1100px', y: 'calc(100vh - 420px)' }" #aesTable>
+        <thead>
+          <tr>
+            <th class="text-center" nzWidth="60px">{{ 'common.stt' | translate:'STT' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'common.date' | translate:'Ngày' }}</th>
+            <th nzWidth="120px">{{ 'common.empId' | translate:'Mã nhân viên' }}</th>
+            <th nzWidth="180px">{{ 'common.empName' | translate:'Tên nhân viên' }}</th>
+            <th nzWidth="150px">{{ 'addShift.shift' | translate:'Ca quy định' }}</th>
+            <th nzWidth="130px">{{ 'addShift.dayType' | translate:'Loại ngày' }}</th>
+            <th nzWidth="200px">{{ 'common.remark' | translate:'Ghi chú' }}</th>
+            <th class="text-center" nzWidth="100px">{{ 'common.action' | translate:'Thao tác' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!loading() && rows().length === 0">
+            <td colspan="8" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+          </tr>
+          <tr *ngFor="let row of aesTable.data; let i = index">
+            <td class="text-center">{{ i + 1 }}</td>
+            <td class="text-center">{{ toDmy(row.arDateStr) }}</td>
+            <td [attr.title]="row.empId || null">{{ row.empId }}</td>
+            <td [attr.title]="row.localName || null">{{ row.localName }}</td>
+            <td [attr.title]="row.shiftName || null">{{ row.shiftName }}</td>
+            <td [attr.title]="row.typeName || null">{{ row.typeName }}</td>
+            <td [attr.title]="row.remark || null">{{ row.remark }}</td>
+            <td class="text-center">
+              <button nz-button nzType="text" nzSize="small" [title]="'common.action' | translate:'Sửa'" (click)="openEditModal(row)">
+                <i class="bx bx-edit text-warning"></i>
+              </button>
+              <button nz-button nzType="text" nzSize="small" [title]="'common.delete' | translate:'Xóa'" (click)="openDeleteConfirm(row)">
+                <i class="bx bx-trash text-danger"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+        <ng-template #aesTotalTpl let-total>
+          {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+        </ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>
+
+<!-- Modal Thêm mới / Cập nhật Xếp ca làm việc -->
+<nz-modal [nzVisible]="modalVisible()"
+          [nzTitle]="(isNew() ? 'addShift.modal.title.add' : 'addShift.modal.title.edit') | translate:(isNew() ? 'Thêm mới Xếp ca làm việc' : 'Cập nhật Xếp ca làm việc')"
+          nzWidth="700px" (nzOnCancel)="closeModal()" (nzOnOk)="saveForm()" [nzOkLoading]="saving()"
+          [nzOkText]="'common.save' | translate:'Lưu'" [nzCancelText]="'common.close' | translate:'Đóng'">
+  <ng-container *nzModalContent>
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label">
+          {{ 'arSupervisor.field.emp' | translate:'Nhân viên' }} <span class="text-danger">*</span>
+        </label>
+        <div class="d-flex gap-2">
+          <input nz-input [ngModel]="form.empDisplay" name="aesEmpDisplay" readonly
+                 [placeholder]="'arSupervisor.placeholder.selectEmp' | translate:'Chọn nhân viên...'">
+          <button nz-button nzType="default" type="button" (click)="openPicker()">
+            <i class="bx bx-search"></i> {{ 'arSupervisor.btn.select' | translate:'Chọn' }}
+          </button>
+        </div>
+        <small *ngIf="form.personId" class="text-success d-block mt-1">
+          <i class="bx bx-check"></i> {{ 'arSupervisor.js.empSelected' | translate:'Đã chọn NV: ' }}{{ form.empDisplay }}
+        </small>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">
+          {{ 'addShift.shiftDate' | translate:'Ngày công' }} <span class="text-danger">*</span>
+        </label>
+        <nz-date-picker class="w-100" [(ngModel)]="form.arDateStr" name="aesArDateStr" nzFormat="dd/MM/yyyy"></nz-date-picker>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">
+          {{ 'addShift.shift' | translate:'Ca làm việc' }} <span class="text-danger">*</span>
+        </label>
+        <nz-select class="w-100" [(ngModel)]="form.shiftNo" name="aesShiftNo" nzAllowClear
+                   [nzPlaceHolder]="'addShift.selectShift' | translate:'-- Chọn ca làm việc --'">
+          <nz-option *ngFor="let s of shiftOptions()" [nzValue]="s.shiftNo" [nzLabel]="shiftLabel(s)"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">{{ 'addShift.dayType' | translate:'Loại ngày' }}</label>
+        <nz-select class="w-100" [(ngModel)]="form.typeid" name="aesTypeid" nzAllowClear
+                   [nzPlaceHolder]="'common.selectAll' | translate:'-- Tất cả --'">
+          <nz-option *ngFor="let c of dayTypeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-md-12">
+        <label class="form-label">{{ 'common.remark' | translate:'Ghi chú' }}</label>
+        <textarea nz-input [(ngModel)]="form.remark" name="aesRemark" rows="2"></textarea>
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Popup tìm kiếm nhân viên - tái dùng pattern ChangeUserComponent (thay fragment employeeSearchModal.html) -->
+<nz-modal [nzVisible]="pickerVisible()" [nzTitle]="'empSearch.title' | translate:'Tìm kiếm nhân viên'"
+          nzWidth="900px" (nzOnCancel)="closePicker()" [nzFooter]="null">
+  <ng-container *nzModalContent>
+    <form class="row g-2 align-items-end mb-3" (ngSubmit)="pickerSearch()">
+      <div class="col-md-5">
+        <label class="form-label">{{ 'empSearch.field.keyword' | translate:'Mã nhân viên / Họ tên' }}</label>
+        <input nz-input [(ngModel)]="pickerKeyword" name="aesPickerKeyword"
+               [placeholder]="'empSearch.placeholder.keyword' | translate:'Nhập mã hoặc họ tên'"
+               (keydown.enter)="$event.preventDefault(); pickerSearch()">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">{{ 'empSearch.field.dept' | translate:'Phòng ban' }}</label>
+        <nz-tree-select class="w-100" [nzNodes]="deptNodes()" [(ngModel)]="pickerDeptNos" name="aesPickerDeptNos"
+                         nzCheckable nzShowSearch nzAllowClear
+                         [nzPlaceHolder]="'vdp.search.dept.placeholder' | translate:'Chọn phòng ban'"></nz-tree-select>
+        <div *ngIf="deptTreeErrorMessage()" class="text-danger small mt-1">{{ deptTreeErrorMessage() }}</div>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">{{ 'empSearch.field.empOffice' | translate:'Trạng thái làm việc' }}</label>
+        <nz-select class="w-100" [(ngModel)]="pickerEmpOffice" name="aesPickerEmpOffice" nzAllowClear
+                   [nzPlaceHolder]="'common.selectAll' | translate:'-- Tất cả --'">
+          <nz-option *ngFor="let c of empOfficeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-12 d-flex gap-2">
+        <button nz-button nzType="primary" type="submit">
+          <i class="bx bx-search"></i> {{ 'common.search' | translate:'Tìm kiếm' }}
+        </button>
+        <button nz-button type="button" (click)="pickerClear()">
+          <i class="bx bx-x"></i> {{ 'empSearch.btn.clearFilter' | translate:'Xóa bộ lọc' }}
+        </button>
+      </div>
+    </form>
+
+    <nz-alert *ngIf="pickerErrorMessage()" nzType="error" [nzMessage]="pickerErrorMessage() ?? ''" class="mb-2"></nz-alert>
+
+    <nz-table [nzData]="pickerRows()" [nzLoading]="pickerLoading()" [nzPageSize]="10" nzSize="small" #aesPickerTable>
+      <thead>
+        <tr>
+          <th class="text-center" nzWidth="60px">{{ 'empSearch.col.no' | translate:'STT' }}</th>
+          <th nzWidth="110px">{{ 'common.empId' | translate:'Mã nhân viên' }}</th>
+          <th>{{ 'common.empName' | translate:'Họ tên' }}</th>
+          <th>{{ 'empSearch.field.dept' | translate:'Phòng ban' }}</th>
+          <th>{{ 'epi.field.position' | translate:'Chức vụ' }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of aesPickerTable.data; let i = index" class="aes-row-clickable" (click)="selectEmployee(row)">
+          <td class="text-center">{{ i + 1 }}</td>
+          <td>{{ row.empId }}</td>
+          <td>{{ row.localName }}</td>
+          <td>{{ row.deptName || row.deptNo }}</td>
+          <td>{{ row.position }}</td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal xác nhận xóa -->
+<nz-modal [nzVisible]="deleteVisible()" [nzTitle]="'common.confirm' | translate:'Xác nhận'"
+          (nzOnCancel)="closeDeleteConfirm()" (nzOnOk)="confirmDelete()" [nzOkLoading]="deleting()"
+          [nzOkText]="'common.confirm' | translate:'Xác nhận'" [nzCancelText]="'common.cancel' | translate:'Hủy'">
+  <ng-container *nzModalContent>
+    <p class="mb-1">{{ 'addShift.msg.confirmDelete' | translate:'Bạn có chắc chắn muốn xóa dữ liệu xếp ca này không?' }}</p>
+    <p class="fw-bold mb-0">{{ deleteTargetName }}</p>
+  </ng-container>
+</nz-modal>

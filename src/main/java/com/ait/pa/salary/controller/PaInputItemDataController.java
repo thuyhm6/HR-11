@@ -12,8 +12,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import org.springframework.ui.Model;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,14 +24,6 @@ public class PaInputItemDataController {
 
     @Autowired
     private PaInputItemDataService paInputItemDataService;
-
-    @GetMapping("/viewPaInputItemData")
-    public String viewPaInputItemData(
-            @RequestParam(required = false, defaultValue = "") String itemType,
-            Model model) {
-        model.addAttribute("itemType", itemType);
-        return "pa/salary/viewPaInputItemData";
-    }
 
     @GetMapping("/inputItemData/api/itemList")
     @ResponseBody

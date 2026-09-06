@@ -13,7 +13,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -29,20 +28,6 @@ public class OrgResumeInfoController {
 
     @Autowired
     private OrgResumeInfoService resumeService;
-
-    @GetMapping("/orgManage/viewResumeList")
-    public String viewResumeList(Model model, HttpSession session) {
-        HrUserInfo currentHrUser = getAuthenticatedUser(session);
-        model.addAttribute("currentHrUser", currentHrUser);
-        return "org/orgManage/viewResumeList";
-    }
-
-    @GetMapping("/orgManage/viewResumeProcess")
-    public String viewResumeProcess(Model model, HttpSession session) {
-        HrUserInfo currentHrUser = getAuthenticatedUser(session);
-        model.addAttribute("currentHrUser", currentHrUser);
-        return "org/orgManage/viewResumeProcess";
-    }
 
     @GetMapping("/api/resume/dropdown")
     @ResponseBody

@@ -17,7 +17,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -34,14 +33,8 @@ public class SyUserController {
     @Autowired
     private SyUserService syUserService;
 
-    @GetMapping("/sys/syRole/viewLoginUser")
-    public String viewLoginUser(Model model, HttpSession session) {
-        if (!isAdmin(session)) {
-            return "error/403";
-        }
-        model.addAttribute("title", "Quan ly Nguoi dung");
-        return "sys/syRole/viewLoginUser";
-    }
+    // Trang Thymeleaf viewLoginUser.html đã được thay bằng Angular route /view-login-user (xem
+    // ViewLoginUserComponent) - các API JSON bên dưới vẫn giữ nguyên, không đổi backend.
 
     @GetMapping("/sys/api/user/list")
     @ResponseBody

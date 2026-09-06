@@ -1,0 +1,286 @@
+<div class="row">
+  <div class="col-12">
+    <!-- Điều kiện tìm kiếm -->
+    <nz-card class="mb-3">
+      <form class="d-flex align-items-end gap-2" (ngSubmit)="search()">
+        <div>
+          <label class="form-label">{{ 'evs.viewAffirmTarget1Ability.evalName' | translate:'Tên đánh giá' }}</label>
+          <nz-select style="width:280px;" [(ngModel)]="resumeSeq" name="resumeSeq"
+                     [nzPlaceHolder]="'common.select' | translate:'Chọn'">
+            <nz-option *ngFor="let r of resumeOptions()" [nzValue]="r.seq" [nzLabel]="r.resumeName"></nz-option>
+          </nz-select>
+        </div>
+        <button nz-button nzType="primary" type="submit">
+          <i class="bx bx-search"></i> {{ 'evs.viewAffirmTarget1Ability.btnSearch' | translate:'Tra cứu' }}
+        </button>
+      </form>
+    </nz-card>
+
+    <!-- Không có quyền đánh giá -->
+    <nz-alert *ngIf="noticeVisible()" nzType="warning" nzShowIcon
+              [nzMessage]="'evs.viewConfirmTarget1.msg.notInEvalPeriod' | translate:'Không trong khoảng thời gian đánh giá hoặc bạn không phải là người đánh giá, xin liên hệ Phòng nhân sự!'">
+    </nz-alert>
+
+    <ng-container *ngIf="!noticeVisible()">
+      <!-- Phân bổ cấp đánh giá -->
+      <nz-card class="mb-3" *ngIf="distributionVisible()">
+        <div class="fw-semibold small mb-2">{{ 'evs.viewAffirmTarget1Ability.gradeDistribution' | translate:'Phân bổ cấp đánh giá' }}</div>
+
+        <div class="table-responsive mb-2">
+          <table class="table table-bordered table-sm text-center mb-0">
+            <thead class="table-light">
+              <tr>
+                <th rowspan="2" style="vertical-align:middle;width:130px;"></th>
+                <th rowspan="2" style="vertical-align:middle;">{{ 'evs.viewAffirmTarget1Ability.col.total' | translate:'Tổng' }}</th>
+                <th rowspan="2" style="vertical-align:middle;">{{ 'evs.viewAffirmTarget1Ability.col.notEntered' | translate:'Chưa nhập' }}</th>
+                <th colspan="2" *ngFor="let gn of gradeNames">{{ gn }}</th>
+              </tr>
+              <tr>
+                <ng-container *ngFor="let gn of gradeNames">
+                  <th>{{ 'evs.viewAffirmTarget1Ability.col.numPeople' | translate:'Số người' }}</th>
+                  <th>{{ 'evs.viewAffirmTarget1Ability.col.rate' | translate:'Tỷ lệ' }}</th>
+                </ng-container>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="text-start small text-muted">{{ 'evs.viewAffirmTarget1Ability.stdRate' | translate:'Tỷ lệ tiêu chuẩn' }}</td>
+                <td>{{ stdTotal() }}</td>
+                <td>-</td>
+                <ng-container *ngFor="let g of stdRows()">
+                  <td>{{ g.cnt }}</td>
+                  <td>{{ g.pct }}</td>
+                </ng-container>
+              </tr>
+              <tr>
+                <td class="text-start small text-muted">{{ 'evs.viewAffirmTarget1Ability.currentEmp' | translate:'Nhân viên hiện tại' }}</td>
+                <td>{{ recordsTotal() }}</td>
+                <td>{{ curNotEntered() }}</td>
+                <ng-container *ngFor="let g of curRows()">
+                  <td>{{ g.cnt }}</td>
+                  <td>{{ g.pct }}</td>
+                </ng-container>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-bordered table-sm text-center mb-0">
+            <thead class="table-light">
+              <tr>
+                <th rowspan="2" style="vertical-align:middle;width:130px;">{{ 'evs.viewAffirmTarget1Ability.gradeLevel' | translate:'Cấp đánh giá' }}</th>
+                <th colspan="2" *ngFor="let gn of gradeNames">{{ gn }}</th>
+              </tr>
+              <tr>
+                <ng-container *ngFor="let gn of gradeNames">
+                  <th>{{ 'evs.viewAffirmTarget1Ability.col.maxScore' | translate:'Điểm lớn nhất' }}</th>
+                  <th>{{ 'evs.viewAffirmTarget1Ability.col.minScore' | translate:'Điểm nhỏ nhất' }}</th>
+                </ng-container>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td></td>
+                <ng-container *ngFor="let g of gradeRangeRows()">
+                  <td>{{ g.max }}</td>
+                  <td>{{ g.min }}</td>
+                </ng-container>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </nz-card>
+
+      <!-- Danh sách nhân viên -->
+      <nz-card>
+        <div class="d-flex align-items-center justify-content-between mb-2 flex-wrap gap-2">
+          <div class="small text-muted">
+            {{ 'evs.viewAffirmTarget1Ability.currentEmp' | translate:'Nhân viên hiện tại' }}: <strong>{{ filteredRows().length }}</strong>
+            <span class="mx-1">/</span>
+            {{ 'evs.viewAffirmTarget1Ability.totalEmp' | translate:'Nhân viên đánh giá đối tượng' }}: <strong>{{ recordsTotal() }}</strong>
+          </div>
+          <div class="d-flex align-items-center gap-1">
+            <label class="small text-muted mb-0 text-nowrap">{{ 'evs.viewAffirmTarget1Ability.quickFilter' | translate:'Lọc nhanh' }}</label>
+            <input nz-input style="width:180px;" [ngModel]="filterText()" (ngModelChange)="onQuickFilterChange($event)">
+          </div>
+        </div>
+
+        <nz-table [nzData]="filteredRows()" [nzFrontPagination]="false" [nzLoading]="loading()"
+                  [nzTotal]="recordsTotal()" [nzPageIndex]="pageIndex" [nzPageSize]="pageSize"
+                  [nzPageSizeOptions]="pageSizeOptions" nzShowSizeChanger
+                  (nzPageIndexChange)="onPageIndexChange($event)" (nzPageSizeChange)="onPageSizeChange($event)"
+                  nzSize="small" class="table-nowrap" [nzScroll]="{ x: '1300px' }">
+          <thead>
+            <tr>
+              <th class="text-center" nzWidth="44px" [rowSpan]="2">{{ 'evs.viewAffirmTarget1Ability.col.no' | translate:'No' }}</th>
+              <th nzWidth="150px" [rowSpan]="2">{{ 'evs.viewAffirmTarget1Ability.col.fullName' | translate:'Họ tên' }}</th>
+              <th class="text-center" nzWidth="100px" [rowSpan]="2">{{ 'evs.viewAffirmTarget1Ability.col.empid' | translate:'Mã NV' }}</th>
+              <th nzWidth="120px" [rowSpan]="2">{{ 'evs.viewAffirmTarget1Ability.col.dept' | translate:'Phòng ban' }}</th>
+              <th nzWidth="110px" [rowSpan]="2">{{ 'evs.viewAffirmTarget1Ability.col.position' | translate:'Chức vụ' }}</th>
+              <th class="text-center" nzWidth="200px" [rowSpan]="2">{{ 'evs.viewAffirmTarget1Ability.col.objectType' | translate:'Đối tượng' }}</th>
+              <th class="text-center" nzWidth="100px" [rowSpan]="2">{{ 'evs.viewAffirmTarget1Ability.col.hireDate' | translate:'Ngày vào làm' }}</th>
+              <th class="text-center" [colSpan]="2">{{ 'evs.viewAffirmTarget1Ability.col.self' | translate:'Bản thân' }}</th>
+              <th class="text-center" [colSpan]="2">{{ 'evs.viewAffirmTarget1Ability.col.affirm1' | translate:'Lần 1' }}</th>
+              <th class="text-center" nzWidth="130px" [rowSpan]="2">{{ 'evs.viewAffirmTarget1Ability.col.status' | translate:'Trạng thái' }}</th>
+            </tr>
+            <tr>
+              <th class="text-center" nzWidth="50px">{{ 'evs.viewAffirmTarget1Ability.col.score' | translate:'Điểm số' }}</th>
+              <th class="text-center" nzWidth="50px">{{ 'evs.viewAffirmTarget1Ability.col.grade' | translate:'Cấp ĐG' }}</th>
+              <th class="text-center" nzWidth="50px">{{ 'evs.viewAffirmTarget1Ability.col.score' | translate:'Điểm số' }}</th>
+              <th class="text-center" nzWidth="50px">{{ 'evs.viewAffirmTarget1Ability.col.grade' | translate:'Cấp ĐG' }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="!loading() && filteredRows().length === 0">
+              <td colspan="11" class="text-center text-muted">0</td>
+            </tr>
+            <tr *ngFor="let row of filteredRows(); let i = index">
+              <td class="text-center">{{ (pageIndex - 1) * pageSize + i + 1 }}</td>
+              <td><a href="javascript:void(0)" (click)="openDetail(row.seq)">{{ row.localName }}</a></td>
+              <td class="text-center">{{ row.empid }}</td>
+              <td [attr.title]="row.deptname || null">{{ row.deptname }}</td>
+              <td [attr.title]="row.postGradeName || null">{{ row.postGradeName }}</td>
+              <td class="text-center">{{ row.objectTypeName }}</td>
+              <td class="text-center">{{ row.dateStarted }}</td>
+              <td class="text-center">{{ row.evsPoint0 }}</td>
+              <td class="text-center">{{ row.evsGrade0Name }}</td>
+              <td class="text-center">{{ row.evsPoint1 }}</td>
+              <td class="text-center">{{ row.evsGrade1Name }}</td>
+              <td class="text-center small">{{ row.activityName }}</td>
+            </tr>
+          </tbody>
+        </nz-table>
+      </nz-card>
+    </ng-container>
+  </div>
+</div>
+
+<!-- Modal chi tiết đánh giá năng lực lần 1 -->
+<nz-modal [nzVisible]="modalVisible()" [nzTitle]="'evs.viewAffirmTarget1Ability.modal.personalInfo' | translate:'Thông tin cá nhân'"
+          nzWidth="90vw" [nzBodyStyle]="{ 'max-height': '80vh', 'overflow-y': 'auto' }"
+          (nzOnCancel)="closeModal()" [nzFooter]="null">
+  <ng-container *nzModalContent>
+    <ng-container *ngIf="detailInfo() as info">
+      <div class="row g-3 mb-2">
+        <div class="col-md-6">
+          <nz-descriptions nzBordered nzSize="small" [nzColumn]="1"
+                            [nzTitle]="'evs.viewAffirmTarget1Ability.modal.basicInfo' | translate:'Thông tin cơ bản'">
+            <nz-descriptions-item [nzTitle]="'evs.viewAffirmTarget1Ability.modal.fullName' | translate:'Họ tên'">{{ info.localName }}</nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="'evs.viewAffirmTarget1Ability.modal.position' | translate:'Chức vụ'">{{ info.postGradeName }}</nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="'evs.viewAffirmTarget1Ability.modal.dept' | translate:'Phòng ban'">{{ info.deptname }}</nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="'evs.viewAffirmTarget1Ability.modal.hireDate' | translate:'Ngày vào làm'">{{ info.dateStarted }}</nz-descriptions-item>
+          </nz-descriptions>
+        </div>
+        <div class="col-md-6">
+          <nz-descriptions nzBordered nzSize="small" [nzColumn]="1"
+                            [nzTitle]="'evs.viewAffirmTarget1Ability.modal.evalCategory' | translate:'Hạng mục đánh giá'">
+            <nz-descriptions-item [nzTitle]="'evs.viewAffirmTarget1Ability.modal.evalYear' | translate:'Năm đánh giá'">{{ info.evsYear }}</nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="'evs.viewAffirmTarget1Ability.modal.period' | translate:'Thời gian'">{{ info.evsStartDate }}{{ info.evsStartDate && info.evsEndDate ? '~' : '' }}{{ info.evsEndDate }}</nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="'evs.viewAffirmTarget1Ability.modal.appraiser1' | translate:'Người đánh giá lần 1'">{{ info.localName1 }}</nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="'evs.viewAffirmTarget1Ability.modal.appraiser2' | translate:'Người đánh giá lần 2'">{{ info.localName2 }}</nz-descriptions-item>
+          </nz-descriptions>
+        </div>
+      </div>
+
+      <div class="fw-semibold small mb-1 border-bottom pb-1">{{ 'evs.viewAffirmTarget1Ability.modal.abilityTitle' | translate:'Đánh giá năng lực' }}</div>
+      <div class="table-responsive mb-2">
+        <nz-table [nzData]="detailItems()" [nzShowPagination]="false" nzSize="small" [nzLoading]="detailLoading()">
+          <thead>
+            <tr>
+              <th class="text-center" style="width:44px;">{{ 'evs.viewAffirmTarget1Ability.modal.col.no' | translate:'No' }}</th>
+              <th style="width:160px;">{{ 'evs.viewAffirmTarget1Ability.modal.col.distinction' | translate:'Phân biệt' }}</th>
+              <th style="width:200px;">{{ 'evs.viewAffirmTarget1Ability.modal.col.evalItem' | translate:'Hạng mục đánh giá' }}</th>
+              <th>{{ 'evs.viewAffirmTarget1Ability.modal.col.criterion' | translate:'Chỉ tiêu đánh giá' }}</th>
+              <th class="text-center" style="width:90px;">{{ 'evs.viewAffirmTarget1Ability.modal.col.itemScore' | translate:'Điểm chỉ tiêu' }}</th>
+              <th class="text-center" style="width:130px;">{{ 'evs.viewAffirmTarget1Ability.modal.col.selfScore' | translate:'Tự đánh giá' }}</th>
+              <th class="text-center" style="width:150px;">{{ 'evs.viewAffirmTarget1Ability.modal.col.affirm1Score' | translate:'Đánh giá lần 1' }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="!detailLoading() && detailItems().length === 0">
+              <td colspan="7" class="text-center text-muted">-</td>
+            </tr>
+            <tr *ngFor="let item of detailItems(); let i = index">
+              <td class="text-center">{{ i + 1 }}</td>
+              <td>{{ item.groupName }}</td>
+              <td>{{ item.itemName }}</td>
+              <td class="small">{{ item.remark }}</td>
+              <td class="text-center">{{ item.itemScore }}</td>
+              <td class="text-center">{{ item.evsScore0 }}</td>
+              <td class="text-center">
+                <nz-select class="vat1ab-score-select" [(ngModel)]="item.evsScore1" [nzDisabled]="!canInputDetail"
+                           (ngModelChange)="updateDetailTotals()" nzAllowClear>
+                  <nz-option *ngFor="let opt of scoreOptions()" [nzValue]="opt.evsScore" [nzLabel]="opt.codeName || opt.evsScore"></nz-option>
+                </nz-select>
+              </td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr class="table-light fw-semibold">
+              <td colspan="4" class="text-end small">Total</td>
+              <td class="text-center">{{ totalItemScore() }}</td>
+              <td class="text-center">{{ selfTotal() !== null ? selfTotal() : '-' }}</td>
+              <td class="text-center">{{ affirm1Total() !== null ? affirm1Total() : '-' }}</td>
+            </tr>
+          </tfoot>
+        </nz-table>
+      </div>
+
+      <!-- Ý kiến cá nhân (readonly) -->
+      <div class="table-responsive mb-2">
+        <table class="table table-bordered table-sm mb-0">
+          <thead class="table-light text-center">
+            <tr>
+              <th>{{ 'evs.viewAffirmTarget1Ability.modal.selfOpinion' | translate:'Ý kiến cá nhân' }}</th>
+              <th style="width:100px;">{{ 'evs.viewAffirmTarget1Ability.modal.col.totalScore' | translate:'Điểm số' }}</th>
+              <th style="width:80px;">{{ 'evs.viewAffirmTarget1Ability.col.grade' | translate:'Cấp' }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><div class="small" style="min-height:40px;" [innerHTML]="info.affirmContent0"></div></td>
+              <td class="text-center fw-semibold align-middle">{{ info.evsPoint0 || '-' }}</td>
+              <td class="text-center fw-semibold align-middle">{{ selfGradeName() }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Ý kiến đánh giá lần 1 -->
+      <div class="table-responsive mb-3">
+        <table class="table table-bordered table-sm mb-0">
+          <thead class="table-light text-center">
+            <tr>
+              <th>{{ 'evs.viewAffirmTarget1Ability.modal.affirm1Opinion' | translate:'Ý kiến đánh giá lần 1' }}</th>
+              <th style="width:100px;">{{ 'evs.viewAffirmTarget1Ability.modal.col.totalScore' | translate:'Điểm số' }}</th>
+              <th style="width:130px;">{{ 'evs.viewAffirmTarget1Ability.col.grade' | translate:'Cấp' }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><textarea nz-input rows="4" style="resize:vertical;" [(ngModel)]="affirmContent" [readonly]="!canInputDetail"></textarea></td>
+              <td class="text-center fw-semibold align-middle">{{ affirm1ScoreDisplay() }}</td>
+              <td class="text-center fw-semibold align-middle">{{ affirm1GradeName() }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="d-flex justify-content-end gap-2">
+        <button nz-button type="button" *ngIf="canInputDetail" (click)="saveDetail('draft')">
+          {{ 'evs.viewAffirmTarget1Ability.btnSaveDraft' | translate:'Lưu tạm thời' }}
+        </button>
+        <button nz-button nzType="primary" type="button" *ngIf="canInputDetail" (click)="saveDetail('confirm')">
+          {{ 'evs.viewAffirmTarget1Ability.modal.btnConfirm' | translate:'Xác nhận' }}
+        </button>
+        <button nz-button nzDanger type="button" *ngIf="canInputDetail" (click)="rejectDetail()">
+          {{ 'evs.viewAffirmTarget1Ability.modal.btnReject' | translate:'Từ chối' }}
+        </button>
+        <button nz-button type="button" (click)="closeModal()">
+          {{ 'evs.viewAffirmTarget1Ability.btnClose' | translate:'Đóng' }}
+        </button>
+      </div>
+    </ng-container>
+  </ng-container>
+</nz-modal>

@@ -1,0 +1,99 @@
+/* Chuyển nguyên từ .process-container/.process-group/... trong assets/css/style.css (bản Thymeleaf) -
+   file đó chỉ nạp cho các trang Thymeleaf, không có trong bundle Angular (xem angular.json), nên phải
+   khai báo lại ở đây (đổi tiền tố class "process-"/"step-"/"group-"/"vertical-" thành "vrp-" để tránh
+   trùng lặp với các trang khác - xem CLAUDE.md quy tắc đặt tên). */
+
+.vrp-process-container {
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 20px;
+  padding: 20px;
+  overflow-x: auto;
+}
+
+.vrp-process-group {
+  border: 2px solid #fd7e14;
+  border-radius: 15px;
+  background-color: #fff5f0;
+  padding: 15px;
+  min-width: 250px;
+  position: relative;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.vrp-process-header {
+  text-align: center;
+  color: #d35400;
+  font-weight: bold;
+  margin-bottom: 15px;
+  font-size: 1.1em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.vrp-process-header::before,
+.vrp-process-header::after {
+  content: '•';
+  margin: 0 10px;
+  color: #fd7e14;
+}
+
+.vrp-step-item {
+  margin-bottom: 15px;
+  position: relative;
+}
+
+.vrp-step-btn {
+  display: block;
+  width: 100%;
+  padding: 10px 15px;
+  text-align: center;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+  background: linear-gradient(to bottom, #ffffff 0%, #f1f1f1 100%);
+  color: #333;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.vrp-step-btn.vrp-active-step {
+  background: linear-gradient(to bottom, #f39c12 0%, #e67e22 100%);
+  color: white;
+  border-color: #d35400;
+}
+
+.vrp-step-btn.vrp-checkbox-step {
+  background: linear-gradient(to bottom, #f8f9fa 0%, #e9ecef 100%);
+  color: #555;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.vrp-step-arrow-down {
+  text-align: center;
+  color: #aaa;
+  margin: -10px 0 5px 0;
+  font-size: 20px;
+}
+
+.vrp-group-connector {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  color: #aaa;
+  font-size: 24px;
+}
+
+.vrp-vertical-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}

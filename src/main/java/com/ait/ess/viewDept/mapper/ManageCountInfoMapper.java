@@ -23,7 +23,5 @@ public interface ManageCountInfoMapper {
 
     List<ManageCountItemDto> countByAge(ManageCountInfoEmpDto params);
 
-    int countList(ManageCountInfoEmpDto params);
-
-    List<ManageCountInfoEmpDto> selectListPage(ManageCountInfoEmpDto params);
+    List<ManageCountInfoEmpDto> selectList(ManageCountInfoEmpDto params);
 }

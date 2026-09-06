@@ -1,0 +1,7 @@
+table td, table th {
+  white-space: nowrap;
+}
+
+.table-scroll-wrapper {
+  overflow-x: auto;
+}

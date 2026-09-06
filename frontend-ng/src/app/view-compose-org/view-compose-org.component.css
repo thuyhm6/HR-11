@@ -1,0 +1,13 @@
+.vco-tree-scroll {
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.vco-modal-tree-scroll {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.vco-inline-checkbox {
+  margin-top: 28px;
+}

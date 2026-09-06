@@ -1,0 +1,258 @@
+<div class="row h-100">
+  <!-- ── Panel trái: danh sách hạng mục tiêu chuẩn ────────────────────── -->
+  <div class="col-md-3 mb-3">
+    <nz-card class="vpid-left-card" [nzBodyStyle]="{ padding: '0' }">
+      <div class="px-3 py-2 bg-light border-bottom fw-bold">
+        {{ 'pa.inputItemData.itemList' | translate:'Hạng mục tiêu chuẩn' }}
+      </div>
+      <div class="vpid-item-list">
+        <div *ngIf="itemsErrorMessage()" class="p-3 text-danger small">{{ itemsErrorMessage() }}</div>
+        <div *ngIf="!itemsLoading() && !itemsErrorMessage() && items().length === 0" class="p-3 text-muted small">
+          {{ 'common.noData' | translate:'Không có dữ liệu' }}
+        </div>
+        <div *ngFor="let item of items()" class="vpid-item-row d-flex align-items-center px-3 py-2 border-bottom"
+             [class.active]="currentParamNo() === item.paramNo" (click)="selectItem(item)">
+          <i class="bx bxs-file me-2 text-warning flex-shrink-0"></i>
+          <span class="small text-truncate" [attr.title]="item.paramName">{{ item.paramName }}</span>
+        </div>
+      </div>
+    </nz-card>
+  </div>
+
+  <!-- ── Panel phải: danh sách dữ liệu tiêu chuẩn ─────────────────────── -->
+  <div class="col-md-9 mb-3">
+    <nz-card class="mb-3 sticky-filter-card">
+      <form class="row g-3" (ngSubmit)="search()">
+        <div class="col-md-2">
+          <label class="form-label">{{ 'pa.inputItemData.payMonth' | translate:'Tháng lương' }}</label>
+          <nz-date-picker class="w-100" [(ngModel)]="searchPayMonth" name="vpidPayMonth"
+                           nzMode="month" nzFormat="MM/yyyy" [nzAllowClear]="false"></nz-date-picker>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'pa.inputItemData.empOffice' | translate:'Trạng thái làm việc' }}</label>
+          <nz-select class="w-100" [(ngModel)]="searchEmpOffice" name="vpidEmpOffice" nzAllowClear
+                     [nzPlaceHolder]="'common.selectAll' | translate:'-- Tất cả --'">
+            <nz-option *ngFor="let c of empOfficeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'pa.inputItemData.dept' | translate:'Phòng ban' }}</label>
+          <nz-tree-select class="w-100" [nzNodes]="deptNodes()" [(ngModel)]="searchDeptNos" name="vpidDeptNos"
+                           nzCheckable nzShowSearch nzAllowClear
+                           [nzPlaceHolder]="'pa.inputItemData.deptPlaceholder' | translate:'Mã / Tên phòng ban'"></nz-tree-select>
+          <div *ngIf="deptTreeErrorMessage()" class="text-danger small mt-1">{{ deptTreeErrorMessage() }}</div>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'pa.inputItemData.empSearch' | translate:'Họ tên / Mã NV' }}</label>
+          <input nz-input [(ngModel)]="searchEmpSearch" name="vpidEmpSearch"
+                 [placeholder]="'pa.inputItemData.empSearchPlaceholder' | translate:'Họ tên hoặc mã nhân viên'">
+        </div>
+        <div class="col-md-2 d-flex align-items-end gap-2">
+          <button nz-button nzType="primary" type="submit">
+            <i class="bx bx-search"></i> {{ 'common.search' | translate:'Tìm kiếm' }}
+          </button>
+          <button nz-button type="button" (click)="clearSearch()">
+            <i class="bx bx-x"></i>
+          </button>
+        </div>
+      </form>
+    </nz-card>
+
+    <nz-card>
+      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <h6 class="mb-0 text-primary fw-bold">
+          {{ currentParamName() || ('pa.inputItemData.dataList' | translate:'Danh sách dữ liệu tiêu chuẩn') }}
+        </h6>
+        <div class="d-flex gap-2 flex-wrap">
+          <button nz-button nzType="primary" type="button" (click)="openAddModal()">
+            <i class="bx bx-plus"></i> {{ 'pa.inputItemData.addNew' | translate:'Thêm mới' }}
+          </button>
+          <button nz-button nzType="default" type="button" (click)="downloadTemplate()">
+            <i class="bx bx-download"></i> {{ 'common.downloadTemplate' | translate:'Tải File Mẫu' }}
+          </button>
+          <button nz-button nzType="default" type="button" [nzLoading]="importingExcel()" (click)="vpidFileInput.click()">
+            <i class="bx bx-upload"></i> {{ 'common.importExcel' | translate:'Import Excel' }}
+          </button>
+          <input #vpidFileInput type="file" hidden accept=".xlsx,.xls" (change)="onExcelFileSelected($event)">
+          <button nz-button nzDanger type="button" (click)="openDeleteConfirm()">
+            <i class="bx bx-trash"></i> {{ 'pa.inputItemData.delete' | translate:'Xóa' }}
+          </button>
+        </div>
+      </div>
+
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+      <div *ngIf="!currentParamNo()" class="text-muted p-3 text-center">
+        {{ 'pa.inputItemData.selectItemFirst' | translate:'Vui lòng chọn hạng mục ở bên trái trước!' }}
+      </div>
+
+      <!-- Server-side pagination (draw/start/length -> recordsFiltered), đúng hành vi DataTables gốc. -->
+      <nz-table *ngIf="currentParamNo()" [nzData]="rows()" [nzFrontPagination]="false" [nzLoading]="loading()"
+                [nzTotal]="totalRecords()" [nzPageIndex]="pageIndex" [nzPageSize]="pageSize"
+                [nzPageSizeOptions]="pageSizeOptions" [nzShowSizeChanger]="true" [nzShowTotal]="vpidTotalTpl"
+                (nzPageIndexChange)="onPageIndexChange($event)" (nzPageSizeChange)="onPageSizeChange($event)"
+                [nzScroll]="{ x: '1300px', y: 'calc(100vh - 480px)' }" #vpidTable>
+        <thead>
+          <tr>
+            <th class="text-center" nzWidth="40px">
+              <label nz-checkbox [ngModel]="allChecked" [nzIndeterminate]="someChecked" (ngModelChange)="toggleAllChecked($event)"></label>
+            </th>
+            <th class="text-center" nzWidth="50px">{{ 'pa.inputItemData.no' | translate:'STT' }}</th>
+            <th nzWidth="110px">{{ 'pa.inputItemData.empId' | translate:'Mã NV' }}</th>
+            <th nzWidth="150px">{{ 'pa.inputItemData.localName' | translate:'Họ tên' }}</th>
+            <th nzWidth="160px">{{ 'pa.inputItemData.deptName' | translate:'Phòng ban' }}</th>
+            <th nzWidth="130px">{{ 'pa.inputItemData.postGrade' | translate:'Chức danh' }}</th>
+            <th nzWidth="110px">{{ 'pa.inputItemData.empOfficeName' | translate:'Trạng thái' }}</th>
+            <th class="text-end" nzWidth="120px">{{ 'pa.inputItemData.returnValue' | translate:'Giá trị' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'pa.inputItemData.startMonth' | translate:'Tháng bắt đầu' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'pa.inputItemData.endMonth' | translate:'Tháng kết thúc' }}</th>
+            <th nzWidth="180px">{{ 'pa.inputItemData.remark' | translate:'Ghi chú' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!loading() && rows().length === 0">
+            <td colspan="11" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+          </tr>
+          <tr *ngFor="let row of vpidTable.data; let i = index" class="vpid-row-clickable" (click)="openEditModal(row)">
+            <td class="text-center" (click)="$event.stopPropagation()">
+              <label nz-checkbox [ngModel]="isChecked(row)" (ngModelChange)="toggleChecked(row, $event)"></label>
+            </td>
+            <td class="text-center">{{ (pageIndex - 1) * pageSize + i + 1 }}</td>
+            <td [attr.title]="row.empId || null">{{ row.empId }}</td>
+            <td [attr.title]="row.localName || null">{{ row.localName }}</td>
+            <td [attr.title]="row.deptName || null">{{ row.deptName }}</td>
+            <td [attr.title]="row.postGradeName || null">{{ row.postGradeName }}</td>
+            <td [attr.title]="row.empOffice || null">{{ row.empOffice }}</td>
+            <td class="text-end">{{ numberFormatter(+row.returnValue) }}</td>
+            <td class="text-center">{{ toMmSlashYyyy(row.startMonth) }}</td>
+            <td class="text-center">{{ toMmSlashYyyy(row.endMonth) }}</td>
+            <td [attr.title]="row.remark || null">{{ row.remark }}</td>
+          </tr>
+        </tbody>
+        <ng-template #vpidTotalTpl let-total>
+          {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+        </ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>
+
+<!-- Modal Thêm mới / Sửa dữ liệu tiêu chuẩn -->
+<nz-modal [nzVisible]="modalVisible()"
+          [nzTitle]="(isNew() ? 'pa.inputItemData.addTitle' : 'pa.inputItemData.editTitle') | translate:(isNew() ? 'Thêm mới dữ liệu tiêu chuẩn' : 'Cập nhật dữ liệu tiêu chuẩn')"
+          nzWidth="650px" (nzOnCancel)="closeModal()" (nzOnOk)="saveForm()" [nzOkLoading]="saving()"
+          [nzOkText]="'common.save' | translate:'Lưu'" [nzCancelText]="'common.close' | translate:'Đóng'">
+  <ng-container *nzModalContent>
+    <nz-alert nzType="info" class="mb-3"
+              [nzMessage]="('pa.inputItemData.configItem' | translate:'Hạng mục đang nhập:') + ' ' + (currentParamName() || '')"></nz-alert>
+    <div class="row g-3">
+      <div class="col-12">
+        <label class="form-label">
+          {{ 'pa.inputItemData.personId' | translate:'Mã nhân viên' }} <span class="text-danger">*</span>
+        </label>
+        <div class="d-flex gap-2">
+          <input nz-input [ngModel]="form.empDisplay" name="vpidEmpDisplay" readonly
+                 [ngModelOptions]="{ standalone: true }"
+                 [placeholder]="'arSupervisor.placeholder.selectEmp' | translate:'Chọn nhân viên...'">
+          <button *ngIf="isNew()" nz-button nzType="default" type="button" (click)="openPicker()">
+            <i class="bx bx-search"></i> {{ 'arSupervisor.btn.select' | translate:'Chọn' }}
+          </button>
+        </div>
+        <small *ngIf="form.personId" class="text-success d-block mt-1">
+          <i class="bx bx-check"></i> {{ 'arSupervisor.js.empSelected' | translate:'Đã chọn NV: ' }}{{ form.empDisplay }}
+        </small>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">
+          {{ 'pa.inputItemData.returnValue' | translate:'Giá trị' }} <span class="text-danger">*</span>
+        </label>
+        <nz-input-number class="w-100" [(ngModel)]="form.returnValue" name="vpidReturnValue"
+                          [nzFormatter]="numberFormatter" [nzParser]="numberParser"></nz-input-number>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">
+          {{ 'pa.inputItemData.startMonth' | translate:'Tháng bắt đầu' }} <span class="text-danger">*</span>
+        </label>
+        <nz-date-picker class="w-100" [(ngModel)]="form.startMonth" name="vpidStartMonth"
+                         nzMode="month" nzFormat="MM/yyyy"></nz-date-picker>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">{{ 'pa.inputItemData.endMonth' | translate:'Tháng kết thúc' }}</label>
+        <nz-date-picker class="w-100" [(ngModel)]="form.endMonth" name="vpidEndMonth"
+                         nzMode="month" nzFormat="MM/yyyy"></nz-date-picker>
+      </div>
+      <div class="col-12">
+        <label class="form-label">{{ 'pa.inputItemData.remark' | translate:'Ghi chú' }}</label>
+        <textarea nz-input [(ngModel)]="form.remark" name="vpidRemark" rows="2"></textarea>
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Popup tìm kiếm nhân viên - tái dùng pattern ChangeUserComponent (thay EmployeeSearchModal jQuery) -->
+<nz-modal [nzVisible]="pickerVisible()" [nzTitle]="'empSearch.title' | translate:'Tìm kiếm nhân viên'"
+          nzWidth="900px" (nzOnCancel)="closePicker()" [nzFooter]="null">
+  <ng-container *nzModalContent>
+    <form class="row g-2 align-items-end mb-3" (ngSubmit)="pickerSearch()">
+      <div class="col-md-5">
+        <label class="form-label">{{ 'empSearch.field.keyword' | translate:'Mã nhân viên / Họ tên' }}</label>
+        <input nz-input [(ngModel)]="pickerKeyword" name="vpidPickerKeyword"
+               [placeholder]="'empSearch.placeholder.keyword' | translate:'Nhập mã hoặc họ tên'"
+               (keydown.enter)="$event.preventDefault(); pickerSearch()">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">{{ 'empSearch.field.dept' | translate:'Phòng ban' }}</label>
+        <nz-tree-select class="w-100" [nzNodes]="deptNodes()" [(ngModel)]="pickerDeptNos" name="vpidPickerDeptNos"
+                         nzCheckable nzShowSearch nzAllowClear
+                         [nzPlaceHolder]="'vdp.search.dept.placeholder' | translate:'Chọn phòng ban'"></nz-tree-select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">{{ 'empSearch.field.empOffice' | translate:'Trạng thái làm việc' }}</label>
+        <nz-select class="w-100" [(ngModel)]="pickerEmpOffice" name="vpidPickerEmpOffice" nzAllowClear
+                   [nzPlaceHolder]="'common.selectAll' | translate:'-- Tất cả --'">
+          <nz-option *ngFor="let c of empOfficeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-12 d-flex gap-2">
+        <button nz-button nzType="primary" type="submit">
+          <i class="bx bx-search"></i> {{ 'common.search' | translate:'Tìm kiếm' }}
+        </button>
+        <button nz-button type="button" (click)="pickerClear()">
+          <i class="bx bx-x"></i> {{ 'empSearch.btn.clearFilter' | translate:'Xóa bộ lọc' }}
+        </button>
+      </div>
+    </form>
+
+    <nz-alert *ngIf="pickerErrorMessage()" nzType="error" [nzMessage]="pickerErrorMessage() ?? ''" class="mb-2"></nz-alert>
+
+    <nz-table [nzData]="pickerRows()" [nzLoading]="pickerLoading()" [nzPageSize]="10" nzSize="small" #vpidPickerTable>
+      <thead>
+        <tr>
+          <th class="text-center" nzWidth="60px">{{ 'empSearch.col.no' | translate:'STT' }}</th>
+          <th nzWidth="110px">{{ 'pa.inputItemData.empId' | translate:'Mã NV' }}</th>
+          <th>{{ 'pa.inputItemData.localName' | translate:'Họ tên' }}</th>
+          <th>{{ 'pa.inputItemData.deptName' | translate:'Phòng ban' }}</th>
+          <th>{{ 'epi.field.position' | translate:'Chức vụ' }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of vpidPickerTable.data; let i = index" class="vpid-row-clickable" (click)="selectEmployee(row)">
+          <td class="text-center">{{ i + 1 }}</td>
+          <td>{{ row.empId }}</td>
+          <td>{{ row.localName }}</td>
+          <td>{{ row.deptName || row.deptNo }}</td>
+          <td>{{ row.position }}</td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal xác nhận xóa nhiều dòng -->
+<nz-modal [nzVisible]="deleteVisible()" [nzTitle]="'common.confirm' | translate:'Xác nhận'"
+          (nzOnCancel)="closeDeleteConfirm()" (nzOnOk)="confirmDelete()" [nzOkLoading]="deleting()"
+          [nzOkText]="'common.confirm' | translate:'Xác nhận'" [nzCancelText]="'common.cancel' | translate:'Hủy'">
+  <ng-container *nzModalContent>
+    <p class="mb-0">{{ 'pa.inputItemData.confirmDelete' | translate:'Bạn có chắc chắn muốn xóa bản ghi đã chọn?' }} ({{ selectedCount }})</p>
+  </ng-container>
+</nz-modal>

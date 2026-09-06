@@ -1,0 +1,6 @@
+.oail-row-clickable {
+  cursor: pointer;
+}
+.oail-row-clickable:hover {
+  background: #fafafa;
+}

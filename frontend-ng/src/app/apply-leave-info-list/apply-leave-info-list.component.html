@@ -1,0 +1,214 @@
+<div class="row">
+  <div class="col-12">
+
+    <!-- ===== Thông tin nhân viên (tương đương fragments/essEmpInfoCard.html) ===== -->
+    <div class="card mb-3" *ngIf="basicInfo() as info">
+      <div class="card-body p-0">
+        <table class="table table-bordered table-sm align-middle mb-0" style="table-layout:fixed;">
+          <colgroup>
+            <col style="width:15%;"><col style="width:35%;"><col style="width:15%;"><col style="width:35%;">
+          </colgroup>
+          <tbody>
+            <tr>
+              <th class="table-light text-center">{{ 'essEmpCard.localName' | translate:'Họ tên' }}</th>
+              <td>{{ info.localName }}</td>
+              <th class="table-light text-center">{{ 'essEmpCard.empId' | translate:'Mã nhân viên' }}</th>
+              <td>{{ info.empId }}</td>
+            </tr>
+            <tr>
+              <th class="table-light text-center">{{ 'essEmpCard.deptName' | translate:'Phòng ban' }}</th>
+              <td>{{ info.deptName }}</td>
+              <th class="table-light text-center">{{ 'essEmpCard.headDept' | translate:'Trưởng phòng' }}</th>
+              <td>{{ info.headDepartment }}</td>
+            </tr>
+            <tr>
+              <th class="table-light text-center">{{ 'essEmpCard.postFamily' | translate:'Nhóm nhân viên' }}</th>
+              <td>{{ info.postFamilyName }}</td>
+              <th class="table-light text-center">{{ 'essEmpCard.postGrade' | translate:'Chức vụ' }}</th>
+              <td>{{ info.postGradeName }}</td>
+            </tr>
+            <tr>
+              <th class="table-light text-center">{{ 'essEmpCard.positionName' | translate:'Chức danh' }}</th>
+              <td>{{ info.positionNoName }}</td>
+              <th class="table-light text-center">{{ 'essEmpCard.dateStarted' | translate:'Ngày vào làm' }}</th>
+              <td>{{ info.dateStarted }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== Điều kiện tìm kiếm ===== -->
+    <div class="card mb-3">
+      <div class="card-body">
+        <form class="row g-3" (ngSubmit)="search()">
+          <div class="col-md-3">
+            <label class="form-label">{{ 'essLeave.startDate' | translate:'Ngày bắt đầu' }}</label>
+            <nz-date-picker class="w-100" [(ngModel)]="startDate" name="startDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">{{ 'essLeave.endDate' | translate:'Ngày kết thúc' }}</label>
+            <nz-date-picker class="w-100" [(ngModel)]="endDate" name="endDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">{{ 'essLeave.approvalStatus' | translate:'Trạng thái duyệt' }}</label>
+            <nz-select class="w-100" [(ngModel)]="affirmFlag" name="affirmFlag" nzAllowClear
+                       [nzPlaceHolder]="'common.selectAll' | translate:'-- Tất cả --'">
+              <nz-option *ngFor="let c of affirmFlagOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+            </nz-select>
+          </div>
+          <div class="col-md-3 d-flex align-items-end">
+            <button nz-button nzType="primary" type="submit">
+              <i class="bx bx-search"></i> {{ 'essLeave.search' | translate:'Tra cứu' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ===== Toolbar ===== -->
+    <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+      <input nz-input style="max-width:220px;" [(ngModel)]="quickFilterKeyword"
+             [placeholder]="'essCommon.quickFilter' | translate:'Lọc nhanh'">
+      <div class="ms-auto d-flex gap-2">
+        <button nz-button nzDanger [nzLoading]="cancelling()" (click)="cancelSelected()">
+          <i class="bx bx-x-circle"></i> {{ 'essLeave.cancelBtn' | translate:'Hủy bỏ' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- ===== Bảng danh sách ===== -->
+    <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+    <nz-table [nzData]="filteredRows()" [nzLoading]="loading()" [nzPageSize]="25" [nzShowSizeChanger]="true"
+              [nzPageSizeOptions]="[25, 50, 100, 200]" [nzShowTotal]="aliTotalTpl"
+              [nzScroll]="{ x: '1650px' }" class="table-nowrap" #aliTable>
+      <thead>
+        <tr>
+          <th nzWidth="40px">
+            <label nz-checkbox [ngModel]="allCancelableSelected()" [nzIndeterminate]="someCancelableSelected()"
+                   (ngModelChange)="toggleSelectAll($event)"></label>
+          </th>
+          <th class="text-center" nzWidth="50px">{{ 'common.stt' | translate:'STT' }}</th>
+          <th class="text-center" nzWidth="110px">{{ 'essCommon.attendanceDate' | translate:'Ngày công' }}</th>
+          <th nzWidth="150px">{{ 'essCommon.category' | translate:'Phân loại' }}</th>
+          <th class="text-center" nzWidth="120px">{{ 'essCommon.cardSwipeTime' | translate:'Thời gian quẹt thẻ' }}</th>
+          <th class="text-center" nzWidth="120px">{{ 'essOt.timeRange' | translate:'Thời gian' }}</th>
+          <th class="text-center" nzWidth="110px">{{ 'essCommon.shift' | translate:'Ca' }}</th>
+          <th class="text-center" nzWidth="150px">{{ 'essCommon.workTime' | translate:'Thời gian làm việc' }}</th>
+          <th nzWidth="180px">{{ 'common.remark' | translate:'Lý do' }}</th>
+          <th class="text-center" nzWidth="120px">{{ 'essLeave.approvalStatus' | translate:'Trạng thái duyệt' }}</th>
+          <th nzWidth="180px">{{ 'essCommon.hrOpinion' | translate:'Ý kiến của nhân sự' }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of aliTable.data; let i = index" class="ali-row-clickable" (click)="openDetail(row)">
+          <td class="text-center" (click)="$event.stopPropagation()">
+            <label nz-checkbox *ngIf="[ '14014306', '14014307', '14014308' ].includes(row.affirmFlag)" [(ngModel)]="row.selected"></label>
+          </td>
+          <td class="text-center">{{ i + 1 }}</td>
+          <td class="text-center">{{ row.arDateStr }}</td>
+          <td><a href="javascript:void(0)">{{ row.itemName || row.itemNo }}</a></td>
+          <td class="text-center small">
+            <div>{{ 'essCwa.inLabel' | translate:'Vào' }}: {{ row.indoorTime || '**:**' }}</div>
+            <div>{{ 'essCwa.outLabel' | translate:'Ra' }}:&nbsp; {{ row.outdoorTime || '**:**' }}</div>
+          </td>
+          <td class="text-center small">
+            <div>{{ 'essCwa.inLabel' | translate:'Vào' }}: {{ row.fromTime }}</div>
+            <div>{{ 'essCwa.outLabel' | translate:'Ra' }}:&nbsp; {{ row.toTime }}</div>
+          </td>
+          <td class="text-center">{{ row.shiftName }}</td>
+          <td class="text-center small">
+            <div>{{ formatWorkTime(row.workTime).from }}</div>
+            <div *ngIf="formatWorkTime(row.workTime).to" class="text-muted">- {{ formatWorkTime(row.workTime).to }}</div>
+          </td>
+          <td [attr.title]="row.applyReason || null">{{ row.applyReason }}</td>
+          <td class="text-center">{{ row.affirmFlagName || row.affirmFlag }}</td>
+          <td [attr.title]="row.hrComment || null">{{ row.hrComment }}</td>
+        </tr>
+      </tbody>
+      <ng-template #aliTotalTpl let-total>
+        {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+      </ng-template>
+    </nz-table>
+
+  </div>
+</div>
+
+<!-- ===== Modal chi tiết phê duyệt ===== -->
+<nz-modal [nzVisible]="detailVisible()" [nzTitle]="modalTitle()" nzWidth="60vw"
+          [nzBodyStyle]="{ 'max-height': '75vh', 'overflow-y': 'auto' }"
+          (nzOnCancel)="closeDetail()" [nzFooter]="null">
+  <ng-container *nzModalContent>
+    <nz-alert *ngIf="detailErrorMessage()" nzType="error" [nzMessage]="detailErrorMessage() ?? ''" class="mb-3"></nz-alert>
+    <ng-container *ngIf="!detailLoading() && detailData() as d">
+      <nz-descriptions nzBordered [nzColumn]="1" nzSize="small" class="mb-3">
+        <nz-descriptions-item [nzTitle]="'essCommon.title' | translate:'Tiêu đề'">{{ applyTitleText() }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'essCommon.applicant' | translate:'Người xin phép'">{{ applicantText() }}</nz-descriptions-item>
+      </nz-descriptions>
+
+      <h6 class="fw-bold mb-2">{{ 'essCommon.approvalOrder' | translate:'Trình tự duyệt' }}</h6>
+      <div class="table-responsive mb-3">
+        <nz-table [nzData]="d.approvalList" [nzShowPagination]="false" nzSize="small">
+          <thead>
+            <tr>
+              <th class="text-center" style="width:50px">{{ 'common.stt' | translate:'STT' }}</th>
+              <th class="text-center" style="width:110px">{{ 'essCommon.approvalOrder' | translate:'Trình tự duyệt' }}</th>
+              <th class="text-center" style="width:110px">{{ 'essLeave.approvalStatus' | translate:'Trạng thái duyệt' }}</th>
+              <th>{{ 'essCommon.fullName' | translate:'Họ tên' }}</th>
+              <th>{{ 'essCommon.opinion' | translate:'Ý kiến' }}</th>
+              <th class="text-center" style="width:170px">{{ 'essCommon.executionTime' | translate:'Thời gian thực hiện' }}</th>
+              <th style="width:120px">{{ 'common.deptName' | translate:'Phòng ban' }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="!d.approvalList?.length">
+              <td colspan="7" class="text-center text-muted">{{ 'essCommon.noData' | translate:'Không có dữ liệu' }}</td>
+            </tr>
+            <tr *ngFor="let item of d.approvalList">
+              <td class="text-center">{{ approvalSeqLabel(item) }}</td>
+              <td class="text-center">{{ item.affirmTypeName }}</td>
+              <td class="text-center">{{ item.affirmFlagName }}</td>
+              <td>{{ item.affirmName }}</td>
+              <td>{{ item.affirmContent }}</td>
+              <td class="text-center">{{ item.updateDate }}</td>
+              <td>{{ item.deptName }}</td>
+            </tr>
+          </tbody>
+        </nz-table>
+      </div>
+
+      <h6 class="fw-bold mb-2">{{ 'essCommon.empInfo' | translate:'Thông tin nhân viên' }}</h6>
+      <nz-descriptions nzBordered [nzColumn]="2" nzSize="small" class="mb-3">
+        <nz-descriptions-item [nzTitle]="'essCommon.fullName' | translate:'Họ tên'">{{ d.employeeInfo?.['localName'] }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'common.empId' | translate:'Mã nhân viên'">{{ d.employeeInfo?.['empId'] }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'common.deptName' | translate:'Phòng ban'">{{ d.employeeInfo?.['deptName'] }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'essCommon.position' | translate:'Chức vụ'">{{ d.employeeInfo?.['postGradeName'] }}</nz-descriptions-item>
+      </nz-descriptions>
+
+      <h6 class="fw-bold mb-2">{{ 'essCommon.applyInfo' | translate:'Thông tin xin phép' }}</h6>
+      <div class="table-responsive">
+        <nz-table [nzData]="[d.leaveInfo]" [nzShowPagination]="false" nzSize="small">
+          <thead>
+            <tr>
+              <th>{{ 'essCommon.leaveType' | translate:'Loại nghỉ phép' }}</th>
+              <th class="text-center" style="width:170px">{{ 'essCommon.startTime' | translate:'Thời gian bắt đầu' }}</th>
+              <th class="text-center" style="width:170px">{{ 'essCommon.endTime' | translate:'Thời gian kết thúc' }}</th>
+              <th class="text-center" style="width:140px">{{ 'common.hours' | translate:'Số giờ' }}</th>
+              <th>{{ 'essCommon.reason' | translate:'Lý do' }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="text-center">{{ d.leaveInfo?.['leaveTypeName'] }}</td>
+              <td class="text-center">{{ d.leaveInfo?.['leaveFromTime'] }}</td>
+              <td class="text-center">{{ d.leaveInfo?.['leaveToTime'] }}</td>
+              <td class="text-center">{{ d.leaveInfo?.['applyLength'] }}</td>
+              <td>{{ d.leaveInfo?.['leaveReason'] }}</td>
+            </tr>
+          </tbody>
+        </nz-table>
+      </div>
+    </ng-container>
+  </ng-container>
+</nz-modal>

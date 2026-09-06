@@ -1,0 +1,75 @@
+<div class="py-3 hrm-dashboard">
+  <div class="card bg-primary text-white mb-3">
+    <div class="card-body py-3 d-flex align-items-center gap-3">
+      <i class="bx bx-building-house fs-1"></i>
+      <div>
+        <h5 class="mb-1 text-white">{{ 'hrm.welcome.title' | translate:'Chào mừng đến với HR Management System' }}</h5>
+        <p class="mb-0 opacity-75 small">Chào mừng {{ auth.currentUser()?.employeeName }} đến với hệ thống HR!</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-lg-4">
+      <nz-card [nzTitle]="alertsTitle" class="h-100">
+        <ng-template #alertsTitle>
+          <i class="bx bx-bell text-warning me-1"></i>{{ 'hrm.alerts.title' | translate:'Cảnh báo' }}
+        </ng-template>
+        <nz-table [nzShowPagination]="false" nzSize="small">
+          <thead>
+            <tr>
+              <th style="width:65%">{{ 'common.name' | translate:'Tên' }}</th>
+              <th style="width:15%">{{ 'dashboard.col.quantity' | translate:'Số lượng' }}</th>
+              <th style="width:20%">{{ 'common.status' | translate:'Trạng thái' }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <a href="javascript:void(0)" (click)="openExpiredContractTab()">
+                  {{ 'dashboard.contract.expiringDetail' | translate:'Hợp đồng sắp hết hạn (7 ngày tới)' }}
+                </a>
+              </td>
+              <td>{{ expiringContractsCount() === null ? '-' : (expiringContractsCount() === 'error' ? '?' : expiringContractsCount()) }}</td>
+              <td>
+                <nz-tag *ngIf="isPositive(expiringContractsCount())" nzColor="error">{{ 'dashboard.status.needAction' | translate:'Cần xử lý' }}</nz-tag>
+                <nz-tag *ngIf="expiringContractsCount() === 0" nzColor="success">{{ 'dashboard.status.stable' | translate:'Ổn định' }}</nz-tag>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <a href="javascript:void(0)" (click)="openNoContractTab()">
+                  {{ 'hrm.alert.noContract' | translate:'Nhân viên chưa có hợp đồng' }}
+                </a>
+              </td>
+              <td>{{ noContractCount() === null ? '-' : (noContractCount() === 'error' ? '-' : noContractCount()) }}</td>
+              <td>
+                <nz-tag *ngIf="isPositive(noContractCount())" nzColor="warning">{{ 'dashboard.status.needAction' | translate:'Cần xử lý' }}</nz-tag>
+                <nz-tag *ngIf="noContractCount() === 0" nzColor="success">{{ 'dashboard.status.stable' | translate:'Ổn định' }}</nz-tag>
+              </td>
+            </tr>
+          </tbody>
+        </nz-table>
+      </nz-card>
+    </div>
+
+    <div class="col-lg-8">
+      <nz-card [nzTitle]="chartTitle" [nzExtra]="chartExtra" class="h-100">
+        <ng-template #chartTitle>
+          <i class="bx bx-bar-chart-alt-2 text-primary me-1"></i>{{ 'hrm.chart.personnel.title' | translate:'Tình hình nhân sự' }}
+        </ng-template>
+        <ng-template #chartExtra>
+          <div class="d-flex align-items-center gap-2">
+            <nz-select [ngModel]="selectedYear()" (ngModelChange)="onYearChange($event)" style="width:90px">
+              <nz-option *ngFor="let y of years" [nzLabel]="y.toString()" [nzValue]="y"></nz-option>
+            </nz-select>
+            <a [href]="exportUrl()" nz-button nzType="default" nzSize="small">
+              <i class="bx bx-download me-1"></i>{{ 'hrm.chart.export' | translate:'Xuất Excel' }}
+            </a>
+          </div>
+        </ng-template>
+        <div #chartEl></div>
+      </nz-card>
+    </div>
+  </div>
+</div>

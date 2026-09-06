@@ -1,0 +1,166 @@
+<div class="row">
+  <div class="col-12">
+    <!-- Điều kiện tìm kiếm - đứng im khi cuộn (xem .sticky-filter-card trong styles.css) -->
+    <nz-card class="mb-3 sticky-filter-card">
+      <form class="row g-3" (ngSubmit)="search()">
+        <div class="col-md-2">
+          <label class="form-label">{{ 'evs.manage.viewResumeList.label.evsYear' | translate:'Năm đánh giá' }}</label>
+          <input nz-input type="number" [(ngModel)]="searchYear" name="erlSearchYear" min="2000" max="2099">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'evs.manage.viewResumeList.label.evsCycle' | translate:'Chu kỳ' }}</label>
+          <nz-select class="w-100" [(ngModel)]="searchCycle" name="erlSearchCycle" nzAllowClear
+                     [nzPlaceHolder]="'evs.manage.viewResumeList.label.allOption' | translate:'-- Tất cả --'">
+            <nz-option *ngFor="let c of cycleOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-7 d-flex align-items-end gap-2 flex-wrap">
+          <button nz-button nzType="primary" type="submit">
+            <i class="bx bx-search"></i> {{ 'evs.manage.viewResumeList.btn.search' | translate:'Tra cứu' }}
+          </button>
+          <button nz-button type="button" (click)="clearSearch()">
+            <i class="bx bx-x"></i> {{ 'evs.manage.viewResumeList.btn.clearFilter' | translate:'Xóa lọc' }}
+          </button>
+          <button nz-button nzType="primary" type="button" (click)="openAddModal()">
+            <i class="bx bx-plus"></i> {{ 'evs.manage.viewResumeList.btn.addNew' | translate:'Thêm mới' }}
+          </button>
+          <button nz-button nzType="default" type="button" class="erl-btn-export" (click)="exportExcel()">
+            <i class="bx bx-export"></i> {{ 'common.exportExcel' | translate:'Xuất Excel' }}
+          </button>
+        </div>
+      </form>
+    </nz-card>
+
+    <nz-card>
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+      <!-- nzWidth khai báo cho từng cột để đồng bộ độ rộng header/body khi dùng nzScroll. -->
+      <nz-table [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="25" [nzShowSizeChanger]="true"
+                [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="erlTotalTpl"
+                [nzScroll]="{ x: '1300px' }" #erlTable>
+        <thead>
+          <tr>
+            <th class="text-center" nzWidth="60px">{{ 'evs.manage.viewResumeList.col.no' | translate:'NO' }}</th>
+            <th nzWidth="220px">{{ 'evs.manage.viewResumeList.col.resumeName' | translate:'Tên đánh giá' }}</th>
+            <th class="text-center" nzWidth="120px">{{ 'evs.manage.viewResumeList.col.evsCycle' | translate:'Chu kỳ' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'evs.manage.viewResumeList.col.evsYear' | translate:'Năm đánh giá' }}</th>
+            <th class="text-center" nzWidth="130px">{{ 'evs.manage.viewResumeList.col.evsMonth' | translate:'Tháng đánh giá' }}</th>
+            <th class="text-center" nzWidth="130px">{{ 'evs.manage.viewResumeList.col.standardDate' | translate:'Ngày tiêu chuẩn' }}</th>
+            <th class="text-center" nzWidth="140px">{{ 'evs.manage.viewResumeList.col.startDate' | translate:'Thời gian bắt đầu' }}</th>
+            <th class="text-center" nzWidth="140px">{{ 'evs.manage.viewResumeList.col.endDate' | translate:'Thời gian kết thúc' }}</th>
+            <th class="text-center" nzWidth="120px">{{ 'evs.manage.viewResumeList.col.status' | translate:'Trạng thái' }}</th>
+            <th class="text-center" nzWidth="90px">{{ 'evs.manage.viewResumeList.col.action' | translate:'Thao tác' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!loading() && rows().length === 0">
+            <td colspan="10" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+          </tr>
+          <tr *ngFor="let row of erlTable.data; let i = index">
+            <td class="text-center">{{ i + 1 }}</td>
+            <td [attr.title]="row.resumeName || null">{{ row.resumeName }}</td>
+            <td class="text-center">{{ row.evsCycleName || row.evsCycle }}</td>
+            <td class="text-center">{{ row.evsYear }}</td>
+            <td class="text-center">{{ row.evsMonthName || row.evsMonth }}</td>
+            <td class="text-center">{{ row.standardDate }}</td>
+            <td class="text-center">{{ row.evsStartDate }}</td>
+            <td class="text-center">{{ row.evsEndDate }}</td>
+            <td class="text-center">
+              <nz-tag [nzColor]="activityTagColor(row.activity)">{{ row.activityName || row.activity }}</nz-tag>
+            </td>
+            <td class="text-center">
+              <button nz-button nzType="text" nzSize="small" [title]="'common.edit' | translate:'Sửa'" (click)="openEditModal(row)">
+                <i class="bx bx-edit text-warning"></i>
+              </button>
+              <button nz-button nzType="text" nzSize="small" [title]="'common.delete' | translate:'Xóa'" (click)="openDeleteConfirm(row)">
+                <i class="bx bx-trash text-danger"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+        <ng-template #erlTotalTpl let-total>
+          {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+        </ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>
+
+<!-- Modal Thêm mới / Cập nhật -->
+<nz-modal [nzVisible]="modalVisible()" [nzTitle]="modalTitle()" nzWidth="700px"
+          (nzOnCancel)="closeModal()" (nzOnOk)="saveForm()" [nzOkLoading]="saving()"
+          [nzOkText]="'evs.manage.viewResumeList.btn.save' | translate:'Lưu'"
+          [nzCancelText]="'evs.manage.viewResumeList.btn.close' | translate:'Đóng'">
+  <ng-container *nzModalContent>
+    <div class="row g-3">
+      <div class="col-12">
+        <label class="form-label fw-semibold">{{ 'evs.manage.viewResumeList.field.resumeName' | translate:'Tên đánh giá' }} <span class="text-danger">*</span></label>
+        <input nz-input [(ngModel)]="form.resumeName" name="erlFormResumeName">
+      </div>
+      <div class="col-12">
+        <label class="form-label fw-semibold">{{ 'evs.manage.viewResumeList.field.remark' | translate:'Giải thích' }}</label>
+        <textarea nz-input [(ngModel)]="form.remark" name="erlFormRemark" rows="3"></textarea>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold d-block">{{ 'evs.manage.viewResumeList.field.evsCycle' | translate:'Chu kỳ' }}</label>
+        <nz-select class="w-100" [(ngModel)]="form.evsCycle" name="erlFormEvsCycle" nzAllowClear
+                   (ngModelChange)="onCycleChange()"
+                   [nzPlaceHolder]="'evs.manage.viewResumeList.option.selectDefault' | translate:'-- Chọn --'">
+          <nz-option *ngFor="let c of cycleOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'evs.manage.viewResumeList.field.evsYear' | translate:'Năm đánh giá' }}</label>
+        <nz-input-number class="w-100" [(ngModel)]="form.evsYear" name="erlFormEvsYear" [nzMin]="2000" [nzMax]="2099"></nz-input-number>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold d-block">{{ 'evs.manage.viewResumeList.field.evsMonth' | translate:'Tháng đánh giá' }}</label>
+        <nz-select class="w-100" [(ngModel)]="form.evsMonth" name="erlFormEvsMonth" nzAllowClear
+                   [nzPlaceHolder]="'evs.manage.viewResumeList.option.selectDefault' | translate:'-- Chọn --'">
+          <nz-option *ngFor="let m of monthOptions()" [nzValue]="m.codeNo" [nzLabel]="m.codeName"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'evs.manage.viewResumeList.field.standardDate' | translate:'Ngày tiêu chuẩn' }} <span class="text-danger">*</span></label>
+        <nz-date-picker class="w-100" [(ngModel)]="form.standardDate" name="erlFormStandardDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
+      </div>
+      <div class="col-12">
+        <label class="form-label fw-semibold d-block">{{ 'evs.manage.viewResumeList.field.duration' | translate:'Thời gian' }}</label>
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+          <nz-date-picker [(ngModel)]="form.evsStartDate" name="erlFormEvsStartDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
+          <span>~</span>
+          <nz-date-picker [(ngModel)]="form.evsEndDate" name="erlFormEvsEndDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
+        </div>
+      </div>
+      <div class="col-md-6" *ngIf="form.activityName">
+        <label class="form-label fw-semibold d-block">{{ 'evs.manage.viewResumeList.field.activityStatus' | translate:'Trạng thái thực hiện' }}</label>
+        <span class="text-muted">{{ form.activityName }}</span>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold d-block">{{ 'evs.manage.viewResumeList.field.evsLevel' | translate:'Số lần đánh giá' }}</label>
+        <nz-select class="w-100" [(ngModel)]="form.evsLevel" name="erlFormEvsLevel" nzAllowClear
+                   [nzPlaceHolder]="'evs.manage.viewResumeList.option.selectDefault' | translate:'-- Chọn --'">
+          <nz-option *ngFor="let l of evsLevelOptions()" [nzValue]="l.codeNo" [nzLabel]="l.codeName"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-12">
+        <label class="form-label fw-semibold d-block">{{ 'evs.manage.viewResumeList.field.copyObject' | translate:'Sao chép đối tượng' }}</label>
+        <nz-select class="w-100" [(ngModel)]="form.copyObject" name="erlFormCopyObject" nzAllowClear
+                   [nzPlaceHolder]="'evs.manage.viewResumeList.option.noCopy' | translate:'-- Không sao chép --'">
+          <nz-option *ngFor="let o of copyOptions()" [nzValue]="o.seq"
+                     [nzLabel]="o.resumeName + (o.evsYear ? ' (' + o.evsYear + ')' : '')"></nz-option>
+        </nz-select>
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal xác nhận xóa -->
+<nz-modal [nzVisible]="deleteVisible()" [nzTitle]="'evs.manage.viewResumeList.modal.deleteTitle' | translate:'Xác nhận xóa'"
+          (nzOnCancel)="closeDeleteConfirm()" (nzOnOk)="confirmDelete()" [nzOkLoading]="deleting()"
+          [nzOkText]="'evs.manage.viewResumeList.btn.delete' | translate:'Xóa'"
+          [nzCancelText]="'evs.manage.viewResumeList.btn.cancel' | translate:'Hủy'">
+  <ng-container *nzModalContent>
+    <p class="mb-0">{{ deleteConfirmMessage }}</p>
+  </ng-container>
+</nz-modal>

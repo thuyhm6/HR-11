@@ -1,0 +1,11 @@
+.cis-row-clickable {
+  cursor: pointer;
+}
+.cis-row-clickable:hover {
+  background: #fafafa;
+}
+
+.cis-btn-export {
+  color: #52c41a;
+  border-color: #52c41a;
+}

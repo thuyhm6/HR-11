@@ -1,0 +1,219 @@
+<div class="row">
+  <!-- Cây tổ chức bên trái -->
+  <div class="col-md-3 mb-3">
+    <nz-card [nzTitle]="'org.orgManage.viewComposeOrg.title' | translate:'Cấu trúc tổ chức'" [nzBodyStyle]="{ padding: '12px' }">
+      <div class="mb-2">
+        <label class="form-label fw-bold">{{ 'orgResumeProcess.versionName' | translate:'Tên phiên bản' }}</label>
+        <nz-select class="w-100" id="vcoResumeSelect" [(ngModel)]="selectedResumeNo" (ngModelChange)="onResumeChange($event)"
+                   [nzLoading]="loadingResume()" nzShowSearch nzAllowClear
+                   [nzPlaceHolder]="'orgResumeProcess.selectPlaceholder' | translate:'-- Chọn phiên bản thay đổi --'">
+          <nz-option *ngFor="let r of resumeOptions()" [nzValue]="r.no" [nzLabel]="resumeLabel(r)"></nz-option>
+        </nz-select>
+      </div>
+
+      <input nz-input class="mb-2" id="vcoTreeSearch" [(ngModel)]="treeSearchValue" name="vcoTreeSearch"
+             [placeholder]="'orgCompose.searchTreePlaceholder' | translate:'Tìm kiếm phòng ban...'">
+
+      <div class="mb-2 btn-group">
+        <button nz-button nzSize="small" type="button" id="vcoBtnExpandAll" (click)="expandAllNodes()">
+          {{ 'orgCompose.expandAll' | translate:'Mở tất cả' }}
+        </button>
+        <button nz-button nzSize="small" type="button" id="vcoBtnCollapseAll" (click)="collapseAllNodes()">
+          {{ 'orgCompose.collapseAll' | translate:'Đóng tất cả' }}
+        </button>
+      </div>
+
+      <nz-spin [nzSpinning]="loadingTree()">
+        <div class="vco-tree-scroll">
+          <nz-tree [nzData]="treeNodes()" [nzSearchValue]="treeSearchValue" nzSelectMode
+                   [(nzExpandedKeys)]="expandedKeys" [nzSelectedKeys]="selectedDeptKey ? [selectedDeptKey] : []"
+                   (nzClick)="onTreeClick($event)"></nz-tree>
+          <div *ngIf="!loadingTree() && treeNodes().length === 0" class="text-muted fst-italic p-2">
+            {{ 'orgCompose.msg.noOrgData' | translate:'Không có dữ liệu tổ chức' }}
+          </div>
+        </div>
+      </nz-spin>
+    </nz-card>
+  </div>
+
+  <!-- Chi tiết tổ chức + danh sách nhân viên bên phải -->
+  <div class="col-md-9 mb-3">
+    <nz-card class="mb-3" [nzTitle]="'orgCompose.orgInfoTitle' | translate:'Thông tin tổ chức'" [nzExtra]="vcoOrgActions">
+      <ng-template #vcoOrgActions>
+        <ng-container *ngIf="mode() === 'VIEW'">
+          <button nz-button nzSize="small" nzType="primary" type="button" id="vcoBtnNew" (click)="startNew()">
+            <i class="bx bx-plus"></i> {{ 'common.addNew' | translate:'Thêm mới' }}
+          </button>
+          <button nz-button nzSize="small" type="button" id="vcoBtnEdit" [disabled]="!form.deptNo" (click)="startEdit()">
+            <i class="bx bx-edit"></i> {{ 'common.edit' | translate:'Sửa' }}
+          </button>
+          <button nz-button nzSize="small" nzDanger type="button" id="vcoBtnDelete" [disabled]="!form.deptNo" (click)="openDeleteConfirm()">
+            <i class="bx bx-trash"></i> {{ 'common.delete' | translate:'Xóa' }}
+          </button>
+        </ng-container>
+        <ng-container *ngIf="mode() !== 'VIEW'">
+          <button nz-button nzSize="small" nzType="primary" type="button" id="vcoBtnSave" [nzLoading]="saving()" (click)="save()">
+            <i class="bx bx-save"></i> {{ 'common.save' | translate:'Lưu' }}
+          </button>
+          <button nz-button nzSize="small" type="button" id="vcoBtnCancel" (click)="cancelEdit()">
+            <i class="bx bx-x"></i> {{ 'common.cancel' | translate:'Hủy' }}
+          </button>
+        </ng-container>
+      </ng-template>
+
+      <form>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">{{ 'org.orgManage.title.deptNo' | translate:'Mã phòng ban' }} <span class="text-danger">*</span></label>
+            <input nz-input id="vcoDeptNo" [(ngModel)]="form.deptNo" name="vcoDeptNo" [readOnly]="mode() !== 'NEW'">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">{{ 'org.orgManage.title.parentDept' | translate:'Phòng ban trên' }}</label>
+            <div class="input-group">
+              <input nz-input id="vcoParentDeptNo" [ngModel]="form.parentDeptNo" name="vcoParentDeptNo" readonly>
+              <button nz-button type="button" id="vcoBtnSelectParent" [disabled]="mode() === 'VIEW'" (click)="openParentModal()">
+                <i class="bx bxs-folder-open"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">{{ 'org.orgManage.title.deptEnglishName' | translate:'Phòng ban tiếng Anh' }}</label>
+            <input nz-input id="vcoOrgNameEng" [(ngModel)]="form.orgNameEng" name="vcoOrgNameEng" [readOnly]="mode() === 'VIEW'">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">{{ 'orgCompose.orgNameLocal' | translate:'Tên địa phương' }}</label>
+            <input nz-input id="vcoOrgNameLocal" [(ngModel)]="form.orgNameLocal" name="vcoOrgNameLocal" [readOnly]="mode() === 'VIEW'">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">{{ 'org.orgManage.title.deptType' | translate:'Loại hình phòng ban' }} <span class="text-danger">*</span></label>
+            <nz-select class="w-100" id="vcoDeptType" [(ngModel)]="form.deptType" name="vcoDeptType" [nzDisabled]="mode() === 'VIEW'">
+              <nz-option nzValue="TEAM" nzLabel="TEAM"></nz-option>
+              <nz-option nzValue="DEPT" nzLabel="DEPT"></nz-option>
+              <nz-option nzValue="DIV" nzLabel="DIV"></nz-option>
+              <nz-option nzValue="PART" nzLabel="PART"></nz-option>
+            </nz-select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">{{ 'org.orgManage.ORGANIZATIONAL_LEVEL.Z' | translate:'Cấp' }}</label>
+            <nz-input-number class="w-100" id="vcoDeptLevel" [(ngModel)]="form.deptLevel" name="vcoDeptLevel" [nzDisabled]="mode() === 'VIEW'"></nz-input-number>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">{{ 'org.orgManage.DEPARTMENT_INFORMATION.Z' | translate:'Trưởng phòng' }}</label>
+            <input nz-input id="vcoManagerEmpId" [(ngModel)]="form.managerEmpId" name="vcoManagerEmpId" [readOnly]="mode() === 'VIEW'">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">{{ 'common.createDate' | translate:'Ngày tạo' }} <span class="text-danger">*</span></label>
+            <nz-date-picker class="w-100" id="vcoDateCreated" [(ngModel)]="form.dateCreated" name="vcoDateCreated"
+                            nzFormat="dd/MM/yyyy" [nzDisabled]="mode() === 'VIEW'"></nz-date-picker>
+          </div>
+
+          <div class="col-md-6 d-flex align-items-center">
+            <label class="form-check-label vco-inline-checkbox">
+              <input type="checkbox" [(ngModel)]="form.isPartTime" name="vcoIsPartTime" [disabled]="mode() === 'VIEW'">
+              {{ 'orgCompose.isPartTime' | translate:'Kiêm nhiệm' }}
+            </label>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">{{ 'orgCompose.costCenter' | translate:'Mã chi phí' }}</label>
+            <nz-select class="w-100" id="vcoCostCenter" [(ngModel)]="form.costCenter" name="vcoCostCenter"
+                       [nzDisabled]="mode() === 'VIEW'" nzAllowClear nzShowSearch>
+              <nz-option *ngFor="let c of costCenterOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeNo + ' - ' + (c.codeName ?? '')"></nz-option>
+            </nz-select>
+          </div>
+        </div>
+      </form>
+    </nz-card>
+
+    <nz-card [nzTitle]="'orgCompose.employeeListTitle' | translate:'Danh sách nhân viên'" [nzExtra]="vcoEmpActions">
+      <ng-template #vcoEmpActions>
+        <span class="badge bg-primary me-2" id="vcoTotalEmployees">
+          {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ employees().length }}
+        </span>
+        <button nz-button nzSize="small" type="button" id="vcoBtnTransfer" (click)="openTransferModal()">
+          <i class="bx bx-transfer"></i> {{ 'orgCompose.btnTransfer' | translate:'Điều chuyển' }}
+        </button>
+      </ng-template>
+
+      <nz-table [nzData]="employees()" [nzLoading]="loadingEmployees()" [nzPageSize]="10" [nzShowSizeChanger]="true"
+                [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="vcoEmpTotalTpl" #vcoEmpTable>
+        <thead>
+          <tr>
+            <th class="text-center" nzWidth="60px">{{ 'common.stt' | translate:'STT' }}</th>
+            <th class="text-center" nzWidth="50px">
+              <input type="checkbox" id="vcoCheckAllEmps" [checked]="allEmpChecked()" (change)="toggleAllEmp($any($event.target).checked)">
+            </th>
+            <th>{{ 'org.title.LOCAL_NAME' | translate:'Họ tên' }}</th>
+            <th>{{ 'org.title.EMPID' | translate:'Mã nhân viên' }}</th>
+            <th>{{ 'org.title.BUSINESS_NAME' | translate:'Chức vụ' }}</th>
+            <th>{{ 'org.title.POSITION_NO' | translate:'Chức danh' }}</th>
+            <th>{{ 'hrm.empinfo.hrcard.empGroup' | translate:'Nhóm nhân viên' }}</th>
+            <th class="text-center">{{ 'common.status' | translate:'Trạng thái' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!loadingEmployees() && employees().length === 0">
+            <td colspan="8" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+          </tr>
+          <tr *ngFor="let emp of vcoEmpTable.data; let i = index">
+            <td class="text-center">{{ i + 1 }}</td>
+            <td class="text-center">
+              <input type="checkbox" [checked]="isEmpChecked(emp.empId)" (change)="toggleEmpCheck(emp.empId, $any($event.target).checked)">
+            </td>
+            <td>{{ emp.localName }}</td>
+            <td>{{ emp.empId }}</td>
+            <td>{{ emp.dutyNo }}</td>
+            <td>{{ emp.postNo }}</td>
+            <td>{{ emp.empTypeCode }}</td>
+            <td class="text-center">{{ emp.statusCode }}</td>
+          </tr>
+        </tbody>
+        <ng-template #vcoEmpTotalTpl let-total>
+          {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+        </ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>
+
+<!-- Modal chọn phòng ban trên -->
+<nz-modal [nzVisible]="parentModalVisible()" [nzTitle]="'orgCompose.selectParentTitle' | translate:'Chọn Phòng Ban Trực Thuộc'"
+          (nzOnCancel)="closeParentModal()" (nzOnOk)="confirmParent()"
+          [nzOkText]="'common.confirm' | translate:'Xác nhận'" [nzCancelText]="'common.close' | translate:'Đóng'">
+  <ng-container *nzModalContent>
+    <input nz-input class="mb-2" id="vcoParentSearch" [(ngModel)]="parentSearchValue" name="vcoParentSearch"
+           [placeholder]="'orgCompose.searchPlaceholder' | translate:'Tìm kiếm...'">
+    <div class="vco-modal-tree-scroll">
+      <nz-tree [nzData]="treeNodes()" [nzSearchValue]="parentSearchValue" nzSelectMode nzExpandAll
+               [nzSelectedKeys]="pendingParentKey ? [pendingParentKey] : []"
+               (nzClick)="onParentTreeClick($event)"></nz-tree>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal chọn phòng ban điều chuyển đến -->
+<nz-modal [nzVisible]="targetModalVisible()" [nzTitle]="'orgCompose.selectTargetTitle' | translate:'Chọn Phòng Ban Điều Chuyển Đến'"
+          (nzOnCancel)="closeTransferModal()" (nzOnOk)="confirmTransfer()" [nzOkLoading]="transferring()"
+          [nzOkText]="'orgCompose.confirmTransfer' | translate:'Xác nhận chuyển'" [nzCancelText]="'common.close' | translate:'Đóng'">
+  <ng-container *nzModalContent>
+    <input nz-input class="mb-2" id="vcoTargetSearch" [(ngModel)]="targetSearchValue" name="vcoTargetSearch"
+           [placeholder]="'orgCompose.searchPlaceholder' | translate:'Tìm kiếm...'">
+    <div class="vco-modal-tree-scroll">
+      <nz-tree [nzData]="treeNodes()" [nzSearchValue]="targetSearchValue" nzSelectMode nzExpandAll
+               [nzSelectedKeys]="pendingTargetKey ? [pendingTargetKey] : []"
+               (nzClick)="onTargetTreeClick($event)"></nz-tree>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal xác nhận xóa -->
+<nz-modal [nzVisible]="deleteConfirmVisible()" [nzTitle]="'common.confirm' | translate:'Xác nhận'"
+          (nzOnCancel)="closeDeleteConfirm()" (nzOnOk)="confirmDelete()" [nzOkLoading]="deleting()"
+          [nzOkText]="'common.confirm' | translate:'Xác nhận'" [nzCancelText]="'common.cancel' | translate:'Hủy'">
+  <ng-container *nzModalContent>
+    <p class="mb-1">{{ 'orgCompose.msg.confirmDelete' | translate:'Bạn có chắc chắn muốn xóa phòng ban này?' }}</p>
+    <p class="fw-bold mb-0">{{ form.deptNo }}</p>
+  </ng-container>
+</nz-modal>

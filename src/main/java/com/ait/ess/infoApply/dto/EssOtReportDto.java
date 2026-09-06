@@ -22,6 +22,8 @@ public class EssOtReportDto {
     private Double otRegular150Month;
     private Double otRegular200Month;
     private Double otRegular210Month;
+    private Double otSaturday200Month;
+    private Double otSaturday270Month;
     private Double otWeekend200Month;
     private Double otWeekend270Month;
     private Double otHoliday300Month;
@@ -31,6 +33,8 @@ public class EssOtReportDto {
     private Double otRegular150ExcessOfficial;
     private Double otRegular200ExcessOfficial;
     private Double otRegular210ExcessOfficial;
+    private Double otSaturday200ExcessOfficial;
+    private Double otSaturday270ExcessOfficial;
     private Double otWeekend200ExcessOfficial;
     private Double otWeekend270ExcessOfficial;
     private Double otHoliday300ExcessOfficial;
@@ -40,6 +44,8 @@ public class EssOtReportDto {
     private Double otRegular150ExcessProbation;
     private Double otRegular200ExcessProbation;
     private Double otRegular210ExcessProbation;
+    private Double otSaturday200ExcessProbation;
+    private Double otSaturday270ExcessProbation;
     private Double otWeekend200ExcessProbation;
     private Double otWeekend270ExcessProbation;
     private Double otHoliday300ExcessProbation;

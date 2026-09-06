@@ -1,0 +1,11 @@
+table td, table th {
+  white-space: nowrap;
+}
+
+table td {
+  vertical-align: middle;
+}
+
+.acrm-form-row { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
+.acrm-form-row label { font-size: .82rem; font-weight: 600; color: #334155; }
+.acrm-form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }

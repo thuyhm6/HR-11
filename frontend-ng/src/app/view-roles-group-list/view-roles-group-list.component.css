@@ -1,0 +1,13 @@
+.vrgl-btn-export {
+  color: #52c41a;
+  border-color: #52c41a;
+}
+
+.vrgl-row-clickable {
+  cursor: pointer;
+}
+
+.vrgl-roles-scroll {
+  max-height: 560px;
+  overflow-y: auto;
+}

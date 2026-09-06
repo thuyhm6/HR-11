@@ -42,13 +42,4 @@ public interface MenuService {
      * @return Danh sách menu gốc
      */
     List<MenuDTO> getRootMenusByUserPermission(String userNo);
-
-    /**
-     * Kiểm tra user có menu theo SYS_TYPE hay không
-     *
-     * @param userNo  Mã người dùng
-     * @param sysType SYS_TYPE của role
-     * @return true nếu có ít nhất một menu
-     */
-    boolean hasMenusByUserPermissionBySysType(String userNo, String sysType);
 }

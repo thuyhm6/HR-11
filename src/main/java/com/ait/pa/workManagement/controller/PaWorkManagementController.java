@@ -43,30 +43,9 @@ public class PaWorkManagementController {
     @Autowired
     private PaPayStubService paPayStubService;
 
-    @GetMapping("/viewPaPaySchedule")
-    public String viewPaPaySchedule() {
-        return "pa/workManagement/viewPaPaySchedule";
-    }
-
-    @GetMapping("/viewPaPayObj")
-    public String viewPaPayObj() {
-        return "pa/workManagement/viewPaPayObj";
-    }
-
-    @GetMapping("/viewPaWorkFlow")
-    public String viewPaWorkFlow() {
-        return "pa/workManagement/viewPaWorkFlow";
-    }
-
-    @GetMapping("/viewPaEmpAccount")
-    public String viewPaEmpAccount() {
-        return "pa/workManagement/viewPaEmpAccount";
-    }
-
-    @GetMapping("/payStub")
-    public String payStub() {
-        return "pa/workManagement/payStub";
-    }
+    // Trang Thymeleaf viewPaWorkFlow.html đã được thay bằng Angular route /view-pa-work-flow
+    // Trang Thymeleaf viewPaEmpAccount.html đã được thay bằng Angular route /view-pa-emp-account
+    // Trang Thymeleaf payStub.html đã được thay bằng Angular route /view-pa-pay-stub
 
     // ── API Phiếu lương ────────────────────────────────────────────────────────
 

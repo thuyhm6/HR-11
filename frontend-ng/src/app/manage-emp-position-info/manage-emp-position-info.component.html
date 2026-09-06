@@ -1,0 +1,191 @@
+<div class="row">
+  <div class="col-12">
+    <!-- Điều kiện tìm kiếm - đứng im khi cuộn (xem .sticky-filter-card trong styles.css) -->
+    <nz-card class="mb-3 sticky-filter-card">
+      <form class="row g-3" (ngSubmit)="search()">
+        <div class="col-md-3">
+          <label class="form-label">{{ 'essDept.keyword' | translate:'Mã nhân viên / Họ tên' }}</label>
+          <input nz-input [(ngModel)]="keyword" name="keyword"
+                 [placeholder]="'vdp.search.empKeyword.placeholder' | translate:'Nhập mã hoặc họ tên'">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'essDept.dept' | translate:'Phòng ban' }}</label>
+          <nz-tree-select class="w-100" [nzNodes]="deptNodes()" [(ngModel)]="deptNos" name="deptNos"
+                           nzCheckable nzShowSearch nzAllowClear
+                           [nzPlaceHolder]="'vdp.search.dept.placeholder' | translate:'Chọn phòng ban'"
+                           nzDropdownClassName="mep-dept-tree-dropdown"></nz-tree-select>
+          <div *ngIf="deptTreeErrorMessage()" class="text-danger small mt-1">{{ deptTreeErrorMessage() }}</div>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'essDept.fromDate' | translate:'Ngày vào làm từ' }}</label>
+          <nz-date-picker class="w-100" [(ngModel)]="fromDate" name="fromDate" nzFormat="yyyy-MM-dd"></nz-date-picker>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'essDept.toDate' | translate:'Ngày vào làm đến' }}</label>
+          <nz-date-picker class="w-100" [(ngModel)]="toDate" name="toDate" nzFormat="yyyy-MM-dd"></nz-date-picker>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'essDept.empGroup' | translate:'Nhóm nhân viên' }}</label>
+          <nz-select class="w-100" [(ngModel)]="postFamily" name="postFamily" nzAllowClear
+                     [nzPlaceHolder]="'common.selectAll' | translate:'-- Tất cả --'">
+            <nz-option *ngFor="let c of postFamilyOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'essDept.empType' | translate:'Loại nhân viên' }}</label>
+          <nz-select class="w-100" [(ngModel)]="empTypeCode" name="empTypeCode" nzAllowClear
+                     [nzPlaceHolder]="'common.selectAll' | translate:'-- Tất cả --'">
+            <nz-option *ngFor="let c of empTypeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'essDept.status' | translate:'Trạng thái' }}</label>
+          <nz-select class="w-100" [(ngModel)]="empOffice" name="empOffice" nzAllowClear
+                     [nzPlaceHolder]="'common.selectAll' | translate:'-- Tất cả --'" (ngModelChange)="onEmpOfficeChange()">
+            <nz-option *ngFor="let c of empOfficeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-2" *ngIf="showAsOfDate">
+          <label class="form-label">{{ 'mep.field.asOfDate' | translate:'Ngày tra cứu' }}</label>
+          <nz-date-picker class="w-100" [(ngModel)]="asOfDate" name="asOfDate" nzFormat="yyyy-MM-dd"></nz-date-picker>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'essDept.nationality' | translate:'Quốc tịch' }}</label>
+          <nz-select class="w-100" [(ngModel)]="nationalityCode" name="nationalityCode" nzAllowClear
+                     [nzPlaceHolder]="'common.selectAll' | translate:'-- Tất cả --'">
+            <nz-option *ngFor="let c of nationalityOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-12 d-flex align-items-end gap-2 flex-wrap">
+          <button nz-button nzType="primary" type="submit">
+            <i class="bx bx-search"></i> {{ 'essDept.search' | translate:'Tra cứu' }}
+          </button>
+          <button nz-button type="button" (click)="clearSearch()">
+            <i class="bx bx-x"></i> {{ 'essDept.clearFilter' | translate:'Xóa lọc' }}
+          </button>
+          <button nz-button nzType="default" type="button" class="btn-export" (click)="exportExcel()">
+            <i class="bx bx-export"></i> {{ 'essDept.exportExcel' | translate:'Xuất excel' }}
+          </button>
+        </div>
+      </form>
+    </nz-card>
+
+    <nz-card>
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+      <nz-table [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="25" [nzShowSizeChanger]="true"
+                [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="mepTotalTpl"
+                [nzScroll]="{ x: '1480px', y: 'calc(100vh - 420px)' }"
+                class="table-nowrap" #mepTable>
+        <!-- nzWidth khai báo cho từng cột để đồng bộ độ rộng header/body khi dùng nzScroll (xem
+             giải thích ở dept-ot-apply-info.component.html). -->
+        <thead>
+            <tr>
+              <th class="text-center" nzWidth="60px">{{ 'common.stt' | translate:'STT' }}</th>
+              <th class="text-center" nzWidth="90px">{{ 'common.empId' | translate:'Mã nhân viên' }}</th>
+              <th nzWidth="140px">{{ 'common.empName' | translate:'Họ tên' }}</th>
+              <th nzWidth="180px">{{ 'common.deptName' | translate:'Phòng ban' }}</th>
+              <th class="text-center" nzWidth="100px">{{ 'essDept.empGroup' | translate:'Nhóm nhân viên' }}</th>
+              <th class="text-center" nzWidth="140px">{{ 'essDept.empType' | translate:'Loại nhân viên' }}</th>
+              <th class="text-center" nzWidth="100px">{{ 'mep.col.duty' | translate:'Chức vụ' }}</th>
+              <th class="text-center" nzWidth="100px">{{ 'mep.col.jobTitle' | translate:'Chức danh' }}</th>
+              <th class="text-center" nzWidth="120px">{{ 'mep.col.positionTitle' | translate:'Vị trí' }}</th>
+              <th class="text-center" nzWidth="100px">{{ 'essDept.nationality' | translate:'Quốc tịch' }}</th>
+              <th class="text-center" nzWidth="100px">{{ 'essDept.status' | translate:'Trạng thái' }}</th>
+              <th class="text-center" nzWidth="110px">{{ 'mep.col.dateJoined' | translate:'Ngày vào làm' }}</th>
+              <th nzWidth="140px">{{ 'mep.col.manager' | translate:'Quản lý' }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of mepTable.data; let i = index" class="mep-row-clickable" (click)="openDetail(row)">
+              <td class="text-center">{{ i + 1 }}</td>
+              <td class="text-center" [attr.title]="row.empId || null">{{ row.empId }}</td>
+              <td [attr.title]="row.localName || null"><a href="javascript:void(0)">{{ row.localName }}</a></td>
+              <td [attr.title]="row.deptName || null">{{ row.deptName }}</td>
+              <td class="text-center" [attr.title]="row.postFamilyName || null">{{ row.postFamilyName }}</td>
+              <td class="text-center" [attr.title]="row.empTypeName || null">{{ row.empTypeName }}</td>
+              <td class="text-center" [attr.title]="row.dutyName || null">{{ row.dutyName }}</td>
+              <td class="text-center" [attr.title]="row.postGradeNo || null">{{ row.postGradeNo }}</td>
+              <td class="text-center" [attr.title]="row.positionNoName || row.positionName || null">{{ row.positionNoName || row.positionName }}</td>
+              <td class="text-center" [attr.title]="row.nationalityName || null">{{ row.nationalityName }}</td>
+              <td class="text-center" [attr.title]="row.empOfficeName || null">{{ row.empOfficeName }}</td>
+              <td class="text-center">{{ row.dateStarted }}</td>
+              <td [attr.title]="row.managerName || null">{{ row.managerName }}</td>
+            </tr>
+          </tbody>
+          <ng-template #mepTotalTpl let-total>
+            {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+          </ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>
+
+<!-- Modal chi tiết nhân viên - rộng 60% viewport, nội dung dài quá thì tự cuộn dọc bên trong modal
+     (thay vì đẩy chiều cao modal vượt màn hình). -->
+<nz-modal [nzVisible]="detailVisible()" [nzTitle]="'mep.modal.detailTitle' | translate:'Chi tiết nhân viên'" nzWidth="60vw"
+          [nzBodyStyle]="{ 'max-height': '75vh', 'overflow-y': 'auto' }"
+          (nzOnCancel)="closeDetail()" [nzFooter]="null">
+  <ng-container *nzModalContent>
+    <ng-container *ngIf="detailRow() as row">
+      <div class="d-flex gap-3 mb-3">
+        <div class="mep-detail-photo-box">
+          <img *ngIf="resolvePhotoUrl(row.photoPath) as photoUrl; else noPhoto" [src]="photoUrl"
+               [hidden]="photoBroken()" class="mep-detail-photo-img" alt="photo" (error)="onPhotoError()">
+          <div *ngIf="photoBroken()" class="mep-detail-photo-fallback">{{ 'mep.detail.noImage' | translate:'Không có ảnh' }}</div>
+          <ng-template #noPhoto>
+            <div class="mep-detail-photo-fallback">{{ 'mep.detail.noImage' | translate:'Không có ảnh' }}</div>
+          </ng-template>
+        </div>
+        <nz-descriptions nzBordered [nzColumn]="2" nzSize="small" class="flex-grow-1">
+          <nz-descriptions-item [nzTitle]="'common.empId' | translate:'Mã nhân viên'">{{ row.empId }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'common.empName' | translate:'Họ tên'">{{ row.localName }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'common.deptName' | translate:'Phòng ban'">{{ row.deptName }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'mep.detail.orgNameLocal' | translate:'Tên phòng local'" [nzSpan]="1">{{ row.orgNameLocal }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'mep.col.duty' | translate:'Chức vụ'">{{ row.dutyName }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'mep.col.jobTitle' | translate:'Chức danh'">{{ row.postGradeNo }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'mep.col.positionTitle' | translate:'Vị trí'">{{ row.positionNoName || row.positionName }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'essDept.empGroup' | translate:'Nhóm nhân viên'">{{ row.postFamilyName }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'essDept.empType' | translate:'Loại nhân viên'">{{ row.empTypeName }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'essDept.status' | translate:'Trạng thái'">{{ row.empOfficeName }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'essDept.nationality' | translate:'Quốc tịch'">{{ row.nationalityName }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'mep.col.dateJoined' | translate:'Ngày vào làm'">{{ row.dateStarted }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'mep.detail.mainBusiness' | translate:'Nghiệp vụ chính'">{{ row.mainBusiness }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'mep.detail.employeeOwned' | translate:'Khối sở hữu'">{{ row.employeeOwned }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'mep.detail.manager' | translate:'Quản lý hiển thị'">{{ row.managerName }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'mep.detail.managerEmp' | translate:'Quản lý cập nhật'">{{ row.managerEmpName }}</nz-descriptions-item>
+        </nz-descriptions>
+      </div>
+
+      <h6 class="fw-bold mb-2">{{ 'mep.section.insideProcess' | translate:'Quá trình nội bộ' }}</h6>
+      <nz-alert *ngIf="insideErrorMessage()" nzType="error" [nzMessage]="insideErrorMessage() ?? ''" class="mb-2"></nz-alert>
+      <div class="table-responsive">
+        <nz-table [nzData]="insideRows()" [nzLoading]="insideLoading()" [nzShowPagination]="false" nzSize="small">
+          <thead>
+            <tr>
+              <th class="text-center" style="width:60px">{{ 'common.stt' | translate:'STT' }}</th>
+              <th class="text-center" style="width:140px">{{ 'essDept.attStartDate' | translate:'Ngày bắt đầu' }}</th>
+              <th>{{ 'common.deptName' | translate:'Phòng ban' }}</th>
+              <th>{{ 'mep.col.mainBusiness' | translate:'Nghiệp vụ chính' }}</th>
+              <th>{{ 'mep.col.jobTitle' | translate:'Chức danh' }}</th>
+              <th>{{ 'mep.col.transType' | translate:'Loại điều chuyển' }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="!insideLoading() && insideRows().length === 0">
+              <td colspan="6" class="text-center text-muted">{{ 'mep.msg.noInsideExp' | translate:'Không có dữ liệu quá trình nội bộ.' }}</td>
+            </tr>
+            <tr *ngFor="let item of insideRows(); let i = index">
+              <td class="text-center">{{ i + 1 }}</td>
+              <td class="text-center">{{ item.startDate }}</td>
+              <td>{{ item.deptName }}</td>
+              <td>{{ item.mainBusiness }}</td>
+              <td>{{ item.postGrade }}</td>
+              <td>{{ item.transCode }}</td>
+            </tr>
+          </tbody>
+        </nz-table>
+      </div>
+    </ng-container>
+  </ng-container>
+</nz-modal>

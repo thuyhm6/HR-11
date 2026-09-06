@@ -22,14 +22,6 @@ public class ArStatisticDateController {
     private ArStatisticDateService arStatisticDateService;
 
     /**
-     * Mở giao diện trang chi nhánh (chu kỳ chấm công)
-     */
-    @GetMapping("/viewCycle")
-    public String viewCycle() {
-        return "ar/attendanceSettings/viewCycle";
-    }
-
-    /**
      * API: Lấy danh sách chu kỳ hoặc tìm kiếm
      */
     @GetMapping("/api/cycle")

@@ -1,0 +1,14 @@
+.vebsh-rich-content p {
+  margin: 0;
+}
+.vebsh-rich-content ul,
+.vebsh-rich-content ol {
+  margin: 0;
+  padding-left: 1.2em;
+}
+
+.vebsh-score-input {
+  width: 100px;
+  text-align: center;
+  margin: 0 auto;
+}

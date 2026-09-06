@@ -1,0 +1,401 @@
+<div class="row">
+  <div class="col-12">
+    <!-- Điều kiện tìm kiếm - đứng im khi cuộn (xem .sticky-filter-card trong styles.css) -->
+    <nz-card class="mb-3 sticky-filter-card">
+      <form class="row g-3" (ngSubmit)="search()">
+        <div class="col-md-3">
+          <label class="form-label">{{ 'essDept.keyword' | translate:'Mã nhân viên / Họ tên' }}</label>
+          <input nz-input [(ngModel)]="keyword" name="keyword"
+                 [placeholder]="'vdp.search.empKeyword.placeholder' | translate:'Nhập mã hoặc họ tên'">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'essDept.dept' | translate:'Phòng ban' }}</label>
+          <nz-tree-select class="w-100" [nzNodes]="deptNodes()" [(ngModel)]="deptNos" name="deptNos"
+                           nzCheckable nzShowSearch nzAllowClear
+                           [nzPlaceHolder]="'vdp.search.dept.placeholder' | translate:'Chọn phòng ban'"
+                           nzDropdownClassName="hcv-dept-tree-dropdown"></nz-tree-select>
+          <div *ngIf="deptTreeErrorMessage()" class="text-danger small mt-1">{{ deptTreeErrorMessage() }}</div>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'essDept.fromDate' | translate:'Ngày vào làm từ' }}</label>
+          <nz-date-picker class="w-100" [(ngModel)]="fromDate" name="fromDate" nzFormat="yyyy-MM-dd"></nz-date-picker>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'essDept.toDate' | translate:'Ngày vào làm đến' }}</label>
+          <nz-date-picker class="w-100" [(ngModel)]="toDate" name="toDate" nzFormat="yyyy-MM-dd"></nz-date-picker>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'common.empGroup' | translate:'Nhóm nhân viên' }}</label>
+          <nz-select class="w-100" [(ngModel)]="postFamily" name="postFamily" nzAllowClear
+                     [nzPlaceHolder]="'common.selectAll' | translate:'-- Tất cả --'">
+            <nz-option *ngFor="let c of postFamilyOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'common.empType' | translate:'Loại nhân viên' }}</label>
+          <nz-select class="w-100" [(ngModel)]="empTypeCode" name="empTypeCode" nzAllowClear
+                     [nzPlaceHolder]="'common.selectAll' | translate:'-- Tất cả --'">
+            <nz-option *ngFor="let c of empTypeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'common.status' | translate:'Trạng thái' }}</label>
+          <nz-select class="w-100" [(ngModel)]="empOffice" name="empOffice" nzAllowClear
+                     [nzPlaceHolder]="'common.selectAll' | translate:'-- Tất cả --'">
+            <nz-option *ngFor="let c of empOfficeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-12 d-flex align-items-end gap-2 flex-wrap">
+          <button nz-button nzType="primary" type="submit">
+            <i class="bx bx-search"></i> {{ 'essDept.search' | translate:'Tra cứu' }}
+          </button>
+          <button nz-button type="button" (click)="clearSearch()">
+            <i class="bx bx-x"></i> {{ 'essDept.clearFilter' | translate:'Xóa lọc' }}
+          </button>
+          <button nz-button nzType="default" type="button" class="btn-print-card" (click)="printCard()">
+            <i class="bx bx-printer"></i> {{ 'hcv.action.printCard' | translate:'In thẻ' }}
+          </button>
+        </div>
+      </form>
+    </nz-card>
+
+    <nz-card>
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+      <nz-table [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="25" [nzShowSizeChanger]="true"
+                [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="hcvTotalTpl"
+                [nzScroll]="{ x: '900px', y: 'calc(100vh - 420px)' }"
+                class="table-nowrap" #hcvTable>
+        <thead>
+          <tr>
+            <th class="text-center" nzWidth="50px">
+              <label nz-checkbox [ngModel]="isAllCheckedOnPage(hcvTable.data)"
+                     (ngModelChange)="toggleAllOnPage(hcvTable.data, $event)"></label>
+            </th>
+            <th class="text-center" nzWidth="90px">{{ 'common.empId' | translate:'Mã nhân viên' }}</th>
+            <th nzWidth="150px">{{ 'common.empName' | translate:'Họ tên' }}</th>
+            <th nzWidth="200px">{{ 'common.deptName' | translate:'Phòng ban' }}</th>
+            <th nzWidth="150px">{{ 'common.empGroup' | translate:'Nhóm nhân viên' }}</th>
+            <th nzWidth="130px">{{ 'common.empType' | translate:'Loại nhân viên' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'common.status' | translate:'Trạng thái' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'common.dateJoined' | translate:'Ngày vào làm' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of hcvTable.data">
+            <td class="text-center">
+              <label nz-checkbox [ngModel]="isChecked(row.empId)" (ngModelChange)="toggleChecked(row.empId, $event)"></label>
+            </td>
+            <td class="text-center" [attr.title]="row.empId || null">{{ row.empId }}</td>
+            <td [attr.title]="row.localName || null">
+              <a href="javascript:void(0)" class="hcv-name-link" (click)="openCardForEmp(row.empId)">{{ row.localName }}</a>
+            </td>
+            <td [attr.title]="row.deptName || null">{{ row.deptName }}</td>
+            <td [attr.title]="row.postFamilyName || null">{{ row.postFamilyName }}</td>
+            <td [attr.title]="row.empTypeName || null">{{ row.empTypeName }}</td>
+            <td class="text-center" [attr.title]="row.empOfficeName || null">{{ row.empOfficeName }}</td>
+            <td class="text-center">{{ row.dateStarted }}</td>
+          </tr>
+        </tbody>
+        <ng-template #hcvTotalTpl let-total>
+          {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+        </ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>
+
+<!-- Modal xem trước / in Thẻ nhân sự - rộng 90vw vì mỗi thẻ layout dạng khổ A4 ngang nhiều cột. -->
+<nz-modal [nzVisible]="cardVisible()" [nzTitle]="'hcv.modal.previewTitle' | translate:'Xem trước Thẻ nhân sự'" nzWidth="90vw"
+          [nzBodyStyle]="{ 'max-height': '75vh', 'overflow-y': 'auto' }"
+          (nzOnCancel)="closeCardModal()">
+  <ng-container *nzModalContent>
+    <div #printArea>
+      <div class="hrcard-container" *ngFor="let res of cardRows()">
+        <div class="hrcard-header">
+          <div class="hrcard-logo">
+            <div style="font-size: 24px; font-weight: bold; color: #ff6a00;">
+              <i class="bx bxl-xing"></i> Hanwha Vision
+            </div>
+            <div style="font-size: 12px; font-weight: bold; padding-left: 28px;">Vietnam</div>
+          </div>
+          <div class="hrcard-title">HR CARD</div>
+        </div>
+
+        <div class="hrcard-info-section">
+          <table class="hrcard-table">
+            <tbody>
+              <tr>
+                <td rowspan="8" class="hrcard-photo-cell">
+                  <div class="hrcard-photo">
+                    <i class="bx bxs-user" style="font-size: 80px; color: #ccc;"></i>
+                  </div>
+                  <div class="hrcard-emp-name">{{ res.employee?.localName }}</div>
+                  <div class="hrcard-emp-id">{{ res.employee?.empId }}</div>
+                </td>
+                <th class="hrcard-label">{{ 'hcv.card.department' | translate:'Department' }}</th>
+                <td class="hrcard-value">{{ res.employee?.deptNo }}</td>
+                <th class="hrcard-label">{{ 'hcv.card.contractStart' | translate:'Contract start' }}</th>
+                <td class="hrcard-value"></td>
+                <th class="hrcard-label">{{ 'hcv.card.regPlace' | translate:'REG place' }}</th>
+                <td class="hrcard-value">{{ res.personalInfo?.regPlace }}</td>
+              </tr>
+              <tr>
+                <th class="hrcard-label">{{ 'hcv.card.rank' | translate:'Rank' }}</th>
+                <td class="hrcard-value">{{ res.employee?.postGradeNo }}</td>
+                <th class="hrcard-label">{{ 'hcv.card.contractEnd' | translate:'Contract end' }}</th>
+                <td class="hrcard-value"></td>
+                <th class="hrcard-label">{{ 'hcv.card.political' | translate:'Political' }}</th>
+                <td class="hrcard-value">{{ res.personalInfo?.politicalStatus }}</td>
+              </tr>
+              <tr>
+                <th class="hrcard-label">{{ 'hcv.card.mainBusiness' | translate:'Mainbusiness' }}</th>
+                <td class="hrcard-value">{{ res.employee?.mainBusiness }}</td>
+                <th class="hrcard-label">{{ 'hcv.card.finalEdu' | translate:'Final edu' }}</th>
+                <td class="hrcard-value">{{ res.personalInfo?.finalDegreeName }}</td>
+                <th class="hrcard-label">{{ 'hcv.card.birthday' | translate:'Birthday' }}</th>
+                <td class="hrcard-value">{{ fmtDate(res.personalInfo?.dob) }}</td>
+              </tr>
+              <tr>
+                <th class="hrcard-label">{{ 'hcv.card.costCenter' | translate:'Cost center' }}</th>
+                <td class="hrcard-value"></td>
+                <th class="hrcard-label">{{ 'hcv.card.gradSchool' | translate:'Grad school' }}</th>
+                <td class="hrcard-value"></td>
+                <th class="hrcard-label">{{ 'hcv.card.gender' | translate:'Gender' }}</th>
+                <td class="hrcard-value">{{ res.personalInfo?.sexName }}</td>
+              </tr>
+              <tr>
+                <th class="hrcard-label">{{ 'hcv.card.stateService' | translate:'State service' }}</th>
+                <td class="hrcard-value">{{ res.employee?.empOffice }}</td>
+                <th class="hrcard-label">{{ 'hcv.card.major' | translate:'Major' }}</th>
+                <td class="hrcard-value"></td>
+                <th class="hrcard-label">{{ 'hcv.card.homePhone' | translate:'Home phone' }}</th>
+                <td class="hrcard-value">{{ res.personalInfo?.homePhone }}</td>
+              </tr>
+              <tr>
+                <th class="hrcard-label">{{ 'hcv.card.divisionEntry' | translate:'Division entry' }}</th>
+                <td class="hrcard-value"></td>
+                <th class="hrcard-label">{{ 'hcv.card.gradDate' | translate:'Grad date' }}</th>
+                <td class="hrcard-value"></td>
+                <th class="hrcard-label">{{ 'hcv.card.tel' | translate:'Tel' }}</th>
+                <td class="hrcard-value"></td>
+              </tr>
+              <tr>
+                <th class="hrcard-label">{{ 'hcv.card.dateEntry' | translate:'Date entry' }}</th>
+                <td class="hrcard-value">{{ fmtDate(res.employee?.dateStarted) }}</td>
+                <th class="hrcard-label">{{ 'hcv.card.national' | translate:'National' }}</th>
+                <td class="hrcard-value">{{ res.personalInfo?.nationalityName }}</td>
+                <th class="hrcard-label">{{ 'hcv.card.married' | translate:'Married' }}</th>
+                <td class="hrcard-value">{{ res.personalInfo?.maritalStatusName }}</td>
+              </tr>
+              <tr>
+                <th class="hrcard-label">{{ 'hcv.card.personEmail' | translate:'Person email' }}</th>
+                <td class="hrcard-value">{{ res.personalInfo?.email }}</td>
+                <th class="hrcard-label">{{ 'hcv.card.cEmail' | translate:'C.email' }}</th>
+                <td class="hrcard-value"></td>
+                <th class="hrcard-label">{{ 'hcv.card.marryDate' | translate:'Marry date' }}</th>
+                <td class="hrcard-value">{{ fmtDate(res.personalInfo?.weddingDate) }}</td>
+              </tr>
+              <tr>
+                <th class="hrcard-label" style="border-top: none;"></th>
+                <th class="hrcard-label">{{ 'hcv.card.presentAdd' | translate:'Present add' }}</th>
+                <td class="hrcard-value" colspan="3">{{ res.personalInfo?.homeAddress }}</td>
+                <th class="hrcard-label">{{ 'hcv.card.eagleMId' | translate:'EagleM ID' }}</th>
+                <td class="hrcard-value"></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="hrcard-grid-2">
+          <div>
+            <div class="hrcard-section-title">{{ 'hcv.section.education' | translate:'Education Information' }}</div>
+            <table class="hrcard-table">
+              <thead>
+                <tr>
+                  <th>{{ 'hcv.col.admissions' | translate:'Admissions' }}</th>
+                  <th>{{ 'hcv.col.graduation' | translate:'Graduation' }}</th>
+                  <th>{{ 'hcv.col.education' | translate:'Education' }}</th>
+                  <th>{{ 'hcv.col.institutionName' | translate:'Graduate school' }}</th>
+                  <th>{{ 'hcv.card.major' | translate:'Major' }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngIf="!res.educations?.length"><td>&nbsp;</td><td></td><td></td><td></td><td></td></tr>
+                <tr *ngFor="let e of res.educations">
+                  <td>{{ fmtDate(e.startDate) }}</td>
+                  <td>{{ fmtDate(e.endDate) }}</td>
+                  <td>{{ e.degreeName }}</td>
+                  <td>{{ e.institutionName }}</td>
+                  <td>{{ e.subject }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div>
+            <div class="hrcard-section-title">{{ 'hcv.section.family' | translate:'Family Information' }}</div>
+            <table class="hrcard-table">
+              <thead>
+                <tr>
+                  <th>{{ 'hcv.col.relation' | translate:'Relation' }}</th>
+                  <th>{{ 'hcv.col.name' | translate:'Name' }}</th>
+                  <th>{{ 'hcv.card.birthday' | translate:'Birthday' }}</th>
+                  <th>{{ 'hcv.col.education' | translate:'Education' }}</th>
+                  <th>{{ 'hcv.card.tel' | translate:'Tel' }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngIf="!res.families?.length"><td>&nbsp;</td><td></td><td></td><td></td><td></td></tr>
+                <tr *ngFor="let f of res.families">
+                  <td>{{ f.famTypeName }}</td>
+                  <td>{{ f.famName }}</td>
+                  <td>{{ fmtDate(f.famBorndate) }}</td>
+                  <td>{{ f.famEducation }}</td>
+                  <td>{{ f.famPhone }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="hrcard-section-title">{{ 'hcv.section.experience' | translate:'Experience Information' }}</div>
+        <table class="hrcard-table">
+          <thead>
+            <tr>
+              <th>{{ 'hcv.col.startDate' | translate:'Start date' }}</th>
+              <th>{{ 'hcv.col.endDate' | translate:'End date' }}</th>
+              <th>{{ 'hcv.col.companyName' | translate:'Corporate name' }}</th>
+              <th>{{ 'hcv.card.department' | translate:'Department' }}</th>
+              <th>{{ 'hcv.col.remarks' | translate:'Remarks' }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="!res.experiences?.length"><td>&nbsp;</td><td></td><td></td><td></td><td></td></tr>
+            <tr *ngFor="let x of res.experiences">
+              <td>{{ fmtDate(x.startDate) }}</td>
+              <td>{{ fmtDate(x.endDate) }}</td>
+              <td>{{ x.cpnyName }}</td>
+              <td>{{ x.deptName }}</td>
+              <td>{{ x.remark }}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="hrcard-grid-2">
+          <div>
+            <div class="hrcard-section-title">{{ 'hcv.section.mainBusiness' | translate:'Main Business' }}</div>
+            <table class="hrcard-table">
+              <thead>
+                <tr>
+                  <th>{{ 'hcv.col.startDate' | translate:'Start date' }}</th>
+                  <th>{{ 'hcv.col.endDate' | translate:'End date' }}</th>
+                  <th>{{ 'hcv.card.mainBusiness' | translate:'Mainbusiness' }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>&nbsp;</td><td></td><td></td></tr>
+                <tr><td>&nbsp;</td><td></td><td></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div>
+            <div class="hrcard-section-title">{{ 'hcv.section.qualification' | translate:'Qualification Information' }}</div>
+            <table class="hrcard-table">
+              <thead>
+                <tr>
+                  <th>{{ 'hcv.col.qualification' | translate:'Qualification' }}</th>
+                  <th>{{ 'hcv.col.grade' | translate:'Grade' }}</th>
+                  <th>{{ 'hcv.col.issuing' | translate:'Issuing' }}</th>
+                  <th>{{ 'hcv.col.evidence' | translate:'Evidence' }}</th>
+                  <th>{{ 'hcv.col.effective' | translate:'Effective' }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngIf="!res.qualifications?.length"><td>&nbsp;</td><td></td><td></td><td></td><td></td></tr>
+                <tr *ngFor="let q of res.qualifications">
+                  <td>{{ q.qualName }}</td>
+                  <td>{{ q.qualGrade }}</td>
+                  <td>{{ q.qualInstitute }}</td>
+                  <td>{{ q.qualCardNo }}</td>
+                  <td>{{ fmtDate(q.validityDate) }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="hrcard-grid-2">
+          <div>
+            <div class="hrcard-section-title">{{ 'hcv.section.training' | translate:'Training Content' }}</div>
+            <table class="hrcard-table">
+              <thead>
+                <tr>
+                  <th>{{ 'hcv.col.startDate' | translate:'Start date' }}</th>
+                  <th>{{ 'hcv.col.endDate' | translate:'End date' }}</th>
+                  <th>{{ 'hcv.col.trainingCourse' | translate:'Training course' }}</th>
+                  <th>{{ 'hcv.col.fraction' | translate:'Fraction' }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>&nbsp;</td><td></td><td></td><td></td></tr>
+                <tr><td>&nbsp;</td><td></td><td></td><td></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div>
+            <div class="hrcard-section-title">{{ 'hcv.section.evaluation' | translate:'Evaluation Record' }}</div>
+            <table class="hrcard-table">
+              <thead>
+                <tr>
+                  <th>{{ 'essDept.year' | translate:'Year' }}</th>
+                  <th *ngFor="let m of [1,2,3,4,5,6,7,8,9,10,11,12]">{{ m }}</th>
+                  <th>{{ 'hcv.col.ability' | translate:'Ability' }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>&nbsp;</td>
+                  <td *ngFor="let m of [1,2,3,4,5,6,7,8,9,10,11,12]"></td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>&nbsp;</td>
+                  <td *ngFor="let m of [1,2,3,4,5,6,7,8,9,10,11,12]"></td>
+                  <td></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="hrcard-section-title">{{ 'hcv.section.order' | translate:'Order Information' }}</div>
+        <table class="hrcard-table">
+          <thead>
+            <tr>
+              <th>{{ 'hcv.col.orderDate' | translate:'Order date' }}</th>
+              <th>{{ 'hcv.col.orderDistinguish' | translate:'Order distinguish' }}</th>
+              <th>{{ 'hcv.card.department' | translate:'Department' }}</th>
+              <th>{{ 'common.position' | translate:'Position' }}</th>
+              <th>{{ 'hcv.card.rank' | translate:'Rank' }}</th>
+              <th>{{ 'hcv.card.mainBusiness' | translate:'Mainbusiness' }}</th>
+              <th>{{ 'hcv.card.stateService' | translate:'State service' }}</th>
+              <th>{{ 'common.empType' | translate:'Employee type' }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>&nbsp;</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+            <tr><td>&nbsp;</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div *ngIf="cardLoading()" class="text-center text-muted py-4">...</div>
+    </div>
+  </ng-container>
+  <div *nzModalFooter>
+    <button nz-button type="button" (click)="closeCardModal()">{{ 'common.close' | translate:'Đóng' }}</button>
+    <button nz-button nzType="primary" type="button" (click)="executePrint()">
+      <i class="bx bx-printer"></i> {{ 'common.print' | translate:'In' }}
+    </button>
+  </div>
+</nz-modal>

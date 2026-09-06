@@ -25,10 +25,9 @@ public class ArDetailCalculateController {
     @Autowired
     private ArDetailCalculateService arDetailCalculateService;
 
-    @GetMapping("/viewArDetailCalculate")
-    public String viewArDetailCalculate() {
-        return "ar/attendanceMintenance/viewArDetailCalculate";
-    }
+    // Trang view đã migrate sang Angular (/view-ar-detail-calculate) - xem MIGRATED_ROUTES trong
+    // app-shell.component.ts. API /api/detailCalculate/run bên dưới vẫn giữ nguyên vì Angular gọi lại
+    // nguyên backend.
 
     @PostMapping("/api/detailCalculate/run")
     @ResponseBody

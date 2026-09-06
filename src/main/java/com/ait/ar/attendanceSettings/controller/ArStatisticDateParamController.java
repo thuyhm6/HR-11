@@ -23,14 +23,6 @@ public class ArStatisticDateParamController {
     private ArStatisticDateParamService cycleParamService;
 
     /**
-     * Mở giao diện trang thông số chu kỳ chấm công
-     */
-    @GetMapping("/viewCycleParameter")
-    public String viewCycleParameter() {
-        return "ar/attendanceSettings/viewCycleParameter";
-    }
-
-    /**
      * API: Lấy toàn bộ danh sách hoặc tìm kiếm
      */
     @GetMapping("/api/cycleParameter")

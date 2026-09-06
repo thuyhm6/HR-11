@@ -1,0 +1,70 @@
+<div class="py-3">
+  <nz-alert nzType="info" nzMessage="Chào mừng đến với hệ thống HR!" class="mb-3"></nz-alert>
+
+  <div class="row">
+    <div class="col-xxl-4">
+      <div class="d-flex justify-content-end mb-2">
+        <nz-range-picker [ngModel]="dateRange()" (ngModelChange)="onDateRangeChange($event)"
+                          nzFormat="dd/MM/yyyy"></nz-range-picker>
+      </div>
+      <nz-table [nzShowPagination]="false" nzSize="small">
+        <thead>
+          <tr>
+            <th>Tên</th>
+            <th style="width: 20%">Số lượng</th>
+            <th style="width: 20%">Trạng thái</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><a href="javascript:void(0)" (click)="openApplyAttendanceInfoListTab()">Đơn nghỉ phép tháng này</a></td>
+            <td>{{ leaveCount() === null ? '-' : (leaveCount() === 'error' ? '?' : leaveCount()) }}</td>
+            <td>
+              <nz-tag *ngIf="isPositive(leaveCount())" nzColor="blue">Đã đăng ký</nz-tag>
+              <nz-tag *ngIf="leaveCount() === 0" nzColor="success">Ổn định</nz-tag>
+            </td>
+          </tr>
+          <tr>
+            <td><a href="javascript:void(0)" (click)="openOtApplyInfoListTab()">Đơn tăng ca tháng này</a></td>
+            <td>{{ otCount() === null ? '-' : (otCount() === 'error' ? '?' : otCount()) }}</td>
+            <td>
+              <nz-tag *ngIf="isPositive(otCount())" nzColor="blue">Đã đăng ký</nz-tag>
+              <nz-tag *ngIf="otCount() === 0" nzColor="success">Ổn định</nz-tag>
+            </td>
+          </tr>
+          <tr>
+            <td><a href="javascript:void(0)" (click)="openCwaAbnormalApplyTab()">Nghỉ bất thường tháng này</a></td>
+            <td>{{ abnormalCount() === null ? '-' : (abnormalCount() === 'error' ? '?' : abnormalCount()) }}</td>
+            <td>
+              <nz-tag *ngIf="isPositive(abnormalCount())" nzColor="warning">Cần xử lý</nz-tag>
+              <nz-tag *ngIf="abnormalCount() === 0" nzColor="success">Ổn định</nz-tag>
+            </td>
+          </tr>
+        </tbody>
+      </nz-table>
+    </div>
+
+    <div class="col-xxl-8">
+      <nz-card nzTitle="Biểu đồ chấm công & Tăng ca" class="h-100">
+        <div #chartEl></div>
+      </nz-card>
+    </div>
+  </div>
+
+  <div class="row g-3 mt-1">
+    <div class="col-md-4">
+      <nz-card>
+        <h6><i class="fas fa-clock me-2"></i>Tổng hợp OT theo bộ phận</h6>
+        <p class="text-muted small">Đã chuyển sang Angular</p>
+        <button nz-button nzType="primary" nzSize="small" (click)="openOtTab()">Mở</button>
+      </nz-card>
+    </div>
+  </div>
+
+  <div class="row mt-3">
+    <div class="col-12 text-center">
+      <img src="/assets/images/Cameras_BannerPC.png" alt="Banner" class="img-fluid rounded"
+           style="max-width: 80%; box-shadow: 0 8px 24px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.10);">
+    </div>
+  </div>
+</div>

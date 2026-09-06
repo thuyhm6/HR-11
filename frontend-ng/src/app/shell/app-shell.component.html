@@ -1,0 +1,195 @@
+<nz-layout class="app-shell-layout">
+  <nz-sider nzCollapsible [nzCollapsed]="sidebarCollapsed()" [nzTrigger]="null" [nzWidth]="240" [nzCollapsedWidth]="64" class="app-sider">
+    <div class="logo-box">
+      <a routerLink="/dashboard" class="d-flex align-items-center text-white text-decoration-none px-2">
+        <i class="bx bx-buildings fs-22 me-2"></i>
+        <span class="fw-bold" *ngIf="!sidebarCollapsed()">VHR</span>
+      </a>
+    </div>
+
+    <ul nz-menu nzMode="inline" nzTheme="dark" [nzInlineIndent]="0" [nzInlineCollapsed]="sidebarCollapsed()">
+      <ng-container *ngFor="let item of menu()">
+        <li *ngIf="item.children?.length" nz-submenu [nzIcon]="null" [attr.data-menu-no]="item.menuNo" [attr.data-menu-url]="item.menuUrl"
+            [nzOpen]="openTopMenuNo() === item.menuNo" (nzOpenChange)="onTopSubmenuOpenChange(item.menuNo, $event)">
+          <div title class="d-flex align-items-center gap-2">
+            <iconify-icon *ngIf="item.menuImg" [attr.icon]="item.menuImg"></iconify-icon>
+            <iconify-icon *ngIf="!item.menuImg" icon="solar:folder-bold-duotone"></iconify-icon>
+            <span>{{ item.menuName }}</span>
+          </div>
+          <ul>
+            <ng-container *ngFor="let child of item.children">
+              <li *ngIf="child.children?.length" nz-submenu [nzTitle]="child.menuName" [nzIcon]="null"
+                  [attr.data-menu-no]="child.menuNo" [attr.data-menu-url]="child.menuUrl"
+                  [nzOpen]="openChildMenuNo() === child.menuNo" (nzOpenChange)="onChildSubmenuOpenChange(child.menuNo, $event)">
+                <ul>
+                  <li *ngFor="let grandChild of child.children" nz-menu-item
+                      [nzSelected]="isMenuActive(grandChild.menuUrl)"
+                      [attr.data-menu-no]="grandChild.menuNo" [attr.data-menu-url]="grandChild.menuUrl"
+                      (click)="openMenuTab(grandChild.menuUrl, grandChild.menuName, grandChild.menuNo)">
+                    {{ grandChild.menuName }}
+                  </li>
+                </ul>
+              </li>
+              <li *ngIf="!child.children?.length" nz-menu-item
+                  [nzSelected]="isMenuActive(child.menuUrl)"
+                  [attr.data-menu-no]="child.menuNo" [attr.data-menu-url]="child.menuUrl"
+                  (click)="openMenuTab(child.menuUrl, child.menuName, child.menuNo)">
+                {{ child.menuName }}
+              </li>
+            </ng-container>
+          </ul>
+        </li>
+        <li *ngIf="!item.children?.length" nz-menu-item
+            [nzSelected]="isMenuActive(item.menuUrl)"
+            [attr.data-menu-no]="item.menuNo" [attr.data-menu-url]="item.menuUrl"
+            (click)="openMenuTab(item.menuUrl, item.menuName, item.menuNo)">
+          <span class="d-flex align-items-center gap-2">
+            <iconify-icon *ngIf="item.menuImg" [attr.icon]="item.menuImg"></iconify-icon>
+            <iconify-icon *ngIf="!item.menuImg" icon="solar:menu-dots-bold-duotone"></iconify-icon>
+            <span *ngIf="!sidebarCollapsed()">{{ item.menuName }}</span>
+          </span>
+        </li>
+      </ng-container>
+    </ul>
+  </nz-sider>
+
+  <nz-layout>
+    <!-- ========== Topbar ========== -->
+    <nz-header class="app-header">
+      <div class="d-flex align-items-center h-100">
+        <div class="d-flex align-items-center flex-shrink-0">
+          <button type="button" class="button-toggle-menu me-2" (click)="toggleSidebar()">
+            <iconify-icon icon="solar:hamburger-menu-broken" class="fs-24 align-middle"></iconify-icon>
+          </button>
+          <span class="fw-bold fs-18">VHR System</span>
+        </div>
+
+        <!-- Menu ngang theo ngữ cảnh: rỗng ban đầu, chỉ hiện khi bấm 1 menu ở sidebar (hoặc chính
+             menu này) - tương đương #topbar-menu-live trong fragments/topbar.html bản Thymeleaf cũ
+             (xem AppShellComponent.showMenuContext). -->
+        <nav class="topbar-horizontal-menu flex-grow-1 mx-2" *ngIf="topbarMenuItems().length">
+          <ul nz-menu nzMode="horizontal" nzTheme="dark" class="topbar-menu-nav">
+            <ng-container *ngFor="let item of topbarMenuItems()">
+              <li *ngIf="item.children?.length" nz-submenu [nzTitle]="item.menuName" [nzIcon]="null">
+                <ul>
+                  <ng-container *ngFor="let child of item.children">
+                    <li *ngIf="child.children?.length" nz-submenu [nzTitle]="child.menuName" [nzIcon]="null">
+                      <ul>
+                        <li *ngFor="let grandChild of child.children" nz-menu-item
+                            [nzSelected]="isMenuActive(grandChild.menuUrl)"
+                            (click)="openMenuTab(grandChild.menuUrl, grandChild.menuName, grandChild.menuNo)">
+                          {{ grandChild.menuName }}
+                        </li>
+                      </ul>
+                    </li>
+                    <li *ngIf="!child.children?.length" nz-menu-item
+                        [nzSelected]="isMenuActive(child.menuUrl)"
+                        (click)="openMenuTab(child.menuUrl, child.menuName, child.menuNo)">
+                      {{ child.menuName }}
+                    </li>
+                  </ng-container>
+                </ul>
+              </li>
+              <li *ngIf="!item.children?.length" nz-menu-item
+                  [nzSelected]="isMenuActive(item.menuUrl)"
+                  (click)="openMenuTab(item.menuUrl, item.menuName, item.menuNo)">
+                {{ item.menuName }}
+              </li>
+            </ng-container>
+          </ul>
+        </nav>
+
+        <div class="d-flex align-items-center gap-1 topbar-actions ms-auto flex-shrink-0">
+          <app-notifications-dropdown [mode]="notificationMode()"></app-notifications-dropdown>
+
+          <div class="topbar-item d-none d-md-flex">
+            <button type="button" class="topbar-button" (click)="openThemeSettings()">
+              <iconify-icon icon="solar:settings-bold-duotone" class="fs-24 align-middle"></iconify-icon>
+            </button>
+          </div>
+
+          <div class="topbar-item" nz-dropdown nzTrigger="click" [nzDropdownMenu]="userMenu">
+            <span class="topbar-button d-flex align-items-center gap-2">
+              <img class="rounded-circle" width="32" [src]="user()?.photoUrl || '/assets/images/users/dummy-avatar.jpg'" alt="avatar">
+              <span class="d-none d-md-inline">{{ user()?.employeeName || user()?.username }}</span>
+            </span>
+          </div>
+          <nz-dropdown-menu #userMenu="nzDropdownMenu">
+            <ul nz-menu class="user-dropdown-menu">
+              <li class="dropdown-header-item">{{ user()?.employeeName || user()?.username || 'HR System' }}</li>
+              <li nz-menu-divider></li>
+              <li *ngIf="user()?.hasSysTypeZeroMenus" nz-menu-item>
+                <a href="/sys/hrm" target="_blank" rel="noopener noreferrer" (click)="openHrmManagementSystem($event)" class="d-flex align-items-center text-reset text-decoration-none">
+                  <i class="bx bx-user-circle fs-18 align-middle me-1"></i>
+                  <span class="align-middle">HR Management System</span>
+                </a>
+              </li>
+              <li nz-menu-item (click)="openChangePasswordModal()">
+                <i class="fas fa-key fs-18 align-middle me-1"></i>
+                <span class="align-middle">{{ 'topbar.changePassword' | translate:'Cập nhật mật khẩu' }}</span>
+              </li>
+              <li nz-menu-item (click)="lockScreen.lock()">
+                <i class="bx bx-lock fs-18 align-middle me-1"></i>
+                <span class="align-middle">Khóa màn hình</span>
+              </li>
+              <li nz-menu-item nzDanger (click)="logout()">
+                <i class="bx bx-log-out fs-18 align-middle me-1"></i>
+                <span class="align-middle">Đăng xuất</span>
+              </li>
+            </ul>
+          </nz-dropdown-menu>
+        </div>
+      </div>
+    </nz-header>
+
+    <!-- ========== Content ========== -->
+    <nz-content class="app-content" [style.--tab-strip-height.px]="tabs.tabs().length > 1 ? 40 : 0">
+      <!-- Tab-strip: mỗi menu bấm vào mở 1 tab - 'route' (Angular) hoặc 'external' (Thymeleaf AJAX-fetch),
+           thay cho innerTab.js gốc (xem tab.service.ts) -->
+      <ul class="nav nav-tabs tab-strip" *ngIf="tabs.tabs().length > 1">
+        <li class="nav-item" *ngFor="let tab of tabs.tabs()">
+          <a class="nav-link d-flex align-items-center gap-2" href="javascript:void(0)"
+             [class.active]="tabs.activePath() === tab.path"
+             (click)="tabs.switchTab(tab.path)"
+             (contextmenu)="onTabContextMenu($event, tab, tabStripContextMenu)">
+            <span>{{ tab.title }}</span>
+            <i *ngIf="tab.closable" class="bx bx-x tab-strip-close" (click)="closeTab($event, tab)"></i>
+          </a>
+        </li>
+      </ul>
+      <!-- Menu chuột phải trên tab-strip -->
+      <nz-dropdown-menu #tabStripContextMenu="nzDropdownMenu">
+        <ul nz-menu>
+          <li nz-menu-item [nzDisabled]="!contextMenuTab()?.closable" (click)="closeTabFromContextMenu()">
+            {{ 'shell.tab.close' | translate:'Đóng tab' }}
+          </li>
+          <li nz-menu-item (click)="closeAllTabsFromContextMenu()">
+            {{ 'shell.tab.closeAll' | translate:'Đóng tất cả tab' }}
+          </li>
+          <li nz-menu-item [nzDisabled]="!canCloseTabsToLeft()" (click)="closeTabsToLeftFromContextMenu()">
+            {{ 'shell.tab.closeLeft' | translate:'Đóng tất cả tab bên trái' }}
+          </li>
+          <li nz-menu-item [nzDisabled]="!canCloseTabsToRight()" (click)="closeTabsToRightFromContextMenu()">
+            {{ 'shell.tab.closeRight' | translate:'Đóng tất cả tab bên phải' }}
+          </li>
+        </ul>
+      </nz-dropdown-menu>
+      <div class="container-fluid">
+        <!-- Route tab đang mở (dashboard, dept-ot-apply-info...) - luôn giữ mounted (chỉ ẩn/hiện)
+             để TabRouteReuseStrategy không hủy component khi chuyển sang tab external. -->
+        <div [hidden]="tabs.activeTabKind() !== 'route'">
+          <router-outlet></router-outlet>
+        </div>
+        <!-- Mỗi tab external là 1 instance riêng, giữ nguyên DOM khi ẩn/hiện qua lại giữa các tab. -->
+        <app-external-tab *ngFor="let tab of tabs.externalTabs(); trackBy: trackByPath"
+                           [hidden]="tabs.activePath() !== tab.path"
+                           [url]="tab.path" [reloadToken]="tab.reloadToken"></app-external-tab>
+      </div>
+    </nz-content>
+  </nz-layout>
+</nz-layout>
+
+<app-theme-settings></app-theme-settings>
+<app-change-password-modal></app-change-password-modal>
+<app-force-password-change-modal *ngIf="user()?.requirePasswordChange"></app-force-password-change-modal>
+<app-lock-screen-overlay *ngIf="lockScreen.locked()" [user]="user()"></app-lock-screen-overlay>

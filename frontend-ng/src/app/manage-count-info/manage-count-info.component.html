@@ -1,0 +1,153 @@
+<div class="row">
+  <div class="col-12">
+    <!-- Điều kiện tìm kiếm - đứng im khi cuộn (xem .sticky-filter-card trong styles.css) -->
+    <nz-card class="mb-3 sticky-filter-card">
+      <form class="row g-3" (ngSubmit)="search()">
+        <div class="col-md-3">
+          <label class="form-label">{{ 'essDept.keyword' | translate:'Mã nhân viên / Họ tên' }}</label>
+          <input nz-input [(ngModel)]="keyword" name="keyword"
+                 [placeholder]="'vdp.search.empKeyword.placeholder' | translate:'Nhập mã hoặc họ tên'">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'essDept.dept' | translate:'Phòng ban' }}</label>
+          <nz-tree-select class="w-100" [nzNodes]="deptNodes()" [(ngModel)]="deptNos" name="deptNos"
+                           nzCheckable nzShowSearch nzAllowClear
+                           [nzPlaceHolder]="'vdp.search.dept.placeholder' | translate:'Chọn phòng ban'"
+                           nzDropdownClassName="mci-dept-tree-dropdown"></nz-tree-select>
+          <div *ngIf="deptTreeErrorMessage()" class="text-danger small mt-1">{{ deptTreeErrorMessage() }}</div>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'common.empGroup' | translate:'Nhóm nhân viên' }}</label>
+          <nz-select class="w-100" [(ngModel)]="postFamily" name="postFamily" nzAllowClear
+                     [nzPlaceHolder]="'common.selectAll' | translate:'-- Tất cả --'">
+            <nz-option *ngFor="let c of postFamilyOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'common.empType' | translate:'Loại nhân viên' }}</label>
+          <nz-select class="w-100" [(ngModel)]="empTypeCode" name="empTypeCode" nzAllowClear
+                     [nzPlaceHolder]="'common.selectAll' | translate:'-- Tất cả --'">
+            <nz-option *ngFor="let c of empTypeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'common.status' | translate:'Trạng thái' }}</label>
+          <nz-select class="w-100" [(ngModel)]="empOffice" name="empOffice" nzAllowClear
+                     [nzPlaceHolder]="'common.selectAll' | translate:'-- Tất cả --'">
+            <nz-option *ngFor="let c of empOfficeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'mci.field.asOfDate' | translate:'Ngày truy vấn' }}</label>
+          <nz-date-picker class="w-100" [(ngModel)]="asOfDate" name="asOfDate" nzFormat="yyyy/MM/dd"></nz-date-picker>
+        </div>
+        <div class="col-12 d-flex align-items-end gap-2 flex-wrap">
+          <button nz-button nzType="primary" type="submit">
+            <i class="bx bx-search"></i> {{ 'essDept.search' | translate:'Tra cứu' }}
+          </button>
+          <button nz-button type="button" (click)="clearSearch()">
+            <i class="bx bx-x"></i> {{ 'essDept.clearFilter' | translate:'Xóa lọc' }}
+          </button>
+          <button nz-button nzType="default" type="button" class="btn-export" (click)="exportExcel()">
+            <i class="bx bx-export"></i> {{ 'essDept.exportExcel' | translate:'Xuất excel' }}
+          </button>
+          <button nz-button nzType="default" type="button" (click)="exportWeeklyReport()">
+            <i class="bx bx-calendar-week"></i> {{ 'essDept.weeklyReport' | translate:'Báo cáo nhân sự theo tuần' }}
+          </button>
+        </div>
+      </form>
+    </nz-card>
+
+    <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+    <!-- Khu vực thống kê -->
+    <div class="row g-3 mb-3">
+      <div class="col-md-4">
+        <nz-card class="h-100 mci-total-card">
+          <div class="d-flex flex-column align-items-center justify-content-center text-center">
+            <div class="text-muted mb-1 fw-semibold">{{ 'mci.stats.total' | translate:'Tổng số nhân viên' }}</div>
+            <div class="mci-total-count">{{ totalCount() }}</div>
+            <div class="text-muted mt-1 small">{{ 'common.empName' | translate:'Nhân viên' }}</div>
+          </div>
+        </nz-card>
+      </div>
+      <div class="col-md-4">
+        <nz-card [nzTitle]="'mci.stats.byGender' | translate:'Theo giới tính'" class="h-100">
+          <div #genderChartEl></div>
+        </nz-card>
+      </div>
+      <div class="col-md-4">
+        <nz-card [nzTitle]="'mci.stats.byEmpType' | translate:'Theo loại nhân viên'" class="h-100">
+          <div #empTypeChartEl></div>
+        </nz-card>
+      </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+      <div class="col-md-8">
+        <nz-card [nzTitle]="'mci.stats.byDept' | translate:'Theo phòng ban'" class="h-100">
+          <div #deptChartEl></div>
+        </nz-card>
+      </div>
+      <div class="col-md-4">
+        <nz-card [nzTitle]="'mci.stats.byPostFamily' | translate:'Theo nhóm nhân viên'" class="h-100">
+          <div #postFamilyChartEl></div>
+        </nz-card>
+      </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+      <div class="col-md-6">
+        <nz-card [nzTitle]="'mci.stats.byPostGrade' | translate:'Theo chức danh'" class="h-100">
+          <div #postGradeChartEl></div>
+        </nz-card>
+      </div>
+      <div class="col-md-6">
+        <nz-card [nzTitle]="'mci.stats.byAge' | translate:'Theo độ tuổi'" class="h-100">
+          <div #ageChartEl></div>
+        </nz-card>
+      </div>
+    </div>
+
+    <!-- Danh sách nhân viên chi tiết -->
+    <nz-card [nzTitle]="'mci.detail.title' | translate:'Danh sách nhân viên chi tiết'">
+      <nz-table [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="25" [nzShowSizeChanger]="true"
+                [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="mciTotalTpl"
+                [nzScroll]="{ x: '1300px' }" class="table-nowrap" #mciTable>
+        <thead>
+          <tr>
+            <th class="text-center" nzWidth="60px">{{ 'common.stt' | translate:'STT' }}</th>
+            <th class="text-center" nzWidth="100px" nzEllipsis>{{ 'common.empId' | translate:'Mã NV' }}</th>
+            <th nzWidth="160px" nzEllipsis>{{ 'common.empName' | translate:'Họ tên' }}</th>
+            <th nzWidth="180px" nzEllipsis>{{ 'common.deptName' | translate:'Phòng ban' }}</th>
+            <th class="text-center" nzWidth="120px" nzEllipsis>{{ 'common.empGroup' | translate:'Nhóm NV' }}</th>
+            <th class="text-center" nzWidth="120px" nzEllipsis>{{ 'mci.col.postGrade' | translate:'Chức danh' }}</th>
+            <th class="text-center" nzWidth="120px" nzEllipsis>{{ 'common.empType' | translate:'Loại NV' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'mci.col.dob' | translate:'Ngày sinh' }}</th>
+            <th class="text-center" nzWidth="100px">{{ 'mci.col.gender' | translate:'Giới tính' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'common.dateJoined' | translate:'Ngày vào làm' }}</th>
+            <th class="text-center" nzWidth="120px" nzEllipsis>{{ 'common.status' | translate:'Trạng thái' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of mciTable.data; let i = index">
+            <td class="text-center">{{ i + 1 }}</td>
+            <td class="text-center" nzEllipsis [attr.title]="row.empId || null">{{ row.empId }}</td>
+            <td nzEllipsis [attr.title]="row.localName || null">{{ row.localName }}</td>
+            <td nzEllipsis [attr.title]="row.deptName || null">{{ row.deptName }}</td>
+            <td class="text-center" nzEllipsis [attr.title]="row.postFamilyName || null">{{ row.postFamilyName }}</td>
+            <td class="text-center" nzEllipsis [attr.title]="row.postGradeNo || null">{{ row.postGradeNo }}</td>
+            <td class="text-center" nzEllipsis [attr.title]="row.empTypeName || null">{{ row.empTypeName }}</td>
+            <td class="text-center">{{ row.dob }}</td>
+            <td class="text-center">{{ row.sexName }}</td>
+            <td class="text-center">{{ row.dateStarted }}</td>
+            <td class="text-center" nzEllipsis [attr.title]="row.empOfficeName || null">{{ row.empOfficeName }}</td>
+          </tr>
+        </tbody>
+        <ng-template #mciTotalTpl let-total>
+          {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+        </ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>

@@ -21,11 +21,6 @@ public class ArStaFormulaController {
     @Autowired
     private ArStaFormulaService service;
 
-    @GetMapping("/viewSummaryFormula")
-    public String viewSummaryFormula() {
-        return "ar/attendanceSettings/viewSummaryFormula";
-    }
-
     @GetMapping("/api/arStaFormula/treeItems")
     @ResponseBody
     public ResponseEntity<List<Map<String, Object>>> getTreeItems() {

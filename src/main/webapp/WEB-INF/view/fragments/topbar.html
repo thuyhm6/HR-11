@@ -13,48 +13,56 @@
                     </div>
 
                     <nav class="topbar-horizontal-menu" th:if="${userMenus != null and !userMenus.empty}">
-                         <ul class="topbar-menu-nav">
-                              <li class="topbar-menu-item" th:each="menu : ${userMenus}" th:if="${menu.isActive()}"
-                                   th:classappend="${menu.hasChildren()} ? ' has-children'">
-                                   <th:block th:if="${menu.hasChildren()}">
-                                        <a class="topbar-menu-link" href="javascript:void(0);"
-                                             th:attr="data-menu-no=${menu.menuNo}">
-                                             <span th:text="${menu.menuName}">Menu Name</span>
-                                        </a>
-                                        <ul class="topbar-submenu">
-                                             <li class="topbar-submenu-item" th:each="child : ${menu.children}"
-                                                  th:if="${child.isActive()}"
-                                                  th:classappend="${child.hasChildren()} ? ' has-children'">
-                                                  <th:block th:if="${child.hasChildren()}">
-                                                       <a class="topbar-submenu-link" href="javascript:void(0);"
-                                                            th:attr="data-menu-no=${child.menuNo}"
-                                                            th:text="${child.menuName}">Child Menu Name</a>
-                                                       <ul class="topbar-submenu topbar-submenu-nested">
-                                                            <li class="topbar-submenu-item"
-                                                                 th:each="grandChild : ${child.children}"
-                                                                 th:if="${grandChild.isActive()}">
-                                                                 <a class="topbar-submenu-link"
-                                                                      th:attr="data-tab=${grandChild.menuUrl != null and !grandChild.menuUrl.empty} ? ${grandChild.menuUrl} : 'javascript:void(0);', data-menu-no=${grandChild.menuNo}"
-                                                                      th:text="${grandChild.menuName}">Grand Child Menu Name</a>
-                                                            </li>
-                                                       </ul>
-                                                  </th:block>
-                                                  <th:block th:unless="${child.hasChildren()}">
-                                                       <a class="topbar-submenu-link"
-                                                            th:attr="data-tab=${child.menuUrl != null and !child.menuUrl.empty} ? ${child.menuUrl} : 'javascript:void(0);', data-menu-no=${child.menuNo}"
-                                                            th:text="${child.menuName}">Child Menu Name</a>
-                                                  </th:block>
-                                             </li>
-                                        </ul>
-                                   </th:block>
-                                   <th:block th:unless="${menu.hasChildren()}">
-                                        <a class="topbar-menu-link"
-                                             th:attr="data-tab=${menu.menuUrl != null and !menu.menuUrl.empty} ? ${menu.menuUrl} : 'javascript:void(0);', data-menu-no=${menu.menuNo}">
-                                             <span th:text="${menu.menuName}">Menu Name</span>
-                                        </a>
-                                   </th:block>
-                              </li>
-                         </ul>
+                         <!-- Thanh menu hiển thị thực tế: rỗng ban đầu, được JS đổ dữ liệu theo ngữ cảnh menu vừa chọn -->
+                         <ul class="topbar-menu-nav" id="topbar-menu-live"></ul>
+
+                         <!-- Nguồn dữ liệu đầy đủ 3 cấp (menu gốc > menu con > menu cháu), luôn ẩn.
+                              Được giữ nguyên cấu trúc Thymeleaf render sẵn để JS đọc quan hệ cha/con và
+                              clone đúng menu-cha + các menu cùng cấp (cùng MENU_PARENT_NO) khi cần hiển thị. -->
+                         <div id="topbar-menu-source" class="d-none" aria-hidden="true">
+                              <ul class="topbar-menu-nav">
+                                   <li class="topbar-menu-item" th:each="menu : ${userMenus}" th:if="${menu.isActive()}"
+                                        th:classappend="${menu.hasChildren()} ? ' has-children'">
+                                        <th:block th:if="${menu.hasChildren()}">
+                                             <a class="topbar-menu-link" href="javascript:void(0);"
+                                                  th:attr="data-menu-no=${menu.menuNo}">
+                                                  <span th:text="${menu.menuName}">Menu Name</span>
+                                             </a>
+                                             <ul class="topbar-submenu">
+                                                  <li class="topbar-submenu-item" th:each="child : ${menu.children}"
+                                                       th:if="${child.isActive()}"
+                                                       th:classappend="${child.hasChildren()} ? ' has-children'">
+                                                       <th:block th:if="${child.hasChildren()}">
+                                                            <a class="topbar-submenu-link" href="javascript:void(0);"
+                                                                 th:attr="data-menu-no=${child.menuNo}"
+                                                                 th:text="${child.menuName}">Child Menu Name</a>
+                                                            <ul class="topbar-submenu topbar-submenu-nested">
+                                                                 <li class="topbar-submenu-item"
+                                                                      th:each="grandChild : ${child.children}"
+                                                                      th:if="${grandChild.isActive()}">
+                                                                      <a class="topbar-submenu-link"
+                                                                           th:attr="data-tab=${grandChild.menuUrl != null and !grandChild.menuUrl.empty} ? ${grandChild.menuUrl} : 'javascript:void(0);', data-menu-no=${grandChild.menuNo}"
+                                                                           th:text="${grandChild.menuName}">Grand Child Menu Name</a>
+                                                                 </li>
+                                                            </ul>
+                                                       </th:block>
+                                                       <th:block th:unless="${child.hasChildren()}">
+                                                            <a class="topbar-submenu-link"
+                                                                 th:attr="data-tab=${child.menuUrl != null and !child.menuUrl.empty} ? ${child.menuUrl} : 'javascript:void(0);', data-menu-no=${child.menuNo}"
+                                                                 th:text="${child.menuName}">Child Menu Name</a>
+                                                       </th:block>
+                                                  </li>
+                                             </ul>
+                                        </th:block>
+                                        <th:block th:unless="${menu.hasChildren()}">
+                                             <a class="topbar-menu-link"
+                                                  th:attr="data-tab=${menu.menuUrl != null and !menu.menuUrl.empty} ? ${menu.menuUrl} : 'javascript:void(0);', data-menu-no=${menu.menuNo}">
+                                                  <span th:text="${menu.menuName}">Menu Name</span>
+                                             </a>
+                                        </th:block>
+                                   </li>
+                              </ul>
+                         </div>
                     </nav>
 
                     <div class="d-flex align-items-center gap-1 topbar-actions">
@@ -93,8 +101,8 @@
                                         <!-- HRM mode: Chi tiết thay đổi + Nghỉ phép + Nghỉ bất thường chờ xác nhận -->
                                         <th:block th:if="${sysMode == 'hrm'}">
 
-                                             <a href="/hrm/approve/viewEssApplyInfo"
-                                                  data-tab="/hrm/approve/viewEssApplyInfo"
+                                             <a href="/hrm-approve-apply-info"
+                                                  data-tab="/hrm-approve-apply-info"
                                                   th:attr="data-title=#{topbar.notification.personalChange}"
                                                   class="dropdown-item py-3 border-bottom d-flex align-items-center justify-content-between">
                                                   <div class="d-flex align-items-center gap-2">
@@ -103,8 +111,8 @@
                                                   </div>
                                                   <span id="topbar-notif-hrm-personalChange" class="badge bg-danger rounded-pill">0</span>
                                              </a>
-                                             <a href="/ess/arConfirm/viewLeaveConfirmList"
-                                                  data-tab="/ess/arConfirm/viewLeaveConfirmList"
+                                             <a href="/leave-confirm"
+                                                  data-tab="/leave-confirm"
                                                   th:attr="data-title=#{topbar.notification.leave}"
                                                   class="dropdown-item py-3 border-bottom d-flex align-items-center justify-content-between">
                                                   <div class="d-flex align-items-center gap-2">
@@ -113,8 +121,8 @@
                                                   </div>
                                                   <span id="topbar-notif-hrm-leave" class="badge bg-danger rounded-pill">0</span>
                                              </a>
-                                             <a href="/ess/arConfirm/viewAttendanceExConfirm"
-                                                  data-tab="/ess/arConfirm/viewAttendanceExConfirm"
+                                             <a href="/attendance-ex-confirm"
+                                                  data-tab="/attendance-ex-confirm"
                                                   th:attr="data-title=#{topbar.notification.anomaly}"
                                                   class="dropdown-item py-3 border-bottom d-flex align-items-center justify-content-between">
                                                   <div class="d-flex align-items-center gap-2">
@@ -617,6 +625,91 @@
                const mobileWidth = 991.98;
                const topbarMenu = document.querySelector(".topbar-horizontal-menu");
                if (!topbarMenu) return;
+
+               // ============ CONTEXTUAL TOPBAR MENU ============
+               // Ban đầu topbar không hiển thị menu nào. Khi người dùng bấm vào 1 menu giao diện
+               // (link có data-tab, ở sidebar hoặc topbar) thì chỉ hiển thị menu cha trực tiếp của
+               // menu đó cùng các menu cùng cấp với menu cha (chung MENU_PARENT_NO).
+               (function initContextualTopbarMenu() {
+                    const liveNav = document.getElementById("topbar-menu-live");
+                    const sourceContainer = document.getElementById("topbar-menu-source");
+                    if (!liveNav || !sourceContainer) return;
+
+                    const nodeMap = {};
+
+                    function getDirectChildByTag(li, tagName) {
+                         return Array.from(li.children).find(function (c) { return c.tagName === tagName; });
+                    }
+
+                    function indexTree(ul, parentLi) {
+                         if (!ul) return;
+                         Array.from(ul.children).forEach(function (li) {
+                              if (li.tagName !== "LI") return;
+                              const link = getDirectChildByTag(li, "A");
+                              const menuNo = link ? link.getAttribute("data-menu-no") : null;
+                              if (menuNo) {
+                                   nodeMap[menuNo] = { li: li, parentLi: parentLi };
+                              }
+                              indexTree(getDirectChildByTag(li, "UL"), li);
+                         });
+                    }
+
+                    indexTree(getDirectChildByTag(sourceContainer, "UL"), null);
+
+                    function getSiblingLis(li) {
+                         if (!li || !li.parentElement) return [];
+                         return Array.from(li.parentElement.children).filter(function (child) {
+                              return child.tagName === "LI";
+                         });
+                    }
+
+                    function buildTopLevelLi(originalLi) {
+                         const clone = originalLi.cloneNode(true);
+                         clone.classList.remove("topbar-submenu-item");
+                         clone.classList.add("topbar-menu-item");
+                         const link = getDirectChildByTag(clone, "A");
+                         if (link) {
+                              link.classList.remove("topbar-submenu-link");
+                              link.classList.add("topbar-menu-link");
+                         }
+                         const childUl = getDirectChildByTag(clone, "UL");
+                         if (childUl) {
+                              childUl.classList.remove("topbar-submenu-nested");
+                         }
+                         return clone;
+                    }
+
+                    function showMenuContext(menuNo) {
+                         if (!menuNo) {
+                              liveNav.innerHTML = "";
+                              return;
+                         }
+
+                         const node = nodeMap[menuNo];
+                         if (!node) return;
+
+                         const referenceLi = node.parentLi || node.li;
+                         const siblingLis = getSiblingLis(referenceLi);
+
+                         liveNav.innerHTML = "";
+                         siblingLis.forEach(function (li) {
+                              liveNav.appendChild(buildTopLevelLi(li));
+                         });
+                    }
+
+                    document.addEventListener("click", function (event) {
+                         const link = event.target.closest("a[data-tab][data-menu-no]");
+                         if (!link) return;
+                         const menuNo = link.getAttribute("data-menu-no");
+                         if (!menuNo) return;
+                         showMenuContext(menuNo);
+                    });
+
+                    // Cho phép hệ thống tab (innerTab.js) đồng bộ topbar khi người dùng
+                    // chuyển qua lại giữa các tab đã mở ở tab-navigation.
+                    window.updateTopbarMenuContext = showMenuContext;
+               })();
+               // ============ /CONTEXTUAL TOPBAR MENU ============
 
                function notifySidebar(link) {
                     if (!link) return;

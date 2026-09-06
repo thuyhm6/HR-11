@@ -1,0 +1,13 @@
+.vlu-btn-export {
+  color: #52c41a;
+  border-color: #52c41a;
+}
+
+.vlu-row-clickable {
+  cursor: pointer;
+}
+
+.vlu-rolegroups-scroll {
+  max-height: 560px;
+  overflow-y: auto;
+}

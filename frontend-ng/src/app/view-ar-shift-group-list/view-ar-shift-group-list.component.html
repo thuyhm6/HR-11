@@ -1,0 +1,81 @@
+<div class="row">
+  <div class="col-12">
+    <!-- Điều kiện tìm kiếm - đứng im khi cuộn (xem .sticky-filter-card trong styles.css) -->
+    <nz-card class="mb-3 sticky-filter-card">
+      <form class="row g-3" (ngSubmit)="search()">
+        <div class="col-md-3">
+          <label class="form-label">{{ 'common.empId' | translate:'Mã nhân viên' }}</label>
+          <input nz-input [(ngModel)]="searchEmpId" name="vsgSearchEmpId"
+                 [placeholder]="'common.placeholder.empId' | translate:'Nhập mã nhân viên'">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'common.empName' | translate:'Tên nhân viên' }}</label>
+          <input nz-input [(ngModel)]="searchEmpName" name="vsgSearchEmpName"
+                 [placeholder]="'common.placeholder.empName' | translate:'Nhập tên nhân viên'">
+        </div>
+        <div class="col-md-6 d-flex align-items-end gap-2 flex-wrap">
+          <button nz-button nzType="primary" type="submit">
+            <i class="bx bx-search"></i> {{ 'common.search' | translate:'Tìm kiếm' }}
+          </button>
+          <button nz-button type="button" (click)="clearSearch()">
+            <i class="bx bx-x"></i> {{ 'common.clearFilter' | translate:'Xóa lọc' }}
+          </button>
+        </div>
+      </form>
+    </nz-card>
+
+    <nz-card>
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+      <nz-table [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="25" [nzShowSizeChanger]="true"
+                [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="vsgTotalTpl"
+                [nzScroll]="{ x: '1300px', y: 'calc(100vh - 420px)' }" #vsgTable>
+        <thead>
+          <tr>
+            <th class="text-center" nzWidth="60px">{{ 'common.stt' | translate:'STT' }}</th>
+            <th nzWidth="120px">{{ 'common.empId' | translate:'Mã NV' }}</th>
+            <th nzWidth="180px">{{ 'common.empName' | translate:'Tên nhân viên' }}</th>
+            <th nzWidth="180px">{{ 'ess.shiftGroup.col.beforeShift' | translate:'Ca trước thay đổi' }}</th>
+            <th nzWidth="220px">{{ 'ess.shiftGroup.col.afterShift' | translate:'Ca sau thay đổi' }}</th>
+            <th nzWidth="150px">{{ 'common.startDate' | translate:'Ngày bắt đầu' }}</th>
+            <th nzWidth="220px">{{ 'common.note' | translate:'Ghi chú' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'common.action' | translate:'Thao tác' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!loading() && rows().length === 0">
+            <td colspan="8" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+          </tr>
+          <tr *ngFor="let row of vsgTable.data; let i = index">
+            <td class="text-center">{{ i + 1 }}</td>
+            <td [attr.title]="row.empId || null">{{ row.empId }}</td>
+            <td [attr.title]="row.localName || null">{{ row.localName }}</td>
+            <td [attr.title]="row.beforShiftName || null">{{ row.beforShiftName }}</td>
+            <td>
+              <nz-select class="w-100" [(ngModel)]="row.editShiftNo" [name]="'vsgShiftNo' + i"
+                         [nzPlaceHolder]="'addShift.selectShift' | translate:'-- Chọn ca làm việc --'">
+                <nz-option *ngFor="let s of shiftOptions()" [nzValue]="s.codeNo"
+                           [nzLabel]="s.codeName || s.description || s.codeNo"></nz-option>
+              </nz-select>
+            </td>
+            <td>
+              <nz-date-picker class="w-100" [(ngModel)]="row.editStartDate" [name]="'vsgStartDate' + i"
+                               nzFormat="dd/MM/yyyy"></nz-date-picker>
+            </td>
+            <td>
+              <input nz-input [(ngModel)]="row.editRemark" [name]="'vsgRemark' + i">
+            </td>
+            <td class="text-center">
+              <button nz-button nzType="primary" nzSize="small" [nzLoading]="row.saving" (click)="saveRow(row)">
+                <i class="bx bx-save"></i> {{ 'common.save' | translate:'Lưu' }}
+              </button>
+            </td>
+          </tr>
+        </tbody>
+        <ng-template #vsgTotalTpl let-total>
+          {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+        </ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>

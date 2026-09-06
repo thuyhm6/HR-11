@@ -1,0 +1,132 @@
+<div class="row">
+  <div class="col-12">
+
+    <!-- ===== Thông tin nhân viên (tương đương fragments/essEmpInfoCard.html) ===== -->
+    <div class="card mb-3" *ngIf="basicInfo() as info">
+      <div class="card-body p-0">
+        <table class="table table-bordered table-sm align-middle mb-0" style="table-layout:fixed;">
+          <colgroup>
+            <col style="width:15%;"><col style="width:35%;"><col style="width:15%;"><col style="width:35%;">
+          </colgroup>
+          <tbody>
+            <tr>
+              <th class="table-light text-center">{{ 'essEmpCard.localName' | translate:'Họ tên' }}</th>
+              <td>{{ info.localName }}</td>
+              <th class="table-light text-center">{{ 'essEmpCard.empId' | translate:'Mã nhân viên' }}</th>
+              <td>{{ info.empId }}</td>
+            </tr>
+            <tr>
+              <th class="table-light text-center">{{ 'essEmpCard.deptName' | translate:'Phòng ban' }}</th>
+              <td>{{ info.deptName }}</td>
+              <th class="table-light text-center">{{ 'essEmpCard.headDept' | translate:'Trưởng phòng' }}</th>
+              <td>{{ info.headDepartment }}</td>
+            </tr>
+            <tr>
+              <th class="table-light text-center">{{ 'essEmpCard.postFamily' | translate:'Nhóm nhân viên' }}</th>
+              <td>{{ info.postFamilyName }}</td>
+              <th class="table-light text-center">{{ 'essEmpCard.postGrade' | translate:'Chức vụ' }}</th>
+              <td>{{ info.postGradeName }}</td>
+            </tr>
+            <tr>
+              <th class="table-light text-center">{{ 'essEmpCard.positionName' | translate:'Chức danh' }}</th>
+              <td>{{ info.positionNoName }}</td>
+              <th class="table-light text-center">{{ 'essEmpCard.dateStarted' | translate:'Ngày vào làm' }}</th>
+              <td>{{ info.dateStarted }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== Điều kiện tìm kiếm ===== -->
+    <div class="card mb-3">
+      <div class="card-body">
+        <form class="d-flex align-items-center gap-2" (ngSubmit)="search()">
+          <nz-input-number style="width:100px;" [(ngModel)]="year" name="year" [nzMin]="2000" [nzMax]="2099" [nzStep]="1"></nz-input-number>
+          <button nz-button nzType="primary" type="submit">
+            <i class="bi bi-search"></i> {{ 'yuif.btn.search' | translate:'Tra cứu' }}
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- ===== Section 1: Thông tin nghỉ phép năm ===== -->
+    <nz-card [nzTitle]="'yuif.section.vacInfo' | translate:'Thông tin nghỉ phép năm'" class="mb-3">
+      <div class="text-danger small mb-2" *ngIf="vacErrorMessage()">{{ vacErrorMessage() }}</div>
+      <div style="overflow-x:auto;">
+        <nz-table [nzData]="vacRows()" [nzLoading]="vacLoading()" [nzShowPagination]="false"
+                  nzSize="small" style="white-space:nowrap;">
+          <thead>
+            <tr>
+              <th class="text-center">{{ 'common.stt' | translate:'STT' }}</th>
+              <th class="text-center">{{ 'yuif.col.startDate' | translate:'Ngày bắt đầu' }}</th>
+              <th class="text-center">{{ 'yuif.col.endDate' | translate:'Ngày kết thúc' }}</th>
+              <th class="text-center">{{ 'yuif.col.totalVac' | translate:'Tổng phép năm' }}</th>
+              <th class="text-center">{{ 'yuif.col.lastYearVac' | translate:'Phép năm ngoài' }}</th>
+              <th class="text-center">{{ 'yuif.col.addVac' | translate:'Đặc biệt' }}</th>
+              <th class="text-center">{{ 'yuif.col.useVac' | translate:'Đã nghỉ' }}</th>
+              <th class="text-center">{{ 'yuif.col.pendingVac' | translate:'Chờ duyệt' }}</th>
+              <th class="text-center">{{ 'yuif.col.remainVac' | translate:'Còn lại' }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="!vacLoading() && vacRows().length === 0">
+              <td colspan="9" class="text-center text-muted">{{ 'yuif.msg.noData' | translate:'Không có dữ liệu' }}</td>
+            </tr>
+            <tr *ngFor="let r of vacRows(); let i = index">
+              <td class="text-center">{{ i + 1 }}</td>
+              <td class="text-center">{{ r.strtDate }}</td>
+              <td class="text-center">{{ r.endDate }}</td>
+              <td class="text-center">{{ r.total }}</td>
+              <td class="text-center">{{ r.lastYearVac }}</td>
+              <td class="text-center">{{ r.addVac }}</td>
+              <td class="text-center">{{ r.useVac }}</td>
+              <td class="text-center">{{ r.affirmUseVac }}</td>
+              <td class="text-center">{{ r.remainVac }}</td>
+            </tr>
+          </tbody>
+        </nz-table>
+      </div>
+    </nz-card>
+
+    <!-- ===== Section 2: Tình trạng sử dụng phép năm ===== -->
+    <nz-card [nzTitle]="'yuif.section.leaveUsage' | translate:'Tình trạng sử dụng phép năm'">
+      <div class="text-danger small mb-2" *ngIf="leaveErrorMessage()">{{ leaveErrorMessage() }}</div>
+      <div style="overflow-x:auto;">
+        <nz-table [nzData]="leaveRows()" [nzLoading]="leaveLoading()" [nzPageSize]="25" [nzShowSizeChanger]="true"
+                  [nzPageSizeOptions]="[25, 50, 100]" [nzShowTotal]="yuifTotalTpl"
+                  nzSize="small" style="white-space:nowrap;" #yuifLeaveTable>
+          <thead>
+            <tr>
+              <th class="text-center">{{ 'common.stt' | translate:'STT' }}</th>
+              <th class="text-center">{{ 'yuif.col.startDate' | translate:'Ngày bắt đầu' }}</th>
+              <th class="text-center">{{ 'yuif.col.startTime' | translate:'Thời gian bắt đầu' }}</th>
+              <th class="text-center">{{ 'yuif.col.endDate' | translate:'Ngày kết thúc' }}</th>
+              <th class="text-center">{{ 'yuif.col.endTime' | translate:'Thời gian kết thúc' }}</th>
+              <th class="text-center">{{ 'yuif.col.duration' | translate:'Thời lượng' }}</th>
+              <th class="text-center">{{ 'yuif.col.approvalStatus' | translate:'Trạng thái duyệt' }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="!leaveLoading() && yuifLeaveTable.data.length === 0">
+              <td colspan="7" class="text-center text-muted">{{ 'yuif.msg.noData' | translate:'Không có dữ liệu' }}</td>
+            </tr>
+            <tr *ngFor="let r of yuifLeaveTable.data; let i = index">
+              <td class="text-center">{{ i + 1 }}</td>
+              <td class="text-center">{{ r.leaveFromDate }}</td>
+              <td class="text-center">{{ r.leaveFromTime }}</td>
+              <td class="text-center">{{ r.leaveToDate }}</td>
+              <td class="text-center">{{ r.leaveToTime }}</td>
+              <td class="text-center">{{ r.applyLength }}</td>
+              <td>{{ r.affirmFlagName }}</td>
+            </tr>
+          </tbody>
+          <ng-template #yuifTotalTpl let-total>
+            {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+          </ng-template>
+        </nz-table>
+      </div>
+    </nz-card>
+
+  </div>
+</div>

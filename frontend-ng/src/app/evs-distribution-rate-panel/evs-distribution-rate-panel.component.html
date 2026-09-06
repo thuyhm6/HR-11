@@ -1,0 +1,194 @@
+<div class="row">
+  <div class="col-12">
+    <!-- Điều kiện tìm kiếm -->
+    <nz-card class="mb-3 sticky-filter-card">
+      <form class="row g-3" (ngSubmit)="search()">
+        <div class="col-md-3">
+          <label class="form-label">{{ 'evs.manage.viewEvsDistributionRatePanel.search.evaluationName' | translate:'Tên đánh giá' }}</label>
+          <nz-select class="w-100" [(ngModel)]="resumeSeq" name="edrResumeSeq">
+            <nz-option *ngFor="let r of resumeOptions()" [nzValue]="r.seq" [nzLabel]="r.resumeName"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'evs.manage.viewEvsDistributionRatePanel.search.type' | translate:'Loại' }}</label>
+          <nz-select class="w-100" [(ngModel)]="searchScoreType" name="edrSearchScoreType" nzAllowClear
+                     [nzPlaceHolder]="'evs.manage.viewEvsDistributionRatePanel.search.allOption' | translate:'-- Tất cả --'">
+            <nz-option *ngFor="let t of scoreTypes" [nzValue]="t" [nzLabel]="t"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'evs.manage.viewEvsDistributionRatePanel.search.status' | translate:'Trạng thái' }}</label>
+          <nz-select class="w-100" [(ngModel)]="searchActivity" name="edrSearchActivity" nzAllowClear
+                     [nzPlaceHolder]="'evs.manage.viewEvsDistributionRatePanel.search.allOption' | translate:'-- Tất cả --'">
+            <nz-option nzValue="1" [nzLabel]="'evs.manage.viewEvsDistributionRatePanel.search.active' | translate:'Sử dụng'"></nz-option>
+            <nz-option nzValue="0" [nzLabel]="'evs.manage.viewEvsDistributionRatePanel.search.inactive' | translate:'Không sử dụng'"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-5 d-flex align-items-end gap-2 flex-wrap">
+          <button nz-button nzType="primary" type="submit">
+            <i class="bx bx-search"></i> {{ 'evs.manage.viewEvsDistributionRatePanel.btn.search' | translate:'Tra cứu' }}
+          </button>
+          <button nz-button type="button" (click)="clearSearch()">
+            <i class="bx bx-x"></i> {{ 'evs.manage.viewEvsDistributionRatePanel.btn.clearFilter' | translate:'Xóa lọc' }}
+          </button>
+          <button nz-button nzType="primary" type="button" (click)="openAddModal()">
+            <i class="bx bx-plus"></i> {{ 'evs.manage.viewEvsDistributionRatePanel.btn.addNew' | translate:'Thêm mới' }}
+          </button>
+        </div>
+      </form>
+    </nz-card>
+
+    <nz-card>
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+      <nz-table [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="25" [nzShowSizeChanger]="true"
+                [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="edrTotalTpl"
+                [nzScroll]="{ x: '1200px' }" #edrTable="nzTable">
+        <thead>
+          <tr>
+            <th class="text-center" nzWidth="60px">{{ 'evs.manage.viewEvsDistributionRatePanel.col.no' | translate:'No.' }}</th>
+            <th class="text-center" nzWidth="100px">{{ 'evs.manage.viewEvsDistributionRatePanel.col.type' | translate:'Loại' }}</th>
+            <th class="text-center" nzWidth="90px">{{ 'evs.manage.viewEvsDistributionRatePanel.col.orderNo' | translate:'NO' }}</th>
+            <th nzWidth="180px">{{ 'evs.manage.viewEvsDistributionRatePanel.col.name' | translate:'Tên' }}</th>
+            <th class="text-center" nzWidth="70px">EX(A)</th>
+            <th class="text-center" nzWidth="70px">VG(B)</th>
+            <th class="text-center" nzWidth="70px">GD(C)</th>
+            <th class="text-center" nzWidth="70px">NI(D)</th>
+            <th class="text-center" nzWidth="70px">UN(E)</th>
+            <th class="text-center" nzWidth="80px">SUM</th>
+            <th class="text-center" nzWidth="110px">{{ 'evs.manage.viewEvsDistributionRatePanel.col.status' | translate:'Trạng thái' }}</th>
+            <th class="text-center" nzWidth="90px">{{ 'evs.manage.viewEvsDistributionRatePanel.col.action' | translate:'Thao tác' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!loading() && rows().length === 0">
+            <td colspan="11" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+          </tr>
+          <tr *ngFor="let row of edrTable.data; let i = index" class="edr-row-clickable" (click)="openEditModal(row)">
+            <td class="text-center">{{ i + 1 }}</td>
+            <td class="text-center">{{ row.scoreType }}</td>
+            <td class="text-center">{{ row.no }}</td>
+            <td [attr.title]="row.name || null">{{ row.name }}</td>
+            <td class="text-center">{{ row.a || 0 }}</td>
+            <td class="text-center">{{ row.b || 0 }}</td>
+            <td class="text-center">{{ row.c || 0 }}</td>
+            <td class="text-center">{{ row.d || 0 }}</td>
+            <td class="text-center">{{ row.e || 0 }}</td>
+            <td class="text-center fw-semibold" [class.text-success]="rowSumOk(row)" [class.text-danger]="!rowSumOk(row)">{{ row.sum || 0 }}</td>
+            <td class="text-center">
+              <nz-tag [nzColor]="activityTagColor(row.activity)">
+                {{ row.activity === '1' ? ('evs.manage.viewEvsDistributionRatePanel.badge.active' | translate:'Sử dụng') : ('evs.manage.viewEvsDistributionRatePanel.badge.inactive' | translate:'Không sử dụng') }}
+              </nz-tag>
+            </td>
+            <td class="text-center">
+              <button nz-button nzType="text" nzSize="small" [title]="'evs.manage.viewEvsDistributionRatePanel.btn.edit' | translate:'Sửa'"
+                      (click)="$event.stopPropagation(); openEditModal(row)">
+                <i class="bx bx-edit text-warning"></i>
+              </button>
+              <button nz-button nzType="text" nzSize="small" [title]="'evs.manage.viewEvsDistributionRatePanel.btn.delete' | translate:'Xóa'"
+                      (click)="$event.stopPropagation(); openDeleteConfirm(row)">
+                <i class="bx bx-trash text-danger"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+        <ng-template #edrTotalTpl let-total>
+          {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+        </ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>
+
+<!-- Modal Thêm mới / Cập nhật -->
+<nz-modal [nzVisible]="modalVisible()" [nzTitle]="modalTitle()" nzWidth="700px"
+          (nzOnCancel)="closeModal()" (nzOnOk)="saveForm()" [nzOkLoading]="saving()"
+          [nzOkText]="'common.save' | translate:'Lưu'" [nzCancelText]="'common.close' | translate:'Đóng'">
+  <ng-container *nzModalContent>
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'evs.manage.viewEvsDistributionRatePanel.modal.type' | translate:'Loại' }} <span class="text-danger">*</span></label>
+        <nz-select class="w-100" [ngModel]="form.scoreType" (ngModelChange)="onScoreTypeChange($event)" name="edrFormScoreType"
+                   [nzPlaceHolder]="'evs.manage.viewEvsDistributionRatePanel.modal.selectOption' | translate:'-- Chọn --'">
+          <nz-option *ngFor="let t of scoreTypes" [nzValue]="t" [nzLabel]="t"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold d-block">{{ 'evs.manage.viewEvsDistributionRatePanel.modal.status' | translate:'Trạng thái' }}</label>
+        <nz-switch [(ngModel)]="form.activity" name="edrFormActivity"></nz-switch>
+        <span class="ms-2 small text-muted">{{ 'evs.manage.viewEvsDistributionRatePanel.modal.activeLabel' | translate:'Sử dụng' }}</span>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'evs.manage.viewEvsDistributionRatePanel.modal.orderNo' | translate:'NO' }}</label>
+        <input nz-input [(ngModel)]="form.no" name="edrFormNo" maxlength="20">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'evs.manage.viewEvsDistributionRatePanel.modal.name' | translate:'Tên' }} <span class="text-danger">*</span></label>
+        <input nz-input [(ngModel)]="form.name" name="edrFormName" maxlength="100">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'evs.manage.viewEvsDistributionRatePanel.modal.deptCode' | translate:'Mã phòng ban' }}</label>
+        <input nz-input [(ngModel)]="form.deptNo" name="edrFormDeptNo" maxlength="20">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'evs.manage.viewEvsDistributionRatePanel.modal.deptName' | translate:'Tên phòng ban' }}</label>
+        <input nz-input [(ngModel)]="form.deptName" name="edrFormDeptName" maxlength="60">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'evs.manage.viewEvsDistributionRatePanel.modal.gradeCode' | translate:'Mã cấp bậc' }}</label>
+        <input nz-input [(ngModel)]="form.postGradeNo" name="edrFormPostGradeNo" maxlength="20">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'evs.manage.viewEvsDistributionRatePanel.modal.gradeName' | translate:'Tên cấp bậc' }}</label>
+        <input nz-input [(ngModel)]="form.postGradeName" name="edrFormPostGradeName" maxlength="60">
+      </div>
+
+      <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center border-top pt-3">
+          <span class="fw-semibold">{{ 'evs.manage.viewEvsDistributionRatePanel.modal.ratioLabel' | translate:'Tỷ lệ phân bổ (EX + VG + GD + NI + UN = 100)' }}</span>
+          <nz-tag [nzColor]="formSumOk ? 'success' : 'error'">SUM = {{ formSum }}</nz-tag>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">EX (A)</label>
+        <input nz-input type="number" class="text-center" [(ngModel)]="form.a" name="edrFormA" min="0" max="100" step="0.01">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">VG (B)</label>
+        <input nz-input type="number" class="text-center" [(ngModel)]="form.b" name="edrFormB" min="0" max="100" step="0.01">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">GD (C)</label>
+        <input nz-input type="number" class="text-center" [(ngModel)]="form.c" name="edrFormC" min="0" max="100" step="0.01">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">NI (D)</label>
+        <input nz-input type="number" class="text-center" [(ngModel)]="form.d" name="edrFormD" min="0" max="100" step="0.01">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">UN (E)</label>
+        <input nz-input type="number" class="text-center" [(ngModel)]="form.e" name="edrFormE" min="0" max="100" step="0.01">
+      </div>
+
+      <div class="col-12" *ngIf="!formSumOk">
+        <nz-alert nzType="error" nzShowIcon
+                  [nzMessage]="('evs.manage.viewEvsDistributionRatePanel.msg.sumWarning' | translate:'Tổng tỷ lệ phân bổ phải bằng 100. Giá trị hiện tại:') + ' ' + formSum"></nz-alert>
+      </div>
+      <div class="col-12" *ngIf="form.updatedBy">
+        <span class="small text-muted">
+          {{ 'evs.manage.viewEvsDistributionRatePanel.modal.auditInfo' | translate:'Thông tin cập nhật' }}: {{ form.updatedBy }} — {{ form.updateDate }}
+        </span>
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal xác nhận xóa -->
+<nz-modal [nzVisible]="deleteVisible()" [nzTitle]="'evs.manage.viewEvsDistributionRatePanel.modal.deleteTitle' | translate:'Xác nhận xóa'"
+          (nzOnCancel)="closeDeleteConfirm()" (nzOnOk)="confirmDelete()" [nzOkLoading]="deleting()"
+          [nzOkText]="'evs.manage.viewEvsDistributionRatePanel.btn.delete' | translate:'Xóa'" nzOkDanger
+          [nzCancelText]="'common.cancel' | translate:'Hủy'">
+  <ng-container *nzModalContent>
+    <p class="mb-0">{{ deleteConfirmMessage }}</p>
+  </ng-container>
+</nz-modal>

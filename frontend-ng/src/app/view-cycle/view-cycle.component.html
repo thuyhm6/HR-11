@@ -1,0 +1,171 @@
+<div class="row">
+  <div class="col-12">
+    <!-- Điều kiện tìm kiếm - đứng im khi cuộn (xem .sticky-filter-card trong styles.css) -->
+    <nz-card class="mb-3 sticky-filter-card">
+      <form class="row g-3" (ngSubmit)="search()">
+        <div class="col-md-4">
+          <label class="form-label">{{ 'ar.viewcycle.title.chinhanh' | translate:'Chi nhánh' }}</label>
+          <input nz-input [(ngModel)]="searchStatNo" name="vcSearchStatNo"
+                 [placeholder]="'ar.viewcycle.placeholder.search' | translate:'Nhập mã chi nhánh / khoảng mã / tên'">
+        </div>
+        <div class="col-md-8 d-flex align-items-end gap-2 flex-wrap">
+          <button nz-button nzType="primary" type="submit">
+            <i class="bx bx-search"></i> {{ 'common.search' | translate:'Tìm kiếm' }}
+          </button>
+          <button nz-button type="button" (click)="clearSearch()">
+            <i class="bx bx-x"></i> {{ 'common.clearFilter' | translate:'Xóa lọc' }}
+          </button>
+        </div>
+        <div class="col-12 d-flex gap-2 flex-wrap">
+          <button nz-button nzType="primary" type="button" (click)="openAddModal()">
+            <i class="bx bx-plus"></i> {{ 'common.addNew' | translate:'Thêm mới' }}
+          </button>
+          <button nz-button nzType="default" type="button" class="vc-btn-export" (click)="exportExcel()">
+            <i class="bx bx-export"></i> {{ 'essDept.exportExcel' | translate:'Xuất excel' }}
+          </button>
+        </div>
+      </form>
+    </nz-card>
+
+    <nz-card>
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+      <!-- nzWidth khai báo cho từng cột để đồng bộ độ rộng header/body khi dùng nzScroll. -->
+      <nz-table [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="25" [nzShowSizeChanger]="true"
+                [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="vcTotalTpl"
+                [nzScroll]="{ x: '1700px', y: 'calc(100vh - 420px)' }" #vcTable>
+        <thead>
+          <tr>
+            <th class="text-center" nzWidth="60px">{{ 'common.stt' | translate:'STT' }}</th>
+            <th nzWidth="110px">{{ 'ar.viewcycle.title.chinhanh' | translate:'Chi nhánh' }}</th>
+            <th nzWidth="150px">{{ 'common.nameVi' | translate:'Tên Việt' }}</th>
+            <th nzWidth="150px">{{ 'common.nameEn' | translate:'Tên Anh' }}</th>
+            <th nzWidth="150px">{{ 'common.nameZh' | translate:'Tên Trung' }}</th>
+            <th nzWidth="150px">{{ 'common.nameKo' | translate:'Tên Hàn' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'ar.viewcycle.title.kaishiri' | translate:'Ngày bắt đầu' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'ar.viewcycle.title.jieshuri' | translate:'Ngày kết thúc' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'ar.viewcycle.title.tungay' | translate:'Từ ngày' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'ar.viewcycle.title.denngay' | translate:'Đến ngày' }}</th>
+            <th class="text-center" nzWidth="130px">{{ 'ar.viewcycle.title.beginMonthOffset' | translate:'Bắt đầu lệch tháng' }}</th>
+            <th class="text-center" nzWidth="130px">{{ 'ar.viewcycle.title.endMonthOffset' | translate:'Kết thúc lệch tháng' }}</th>
+            <th class="text-center" nzWidth="90px">{{ 'common.sortOrder' | translate:'Sắp xếp' }}</th>
+            <th class="text-center" nzWidth="120px">{{ 'common.status' | translate:'Trạng thái' }}</th>
+            <th class="text-center" nzWidth="90px">{{ 'common.action' | translate:'Thao tác' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!loading() && rows().length === 0">
+            <td colspan="15" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+          </tr>
+          <tr *ngFor="let row of vcTable.data; let i = index">
+            <td class="text-center">{{ i + 1 }}</td>
+            <td [attr.title]="row.statNo || null">{{ row.statNo }}</td>
+            <td [attr.title]="row.nameVi || null">{{ row.nameVi }}</td>
+            <td [attr.title]="row.nameEn || null">{{ row.nameEn }}</td>
+            <td [attr.title]="row.nameZh || null">{{ row.nameZh }}</td>
+            <td [attr.title]="row.nameKo || null">{{ row.nameKo }}</td>
+            <td class="text-center">{{ row.startDay }}</td>
+            <td class="text-center">{{ row.endDay }}</td>
+            <td class="text-center">{{ toDmy(row.validDateFrom) }}</td>
+            <td class="text-center">{{ toDmy(row.validDateTo) }}</td>
+            <td class="text-center">{{ row.beginMonthOffset }}</td>
+            <td class="text-center">{{ row.endMonthOffset }}</td>
+            <td class="text-center">{{ row.orderno }}</td>
+            <td class="text-center">
+              <nz-tag [nzColor]="row.activity === 1 ? 'success' : 'default'">
+                {{ row.activity === 1 ? ('common.active' | translate:'Hoạt động') : ('common.inactive' | translate:'Ngừng') }}
+              </nz-tag>
+            </td>
+            <td class="text-center">
+              <button nz-button nzType="text" nzSize="small" [title]="'common.edit' | translate:'Sửa'" (click)="openEditModal(row)">
+                <i class="bx bx-edit text-warning"></i>
+              </button>
+              <button nz-button nzType="text" nzSize="small" [title]="'common.delete' | translate:'Xóa'" (click)="openDeleteConfirm(row)">
+                <i class="bx bx-trash text-danger"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+        <ng-template #vcTotalTpl let-total>
+          {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+        </ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>
+
+<!-- Modal Thêm mới / Cập nhật -->
+<nz-modal [nzVisible]="modalVisible()" [nzTitle]="modalTitle()" nzWidth="800px"
+          (nzOnCancel)="closeModal()" (nzOnOk)="saveForm()" [nzOkLoading]="saving()"
+          [nzOkText]="'common.save' | translate:'Lưu'" [nzCancelText]="'common.close' | translate:'Đóng'">
+  <ng-container *nzModalContent>
+    <h6 class="mb-3 text-primary border-bottom pb-2">{{ 'common.multilingualInfo' | translate:'Thông tin đa ngôn ngữ' }}</h6>
+    <div class="row g-3 mb-4">
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'common.nameVi' | translate:'Tên Tiếng Việt' }} <span class="text-danger">*</span></label>
+        <input nz-input [(ngModel)]="form.nameVi" name="vcFormNameVi">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'common.nameEn' | translate:'Tên Tiếng Anh' }}</label>
+        <input nz-input [(ngModel)]="form.nameEn" name="vcFormNameEn">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'common.nameZh' | translate:'Tên Tiếng Trung' }}</label>
+        <input nz-input [(ngModel)]="form.nameZh" name="vcFormNameZh">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'common.nameKo' | translate:'Tên Tiếng Hàn' }}</label>
+        <input nz-input [(ngModel)]="form.nameKo" name="vcFormNameKo">
+      </div>
+    </div>
+
+    <h6 class="mb-3 text-primary border-bottom pb-2">{{ 'ar.viewcycle.title.dateRange' | translate:'Thông số khoảng ngày' }}</h6>
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'ar.viewcycle.title.kaishiri' | translate:'Ngày bắt đầu' }}</label>
+        <nz-input-number class="w-100" [(ngModel)]="form.startDay" name="vcFormStartDay"></nz-input-number>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'ar.viewcycle.title.jieshuri' | translate:'Ngày kết thúc' }}</label>
+        <nz-input-number class="w-100" [(ngModel)]="form.endDay" name="vcFormEndDay"></nz-input-number>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'ar.viewcycle.title.tungay' | translate:'Từ ngày' }}</label>
+        <nz-date-picker class="w-100" [(ngModel)]="form.validDateFrom" name="vcFormValidDateFrom" nzFormat="dd/MM/yyyy"></nz-date-picker>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'ar.viewcycle.title.denngay' | translate:'Đến ngày' }}</label>
+        <nz-date-picker class="w-100" [(ngModel)]="form.validDateTo" name="vcFormValidDateTo" nzFormat="dd/MM/yyyy"></nz-date-picker>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'ar.viewcycle.title.beginMonthOffset' | translate:'Bắt đầu lệch tháng' }}</label>
+        <nz-input-number class="w-100" [(ngModel)]="form.beginMonthOffset" name="vcFormBeginMonthOffset"></nz-input-number>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'ar.viewcycle.title.endMonthOffset' | translate:'Kết thúc lệch tháng' }}</label>
+        <nz-input-number class="w-100" [(ngModel)]="form.endMonthOffset" name="vcFormEndMonthOffset"></nz-input-number>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'common.sortOrder' | translate:'Sắp xếp' }}</label>
+        <nz-input-number class="w-100" [(ngModel)]="form.orderno" name="vcFormOrderno"></nz-input-number>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold d-block">{{ 'common.status' | translate:'Trạng thái' }}</label>
+        <nz-select class="w-100" [(ngModel)]="form.activity" name="vcFormActivity">
+          <nz-option [nzValue]="1" [nzLabel]="'common.active' | translate:'Hoạt động'"></nz-option>
+          <nz-option [nzValue]="0" [nzLabel]="'common.inactive' | translate:'Ngừng'"></nz-option>
+        </nz-select>
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal xác nhận xóa -->
+<nz-modal [nzVisible]="deleteVisible()" [nzTitle]="'common.confirm' | translate:'Xác nhận'"
+          (nzOnCancel)="closeDeleteConfirm()" (nzOnOk)="confirmDelete()" [nzOkLoading]="deleting()"
+          [nzOkText]="'common.confirm' | translate:'Xác nhận'" [nzCancelText]="'common.cancel' | translate:'Hủy'">
+  <ng-container *nzModalContent>
+    <p class="mb-1">{{ 'ar.viewcycle.msg.confirmDelete' | translate:'Bạn có chắc chắn muốn xóa bản ghi này? Tất cả thông tin đa ngôn ngữ cũng sẽ bị xóa.' }}</p>
+    <p class="fw-bold mb-0">{{ deleteTargetName }}</p>
+  </ng-container>
+</nz-modal>

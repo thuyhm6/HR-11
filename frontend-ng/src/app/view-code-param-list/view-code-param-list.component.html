@@ -1,0 +1,128 @@
+<div class="row">
+  <!-- Chọn công ty -->
+  <div class="col-12 mb-3">
+    <nz-card>
+      <div class="d-flex align-items-center gap-3 flex-wrap">
+        <label class="form-label fw-bold fs-6 mb-0">{{ 'sys.basic.viewMenuParamList.company' | translate:'Công ty (Company)' }}:</label>
+        <nz-select class="vcpl-company-select" [(ngModel)]="selectedCompanyId" (ngModelChange)="onCompanyChange()"
+                   nzAllowClear nzShowSearch
+                   [nzPlaceHolder]="'sys.basic.viewMenuParamList.company.placeholder' | translate:'-- Chọn công ty --'">
+          <nz-option *ngFor="let c of companies()" [nzValue]="c.cpnyId" [nzLabel]="companyLabel(c)"></nz-option>
+        </nz-select>
+      </div>
+    </nz-card>
+  </div>
+
+  <!-- Cây code hệ thống bên trái -->
+  <div class="col-md-3 mb-3">
+    <nz-card [nzTitle]="'sys.basic.viewCodeParamList.treeTitle' | translate:'Danh sách Code System'">
+      <input nz-input class="mb-2" [(ngModel)]="treeSearchValue" name="vcplTreeSearch"
+             [placeholder]="'sys.basic.viewMenuParamList.treeSearchPlaceholder' | translate:'Tìm kiếm...'">
+      <div class="vcpl-tree-scroll">
+        <nz-tree [nzData]="treeNodes()" [nzSearchValue]="treeSearchValue" nzSelectMode
+                 [nzSelectedKeys]="selectedParentCodeNo ? [selectedParentCodeNo] : []"
+                 (nzClick)="onTreeClick($event)"></nz-tree>
+      </div>
+    </nz-card>
+  </div>
+
+  <!-- Danh sách mã con bên phải -->
+  <div class="col-md-9 mb-3">
+    <nz-card>
+      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <span class="fw-bold">
+          <ng-container *ngIf="selectedParentLabel(); else noSelTitle">
+            {{ 'sys.basic.viewCodeManage.selectedParentPrefix' | translate:'Danh sách mã con của:' }}
+            <span class="text-primary">{{ selectedParentLabel() }}</span>
+          </ng-container>
+          <ng-template #noSelTitle>{{ 'sys.basic.viewCodeManage.rightPaneTitle' | translate:'Danh sách mã con' }}</ng-template>
+        </span>
+        <div class="d-flex gap-2 flex-wrap">
+          <button nz-button nzType="primary" type="button" [disabled]="!selectedCompanyId || rows().length === 0"
+                  [nzLoading]="savingList()" (click)="saveList()">
+            <i class="bx bx-save"></i> {{ 'common.save' | translate:'Lưu' }}
+          </button>
+          <button nz-button nzType="default" type="button" class="vcpl-btn-export" (click)="exportExcel()">
+            <i class="bx bx-export"></i> {{ 'common.exportExcel' | translate:'Xuất Excel' }}
+          </button>
+        </div>
+      </div>
+
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+      <div *ngIf="!selectedParentCodeNo" class="p-2 bg-light border text-muted">
+        <i class="bx bx-info-circle"></i> {{ 'sys.basic.viewCodeParamList.msg.selectNodeHint' | translate:'Vui lòng chọn một mã trên cây bên trái để xem danh sách mã con.' }}
+      </div>
+
+      <nz-table *ngIf="selectedParentCodeNo" [nzData]="rows()" [nzLoading]="loadingRows()" [nzPageSize]="25"
+                [nzShowSizeChanger]="true" [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="vcplTotalTpl"
+                [nzScroll]="{ x: '900px', y: 'calc(100vh - 460px)' }" #vcplTable>
+        <thead>
+          <tr>
+            <th class="text-center" nzWidth="60px">{{ 'common.stt' | translate:'STT' }}</th>
+            <th class="text-center" nzWidth="60px">
+              <label nz-checkbox [ngModel]="allChecked()" [nzIndeterminate]="someChecked()"
+                     [nzDisabled]="!selectedCompanyId" (ngModelChange)="toggleSelectAll($event)"></label>
+            </th>
+            <th nzWidth="140px">{{ 'sys.basic.viewCodeManage.col.codeNo' | translate:'Mã Code' }}</th>
+            <th nzWidth="200px">{{ 'sys.basic.viewMenuList.col.nameVi' | translate:'Tên TV' }}</th>
+            <th nzWidth="200px">{{ 'sys.basic.viewMenuList.col.nameEn' | translate:'Tên TA' }}</th>
+            <th class="text-center" nzWidth="120px">{{ 'sys.basic.viewMenuParamList.col.paramOrderNo' | translate:'Thứ tự (Param)' }}</th>
+            <th class="text-center" nzWidth="120px">{{ 'common.status' | translate:'Trạng thái' }}</th>
+            <th class="text-center" nzWidth="90px">{{ 'common.action' | translate:'Thao tác' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!loadingRows() && rows().length === 0">
+            <td colspan="8" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+          </tr>
+          <tr *ngFor="let row of vcplTable.data; let i = index">
+            <td class="text-center">{{ i + 1 }}</td>
+            <td class="text-center">
+              <label nz-checkbox [ngModel]="row.checked" [nzDisabled]="!selectedCompanyId"
+                     (ngModelChange)="onRowCheckChange(row, $event)"></label>
+            </td>
+            <td [attr.title]="row.codeNo || null">{{ row.codeNo }}</td>
+            <td [attr.title]="row.nameVi || null">{{ row.nameVi }}</td>
+            <td [attr.title]="row.nameEn || null">{{ row.nameEn }}</td>
+            <td class="text-center">{{ row.paramOrderNo ?? '-' }}</td>
+            <td class="text-center">
+              <nz-tag *ngIf="row.paramActivity !== null" [nzColor]="row.paramActivity === '1' ? 'success' : 'default'">
+                {{ row.paramActivity === '1' ? ('common.active' | translate:'Hoạt động') : ('common.inactive' | translate:'Không hoạt động') }}
+              </nz-tag>
+              <span *ngIf="row.paramActivity === null">-</span>
+            </td>
+            <td class="text-center">
+              <button nz-button nzType="text" nzSize="small" [disabled]="!row.assigned"
+                      [title]="'common.edit' | translate:'Sửa'" (click)="openEditModal(row)">
+                <i class="bx bx-edit text-warning"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+        <ng-template #vcplTotalTpl let-total>
+          {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+        </ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>
+
+<!-- Modal cập nhật tham số -->
+<nz-modal [nzVisible]="editModalVisible()" [nzTitle]="'sys.basic.viewCodeParamList.modal.editTitle' | translate:'Cập nhật tham số'"
+          (nzOnCancel)="closeEditModal()" (nzOnOk)="saveEditForm()" [nzOkLoading]="editSaving()"
+          [nzOkText]="'common.save' | translate:'Lưu'" [nzCancelText]="'common.close' | translate:'Đóng'">
+  <ng-container *nzModalContent>
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'sys.basic.viewMenuList.label.orderNo' | translate:'Thứ tự' }}</label>
+        <nz-input-number class="w-100" [(ngModel)]="editForm.orderNo" name="vcplEditOrderNo" [nzMin]="0"></nz-input-number>
+      </div>
+      <div class="col-md-6 d-flex align-items-end">
+        <label nz-checkbox [(ngModel)]="editForm.activity" name="vcplEditActivity">
+          {{ 'sys.basic.viewMenuList.label.activity' | translate:'Hoạt động' }}
+        </label>
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>

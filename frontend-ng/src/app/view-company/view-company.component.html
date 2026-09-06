@@ -1,0 +1,160 @@
+<nz-card [nzTitle]="'sys.basic.viewCompany.title' | translate:'Quản lý công ty'">
+  <form class="row g-3 mb-3" (ngSubmit)="search()">
+    <div class="col-md-4">
+      <input nz-input id="vcoSearchKeyword" name="vcoSearchKeyword" [(ngModel)]="keyword"
+             [placeholder]="'sys.basic.viewCompany.search.placeholder' | translate:'Nhập mã hoặc tên công ty'">
+    </div>
+    <div class="col-md-8 d-flex align-items-start gap-2 flex-wrap">
+      <button nz-button nzType="primary" type="submit">
+        <i class="bx bx-search"></i> {{ 'common.search' | translate:'Tìm kiếm' }}
+      </button>
+      <button nz-button nzType="default" type="button" (click)="clearSearch()">
+        <i class="bx bx-x"></i> {{ 'common.clearFilter' | translate:'Xóa lọc' }}
+      </button>
+      <button nz-button nzType="primary" type="button" (click)="openAddModal()">
+        <i class="bx bx-plus"></i> {{ 'common.addNew' | translate:'Thêm mới' }}
+      </button>
+      <button nz-button nzType="default" type="button" class="vco-btn-export" (click)="exportExcel()">
+        <i class="bx bx-export"></i> {{ 'common.exportExcel' | translate:'Xuất Excel' }}
+      </button>
+    </div>
+  </form>
+
+  <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+  <nz-table [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="10" [nzShowSizeChanger]="true"
+            [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="vcoTotalTpl"
+            [nzScroll]="{ x: '1000px', y: 'calc(100vh - 380px)' }" #vcoTable>
+    <thead>
+      <tr>
+        <th class="text-center" nzWidth="60px">{{ 'common.stt' | translate:'STT' }}</th>
+        <th nzWidth="120px">{{ 'sys.basic.viewCompany.col.cpnyId' | translate:'Mã ID' }}</th>
+        <th nzWidth="180px">{{ 'sys.basic.viewMenuList.col.nameVi' | translate:'Tên TV' }}</th>
+        <th nzWidth="180px">{{ 'sys.basic.viewMenuList.col.nameEn' | translate:'Tên TA' }}</th>
+        <th nzWidth="220px">{{ 'sys.basicMaint.title.companyAddress' | translate:'Địa chỉ' }}</th>
+        <th nzWidth="140px">{{ 'sys.basicMaint.title.companyTelPhoneNo' | translate:'Điện thoại' }}</th>
+        <th nzWidth="160px">{{ 'sys.basicMaint.title.companyNetAddress' | translate:'Website' }}</th>
+        <th class="text-center" nzWidth="90px">{{ 'common.action' | translate:'Thao tác' }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngIf="!loading() && rows().length === 0">
+        <td colspan="8" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+      </tr>
+      <tr *ngFor="let row of vcoTable.data; let i = index">
+        <td class="text-center">{{ i + 1 }}</td>
+        <td [attr.title]="row.cpnyId || null">{{ row.cpnyId }}</td>
+        <td [attr.title]="row.nameVi || null">{{ row.nameVi }}</td>
+        <td [attr.title]="row.nameEn || null">{{ row.nameEn }}</td>
+        <td [attr.title]="row.cpnyAddr || null">{{ row.cpnyAddr }}</td>
+        <td [attr.title]="row.cpnyTelNo || null">{{ row.cpnyTelNo }}</td>
+        <td [attr.title]="row.cpnyWebAddr || null">{{ row.cpnyWebAddr }}</td>
+        <td class="text-center">
+          <button nz-button nzType="text" nzSize="small" [title]="'common.edit' | translate:'Sửa'" (click)="openEditModal(row)">
+            <i class="bx bx-edit text-warning"></i>
+          </button>
+          <button nz-button nzType="text" nzSize="small" [title]="'common.delete' | translate:'Xóa'" (click)="openDeleteConfirm(row)">
+            <i class="bx bx-trash text-danger"></i>
+          </button>
+        </td>
+      </tr>
+    </tbody>
+    <ng-template #vcoTotalTpl let-total>
+      {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+    </ng-template>
+  </nz-table>
+</nz-card>
+
+<!-- Modal Thêm mới / Cập nhật -->
+<nz-modal [nzVisible]="modalVisible()" [nzTitle]="modalTitle()" nzWidth="800px"
+          (nzOnCancel)="closeModal()" (nzOnOk)="saveForm()" [nzOkLoading]="saving()"
+          [nzOkText]="'common.save' | translate:'Lưu'" [nzCancelText]="'common.close' | translate:'Đóng'">
+  <ng-container *nzModalContent>
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'sys.basic.viewCompany.label.cpnyId' | translate:'Mã Công ty (ID)' }} <span class="text-danger">*</span></label>
+        <input nz-input [(ngModel)]="form.cpnyId" name="vcoCpnyId" [readOnly]="!isNew()">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'sys.basic.viewCompany.label.operationId' | translate:'Operation ID' }}</label>
+        <input nz-input [(ngModel)]="form.operationId" name="vcoOperationId">
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'sys.basic.viewMenuList.label.nameVi' | translate:'Tên Tiếng Việt' }} <span class="text-danger">*</span></label>
+        <input nz-input [(ngModel)]="form.nameVi" name="vcoNameVi">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'sys.basic.viewMenuList.label.nameEn' | translate:'Tên Tiếng Anh' }}</label>
+        <input nz-input [(ngModel)]="form.nameEn" name="vcoNameEn">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'sys.basic.viewMenuList.label.nameZh' | translate:'Tên Tiếng Trung' }}</label>
+        <input nz-input [(ngModel)]="form.nameZh" name="vcoNameZh">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'sys.basic.viewMenuList.label.nameKo' | translate:'Tên Tiếng Hàn' }}</label>
+        <input nz-input [(ngModel)]="form.nameKo" name="vcoNameKo">
+      </div>
+
+      <div class="col-md-12">
+        <label class="form-label fw-semibold">{{ 'sys.basicMaint.title.companyAddress' | translate:'Địa chỉ' }}</label>
+        <input nz-input [(ngModel)]="form.cpnyAddr" name="vcoCpnyAddr">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'sys.basic.viewCompany.label.cpnyPostalcode' | translate:'Mã bưu điện' }}</label>
+        <input nz-input [(ngModel)]="form.cpnyPostalcode" name="vcoCpnyPostalcode">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'sys.basicMaint.title.companyArea' | translate:'Khu vực' }}</label>
+        <input nz-input [(ngModel)]="form.cpnyLocation" name="vcoCpnyLocation">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'sys.basicMaint.title.companyTelPhoneNo' | translate:'Điện thoại công ty' }}</label>
+        <input nz-input [(ngModel)]="form.cpnyTelNo" name="vcoCpnyTelNo">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'sys.basicMaint.title.companyFaxNo' | translate:'Fax' }}</label>
+        <input nz-input [(ngModel)]="form.cpnyFaxNo" name="vcoCpnyFaxNo">
+      </div>
+      <div class="col-md-12">
+        <label class="form-label fw-semibold">{{ 'sys.basicMaint.title.companyNetAddress' | translate:'Website' }}</label>
+        <input nz-input [(ngModel)]="form.cpnyWebAddr" name="vcoCpnyWebAddr">
+      </div>
+
+      <div class="col-md-12">
+        <label class="form-label fw-semibold">{{ 'sys.basicMaint.title.companyIntroduction' | translate:'Giới thiệu' }}</label>
+        <textarea nz-input [(ngModel)]="form.cpnyIntro" name="vcoCpnyIntro" rows="2"></textarea>
+      </div>
+      <div class="col-md-12">
+        <label class="form-label fw-semibold">{{ 'sys.basicMaint.title.companyHistory' | translate:'Lịch sử' }}</label>
+        <textarea nz-input [(ngModel)]="form.cpnyHistory" name="vcoCpnyHistory" rows="2"></textarea>
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label fw-semibold">{{ 'sys.basic.viewMenuList.label.orderNo' | translate:'Thứ tự' }}</label>
+        <nz-input-number class="w-100" [(ngModel)]="form.orderNo" name="vcoOrderNo" [nzMin]="0"></nz-input-number>
+      </div>
+      <div class="col-md-4 d-flex align-items-end">
+        <label nz-checkbox [(ngModel)]="form.ggsYn" name="vcoGgsYn">
+          {{ 'sys.basic.viewCompany.label.ggsYn' | translate:'Sử dụng GGS' }}
+        </label>
+      </div>
+      <div class="col-md-4 d-flex align-items-end">
+        <label nz-checkbox [(ngModel)]="form.activity" name="vcoActivity">
+          {{ 'sys.basic.viewMenuList.label.activity' | translate:'Hoạt động' }}
+        </label>
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal xác nhận xóa -->
+<nz-modal [nzVisible]="deleteVisible()" [nzTitle]="'common.confirm' | translate:'Xác nhận'"
+          (nzOnCancel)="closeDeleteConfirm()" (nzOnOk)="confirmDelete()" [nzOkLoading]="deleting()"
+          [nzOkText]="'common.confirm' | translate:'Xác nhận'" [nzCancelText]="'common.cancel' | translate:'Hủy'">
+  <ng-container *nzModalContent>
+    <p class="mb-1">{{ 'sys.basic.viewCompany.msg.confirmDelete' | translate:'Bạn có chắc chắn muốn xóa công ty này?' }}</p>
+    <p class="fw-bold mb-0">{{ deleteTargetName }}</p>
+  </ng-container>
+</nz-modal>

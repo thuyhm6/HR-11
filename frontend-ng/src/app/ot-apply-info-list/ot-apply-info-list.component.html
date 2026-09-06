@@ -1,0 +1,192 @@
+<div class="row">
+  <div class="col-12">
+
+    <!-- ===== Thông tin nhân viên (tương đương fragments/essEmpInfoCard.html) ===== -->
+    <div class="card mb-3" *ngIf="basicInfo() as info">
+      <div class="card-body p-0">
+        <table class="table table-bordered table-sm align-middle mb-0" style="table-layout:fixed;">
+          <colgroup>
+            <col style="width:15%;"><col style="width:35%;"><col style="width:15%;"><col style="width:35%;">
+          </colgroup>
+          <tbody>
+            <tr>
+              <th class="table-light text-center">{{ 'essEmpCard.localName' | translate:'Họ tên' }}</th>
+              <td>{{ info.localName }}</td>
+              <th class="table-light text-center">{{ 'essEmpCard.empId' | translate:'Mã nhân viên' }}</th>
+              <td>{{ info.empId }}</td>
+            </tr>
+            <tr>
+              <th class="table-light text-center">{{ 'essEmpCard.deptName' | translate:'Phòng ban' }}</th>
+              <td>{{ info.deptName }}</td>
+              <th class="table-light text-center">{{ 'essEmpCard.headDept' | translate:'Trưởng phòng' }}</th>
+              <td>{{ info.headDepartment }}</td>
+            </tr>
+            <tr>
+              <th class="table-light text-center">{{ 'essEmpCard.postFamily' | translate:'Nhóm nhân viên' }}</th>
+              <td>{{ info.postFamilyName }}</td>
+              <th class="table-light text-center">{{ 'essEmpCard.postGrade' | translate:'Chức vụ' }}</th>
+              <td>{{ info.postGradeName }}</td>
+            </tr>
+            <tr>
+              <th class="table-light text-center">{{ 'essEmpCard.positionName' | translate:'Chức danh' }}</th>
+              <td>{{ info.positionNoName }}</td>
+              <th class="table-light text-center">{{ 'essEmpCard.dateStarted' | translate:'Ngày vào làm' }}</th>
+              <td>{{ info.dateStarted }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== Điều kiện tìm kiếm ===== -->
+    <div class="card mb-3">
+      <div class="card-body">
+        <form class="row g-3" (ngSubmit)="search()">
+          <div class="col-md-3">
+            <label class="form-label">{{ 'poi.field.otType' | translate:'Tăng ca' }}</label>
+            <nz-select class="w-100" [(ngModel)]="otTypeCode" name="otTypeCode" nzAllowClear
+                       [nzPlaceHolder]="'common.selectOne' | translate:'Lựa chọn'">
+              <nz-option *ngFor="let c of otTypeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+            </nz-select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">{{ 'common.approvalStatus' | translate:'Trạng thái duyệt' }}</label>
+            <nz-select class="w-100" [(ngModel)]="affirmFlag" name="affirmFlag" nzAllowClear
+                       [nzPlaceHolder]="'common.selectOne' | translate:'Lựa chọn'">
+              <nz-option *ngFor="let c of affirmFlagOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+            </nz-select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">{{ 'poi.field.dateRange' | translate:'Thời gian' }}</label>
+            <div class="d-flex align-items-center gap-2">
+              <nz-date-picker style="width:150px;" [(ngModel)]="fromDate" name="fromDate" nzFormat="yyyy-MM-dd"></nz-date-picker>
+              <span>~</span>
+              <nz-date-picker style="width:150px;" [(ngModel)]="toDate" name="toDate" nzFormat="yyyy-MM-dd"></nz-date-picker>
+            </div>
+          </div>
+          <div class="col-md-2 d-flex align-items-end">
+            <button nz-button nzType="primary" type="submit">
+              <i class="bx bx-search"></i> {{ 'common.search' | translate:'Tìm kiếm' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ===== Toolbar ===== -->
+    <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+      <input nz-input style="max-width:220px;" [(ngModel)]="quickFilterKeyword"
+             [placeholder]="'common.quickFilter' | translate:'Lọc nhanh'">
+      <div class="ms-auto d-flex gap-2">
+        <button nz-button nzDanger [nzLoading]="cancelling()" (click)="cancelSelected()">
+          <i class="bx bx-x-circle"></i> {{ 'common.cancel' | translate:'Hủy bỏ' }}
+        </button>
+        <button nz-button nzType="primary" (click)="goApply()">
+          <i class="bx bx-plus-circle"></i> {{ 'poi.btn.applyOt' | translate:'Xin tăng ca' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- ===== Bảng danh sách ===== -->
+    <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+    <nz-table [nzData]="filteredRows()" [nzLoading]="loading()" [nzPageSize]="25" [nzShowSizeChanger]="true"
+              [nzPageSizeOptions]="[25, 50, 100, 200]" [nzShowTotal]="oailTotalTpl"
+              [nzScroll]="{ x: '1400px' }" class="table-nowrap" #oailTable>
+      <thead>
+        <tr>
+          <th nzWidth="40px">
+            <label nz-checkbox [ngModel]="allCancelableSelected()" [nzIndeterminate]="someCancelableSelected()"
+                   (ngModelChange)="toggleSelectAll($event)"></label>
+          </th>
+          <th class="text-center" nzWidth="50px">{{ 'common.stt' | translate:'STT' }}</th>
+          <th nzWidth="150px">{{ 'poi.field.otType' | translate:'Tăng ca' }}</th>
+          <th class="text-center" nzWidth="110px">{{ 'poi.col.otDate' | translate:'Ngày tăng ca' }}</th>
+          <th class="text-center" nzWidth="120px">{{ 'common.startTime' | translate:'Thời gian bắt đầu' }}</th>
+          <th class="text-center" nzWidth="120px">{{ 'common.endTime' | translate:'Thời gian kết thúc' }}</th>
+          <th class="text-center" nzWidth="110px">{{ 'common.duration' | translate:'Thời lượng' }}</th>
+          <th class="text-center" nzWidth="140px">{{ 'poi.col.mealRest' | translate:"Bảo cơm / Nghỉ ngơi (30')" }}</th>
+          <th nzWidth="200px">{{ 'common.reason' | translate:'Lý do' }}</th>
+          <th class="text-center" nzWidth="120px">{{ 'common.approvalStatus' | translate:'Trạng thái duyệt' }}</th>
+          <th class="text-center" nzWidth="120px">{{ 'common.status' | translate:'Trạng thái' }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of oailTable.data; let i = index" class="oail-row-clickable" (click)="openDetail(row)">
+          <td class="text-center" (click)="$event.stopPropagation()">
+            <label nz-checkbox *ngIf="[ '14014306', '14014307', '14014308' ].includes(row.affirmFlag)" [(ngModel)]="row.selected"></label>
+          </td>
+          <td class="text-center">{{ i + 1 }}</td>
+          <td><a href="javascript:void(0)">{{ row.otTypeName || row.otTypeCode }}</a></td>
+          <td class="text-center">{{ row.applyOtDate }}</td>
+          <td class="text-center">{{ row.otFromTime }}</td>
+          <td class="text-center">{{ row.otToTime }}</td>
+          <td class="text-center">{{ formatDuration(row.otApplyHour) }}</td>
+          <td class="text-center">{{ deductLabel(row.deductYn) }}</td>
+          <td [attr.title]="row.applyOtRemark || null">{{ row.applyOtRemark }}</td>
+          <td class="text-center">{{ row.affirmFlagName || row.affirmFlag }}</td>
+          <td class="text-center">{{ row.confirmFlagName }}</td>
+        </tr>
+      </tbody>
+      <ng-template #oailTotalTpl let-total>
+        {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+      </ng-template>
+    </nz-table>
+
+  </div>
+</div>
+
+<!-- Modal chi tiết đơn tăng ca -->
+<nz-modal [nzVisible]="detailVisible()" [nzTitle]="'poi.modal.otInfo' | translate:'Thông tin tăng ca'" nzWidth="55vw"
+          [nzBodyStyle]="{ 'max-height': '75vh', 'overflow-y': 'auto' }"
+          (nzOnCancel)="closeDetail()" [nzFooter]="null">
+  <ng-container *nzModalContent>
+    <nz-alert *ngIf="detailErrorMessage()" nzType="error" [nzMessage]="detailErrorMessage() ?? ''" class="mb-3"></nz-alert>
+    <ng-container *ngIf="!detailLoading() && detailData() as d">
+      <h6 class="fw-bold mb-2">{{ 'poi.modal.empInfo' | translate:'Thông tin nhân viên' }}</h6>
+      <nz-descriptions nzBordered [nzColumn]="2" nzSize="small" class="mb-3">
+        <nz-descriptions-item [nzTitle]="'common.empId' | translate:'Mã nhân viên'">{{ d.employeeInfo?.['empId'] }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'common.name' | translate:'Họ tên'">{{ d.employeeInfo?.['localName'] }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'common.deptName' | translate:'Phòng ban'">{{ d.employeeInfo?.['deptName'] }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'common.position' | translate:'Chức vụ'">{{ d.employeeInfo?.['postGradeName'] }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'poi.field.otType' | translate:'Loại tăng ca'">{{ d.otInfo?.['otTypeName'] }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'poi.col.otDate' | translate:'Ngày tăng ca'">{{ d.otInfo?.['applyOtDate'] }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'common.startTime' | translate:'Bắt đầu'">{{ d.otInfo?.['detailFromDateTime'] }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'common.endTime' | translate:'Kết thúc'">{{ d.otInfo?.['detailToDateTime'] }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'poi.col.hours' | translate:'Số giờ'">{{ formatDuration(d.otInfo?.['otApplyHour']) }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'common.reason' | translate:'Lý do'" [nzSpan]="2">{{ d.otInfo?.['applyOtRemark'] }}</nz-descriptions-item>
+      </nz-descriptions>
+
+      <h6 class="fw-bold mb-2">{{ 'poi.col.approvalSeq' | translate:'Trình tự duyệt' }}</h6>
+      <div class="table-responsive">
+        <nz-table [nzData]="d.approvalList" [nzShowPagination]="false" nzSize="small">
+          <thead>
+            <tr>
+              <th class="text-center" style="width:50px">{{ 'common.no.serial' | translate:'STT' }}</th>
+              <th class="text-center" style="width:110px">{{ 'poi.col.approvalSeq' | translate:'Trình tự duyệt' }}</th>
+              <th class="text-center" style="width:110px">{{ 'common.approvalStatus' | translate:'Trạng thái duyệt' }}</th>
+              <th>{{ 'common.name' | translate:'Họ tên' }}</th>
+              <th>{{ 'poi.modal.opinion' | translate:'Ý kiến' }}</th>
+              <th class="text-center" style="width:170px">{{ 'poi.col.actionTime' | translate:'Thời gian thực hiện' }}</th>
+              <th style="width:120px">{{ 'common.deptName' | translate:'Phòng ban' }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="!d.approvalList?.length">
+              <td colspan="7" class="text-center text-muted">{{ 'poi.msg.noApprovalData' | translate:'Không có dữ liệu phê duyệt' }}</td>
+            </tr>
+            <tr *ngFor="let item of d.approvalList">
+              <td class="text-center">{{ approvalSeqLabel(item) }}</td>
+              <td class="text-center">{{ item.affirmTypeName }}</td>
+              <td class="text-center">{{ item.affirmFlagName }}</td>
+              <td>{{ item.affirmName }}</td>
+              <td>{{ item.affirmContent }}</td>
+              <td class="text-center">{{ item.updateDate }}</td>
+              <td>{{ item.deptName }}</td>
+            </tr>
+          </tbody>
+        </nz-table>
+      </div>
+    </ng-container>
+  </ng-container>
+</nz-modal>

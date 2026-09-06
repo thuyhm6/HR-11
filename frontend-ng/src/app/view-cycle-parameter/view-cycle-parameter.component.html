@@ -1,0 +1,135 @@
+<div class="row">
+  <div class="col-12">
+    <!-- Điều kiện tìm kiếm - đứng im khi cuộn (xem .sticky-filter-card trong styles.css) -->
+    <nz-card class="mb-3 sticky-filter-card">
+      <form class="row g-3" (ngSubmit)="search()">
+        <div class="col-md-3">
+          <label class="form-label">{{ 'ar.viewcycleparameter.title.gongsi' | translate:'Mã công ty' }}</label>
+          <input nz-input [(ngModel)]="searchCpnyId" name="vcpSearchCpnyId"
+                 [placeholder]="'ar.viewcycleparameter.placeholder.cpnyId' | translate:'Nhập mã công ty'">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'ar.viewcycleparameter.title.qujian' | translate:'Khoảng mã' }}</label>
+          <input nz-input [(ngModel)]="searchStatNo" name="vcpSearchStatNo"
+                 [placeholder]="'ar.viewcycleparameter.placeholder.statNo' | translate:'Nhập khoảng mã'">
+        </div>
+        <div class="col-md-6 d-flex align-items-end gap-2 flex-wrap">
+          <button nz-button nzType="primary" type="submit">
+            <i class="bx bx-search"></i> {{ 'common.search' | translate:'Tìm kiếm' }}
+          </button>
+          <button nz-button type="button" (click)="clearSearch()">
+            <i class="bx bx-x"></i> {{ 'common.clearFilter' | translate:'Xóa lọc' }}
+          </button>
+        </div>
+        <div class="col-12 d-flex gap-2 flex-wrap">
+          <button nz-button nzType="primary" type="button" (click)="openAddModal()">
+            <i class="bx bx-plus"></i> {{ 'common.addNew' | translate:'Thêm mới' }}
+          </button>
+          <button nz-button nzType="default" type="button" class="vcp-btn-export" (click)="exportExcel()">
+            <i class="bx bx-export"></i> {{ 'essDept.exportExcel' | translate:'Xuất excel' }}
+          </button>
+        </div>
+      </form>
+    </nz-card>
+
+    <nz-card>
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+      <!-- nzWidth khai báo cho từng cột để đồng bộ độ rộng header/body khi dùng nzScroll. -->
+      <nz-table [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="25" [nzShowSizeChanger]="true"
+                [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="vcpTotalTpl"
+                [nzScroll]="{ x: '1000px', y: 'calc(100vh - 420px)' }" #vcpTable>
+        <thead>
+          <tr>
+            <th class="text-center" nzWidth="60px">{{ 'common.stt' | translate:'STT' }}</th>
+            <th nzWidth="150px">{{ 'ar.viewcycleparameter.title.gongsi' | translate:'Mã công ty' }}</th>
+            <th nzWidth="150px">{{ 'ar.viewcycleparameter.title.qujian' | translate:'Khoảng mã' }}</th>
+            <th class="text-center" nzWidth="120px">{{ 'ar.viewcycleparameter.title.kaishiriqi' | translate:'Từ ngày' }}</th>
+            <th class="text-center" nzWidth="120px">{{ 'ar.viewcycleparameter.title.jieshuriqi' | translate:'Đến ngày' }}</th>
+            <th class="text-center" nzWidth="100px">{{ 'common.sortOrder' | translate:'Sắp xếp' }}</th>
+            <th class="text-center" nzWidth="120px">{{ 'common.status' | translate:'Trạng thái' }}</th>
+            <th class="text-center" nzWidth="90px">{{ 'common.action' | translate:'Thao tác' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!loading() && rows().length === 0">
+            <td colspan="8" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+          </tr>
+          <tr *ngFor="let row of vcpTable.data; let i = index">
+            <td class="text-center">{{ i + 1 }}</td>
+            <td [attr.title]="row.cpnyId || null">{{ row.cpnyId }}</td>
+            <td [attr.title]="row.statNo || null">{{ row.statNo }}</td>
+            <td class="text-center">{{ toDmy(row.startDate) }}</td>
+            <td class="text-center">{{ toDmy(row.endDate) }}</td>
+            <td class="text-center">{{ row.orderno }}</td>
+            <td class="text-center">
+              <nz-tag [nzColor]="row.activity === 1 ? 'success' : 'default'">
+                {{ row.activity === 1 ? ('common.active' | translate:'Hoạt động') : ('common.inactive' | translate:'Ngừng') }}
+              </nz-tag>
+            </td>
+            <td class="text-center">
+              <button nz-button nzType="text" nzSize="small" [title]="'common.edit' | translate:'Sửa'" (click)="openEditModal(row)">
+                <i class="bx bx-edit text-warning"></i>
+              </button>
+              <button nz-button nzType="text" nzSize="small" [title]="'common.delete' | translate:'Xóa'" (click)="openDeleteConfirm(row)">
+                <i class="bx bx-trash text-danger"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+        <ng-template #vcpTotalTpl let-total>
+          {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+        </ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>
+
+<!-- Modal Thêm mới / Cập nhật -->
+<nz-modal [nzVisible]="modalVisible()" [nzTitle]="modalTitle()" nzWidth="700px"
+          (nzOnCancel)="closeModal()" (nzOnOk)="saveForm()" [nzOkLoading]="saving()"
+          [nzOkText]="'common.save' | translate:'Lưu'" [nzCancelText]="'common.close' | translate:'Đóng'">
+  <ng-container *nzModalContent>
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'ar.viewcycleparameter.title.gongsi' | translate:'Mã công ty' }} <span class="text-danger">*</span></label>
+        <input nz-input [(ngModel)]="form.cpnyId" name="vcpFormCpnyId">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'ar.viewcycleparameter.title.qujian' | translate:'Khoảng mã' }} <span class="text-danger">*</span></label>
+        <input nz-input [(ngModel)]="form.statNo" name="vcpFormStatNo">
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'ar.viewcycleparameter.title.kaishiriqi' | translate:'Từ ngày' }}</label>
+        <nz-date-picker class="w-100" [(ngModel)]="form.startDate" name="vcpFormStartDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'ar.viewcycleparameter.title.jieshuriqi' | translate:'Đến ngày' }}</label>
+        <nz-date-picker class="w-100" [(ngModel)]="form.endDate" name="vcpFormEndDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'common.sortOrder' | translate:'Sắp xếp' }}</label>
+        <nz-input-number class="w-100" [(ngModel)]="form.orderno" name="vcpFormOrderno"></nz-input-number>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold d-block">{{ 'common.status' | translate:'Trạng thái' }}</label>
+        <nz-select class="w-100" [(ngModel)]="form.activity" name="vcpFormActivity">
+          <nz-option [nzValue]="1" [nzLabel]="'common.active' | translate:'Hoạt động'"></nz-option>
+          <nz-option [nzValue]="0" [nzLabel]="'common.inactive' | translate:'Ngừng'"></nz-option>
+        </nz-select>
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal xác nhận xóa -->
+<nz-modal [nzVisible]="deleteVisible()" [nzTitle]="'common.confirm' | translate:'Xác nhận'"
+          (nzOnCancel)="closeDeleteConfirm()" (nzOnOk)="confirmDelete()" [nzOkLoading]="deleting()"
+          [nzOkText]="'common.confirm' | translate:'Xác nhận'" [nzCancelText]="'common.cancel' | translate:'Hủy'">
+  <ng-container *nzModalContent>
+    <p class="mb-1">{{ 'common.delete' | translate:'Xóa' }}?</p>
+    <p class="fw-bold mb-0">{{ deleteTargetName }}</p>
+  </ng-container>
+</nz-modal>

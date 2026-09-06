@@ -1,0 +1,160 @@
+.app-shell-layout {
+  min-height: 100vh;
+}
+
+.app-sider {
+  background: #dc6428;
+}
+.app-sider ::ng-deep .ant-menu-dark,
+.app-sider ::ng-deep .ant-menu-dark .ant-menu-sub,
+.app-sider ::ng-deep .ant-menu-dark .ant-menu-inline.ant-menu-sub,
+.app-sider ::ng-deep .ant-menu.ant-menu-dark .ant-menu-sub {
+  background: transparent !important;
+  color: #fff !important;
+  font-weight: 500;
+}
+.app-sider ::ng-deep .ant-menu-dark .ant-menu-item:hover,
+.app-sider ::ng-deep .ant-menu-dark .ant-menu-submenu-title:hover {
+  background-color: rgba(255, 255, 255, 0.12) !important;
+  color: #fff;
+}
+.app-sider ::ng-deep .ant-menu-dark .ant-menu-item,
+.app-sider ::ng-deep .ant-menu-dark .ant-menu-submenu-title {
+  padding-left: 16px !important;
+}
+.app-sider ::ng-deep .ant-menu-dark .ant-menu-sub .ant-menu-item,
+.app-sider ::ng-deep .ant-menu-dark .ant-menu-sub .ant-menu-submenu-title {
+  padding-left: 32px !important;
+}
+.app-sider ::ng-deep .ant-menu-dark .ant-menu-sub .ant-menu-sub .ant-menu-item,
+.app-sider ::ng-deep .ant-menu-dark .ant-menu-sub .ant-menu-sub .ant-menu-submenu-title {
+  padding-left: 48px !important;
+}
+.app-sider ::ng-deep .ant-menu-dark .ant-menu-title-content {
+  display: contents;
+}
+.app-sider ::ng-deep .ant-menu-dark iconify-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  min-width: 18px;
+  font-size: 18px;
+}
+.app-sider ::ng-deep .ant-menu-dark.ant-menu-dark:not(.ant-menu-horizontal) .ant-menu-item-selected,
+.app-sider ::ng-deep .ant-menu-dark .ant-menu-submenu-selected > .ant-menu-submenu-title {
+  background-color: rgba(0, 0, 0, 0.18) !important;
+  color: #fff;
+}
+
+.logo-box {
+  height: 56px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+}
+
+.app-header {
+  background: #dc6428;
+  color: #fff;
+  padding: 0 16px;
+  height: 56px;
+  line-height: 56px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+
+.app-content {
+  background: #f5f6fa;
+  height: calc(100vh - 56px);
+  overflow-y: auto;
+}
+
+.topbar-horizontal-menu {
+  overflow-x: auto;
+  overflow-y: hidden;
+  height: 56px;
+  min-width: 0;
+}
+.topbar-horizontal-menu ::ng-deep .ant-menu-horizontal {
+  background: transparent !important;
+  border-bottom: none !important;
+  line-height: 54px;
+  white-space: nowrap;
+}
+.topbar-horizontal-menu ::ng-deep .ant-menu-horizontal > .ant-menu-item,
+.topbar-horizontal-menu ::ng-deep .ant-menu-horizontal > .ant-menu-submenu {
+  top: 0;
+  margin: 0 2px;
+  color: rgba(255, 255, 255, 0.85) !important;
+  border-bottom: 2px solid transparent !important;
+}
+.topbar-horizontal-menu ::ng-deep .ant-menu-horizontal > .ant-menu-item:hover,
+.topbar-horizontal-menu ::ng-deep .ant-menu-horizontal > .ant-menu-submenu:hover,
+.topbar-horizontal-menu ::ng-deep .ant-menu-horizontal > .ant-menu-item-selected,
+.topbar-horizontal-menu ::ng-deep .ant-menu-horizontal > .ant-menu-submenu-selected,
+.topbar-horizontal-menu ::ng-deep .ant-menu-horizontal > .ant-menu-submenu-open {
+  color: #fff !important;
+  border-bottom-color: #fff !important;
+}
+
+/* Dropdown xổ ra khi hover vào menu ngang trên topbar - .ant-menu-submenu-popup được CDK overlay
+   chèn ra ngoài cây DOM của component (thường ở cuối <body>) nên KHÔNG thể scope theo
+   .topbar-horizontal-menu như các rule phía trên; chỉ nz-submenu ở khối menu ngang này mới render
+   dạng popup (sidebar dùng nzMode="inline" nên không phát sinh class này) nên override toàn cục vẫn an toàn. */
+::ng-deep .ant-menu-submenu-popup .ant-menu {
+  background-color: #dc6428 !important;
+}
+::ng-deep .ant-menu-submenu-popup .ant-menu-item,
+::ng-deep .ant-menu-submenu-popup .ant-menu-submenu-title {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+::ng-deep .ant-menu-submenu-popup .ant-menu-item:hover,
+::ng-deep .ant-menu-submenu-popup .ant-menu-item-selected,
+::ng-deep .ant-menu-submenu-popup .ant-menu-submenu-title:hover,
+::ng-deep .ant-menu-submenu-popup .ant-menu-submenu-selected > .ant-menu-submenu-title {
+  background-color: rgba(0, 0, 0, 0.18) !important;
+  color: #fff !important;
+}
+
+.button-toggle-menu,
+.topbar-button {
+  background: transparent;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+.button-toggle-menu:hover,
+.topbar-button:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.user-dropdown-menu {
+  min-width: 200px;
+}
+.dropdown-header-item {
+  padding: 8px 16px;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.85);
+}
+
+.tab-strip {
+  padding: 0 1rem;
+  background: #fff;
+  overflow-x: auto;
+  flex-wrap: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+.tab-strip .nav-link {
+  white-space: nowrap;
+}
+.tab-strip-close {
+  border-radius: 50%;
+  padding: 1px;
+}
+.tab-strip-close:hover {
+  background: rgba(0, 0, 0, 0.08);
+}

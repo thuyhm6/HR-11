@@ -1,0 +1,247 @@
+<div class="row">
+  <div class="col-12">
+
+    <!-- ===== Thông tin nhân viên (tương đương fragments/essEmpInfoCard.html) ===== -->
+    <div class="card mb-3" *ngIf="basicInfo() as info">
+      <div class="card-body p-0">
+        <table class="table table-bordered table-sm align-middle mb-0" style="table-layout:fixed;">
+          <colgroup>
+            <col style="width:15%;"><col style="width:35%;"><col style="width:15%;"><col style="width:35%;">
+          </colgroup>
+          <tbody>
+            <tr>
+              <th class="table-light text-center">{{ 'essEmpCard.localName' | translate:'Họ tên' }}</th>
+              <td>{{ info.localName }}</td>
+              <th class="table-light text-center">{{ 'essEmpCard.empId' | translate:'Mã nhân viên' }}</th>
+              <td>{{ info.empId }}</td>
+            </tr>
+            <tr>
+              <th class="table-light text-center">{{ 'essEmpCard.deptName' | translate:'Phòng ban' }}</th>
+              <td>{{ info.deptName }}</td>
+              <th class="table-light text-center">{{ 'essEmpCard.headDept' | translate:'Trưởng phòng' }}</th>
+              <td>{{ info.headDepartment }}</td>
+            </tr>
+            <tr>
+              <th class="table-light text-center">{{ 'essEmpCard.postFamily' | translate:'Nhóm nhân viên' }}</th>
+              <td>{{ info.postFamilyName }}</td>
+              <th class="table-light text-center">{{ 'essEmpCard.postGrade' | translate:'Chức vụ' }}</th>
+              <td>{{ info.postGradeName }}</td>
+            </tr>
+            <tr>
+              <th class="table-light text-center">{{ 'essEmpCard.positionName' | translate:'Chức danh' }}</th>
+              <td>{{ info.positionNoName }}</td>
+              <th class="table-light text-center">{{ 'essEmpCard.dateStarted' | translate:'Ngày vào làm' }}</th>
+              <td>{{ info.dateStarted }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== Trình độ học vấn ===== -->
+    <div class="card mb-3">
+      <div class="card-header bg-light py-2 d-flex justify-content-between align-items-center">
+        <strong><i class="bx bx-book-open me-1"></i>{{ 'qi.section.education' | translate:'Trình độ học vấn' }}</strong>
+        <button nz-button nzType="primary" nzSize="small" (click)="openEducModal(null)">
+          <i class="bx bx-plus me-1"></i>{{ 'epi.btn.addNew' | translate:'Thêm mới' }}
+        </button>
+      </div>
+      <div class="card-body p-0">
+        <nz-alert *ngIf="educError()" nzType="error" [nzMessage]="educError() ?? ''" class="m-2"></nz-alert>
+        <nz-table [nzData]="educList()" [nzLoading]="educLoading()" [nzShowPagination]="false" nzSize="small" #qiEducTable>
+          <thead>
+            <tr>
+              <th>{{ 'qi.field.educLevel' | translate:'Trình độ học vấn' }}</th>
+              <th style="width:120px;">{{ 'qi.field.startDate' | translate:'Ngày nhập học' }}</th>
+              <th style="width:120px;">{{ 'qi.field.endDate' | translate:'Ngày tốt nghiệp' }}</th>
+              <th>{{ 'qi.field.institution' | translate:'Trường tốt nghiệp' }}</th>
+              <th>{{ 'qi.field.subject' | translate:'Chuyên ngành' }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="!educLoading() && qiEducTable.data.length === 0">
+              <td colspan="5" class="text-center text-muted">{{ 'epi.msg.noData' | translate:'Không có dữ liệu' }}</td>
+            </tr>
+            <tr *ngFor="let row of qiEducTable.data" class="qi-row-clickable" (click)="openEducModal(row)">
+              <td><a href="javascript:void(0)" class="text-primary">{{ row.degreeName }}</a></td>
+              <td>{{ row.startDate }}</td>
+              <td>{{ row.endDate }}</td>
+              <td>{{ row.institutionName }}</td>
+              <td>{{ row.subject }}</td>
+            </tr>
+          </tbody>
+        </nz-table>
+      </div>
+    </div>
+
+    <!-- ===== Thông tin chứng chỉ ===== -->
+    <div class="card mb-3">
+      <div class="card-header bg-light py-2 d-flex justify-content-between align-items-center">
+        <strong><i class="bx bx-id-card me-1"></i>{{ 'qi.section.qualification' | translate:'Thông tin chứng chỉ' }}</strong>
+        <button nz-button nzType="primary" nzSize="small" (click)="openQualModal(null)">
+          <i class="bx bx-plus me-1"></i>{{ 'epi.btn.addNew' | translate:'Thêm mới' }}
+        </button>
+      </div>
+      <div class="card-body p-0">
+        <nz-alert *ngIf="qualError()" nzType="error" [nzMessage]="qualError() ?? ''" class="m-2"></nz-alert>
+        <nz-table [nzData]="qualList()" [nzLoading]="qualLoading()" [nzShowPagination]="false" nzSize="small" #qiQualTable>
+          <thead>
+            <tr>
+              <th>{{ 'qi.field.qualName' | translate:'Chứng chỉ' }}</th>
+              <th>{{ 'qi.field.qualLevel' | translate:'Cấp chứng chỉ' }}</th>
+              <th style="width:110px;">{{ 'qi.field.dateObtained' | translate:'Ngày cấp' }}</th>
+              <th style="width:110px;">{{ 'qi.field.validityDate' | translate:'Ngày hết hạn' }}</th>
+              <th>{{ 'qi.field.qualCardNo' | translate:'Mã chứng chỉ' }}</th>
+              <th>{{ 'qi.field.qualInstitute' | translate:'Nơi cấp' }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="!qualLoading() && qiQualTable.data.length === 0">
+              <td colspan="6" class="text-center text-muted">{{ 'epi.msg.noData' | translate:'Không có dữ liệu' }}</td>
+            </tr>
+            <tr *ngFor="let row of qiQualTable.data" class="qi-row-clickable" (click)="openQualModal(row)">
+              <td><a href="javascript:void(0)" class="text-primary">{{ row.qualName }}</a></td>
+              <td>{{ row.qualLevel }}</td>
+              <td>{{ formatDisplayDate(row.dateObtained) }}</td>
+              <td>{{ formatDisplayDate(row.validityDate) }}</td>
+              <td>{{ row.qualCardNo }}</td>
+              <td>{{ row.qualInstitute }}</td>
+            </tr>
+          </tbody>
+        </nz-table>
+      </div>
+    </div>
+
+    <!-- ===== Thông tin khen thưởng (chỉ đọc) ===== -->
+    <div class="card mb-3">
+      <div class="card-header bg-light py-2">
+        <strong><i class="bx bx-trophy me-1"></i>{{ 'qi.section.reward' | translate:'Thông tin khen thưởng' }}</strong>
+      </div>
+      <div class="card-body p-0">
+        <nz-alert *ngIf="rewardError()" nzType="error" [nzMessage]="rewardError() ?? ''" class="m-2"></nz-alert>
+        <nz-table [nzData]="rewardList()" [nzLoading]="rewardLoading()" [nzShowPagination]="false" nzSize="small" #qiRewardTable>
+          <thead>
+            <tr>
+              <th>{{ 'qi.field.rewardType' | translate:'Khen thưởng' }}</th>
+              <th style="width:120px;">{{ 'qi.field.rewardDate' | translate:'Ngày khen thưởng' }}</th>
+              <th>{{ 'qi.field.rewardCnpy' | translate:'Đơn vị trao thưởng' }}</th>
+              <th>{{ 'qi.field.rewardAmount' | translate:'Tiền thưởng' }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="!rewardLoading() && qiRewardTable.data.length === 0">
+              <td colspan="4" class="text-center text-muted">{{ 'epi.msg.noData' | translate:'Không có dữ liệu' }}</td>
+            </tr>
+            <tr *ngFor="let row of qiRewardTable.data">
+              <td>{{ row.rewardType }}</td>
+              <td>{{ formatDisplayDate(row.rewardDate) }}</td>
+              <td>{{ row.rewardCnpy }}</td>
+              <td>{{ row.reward }}</td>
+            </tr>
+          </tbody>
+        </nz-table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== Modal: Trình độ học vấn ===== -->
+<nz-modal [nzVisible]="educModalVisible()" [nzTitle]="educModalTitle()" nzWidth="800px"
+          (nzOnCancel)="closeEducModal()" (nzOnOk)="saveEduc()" [nzOkLoading]="educSaving()"
+          [nzOkText]="'epi.btn.submitRequest' | translate:'Gửi yêu cầu'" [nzCancelText]="'common.close' | translate:'Đóng'">
+  <ng-container *nzModalContent>
+    <div class="row g-2">
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'qi.field.educLevel' | translate:'Trình độ học vấn' }} <span class="text-danger">*</span></label>
+        <nz-select class="w-100" [(ngModel)]="educForm.degreeCode" nzAllowClear [nzPlaceHolder]="'epi.select.choose' | translate:'-- Chọn --'">
+          <nz-option *ngFor="let c of degreeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'qi.field.institution' | translate:'Trường tốt nghiệp' }}</label>
+        <input nz-input [(ngModel)]="educForm.institutionName">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-semibold">{{ 'qi.field.startMonth' | translate:'Ngày nhập học (MM/YYYY)' }}</label>
+        <input nz-input [(ngModel)]="educForm.startDate" [placeholder]="'qi.placeholder.mmyyyy' | translate:'VD: 09/2015'">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-semibold">{{ 'qi.field.endMonth' | translate:'Ngày tốt nghiệp (MM/YYYY)' }}</label>
+        <input nz-input [(ngModel)]="educForm.endDate" [placeholder]="'qi.placeholder.mmyyyy' | translate:'VD: 06/2019'">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-semibold">{{ 'qi.field.subject' | translate:'Chuyên ngành' }}</label>
+        <input nz-input [(ngModel)]="educForm.subject">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'qi.field.academicTitle' | translate:'Học vị' }}</label>
+        <input nz-input [(ngModel)]="educForm.degreesCode">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'qi.field.degreeNum' | translate:'Số bằng cấp' }}</label>
+        <input nz-input [(ngModel)]="educForm.eduDegNum">
+      </div>
+      <div class="col-12">
+        <label class="form-label fw-semibold">{{ 'epi.field.remark' | translate:'Ghi chú' }}</label>
+        <textarea nz-input [(ngModel)]="educForm.remark" rows="2"></textarea>
+      </div>
+      <div class="col-12 mt-2">
+        <nz-alert nzType="info" [nzMessage]="'epi.msg.applyNote' | translate:'Yêu cầu sẽ được gửi đến người quản lý để xét duyệt.'" class="mb-2"></nz-alert>
+        <label class="form-label fw-semibold">{{ 'epi.field.attachFiles' | translate:'File đính kèm' }}</label>
+        <input #educFileInput type="file" class="form-control form-control-sm" multiple
+               accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg" (change)="onEducFilesChange($event)">
+        <div class="form-text">{{ 'epi.msg.uploadHint' | translate:'Hỗ trợ: PDF, Word, Excel, hình ảnh.' }}</div>
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- ===== Modal: Chứng chỉ ===== -->
+<nz-modal [nzVisible]="qualModalVisible()" [nzTitle]="qualModalTitle()" nzWidth="800px"
+          (nzOnCancel)="closeQualModal()" (nzOnOk)="saveQual()" [nzOkLoading]="qualSaving()"
+          [nzOkText]="'epi.btn.submitRequest' | translate:'Gửi yêu cầu'" [nzCancelText]="'common.close' | translate:'Đóng'">
+  <ng-container *nzModalContent>
+    <div class="row g-2">
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'qi.field.qualName' | translate:'Tên chứng chỉ' }} <span class="text-danger">*</span></label>
+        <input nz-input [(ngModel)]="qualForm.qualName">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'qi.field.qualLevel' | translate:'Cấp chứng chỉ' }}</label>
+        <input nz-input [(ngModel)]="qualForm.qualLevel">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-semibold">{{ 'qi.field.dateObtained' | translate:'Ngày cấp' }}</label>
+        <nz-date-picker class="w-100" [(ngModel)]="qualForm.dateObtained" nzFormat="dd/MM/yyyy"></nz-date-picker>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-semibold">{{ 'qi.field.validityDate' | translate:'Ngày hết hạn' }}</label>
+        <nz-date-picker class="w-100" [(ngModel)]="qualForm.validityDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-semibold">{{ 'qi.field.qualCardNo' | translate:'Mã chứng chỉ' }}</label>
+        <input nz-input [(ngModel)]="qualForm.qualCardNo">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'qi.field.qualInstitute' | translate:'Nơi cấp' }}</label>
+        <input nz-input [(ngModel)]="qualForm.qualInstitute">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'qi.field.qualGrade' | translate:'Xếp loại' }}</label>
+        <input nz-input [(ngModel)]="qualForm.qualGrade">
+      </div>
+      <div class="col-12">
+        <label class="form-label fw-semibold">{{ 'epi.field.remark' | translate:'Ghi chú' }}</label>
+        <textarea nz-input [(ngModel)]="qualForm.qualRemark" rows="2"></textarea>
+      </div>
+      <div class="col-12 mt-2">
+        <nz-alert nzType="info" [nzMessage]="'epi.msg.applyNote' | translate:'Yêu cầu sẽ được gửi đến người quản lý để xét duyệt.'" class="mb-2"></nz-alert>
+        <label class="form-label fw-semibold">{{ 'epi.field.attachFiles' | translate:'File đính kèm' }}</label>
+        <input #qualFileInput type="file" class="form-control form-control-sm" multiple
+               accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg" (change)="onQualFilesChange($event)">
+        <div class="form-text">{{ 'epi.msg.uploadHint' | translate:'Hỗ trợ: PDF, Word, Excel, hình ảnh.' }}</div>
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>

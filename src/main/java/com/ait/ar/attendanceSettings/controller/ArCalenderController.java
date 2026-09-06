@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpSession;
 
@@ -26,16 +25,6 @@ public class ArCalenderController {
 
     @Autowired
     private ArCalenderService arCalenderService;
-
-    @GetMapping("/viewStatutoryHolidays")
-    public String viewStatutoryHolidays() {
-        return "ar/attendanceSettings/viewStatutoryHolidays";
-    }
-
-    @GetMapping("/viewCompanyCalendar")
-    public String viewCompanyCalendar() {
-        return "ar/attendanceSettings/viewCompanyCalendar";
-    }
 
     // API: lấy danh sách ngày lễ (dùng cho viewStatutoryHolidays)
     @GetMapping("/api/calender/holidays")
@@ -110,11 +99,8 @@ public class ArCalenderController {
     }
 
     // ================= CLASS CALENDAR API =================
-
-    @GetMapping("/viewClassCalendar")
-    public String viewClassCalendar() {
-        return "ar/attendanceSettings/viewClassCalendar";
-    }
+    // Trang view đã migrate sang Angular (/view-class-calendar) - xem MIGRATED_ROUTES trong
+    // app-shell.component.ts. Các API JSON bên dưới vẫn giữ nguyên vì Angular gọi lại nguyên backend.
 
     @GetMapping("/api/calender/group/month")
     @ResponseBody
@@ -184,21 +170,6 @@ public class ArCalenderController {
     }
 
     // ================= EMP CALENDAR API =================
-
-    @GetMapping("/viewEmpCalendar")
-    public String viewEmpCalendar(Model model, HttpSession session) {
-        HrUserInfo currentHrUser = 
-            (HrUserInfo) session.getAttribute("currentHrUser");
-        
-        if (currentHrUser != null) {
-            model.addAttribute("defaultPersonId", currentHrUser.getPersonId());
-            if (currentHrUser.getHrEmployee() != null) {
-                model.addAttribute("defaultEmpId", currentHrUser.getHrEmployee().getEmpId());
-                model.addAttribute("defaultLocalName", currentHrUser.getHrEmployee().getLocalName());
-            }
-        }
-        return "ar/attendanceSettings/viewEmpCalendar";
-    }
 
     @GetMapping("/api/calender/emp/month")
     @ResponseBody

@@ -21,12 +21,6 @@ public class ArShiftController {
     @Autowired
     private ArShiftService arShiftService;
 
-    // View HTML page
-    @GetMapping("/viewShift")
-    public String viewShift() {
-        return "ar/attendanceSettings/viewShift";
-    }
-
     // --- API FOR SHIFT 010 (Parent) ---
 
     @GetMapping("/api/shift")

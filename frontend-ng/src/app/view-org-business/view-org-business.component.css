@@ -1,0 +1,12 @@
+.vob-tree-scroll {
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.vob-row {
+  cursor: pointer;
+}
+
+.vob-row-selected {
+  background-color: #e6f4ff;
+}

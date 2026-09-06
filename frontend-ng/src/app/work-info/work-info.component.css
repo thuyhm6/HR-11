@@ -1,0 +1,6 @@
+.wi-row-clickable {
+  cursor: pointer;
+}
+.wi-row-clickable:hover {
+  background: #fafafa;
+}

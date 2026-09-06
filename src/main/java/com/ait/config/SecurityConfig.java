@@ -25,6 +25,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -45,16 +47,22 @@ public class SecurityConfig implements WebMvcConfigurer {
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers(
                                 "/", "/login", "/auth/login", "/logout",
+                                "/auth/api/csrf-token", "/auth/api/login",
                                 "/assets/**", "/static/**", "/webjars/**",
                                 "/error/**", "/favicon.ico",
                                 "/actuator/health", "/api/health", "/api/csrf-token",
-                                "/change-language", "/api/current-language", "/api/supported-languages")
+                                "/change-language", "/api/current-language", "/api/supported-languages",
+                                // Bundle tĩnh của Angular (main-*.js, styles-*.css...) build ra thư mục
+                                // static root - phải public vì trình duyệt cần tải được các file này
+                                // TRƯỚC KHI có session (vd: đang ở trang /login chưa đăng nhập).
+                                "/*.js", "/*.css", "/*.ico", "/*.png", "/*.jpg", "/*.svg",
+                                "/*.woff", "/*.woff2", "/*.map", "/*.webmanifest")
                         .permitAll()
                         .requestMatchers(HttpMethod.GET, "/sys/api/code/list", "/sys/api/getCode/list", "/sys/api/menu/list")
                         .authenticated()
                         .requestMatchers("/sy/excel/api/**")
                         .authenticated()
-                        .requestMatchers("/sys/syRole/viewLoginUser", "/sys/api/user/**")
+                        .requestMatchers("/sys/api/user/**")
                         .hasAnyRole("ADMIN", "SYS", "HRM")
                         .requestMatchers(
                                 "/api/admin/**",
@@ -79,12 +87,24 @@ public class SecurityConfig implements WebMvcConfigurer {
                 .formLogin(AbstractHttpConfigurer::disable)
                 .logout(AbstractHttpConfigurer::disable)
                 .csrf(csrf -> csrf
+                        // Angular SPA không có trang Thymeleaf để đọc token CSRF từ thẻ <meta> như các
+                        // trang jQuery cũ (xem setupCsrfForAjaxAndForms() trong layout/master.html) -
+                        // chuyển sang lưu token vào cookie "XSRF-TOKEN" đọc được bằng JS (mặc định của
+                        // CookieCsrfTokenRepository, đúng quy ước Angular HttpClient mong đợi), và dùng
+                        // CsrfTokenRequestAttributeHandler (thay vì Xor mặc định) để token được resolve
+                        // ngay từ request đầu tiên, đảm bảo cookie đã có trước khi Angular gọi API ghi
+                        // dữ liệu đầu tiên. Trang Thymeleaf cũ vẫn hoạt động bình thường vì đọc
+                        // token/tên header động qua ${_csrf.token}/${_csrf.headerName}, không hardcode.
+                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                        .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
                         .ignoringRequestMatchers(
                                 "/auth/login", "/logout",
+                                "/auth/api/csrf-token", "/auth/api/login",
                                 "/api/change-first-password",
                                 "/api/csrf-token",
                                 "/password/api/verify-old-password",
-                                "/password/api/change-password"))
+                                "/password/api/change-password",
+                                "/ess/change/api/changeUser"))
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint((request, response, authException) -> response.sendRedirect("/login")))
                 .addFilterBefore(new SessionAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
@@ -98,6 +118,7 @@ public class SecurityConfig implements WebMvcConfigurer {
                 .addPathPatterns("/**")
                 .excludePathPatterns(
                         "/", "/login", "/auth/login", "/logout",
+                        "/auth/api/csrf-token", "/auth/api/login",
                         "/assets/**", "/static/**", "/webjars/**",
                         "/error/**", "/favicon.ico", "/actuator/**",
                         "/api/health", "/api/csrf-token");
@@ -144,6 +165,8 @@ public class SecurityConfig implements WebMvcConfigurer {
             return uri.equals("/") ||
                     uri.equals("/login") ||
                     uri.equals("/logout") ||
+                    uri.equals("/auth/api/csrf-token") ||
+                    uri.equals("/auth/api/login") ||
                     uri.startsWith("/assets/") ||
                     uri.startsWith("/static/") ||
                     uri.startsWith("/webjars/") ||
@@ -154,7 +177,16 @@ public class SecurityConfig implements WebMvcConfigurer {
                     uri.equals("/api/csrf-token") ||
                     uri.equals("/change-language") ||
                     uri.equals("/api/current-language") ||
-                    uri.equals("/api/supported-languages");
+                    uri.equals("/api/supported-languages") ||
+                    isAngularStaticAsset(uri);
+        }
+
+        /** Bundle tĩnh của Angular ở static root (main-*.js, styles-*.css...) - xem giải thích ở SecurityConfig. */
+        private boolean isAngularStaticAsset(String uri) {
+            return uri.endsWith(".js") || uri.endsWith(".css") || uri.endsWith(".ico")
+                    || uri.endsWith(".png") || uri.endsWith(".jpg") || uri.endsWith(".svg")
+                    || uri.endsWith(".woff") || uri.endsWith(".woff2") || uri.endsWith(".map")
+                    || uri.endsWith(".webmanifest");
         }
     }
 

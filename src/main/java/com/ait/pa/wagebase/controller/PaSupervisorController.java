@@ -22,11 +22,6 @@ public class PaSupervisorController {
     @Autowired
     private PaSupervisorService paSupervisorService;
 
-    @GetMapping("/viewPaSupervisor")
-    public String viewPaSupervisor() {
-        return "pa/wagebase/viewPaSupervisor";
-    }
-
     // ── Danh sách phân trang (DataTables) ─────────────────────────────────
     @GetMapping("/api/supervisor/list")
     @ResponseBody

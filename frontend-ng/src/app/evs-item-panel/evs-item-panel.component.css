@@ -1,0 +1,12 @@
+::ng-deep .eip-row-edit {
+  background-color: #fffde7 !important;
+  cursor: default;
+}
+
+::ng-deep tr:not(.eip-row-edit) {
+  cursor: pointer;
+}
+
+::ng-deep .eip-row-new td {
+  font-style: italic;
+}

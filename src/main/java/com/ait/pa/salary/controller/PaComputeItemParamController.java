@@ -22,11 +22,6 @@ public class PaComputeItemParamController {
     @Autowired
     private PaComputeItemParamService paComputeItemParamService;
 
-    @GetMapping("/viewPaComputeItemParamList")
-    public String viewPaComputeItemParamList() {
-        return "pa/salary/viewPaComputeItemParamList";
-    }
-
     @GetMapping("/computeitemparam/api/list")
     @ResponseBody
     public ResponseEntity<?> getList(

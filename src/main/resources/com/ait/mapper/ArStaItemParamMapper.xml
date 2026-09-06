@@ -37,11 +37,11 @@
     </select>
 
     <select id="getAvailableItems" resultType="java.util.Map">
-        SELECT a.ITEM_NO as itemNo,
-               gvi.CONTENT as nameVi,
-               gen.CONTENT as nameEn,
-               gzh.CONTENT as nameZh,
-               gko.CONTENT as nameKo
+        SELECT a.ITEM_NO as "itemNo",
+               gvi.CONTENT as "nameVi",
+               gen.CONTENT as "nameEn",
+               gzh.CONTENT as "nameZh",
+               gko.CONTENT as "nameKo"
         FROM AR_STA_ITEM a
         LEFT JOIN SY_GLOBAL_NAME gvi ON a.ITEM_NO = gvi.NO AND gvi.LANGUAGE = 'vi'
         LEFT JOIN SY_GLOBAL_NAME gen ON a.ITEM_NO = gen.NO AND gen.LANGUAGE = 'en'

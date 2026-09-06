@@ -24,9 +24,4 @@ public class ManageCountInfoEmpDto {
     private String empTypeCode;
     private String empOffice;
     private String asOfDate;
-
-    // Phân trang
-    private int draw;
-    private int start;
-    private int length;
 }

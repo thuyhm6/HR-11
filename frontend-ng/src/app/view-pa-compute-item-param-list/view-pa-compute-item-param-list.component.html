@@ -1,0 +1,153 @@
+<div class="row">
+  <div class="col-12">
+    <!-- Điều kiện tìm kiếm -->
+    <nz-card class="mb-3 sticky-filter-card">
+      <form class="row g-3" (ngSubmit)="search()">
+        <div class="col-md-4">
+          <label class="form-label">{{ 'pa.computeItemParam.itemName' | translate:'Tên hạng mục' }}</label>
+          <input nz-input [(ngModel)]="searchAliasName" name="vpciplSearchAliasName" (keyup.enter)="search()">
+        </div>
+        <div class="col-md-8 d-flex align-items-end gap-2 flex-wrap">
+          <button nz-button nzType="primary" type="submit">
+            <i class="bx bx-search"></i> {{ 'pa.computeItemParam.search' | translate:'Tra cứu' }}
+          </button>
+          <button nz-button nzType="primary" type="button" (click)="openAddModal()">
+            <i class="bx bx-plus"></i> {{ 'pa.computeItemParam.addNew' | translate:'Thêm mới' }}
+          </button>
+          <button nz-button nzType="default" type="button" (click)="editSelected()">
+            <i class="bx bx-edit"></i> {{ 'pa.computeItemParam.edit' | translate:'Sửa' }}
+          </button>
+          <button nz-button nzDanger type="button" (click)="openDeleteConfirm()">
+            <i class="bx bx-trash"></i> {{ 'pa.computeItemParam.delete' | translate:'Xóa' }}
+          </button>
+        </div>
+      </form>
+    </nz-card>
+
+    <nz-card>
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+      <!-- Server-side pagination (draw/start/length -> recordsTotal), đúng hành vi DataTables gốc. -->
+      <nz-table [nzData]="rows()" [nzFrontPagination]="false" [nzLoading]="loading()" [nzTotal]="totalRecords()"
+                [nzPageIndex]="pageIndex" [nzPageSize]="pageSize" [nzPageSizeOptions]="pageSizeOptions"
+                [nzShowSizeChanger]="true" [nzShowTotal]="vpciplTotalTpl"
+                (nzPageIndexChange)="onPageIndexChange($event)" (nzPageSizeChange)="onPageSizeChange($event)"
+                [nzScroll]="{ x: '1100px', y: 'calc(100vh - 420px)' }" #vpciplTable>
+        <thead>
+          <tr>
+            <th class="text-center" nzWidth="40px">
+              <label nz-checkbox [ngModel]="allChecked" [nzIndeterminate]="someChecked" (ngModelChange)="toggleAllChecked($event)"></label>
+            </th>
+            <th class="text-center" nzWidth="50px">{{ 'pa.computeItemParam.no' | translate:'STT' }}</th>
+            <th nzWidth="130px">{{ 'pa.computeItemParam.company' | translate:'Công ty' }}</th>
+            <th>{{ 'pa.computeItemParam.itemName' | translate:'Tên hạng mục' }}</th>
+            <th class="text-center" nzWidth="120px">{{ 'pa.computeItemParam.pricision' | translate:'Tính chính xác' }}</th>
+            <th class="text-center" nzWidth="140px">{{ 'pa.computeItemParam.carryBit' | translate:'Tiền 1 đơn vị' }}</th>
+            <th nzWidth="180px">{{ 'pa.computeItemParam.applyType' | translate:'Loại áp dụng' }}</th>
+            <th class="text-center" nzWidth="130px">{{ 'pa.computeItemParam.calcuOrder' | translate:'Trình tự tính' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!loading() && rows().length === 0">
+            <td colspan="8" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+          </tr>
+          <tr *ngFor="let row of vpciplTable.data; let i = index" class="vpcipl-row-clickable" (click)="openEditModal(row)">
+            <td class="text-center" (click)="$event.stopPropagation()">
+              <label nz-checkbox [ngModel]="isChecked(row)" (ngModelChange)="toggleChecked(row, $event)"></label>
+            </td>
+            <td class="text-center">{{ (pageIndex - 1) * pageSize + i + 1 }}</td>
+            <td [attr.title]="row.cpnyName || null">{{ row.cpnyName }}</td>
+            <td [attr.title]="row.aliasName || null">{{ row.aliasName }}</td>
+            <td class="text-center">{{ row.pricision }}</td>
+            <td class="text-center">{{ row.carryBit }}</td>
+            <td [attr.title]="row.applyTypeName || null">{{ row.applyTypeName }}</td>
+            <td class="text-center" (click)="$event.stopPropagation()">
+              <span class="me-1">{{ row.calcuOrder }}</span>
+              <button nz-button nzType="text" nzSize="small" title="Lên" (click)="swapOrder(row, 'up')">
+                <i class="bx bx-up-arrow-alt text-success"></i>
+              </button>
+              <button nz-button nzType="text" nzSize="small" title="Xuống" (click)="swapOrder(row, 'down')">
+                <i class="bx bx-down-arrow-alt text-primary"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+        <ng-template #vpciplTotalTpl let-total>
+          {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+        </ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>
+
+<!-- Modal Thêm mới -->
+<nz-modal [nzVisible]="addModalVisible()" [nzTitle]="'pa.computeItemParam.addTitle' | translate:'Thêm mới thông số mục tính toán'"
+          nzWidth="600px" (nzOnCancel)="closeAddModal()" (nzOnOk)="saveAdd()" [nzOkLoading]="adding()"
+          [nzOkText]="'pa.computeItemParam.save' | translate:'Lưu'" [nzCancelText]="'common.close' | translate:'Đóng'">
+  <ng-container *nzModalContent>
+    <div class="row g-3">
+      <div class="col-12">
+        <label class="form-label fw-semibold">{{ 'pa.computeItemParam.itemName' | translate:'Tên hạng mục' }} <span class="text-danger">*</span></label>
+        <nz-select class="w-100" [(ngModel)]="addForm.itemNo" name="vpciplAddItemNo" nzShowSearch
+                   [nzPlaceHolder]="'common.confirm' | translate:'-- Chọn --'">
+          <nz-option *ngFor="let opt of itemOptions()" [nzValue]="opt.itemNo" [nzLabel]="opt.itemName || opt.itemId || opt.itemNo"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'pa.computeItemParam.pricision' | translate:'Độ chính xác' }}</label>
+        <nz-input-number class="w-100" [(ngModel)]="addForm.pricision" name="vpciplAddPricision" [nzMin]="0" [nzPrecision]="0"></nz-input-number>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'pa.computeItemParam.carryBit' | translate:'Số chữ số sau dấu phẩy' }}</label>
+        <nz-input-number class="w-100" [(ngModel)]="addForm.carryBit" name="vpciplAddCarryBit"></nz-input-number>
+      </div>
+      <div class="col-12">
+        <label class="form-label fw-semibold">{{ 'pa.computeItemParam.applyType' | translate:'Loại áp dụng' }}</label>
+        <nz-select class="w-100" [(ngModel)]="addForm.applyType" name="vpciplAddApplyType" nzAllowClear>
+          <nz-option *ngFor="let opt of applyTypeOptions()" [nzValue]="opt.applyType" [nzLabel]="opt.applyTypeName || opt.applyType"></nz-option>
+        </nz-select>
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal Chỉnh sửa -->
+<nz-modal [nzVisible]="editModalVisible()" [nzTitle]="'pa.computeItemParam.editTitle' | translate:'Chỉnh sửa thông số mục tính toán'"
+          nzWidth="600px" (nzOnCancel)="closeEditModal()" (nzOnOk)="saveEdit()" [nzOkLoading]="saving()"
+          [nzOkText]="'pa.computeItemParam.save' | translate:'Lưu'" [nzCancelText]="'common.close' | translate:'Đóng'">
+  <ng-container *nzModalContent>
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'pa.computeItemParam.company' | translate:'Công ty' }}</label>
+        <div class="form-control-plaintext">{{ editForm.cpnyName }}</div>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'pa.computeItemParam.itemName' | translate:'Tên hạng mục' }}</label>
+        <div class="form-control-plaintext">{{ editForm.aliasName }}</div>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'pa.computeItemParam.pricision' | translate:'Độ chính xác' }}</label>
+        <nz-input-number class="w-100" [(ngModel)]="editForm.pricision" name="vpciplEditPricision" [nzMin]="0" [nzPrecision]="0"></nz-input-number>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'pa.computeItemParam.carryBit' | translate:'Số chữ số sau dấu phẩy' }}</label>
+        <nz-input-number class="w-100" [(ngModel)]="editForm.carryBit" name="vpciplEditCarryBit"></nz-input-number>
+      </div>
+      <div class="col-12">
+        <label class="form-label fw-semibold">{{ 'pa.computeItemParam.applyType' | translate:'Loại áp dụng' }}</label>
+        <nz-select class="w-100" [(ngModel)]="editForm.applyType" name="vpciplEditApplyType" nzAllowClear>
+          <nz-option *ngFor="let opt of applyTypeOptions()" [nzValue]="opt.applyType" [nzLabel]="opt.applyTypeName || opt.applyType"></nz-option>
+        </nz-select>
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal xác nhận xóa nhiều dòng -->
+<nz-modal [nzVisible]="deleteVisible()" [nzTitle]="'common.confirm' | translate:'Xác nhận'"
+          (nzOnCancel)="closeDeleteConfirm()" (nzOnOk)="confirmDelete()" [nzOkLoading]="deleting()"
+          [nzOkText]="'common.confirm' | translate:'Xác nhận'" [nzCancelText]="'common.cancel' | translate:'Hủy'">
+  <ng-container *nzModalContent>
+    <p class="mb-0">{{ 'pa.computeItemParam.confirmDelete' | translate:'Bạn có chắc chắn muốn xóa các bản ghi đã chọn?' }} ({{ selectedCount }})</p>
+  </ng-container>
+</nz-modal>

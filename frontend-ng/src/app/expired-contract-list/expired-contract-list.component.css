@@ -1,0 +1,11 @@
+.ecl-row-clickable {
+  cursor: pointer;
+}
+.ecl-row-clickable:hover {
+  background: #fafafa;
+}
+
+.ecl-btn-export {
+  color: #52c41a;
+  border-color: #52c41a;
+}

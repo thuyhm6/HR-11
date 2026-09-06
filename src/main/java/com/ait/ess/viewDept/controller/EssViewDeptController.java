@@ -133,25 +133,11 @@ public class EssViewDeptController {
     @Autowired
     private EvsObjectService evsObjectService;
 
-    @GetMapping("/viewEmpCalendar")
-    public String viewEmpCalendar() {
-        return "ess/viewDept/viewEmpCalendar";
-    }
+    // Trang Thymeleaf viewEmpCalendar.html đã được thay bằng Angular route /ess-view-emp-calendar
 
-    @GetMapping("/ManageEmpPositionInfoList")
-    public String viewManageEmpPositionInfoList() {
-        return "ess/viewDept/ManageEmpPositionInfoList";
-    }
+    // Trang Thymeleaf viewDeptPersonalInfoManageList.html đã được thay bằng Angular route /manage-emp-position-info
 
-    @GetMapping("/viewDeptPersonalInfoManageList")
-    public String viewDeptPersonalInfoManageList() {
-        return "ess/viewDept/viewDeptPersonalInfoManageList";
-    }
-
-    @GetMapping("/viewManageEvsResultEmpList")
-    public String viewManageEvsResultEmpList() {
-        return "ess/viewDept/viewManageEvsResultEmpList";
-    }
+    // Trang Thymeleaf viewManageEvsResultEmpList.html đã được thay bằng Angular route /manage-evs-result-emp
 
     @GetMapping("/api/manageEmpPositionInfo/list")
     @ResponseBody
@@ -208,10 +194,9 @@ public class EssViewDeptController {
         return ResponseEntity.ok(service.getInsideExperienceList(personId));
     }
 
-    @GetMapping("/viewArPersonalSelfList")
-    public String viewArPersonalSelfList() {
-        return "ess/viewDept/viewArPersonalSelfList";
-    }
+    // Trang Thymeleaf viewArPersonalSelfList.html đã được thay bằng Angular route
+    // /view-ar-personal-self-list (xem frontend-ng/src/app/view-ar-personal-self-list/ và
+    // MIGRATED_ROUTES trong app-shell.component.ts) - các API /api/arPersonalSelf/** bên dưới vẫn giữ nguyên.
 
     @GetMapping("/api/arPersonalSelf/items")
     @ResponseBody
@@ -245,10 +230,10 @@ public class EssViewDeptController {
         return ResponseEntity.ok(arPersonalSelfService.getDetailList(params));
     }
 
-    @GetMapping("/viewOtApplyPersonalSelfList")
-    public String viewOtApplyPersonalSelfList() {
-        return "ess/viewDept/viewOtApplyPersonalSelfList";
-    }
+    // Trang Thymeleaf viewOtApplyPersonalSelfList.html đã được thay bằng Angular route
+    // /view-ot-apply-personal-self-list (xem frontend-ng/src/app/view-ot-apply-personal-self-list/ và
+    // MIGRATED_ROUTES trong app-shell.component.ts) - các API /api/otApplyPersonalSelf/** bên dưới vẫn
+    // giữ nguyên.
 
     @GetMapping("/api/otApplyPersonalSelf/items")
     @ResponseBody
@@ -282,10 +267,9 @@ public class EssViewDeptController {
         return ResponseEntity.ok(otApplyPersonalSelfService.getDetailList(params));
     }
 
-    @GetMapping("/yearUseInfo")
-    public String viewYearUseInfo() {
-        return "ess/viewDept/yearUseInfo";
-    }
+    // Trang Thymeleaf yearUseInfo.html đã được thay bằng Angular route /year-use-info (xem
+    // frontend-ng/src/app/year-use-info/ và MIGRATED_ROUTES trong app-shell.component.ts) - các API
+    // /api/yearUseInfo/** bên dưới vẫn giữ nguyên.
 
     @GetMapping("/api/yearUseInfo/vacationRows")
     @ResponseBody
@@ -301,15 +285,8 @@ public class EssViewDeptController {
         return ResponseEntity.ok(yearUseInfoService.getLeaveUsageList(year));
     }
 
-    @GetMapping("/viewArPersonalList")
-    public String viewArPersonalList() {
-        return "ess/viewDept/viewArPersonalList";
-    }
-
-    @GetMapping("/viewOtApplyPersonalList")
-    public String viewOtApplyPersonalList() {
-        return "ess/viewDept/viewOtApplyPersonalList";
-    }
+    // Trang Thymeleaf viewArPersonalList.html đã được thay bằng Angular route /view-ar-personal-list
+    // Trang Thymeleaf viewOtApplyPersonalList.html đã được thay bằng Angular route /view-ot-apply-personal-list
 
     @GetMapping("/api/arPersonalList/items")
     @ResponseBody
@@ -334,11 +311,6 @@ public class EssViewDeptController {
         return ResponseEntity.ok(arPersonalListService.getDetailList(params));
     }
 
-    @GetMapping("/ManageCountInfoList")
-    public String viewManageCountInfoList() {
-        return "ess/viewDept/ManageCountInfoList";
-    }
-
     @GetMapping("/api/manageCountInfo/summary")
     @ResponseBody
     public ResponseEntity<ManageCountInfoSummaryDto> getManageCountInfoSummary(ManageCountInfoEmpDto params) {
@@ -347,8 +319,8 @@ public class EssViewDeptController {
 
     @GetMapping("/api/manageCountInfo/list")
     @ResponseBody
-    public DataTablesResponse<ManageCountInfoEmpDto> getManageCountInfoList(ManageCountInfoEmpDto params) {
-        return manageCountInfoService.getPageList(params);
+    public ResponseEntity<List<ManageCountInfoEmpDto>> getManageCountInfoList(ManageCountInfoEmpDto params) {
+        return ResponseEntity.ok(manageCountInfoService.getList(params));
     }
 
     @GetMapping("/api/manageCountInfo/weeklyReport")
@@ -358,10 +330,8 @@ public class EssViewDeptController {
         weeklyHrReportService.exportWeeklyReport(asOfDate, response);
     }
 
-    @GetMapping("/viewEntryInfoList")
-    public String viewEntryInfoList() {
-        return "ess/viewDept/viewEntryInfoList";
-    }
+    // Trang view đã migrate sang Angular (/view-entry-info-list) - xem MIGRATED_ROUTES trong
+    // app-shell.component.ts. API JSON bên dưới vẫn giữ nguyên vì Angular gọi lại nguyên backend.
 
     @GetMapping("/api/entryInfoList/list")
     @ResponseBody

@@ -24,11 +24,6 @@ public class ArScheduleHtsvController {
     @Autowired
     private ArScheduleHtsvService service;
 
-    @GetMapping("/addEmpShiftView")
-    public String addEmpShiftView() {
-        return "ar/attendanceMintenance/addEmpShiftView";
-    }
-
     @GetMapping("/api/scheduleHtsv/list")
     public ResponseEntity<List<ArScheduleHtsvDto>> getList(
             @RequestParam(required = false) String empId,

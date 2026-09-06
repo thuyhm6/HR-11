@@ -1,0 +1,158 @@
+<div class="row">
+  <div class="col-12">
+    <nz-card class="mb-3 sticky-filter-card">
+      <form class="row g-3" (ngSubmit)="search()">
+        <div class="col-md-3">
+          <label class="form-label">{{ 'orgCompose.costCenter' | translate:'Mã chi phí' }}</label>
+          <input nz-input id="vocc_searchCodeNo" [(ngModel)]="searchCodeNo" name="vocc_searchCodeNo"
+                 [placeholder]="'orgCostCenter.codeNoPlaceholder' | translate:'Nhập mã chi phí'">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'orgCostCenter.searchName' | translate:'Tên chi phí' }}</label>
+          <input nz-input id="vocc_searchCodeName" [(ngModel)]="searchCodeName" name="vocc_searchCodeName"
+                 [placeholder]="'orgCostCenter.searchNamePlaceholder' | translate:'Nhập tên chi phí'">
+        </div>
+        <div class="col-md-6 d-flex align-items-end gap-2 flex-wrap">
+          <button nz-button nzType="primary" type="button" id="vocc_btnAdd" (click)="openAddModal()">
+            <i class="bx bx-plus"></i> {{ 'common.addNew' | translate:'Thêm mới' }}
+          </button>
+          <button nz-button nzType="default" type="submit" id="vocc_btnSearch">
+            <i class="bx bx-search"></i> {{ 'common.search' | translate:'Tìm kiếm' }}
+          </button>
+          <button nz-button type="button" id="vocc_btnClear" (click)="clearSearch()">
+            <i class="bx bx-x"></i> {{ 'common.clearFilter' | translate:'Xóa lọc' }}
+          </button>
+        </div>
+      </form>
+    </nz-card>
+
+    <nz-card>
+      <nz-table [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="20" [nzShowSizeChanger]="true"
+                [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="voccTotalTpl"
+                [nzScroll]="{ x: '1300px' }" class="table-nowrap" #voccTable>
+        <thead>
+          <tr>
+            <th class="text-center" nzWidth="60px">{{ 'common.stt' | translate:'STT' }}</th>
+            <th nzWidth="130px">{{ 'orgCompose.costCenter' | translate:'Mã chi phí' }}</th>
+            <th nzWidth="180px">{{ 'orgCostCenter.codeName' | translate:'Tên tiếng Việt' }}</th>
+            <th nzWidth="180px">{{ 'orgCostCenter.codeEngName' | translate:'Tên tiếng Anh' }}</th>
+            <th nzWidth="200px">{{ 'common.remark' | translate:'Ghi chú' }}</th>
+            <th class="text-center" nzWidth="120px">{{ 'common.startDate' | translate:'Ngày bắt đầu' }}</th>
+            <th class="text-center" nzWidth="120px">{{ 'common.endDate' | translate:'Ngày kết thúc' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'common.status' | translate:'Trạng thái' }}</th>
+            <th class="text-center" nzWidth="100px">{{ 'common.action' | translate:'Thao tác' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!loading() && rows().length === 0">
+            <td colspan="9" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+          </tr>
+          <tr *ngFor="let row of voccTable.data; let i = index">
+            <td class="text-center">{{ i + 1 }}</td>
+            <td>{{ row.codeNo }}</td>
+            <td [attr.title]="row.codeName || null">{{ row.codeName }}</td>
+            <td [attr.title]="row.codeEngName || null">{{ row.codeEngName }}</td>
+            <td [attr.title]="row.remark || null">{{ row.remark }}</td>
+            <td class="text-center">{{ row.startDate }}</td>
+            <td class="text-center">{{ row.endDate }}</td>
+            <td class="text-center">{{ row.activity }}</td>
+            <td class="text-center">
+              <button nz-button nzType="text" nzSize="small" id="vocc_btnEdit_{{ row.seq }}"
+                      [title]="'common.edit' | translate:'Sửa'" (click)="openEditModal(row)">
+                <i class="bx bx-edit text-warning"></i>
+              </button>
+              <button nz-button nzType="text" nzSize="small" id="vocc_btnDelete_{{ row.seq }}"
+                      [title]="'common.delete' | translate:'Xóa'" (click)="openDeleteConfirm(row)">
+                <i class="bx bx-trash text-danger"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+        <ng-template #voccTotalTpl let-total>
+          {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+        </ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>
+
+<!-- Modal Thêm mới / Cập nhật -->
+<nz-modal [nzVisible]="modalVisible()" [nzTitle]="modalTitle()" nzWidth="800px"
+          (nzOnCancel)="closeModal()" (nzOnOk)="saveForm()" [nzOkLoading]="saving()"
+          [nzOkText]="'common.save' | translate:'Lưu'" [nzCancelText]="'common.close' | translate:'Đóng'">
+  <ng-container *nzModalContent>
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'orgCompose.costCenter' | translate:'Mã chi phí' }} <span class="text-danger">*</span></label>
+        <input nz-input id="vocc_formCodeNo" [(ngModel)]="form.codeNo" name="vocc_formCodeNo">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'orgBusiness.orderNo' | translate:'Thứ tự hiển thị' }}</label>
+        <nz-input-number class="w-100" id="vocc_formOrderNo" [(ngModel)]="form.orderNo" name="vocc_formOrderNo" [nzMin]="0"></nz-input-number>
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'orgCostCenter.codeName' | translate:'Tên tiếng Việt' }}</label>
+        <input nz-input id="vocc_formCodeName" [(ngModel)]="form.codeName" name="vocc_formCodeName">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'orgCostCenter.codeEngName' | translate:'Tên tiếng Anh' }}</label>
+        <input nz-input id="vocc_formCodeEngName" [(ngModel)]="form.codeEngName" name="vocc_formCodeEngName">
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'orgCostCenter.codeKoreanName' | translate:'Tên tiếng Hàn' }}</label>
+        <input nz-input id="vocc_formCodeKoreanName" [(ngModel)]="form.codeKoreanName" name="vocc_formCodeKoreanName">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'orgCostCenter.codeVietnameseName' | translate:'Tên tiếng Việt quy định' }}</label>
+        <input nz-input id="vocc_formCodeVietnameseName" [(ngModel)]="form.codeVietnameseName" name="vocc_formCodeVietnameseName">
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'common.startDate' | translate:'Ngày bắt đầu' }}</label>
+        <input nz-input id="vocc_formStartDate" [(ngModel)]="form.startDate" name="vocc_formStartDate" placeholder="YYYY-MM-DD">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'common.endDate' | translate:'Ngày kết thúc' }}</label>
+        <input nz-input id="vocc_formEndDate" [(ngModel)]="form.endDate" name="vocc_formEndDate" placeholder="YYYY-MM-DD">
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'org.title.COUNTRY' | translate:'Quốc gia' }}</label>
+        <input nz-input id="vocc_formCountry" [(ngModel)]="form.country" name="vocc_formCountry">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'common.status' | translate:'Trạng thái' }}</label>
+        <input nz-input id="vocc_formActivity" [(ngModel)]="form.activity" name="vocc_formActivity">
+      </div>
+
+      <div class="col-12">
+        <label class="form-label fw-semibold">{{ 'org.title.ADDRESS' | translate:'Địa chỉ' }}</label>
+        <input nz-input id="vocc_formAddress" [(ngModel)]="form.address" name="vocc_formAddress">
+      </div>
+      <div class="col-12">
+        <label class="form-label fw-semibold">{{ 'orgCostCenter.businessScope' | translate:'Phạm vi kinh doanh (Business Scope)' }}</label>
+        <textarea nz-input id="vocc_formBusinessScope" [(ngModel)]="form.businessScope" name="vocc_formBusinessScope" rows="2"></textarea>
+      </div>
+      <div class="col-12">
+        <label class="form-label fw-semibold">{{ 'orgCostCenter.profitCenter' | translate:'Trung tâm lợi nhuận (Profit Center)' }}</label>
+        <textarea nz-input id="vocc_formProfitCenter" [(ngModel)]="form.profitCenter" name="vocc_formProfitCenter" rows="2"></textarea>
+      </div>
+      <div class="col-12">
+        <label class="form-label fw-semibold">{{ 'common.remark' | translate:'Ghi chú' }}</label>
+        <textarea nz-input id="vocc_formRemark" [(ngModel)]="form.remark" name="vocc_formRemark" rows="2"></textarea>
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal xác nhận xóa -->
+<nz-modal [nzVisible]="deleteVisible()" [nzTitle]="'common.confirm' | translate:'Xác nhận'"
+          (nzOnCancel)="closeDeleteConfirm()" (nzOnOk)="confirmDelete()" [nzOkLoading]="deleting()"
+          [nzOkText]="'common.confirm' | translate:'Xác nhận'" [nzCancelText]="'common.cancel' | translate:'Hủy'">
+  <ng-container *nzModalContent>
+    <p class="mb-1">{{ 'orgCostCenter.confirmDelete' | translate:'Bạn có chắc chắn muốn xóa trung tâm chi phí này?' }}</p>
+    <p class="fw-bold mb-0">{{ deleteTargetName }}</p>
+  </ng-container>
+</nz-modal>

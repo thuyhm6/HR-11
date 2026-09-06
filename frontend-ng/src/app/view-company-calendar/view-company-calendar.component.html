@@ -1,0 +1,163 @@
+<div class="vcompcal-wrap">
+  <!-- ===== Toolbar ===== -->
+  <div class="vcompcal-toolbar">
+    <div class="vcompcal-nav">
+      <button nz-button nzType="default" nzShape="circle" [attr.title]="'cccal.btn.prevMonth' | translate:'Tháng trước'" (click)="prevMonth()">
+        <i class="bx bx-chevron-left"></i>
+      </button>
+      <nz-select class="vcompcal-combo" [(ngModel)]="selectedMonth">
+        <nz-option *ngFor="let m of monthOptions" [nzValue]="m" [nzLabel]="monthKeys[m - 1] | translate"></nz-option>
+      </nz-select>
+      <nz-select class="vcompcal-combo vcompcal-year" [(ngModel)]="selectedYear">
+        <nz-option *ngFor="let y of yearOptions" [nzValue]="y" [nzLabel]="y"></nz-option>
+      </nz-select>
+      <button nz-button nzType="default" nzShape="circle" [attr.title]="'cccal.btn.nextMonth' | translate:'Tháng sau'" (click)="nextMonth()">
+        <i class="bx bx-chevron-right"></i>
+      </button>
+    </div>
+    <div class="vcompcal-actions">
+      <button nz-button nzType="default" (click)="search()">
+        <i class="bx bx-refresh"></i> {{ 'cccal.btn.search' | translate:'Tra cứu' }}
+      </button>
+      <button nz-button nzType="primary" (click)="openAddModal()">
+        <i class="bx bx-plus"></i> {{ 'cccal.btn.addNew' | translate:'Thêm mới' }}
+      </button>
+    </div>
+  </div>
+
+  <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-2"></nz-alert>
+
+  <!-- ===== Calendar grid ===== -->
+  <div class="vcompcal-grid-wrap">
+    <div class="vcompcal-hrow">
+      <div class="vcompcal-hcell vcompcal-col-sun"><i class="bx bxs-sun"></i> {{ 'cccal.day.sun' | translate:'CN' }}</div>
+      <div class="vcompcal-hcell">{{ 'cccal.day.mon' | translate:'T2' }}</div>
+      <div class="vcompcal-hcell">{{ 'cccal.day.tue' | translate:'T3' }}</div>
+      <div class="vcompcal-hcell">{{ 'cccal.day.wed' | translate:'T4' }}</div>
+      <div class="vcompcal-hcell">{{ 'cccal.day.thu' | translate:'T5' }}</div>
+      <div class="vcompcal-hcell">{{ 'cccal.day.fri' | translate:'T6' }}</div>
+      <div class="vcompcal-hcell vcompcal-col-sat"><i class="bx bxs-star"></i> {{ 'cccal.day.sat' | translate:'T7' }}</div>
+    </div>
+
+    <div>
+      <div *ngIf="loading()" class="vcompcal-status-msg">...</div>
+      <div *ngIf="!loading() && weeks().length === 0" class="vcompcal-status-msg">{{ 'common.noData' | translate:'Không có dữ liệu' }}</div>
+
+      <ng-container *ngIf="!loading()">
+        <div class="vcompcal-week" *ngFor="let week of weeks()">
+          <div *ngFor="let cell of week"
+               class="vcompcal-day"
+               [class.is-empty]="cell.isEmpty"
+               [class.is-today]="cell.isToday"
+               [class.is-statutory]="!cell.isEmpty && cell.isStatutory"
+               [class.is-rest]="!cell.isEmpty && !cell.isStatutory && !cell.hasWork"
+               [class.is-work]="!cell.isEmpty && !cell.isStatutory && cell.hasWork"
+               [class.vcompcal-clickable]="!cell.isEmpty"
+               (click)="dayClick(cell)">
+            <ng-container *ngIf="!cell.isEmpty">
+              <div class="vcompcal-day-top">
+                <span class="vcompcal-day-num" [class.is-sun]="cell.isSunday" [class.is-sat]="cell.isSaturday">{{ cell.day }}</span>
+                <span class="vcompcal-status" [class.s-holiday]="cell.isStatutory" [class.s-work]="!cell.isStatutory && cell.hasWork" [class.s-rest]="!cell.isStatutory && !cell.hasWork">
+                  {{ cell.isStatutory ? ('companyCal.statutory' | translate:'Lễ pháp định') : ((cell.hasWork ? 'cccal.status.work' : 'cccal.status.rest') | translate) }}
+                </span>
+              </div>
+              <div class="vcompcal-tags">
+                <span class="vcompcal-tag t-we" *ngIf="cell.isWeekend">{{ 'cccal.tag.weekend' | translate:'Cuối tuần' }}</span>
+                <span class="vcompcal-tag t-wd" *ngIf="!cell.isWeekend">{{ (cell.hasWork ? 'cccal.status.work' : 'companyCal.dayOff') | translate:(cell.hasWork ? 'Ngày thường' : 'Nghỉ') }}</span>
+                <span class="vcompcal-tag t-sh" *ngIf="cell.hasWork">{{ cell.item?.shiftName || shiftLabel(cell.item?.shiftNo) || 'Ca hành chính' }}</span>
+                <span class="vcompcal-tag t-hol" *ngIf="cell.isStatutory">★ {{ 'companyCal.statutory' | translate:'Lễ pháp định' }}</span>
+                <span class="vcompcal-tag t-wd" *ngIf="cell.item?.typeidName">{{ cell.item?.typeidName }}</span>
+              </div>
+              <div class="vcompcal-remark" *ngIf="cell.item?.remark" [attr.title]="cell.item?.remark">— {{ cell.item?.remark }}</div>
+            </ng-container>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+
+  <!-- ===== Legend ===== -->
+  <div class="vcompcal-legend">
+    <span class="vcompcal-legend-item"><span class="vcompcal-legend-dot vcompcal-lg-work"></span> {{ 'cccal.legend.workday' | translate:'Ngày làm việc' }}</span>
+    <span class="vcompcal-legend-item"><span class="vcompcal-legend-dot vcompcal-lg-rest"></span> {{ 'cccal.legend.restday' | translate:'Ngày nghỉ' }}</span>
+    <span class="vcompcal-legend-item"><span class="vcompcal-legend-dot vcompcal-lg-holiday"></span> {{ 'companyCal.statutoryFlag' | translate:'Ngày lễ pháp định' }}</span>
+    <span class="vcompcal-legend-item"><span class="vcompcal-legend-dot vcompcal-lg-today"></span> {{ 'cccal.legend.today' | translate:'Hôm nay' }}</span>
+  </div>
+</div>
+
+<!-- ===== Modal Thêm mới / Cập nhật 1 ngày ===== -->
+<nz-modal [nzVisible]="modalVisible()" [nzTitle]="modalTitle()"
+          nzWidth="640px" (nzOnCancel)="closeModal()" [nzOkLoading]="saving()"
+          [nzOkText]="'cccal.btn.save' | translate:'Lưu'" [nzCancelText]="'cccal.btn.close' | translate:'Đóng'"
+          (nzOnOk)="saveDay()">
+  <ng-container *nzModalContent>
+    <form class="vcompcal-form">
+      <div class="vcompcal-form-row-2">
+        <div class="vcompcal-form-row">
+          <label>{{ 'cccal.label.workdayflag' | translate:'Ngày làm việc' }}</label>
+          <nz-select [(ngModel)]="editForm.workdayflag" name="workdayflag">
+            <nz-option [nzValue]="0" [nzLabel]="'cccal.option.restday' | translate:'0 — Ngày nghỉ'"></nz-option>
+            <nz-option [nzValue]="1" [nzLabel]="'cccal.option.workday' | translate:'1 — Ngày làm việc'"></nz-option>
+          </nz-select>
+        </div>
+        <div class="vcompcal-form-row">
+          <label>{{ 'cccal.label.shiftNo' | translate:'Ca làm việc (Shift No)' }}</label>
+          <nz-select [(ngModel)]="editForm.shiftNo" name="shiftNo" [nzAllowClear]="true">
+            <nz-option *ngFor="let s of shiftOptions()" [nzValue]="s.shiftNo" [nzLabel]="s.nameVi || s.shiftNo"></nz-option>
+          </nz-select>
+        </div>
+      </div>
+      <div class="vcompcal-form-row-3">
+        <div class="vcompcal-form-row">
+          <label>{{ 'cccal.label.typeid' | translate:'TypeID' }}</label>
+          <nz-select [(ngModel)]="editForm.typeid" name="typeid" [nzAllowClear]="true">
+            <nz-option *ngFor="let t of typeOptions()" [nzValue]="t.codeNo" [nzLabel]="t.codeName"></nz-option>
+          </nz-select>
+        </div>
+        <div class="vcompcal-form-row">
+          <label>{{ 'cccal.label.overtypeid' | translate:'OvertypeID' }}</label>
+          <nz-select [(ngModel)]="editForm.overtypeid" name="overtypeid" [nzAllowClear]="true">
+            <nz-option *ngFor="let t of typeOptions()" [nzValue]="t.codeNo" [nzLabel]="t.codeName"></nz-option>
+          </nz-select>
+        </div>
+        <div class="vcompcal-form-row">
+          <label>{{ 'cccal.label.typeidDefault' | translate:'TypeID mặc định' }}</label>
+          <nz-select [(ngModel)]="editForm.typeidDefault" name="typeidDefault" [nzAllowClear]="true">
+            <nz-option *ngFor="let t of typeOptions()" [nzValue]="t.codeNo" [nzLabel]="t.codeName"></nz-option>
+          </nz-select>
+        </div>
+      </div>
+      <div class="vcompcal-form-row-2">
+        <div class="vcompcal-form-row">
+          <label>{{ 'companyCal.statutoryFlag' | translate:'Ngày lễ pháp định' }}</label>
+          <nz-select [(ngModel)]="editForm.statutoryFlag" name="statutoryFlag">
+            <nz-option [nzValue]="0" [nzLabel]="'common.no' | translate:'Không'"></nz-option>
+            <nz-option [nzValue]="1" [nzLabel]="'companyCal.statutory' | translate:'Lễ pháp định'"></nz-option>
+          </nz-select>
+        </div>
+        <div class="vcompcal-form-row">
+          <label>{{ 'cccal.label.operationId' | translate:'Operation ID' }}</label>
+          <input nz-input [(ngModel)]="editForm.operationId" name="operationId">
+        </div>
+      </div>
+      <div class="vcompcal-form-row-3">
+        <div class="vcompcal-form-row">
+          <label>{{ 'cccal.label.orderno' | translate:'Sắp xếp' }}</label>
+          <nz-input-number [(ngModel)]="editForm.orderno" name="orderno" [nzMin]="0" style="width:100%"></nz-input-number>
+        </div>
+        <div class="vcompcal-form-row">
+          <label>{{ 'cccal.label.activity' | translate:'Trạng thái' }}</label>
+          <nz-select [(ngModel)]="editForm.activity" name="activity">
+            <nz-option [nzValue]="1" [nzLabel]="'cccal.option.active' | translate:'Hoạt động'"></nz-option>
+            <nz-option [nzValue]="0" [nzLabel]="'cccal.option.inactive' | translate:'Ngừng'"></nz-option>
+          </nz-select>
+        </div>
+        <div class="vcompcal-form-row"></div>
+      </div>
+      <div class="vcompcal-form-row">
+        <label>{{ 'shl.description' | translate:'Ghi chú' }}</label>
+        <input nz-input [(ngModel)]="editForm.remark" name="remark">
+      </div>
+    </form>
+  </ng-container>
+</nz-modal>

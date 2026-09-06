@@ -1,0 +1,14 @@
+.mci-total-card {
+  border-color: #1a3fa0;
+}
+.mci-total-count {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #1a3fa0;
+  line-height: 1.2;
+}
+
+.btn-export {
+  color: #52c41a;
+  border-color: #52c41a;
+}

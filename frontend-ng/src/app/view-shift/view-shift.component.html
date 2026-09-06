@@ -1,0 +1,236 @@
+<div class="row">
+  <!-- Cây Ca làm việc bên trái -->
+  <div class="col-md-3 mb-3">
+    <nz-card [nzTitle]="'shift.treeTitle' | translate:'Danh sách Ca làm việc'">
+      <div class="d-flex gap-2 mb-2">
+        <input nz-input [(ngModel)]="treeSearchValue" name="vsTreeSearch"
+               [placeholder]="'shift.searchPlaceholder' | translate:'Tìm kiếm ca...'">
+        <button nz-button nzType="primary" type="button" [title]="'shift.addShift' | translate:'Thêm ca mới'" (click)="openAddShiftModal()">
+          <i class="bx bx-plus"></i>
+        </button>
+        <button nz-button nzType="default" type="button" [title]="'shift.editShift' | translate:'Sửa ca đang chọn'" (click)="openEditShiftModal()">
+          <i class="bx bx-edit text-warning"></i>
+        </button>
+        <button nz-button nzType="default" type="button" [title]="'shift.deleteShift' | translate:'Xóa ca đang chọn'" (click)="openDeleteShiftConfirm()">
+          <i class="bx bx-trash text-danger"></i>
+        </button>
+      </div>
+      <div class="vs-tree-scroll">
+        <nz-tree [nzData]="treeNodes()" [nzSearchValue]="treeSearchValue" nzSelectMode
+                 [nzSelectedKeys]="selectedShiftNo ? [selectedShiftNo] : []"
+                 (nzClick)="onTreeClick($event)"></nz-tree>
+      </div>
+    </nz-card>
+  </div>
+
+  <!-- Bảng tham số ca bên phải -->
+  <div class="col-md-9 mb-3">
+    <nz-card>
+      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <span class="fw-bold">{{ panelTitle() }}</span>
+        <div class="d-flex gap-2 flex-wrap">
+          <button nz-button nzType="primary" type="button" (click)="openAddDetailModal()">
+            <i class="bx bx-plus"></i> {{ 'shift.addDetail' | translate:'Thêm chi tiết' }}
+          </button>
+          <button nz-button nzType="default" type="button" class="vs-btn-export" (click)="exportExcel()">
+            <i class="bx bx-export"></i> {{ 'essDept.exportExcel' | translate:'Xuất excel' }}
+          </button>
+        </div>
+      </div>
+
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+      <!-- nzWidth khai báo cho từng cột để đồng bộ độ rộng header/body khi dùng nzScroll. -->
+      <nz-table [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="25" [nzShowSizeChanger]="true"
+                [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="vsTotalTpl"
+                [nzScroll]="{ x: '1100px', y: 'calc(100vh - 460px)' }" #vsTable>
+        <thead>
+          <tr>
+            <th class="text-center" nzWidth="60px">{{ 'common.stt' | translate:'STT' }}</th>
+            <th nzWidth="90px">{{ 'shift.colPkNo' | translate:'PK No' }}</th>
+            <th nzWidth="180px">{{ 'shift.colItem' | translate:'Hạng mục (Item)' }}</th>
+            <th class="text-center" nzWidth="130px">{{ 'shift.colBeginDayOffset' | translate:'Độ lệch ngày b/đầu' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'ar.viewshift.title.start' | translate:'Giờ bắt đầu' }}</th>
+            <th class="text-center" nzWidth="130px">{{ 'shift.colEndDayOffset' | translate:'Độ lệch ngày k/thúc' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'ar.viewshift.title.end' | translate:'Giờ kết thúc' }}</th>
+            <th class="text-center" nzWidth="90px">{{ 'common.sortOrder' | translate:'Sắp xếp' }}</th>
+            <th class="text-center" nzWidth="120px">{{ 'common.status' | translate:'Trạng thái' }}</th>
+            <th class="text-center" nzWidth="90px">{{ 'common.action' | translate:'Thao tác' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!loading() && rows().length === 0">
+            <td colspan="10" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+          </tr>
+          <tr *ngFor="let row of vsTable.data; let i = index">
+            <td class="text-center">{{ i + 1 }}</td>
+            <td class="text-center">{{ row.pkNo }}</td>
+            <td [attr.title]="row.itemName || null">{{ row.itemName }}</td>
+            <td class="text-center">{{ row.beginDayOffset }}</td>
+            <td class="text-center">{{ row.fromTimeStr }}</td>
+            <td class="text-center">{{ row.endDayOffset }}</td>
+            <td class="text-center">{{ row.toTimeStr }}</td>
+            <td class="text-center">{{ row.orderno }}</td>
+            <td class="text-center">
+              <nz-tag [nzColor]="row.activity === 1 ? 'success' : 'default'">
+                {{ row.activity === 1 ? ('common.active' | translate:'Hoạt động') : ('common.inactive' | translate:'Ngừng') }}
+              </nz-tag>
+            </td>
+            <td class="text-center">
+              <button nz-button nzType="text" nzSize="small" [title]="'common.edit' | translate:'Sửa'" (click)="openEditDetailModal(row)">
+                <i class="bx bx-edit text-warning"></i>
+              </button>
+              <button nz-button nzType="text" nzSize="small" [title]="'common.delete' | translate:'Xóa'" (click)="openDeleteDetailConfirm(row)">
+                <i class="bx bx-trash text-danger"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+        <ng-template #vsTotalTpl let-total>
+          {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+        </ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>
+
+<!-- Modal Ca làm việc (AR_SHIFT010) -->
+<nz-modal [nzVisible]="shiftModalVisible()" [nzTitle]="shiftModalTitle()" nzWidth="800px"
+          (nzOnCancel)="closeShiftModal()" (nzOnOk)="saveShiftForm()" [nzOkLoading]="shiftSaving()"
+          [nzOkText]="'common.save' | translate:'Lưu'" [nzCancelText]="'common.close' | translate:'Đóng'">
+  <ng-container *nzModalContent>
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'shift.field.shiftId' | translate:'Mã nhóm (Shift ID)' }}</label>
+        <input nz-input [(ngModel)]="shiftForm.shiftId" name="vsFormShiftId">
+      </div>
+      <div class="col-md-6"></div>
+
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'common.nameVi' | translate:'Tên Tiếng Việt' }} <span class="text-danger">*</span></label>
+        <input nz-input [(ngModel)]="shiftForm.nameVi" name="vsFormNameVi">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'common.nameEn' | translate:'Tên Tiếng Anh' }} <span class="text-danger">*</span></label>
+        <input nz-input [(ngModel)]="shiftForm.nameEn" name="vsFormNameEn">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'common.nameZh' | translate:'Tên Tiếng Trung' }} <span class="text-danger">*</span></label>
+        <input nz-input [(ngModel)]="shiftForm.nameZh" name="vsFormNameZh">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'common.nameKo' | translate:'Tên Tiếng Hàn' }} <span class="text-danger">*</span></label>
+        <input nz-input [(ngModel)]="shiftForm.nameKo" name="vsFormNameKo">
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label fw-semibold">{{ 'shift.field.shortname' | translate:'Tên rút gọn (Shortname)' }}</label>
+        <input nz-input [(ngModel)]="shiftForm.shiftShortname" name="vsFormShortname">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-semibold">{{ 'shift.field.datatype' | translate:'Kiểu dữ liệu (Datatype)' }}</label>
+        <nz-input-number class="w-100" [(ngModel)]="shiftForm.datatype" name="vsFormDatatype"></nz-input-number>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-semibold">{{ 'shift.field.deptDistinguish' | translate:'Phân chia phòng ban' }}</label>
+        <input nz-input [(ngModel)]="shiftForm.deptDistinguishNo" name="vsFormDeptDistinguish">
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label fw-semibold">{{ 'shift.field.deductTime' | translate:'Thời gian khấu trừ' }}</label>
+        <nz-input-number class="w-100" [(ngModel)]="shiftForm.deductTime" name="vsFormDeductTime"></nz-input-number>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-semibold">{{ 'shift.field.otTimeStart' | translate:'Giờ bắt đầu OT' }}</label>
+        <input nz-input [(ngModel)]="shiftForm.otTimeStart" name="vsFormOtTimeStart" placeholder="HH:mm">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-semibold">{{ 'shift.field.otAllowance' | translate:'Phụ cấp OT' }}</label>
+        <nz-input-number class="w-100" [(ngModel)]="shiftForm.otAllowance" name="vsFormOtAllowance"></nz-input-number>
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label fw-semibold">{{ 'shift.field.shiftLength' | translate:'Độ dài ca (Shift length)' }}</label>
+        <nz-input-number class="w-100" [(ngModel)]="shiftForm.shiftLength" name="vsFormShiftLength"></nz-input-number>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-semibold">{{ 'common.sortOrder' | translate:'Sắp xếp' }}</label>
+        <nz-input-number class="w-100" [(ngModel)]="shiftForm.orderno" name="vsFormOrderno"></nz-input-number>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-semibold d-block">{{ 'common.status' | translate:'Trạng thái' }}</label>
+        <nz-select class="w-100" [(ngModel)]="shiftForm.activity" name="vsFormActivity">
+          <nz-option [nzValue]="1" [nzLabel]="'common.active' | translate:'Hoạt động'"></nz-option>
+          <nz-option [nzValue]="0" [nzLabel]="'common.inactive' | translate:'Ngừng'"></nz-option>
+        </nz-select>
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal Chi tiết ca (AR_SHIFT020) -->
+<nz-modal [nzVisible]="detailModalVisible()" [nzTitle]="detailModalTitle()" nzWidth="700px"
+          (nzOnCancel)="closeDetailModal()" (nzOnOk)="saveDetailForm()" [nzOkLoading]="detailSaving()"
+          [nzOkText]="'common.save' | translate:'Lưu'" [nzCancelText]="'common.close' | translate:'Đóng'">
+  <ng-container *nzModalContent>
+    <div class="row g-3">
+      <div class="col-md-12">
+        <label class="form-label fw-semibold">{{ 'shift.detail.colItem' | translate:'Hạng mục (Item)' }} <span class="text-danger">*</span></label>
+        <nz-select class="w-100" [(ngModel)]="detailForm.itemNo" name="vsDetailFormItemNo" nzShowSearch
+                   [nzPlaceHolder]="'common.placeholder.select' | translate:'-- Chọn --'">
+          <nz-option *ngFor="let opt of itemOptions()" [nzValue]="opt.itemNo" [nzLabel]="itemLabel(opt)"></nz-option>
+        </nz-select>
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'shift.colBeginDayOffset' | translate:'Độ lệch ngày bắt đầu' }}</label>
+        <nz-input-number class="w-100" [(ngModel)]="detailForm.beginDayOffset" name="vsDetailFormBeginDayOffset"></nz-input-number>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'ar.viewshift.title.start' | translate:'Giờ bắt đầu' }}</label>
+        <nz-time-picker class="w-100" [(ngModel)]="detailForm.fromTime" name="vsDetailFormFromTime" nzFormat="HH:mm"></nz-time-picker>
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'shift.colEndDayOffset' | translate:'Độ lệch ngày kết thúc' }}</label>
+        <nz-input-number class="w-100" [(ngModel)]="detailForm.endDayOffset" name="vsDetailFormEndDayOffset"></nz-input-number>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'ar.viewshift.title.end' | translate:'Giờ kết thúc' }}</label>
+        <nz-time-picker class="w-100" [(ngModel)]="detailForm.toTime" name="vsDetailFormToTime" nzFormat="HH:mm"></nz-time-picker>
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'common.sortOrder' | translate:'Sắp xếp' }}</label>
+        <nz-input-number class="w-100" [(ngModel)]="detailForm.orderno" name="vsDetailFormOrderno"></nz-input-number>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold d-block">{{ 'common.status' | translate:'Trạng thái' }}</label>
+        <nz-select class="w-100" [(ngModel)]="detailForm.activity" name="vsDetailFormActivity">
+          <nz-option [nzValue]="1" [nzLabel]="'common.active' | translate:'Hoạt động'"></nz-option>
+          <nz-option [nzValue]="0" [nzLabel]="'common.inactive' | translate:'Ngừng'"></nz-option>
+        </nz-select>
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal xác nhận xóa Ca làm việc -->
+<nz-modal [nzVisible]="deleteShiftVisible()" [nzTitle]="'common.confirm' | translate:'Xác nhận'"
+          (nzOnCancel)="closeDeleteShiftConfirm()" (nzOnOk)="confirmDeleteShift()" [nzOkLoading]="deletingShift()"
+          [nzOkText]="'common.confirm' | translate:'Xác nhận'" [nzCancelText]="'common.cancel' | translate:'Hủy'">
+  <ng-container *nzModalContent>
+    <p class="mb-1">{{ 'shift.js.confirmDeleteShift' | translate:'Chắc chắn muốn xóa ca này và toàn bộ dữ liệu chi tiết của nó?' }}</p>
+    <p class="fw-bold mb-0">{{ selectedShiftLabel() }}</p>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal xác nhận xóa Chi tiết -->
+<nz-modal [nzVisible]="deleteDetailVisible()" [nzTitle]="'common.confirm' | translate:'Xác nhận'"
+          (nzOnCancel)="closeDeleteDetailConfirm()" (nzOnOk)="confirmDeleteDetail()" [nzOkLoading]="deletingDetail()"
+          [nzOkText]="'common.confirm' | translate:'Xác nhận'" [nzCancelText]="'common.cancel' | translate:'Hủy'">
+  <ng-container *nzModalContent>
+    <p class="mb-1">{{ 'shift.detail.confirmDelete' | translate:'Chắc chắn muốn xóa tham số này?' }}</p>
+    <p class="fw-bold mb-0">{{ deleteDetailTargetName }}</p>
+  </ng-container>
+</nz-modal>

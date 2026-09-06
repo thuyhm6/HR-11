@@ -1,0 +1,11 @@
+.adc-picker-input {
+  display: flex;
+  gap: 4px;
+}
+
+.adc-row-clickable {
+  cursor: pointer;
+}
+.adc-row-clickable:hover {
+  background: #fafafa;
+}

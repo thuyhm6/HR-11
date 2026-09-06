@@ -24,10 +24,8 @@ public class SyMenuParamController {
     @Autowired
     private SyMenuParamService syMenuParamService;
 
-    @GetMapping("/basicMaintenance/viewMenuParamList")
-    public String viewMenuParamList() {
-        return "sys/basicMaintenance/viewMenuParamList";
-    }
+    // Trang Thymeleaf viewMenuParamList.html đã được thay bằng Angular route /view-menu-param-list
+    // (xem ViewMenuParamListComponent) - các API JSON bên dưới vẫn giữ nguyên, không đổi backend.
 
     @GetMapping("/api/menu_param/list")
     @ResponseBody

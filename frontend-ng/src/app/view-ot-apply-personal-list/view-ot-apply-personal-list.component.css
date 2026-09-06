@@ -1,0 +1,57 @@
+.table-scroll-wrapper {
+  overflow-x: auto;
+}
+
+.voapl-table {
+  table-layout: fixed;
+}
+
+/* Sticky 4 cột đầu (STT, Mã NV, Họ tên, Phòng ban) - CSS thủ công thay vì nzScroll/nzLeft vì số cột
+   động (theo AR_ITEM) không xác định trước, không hợp với cách khai nzWidth cố định của nzScroll. */
+.voapl-sticky {
+  position: sticky;
+  z-index: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background-color: #fff;
+}
+.voapl-table thead .voapl-sticky {
+  background-color: #e6f4ff;
+  z-index: 3;
+}
+.voapl-sticky-0 {
+  width: 40px;
+  left: 0;
+}
+.voapl-sticky-1 {
+  width: 90px;
+  left: 40px;
+}
+.voapl-sticky-2 {
+  width: 160px;
+  left: 130px;
+}
+.voapl-sticky-3 {
+  width: 150px;
+  left: 290px;
+  box-shadow: 6px 0 10px -2px rgba(0, 0, 0, .25);
+}
+
+.voapl-nowrap {
+  white-space: nowrap;
+}
+
+/* Cột số động: giới hạn 60px, cho phép tiêu đề xuống dòng */
+.voapl-num {
+  width: 60px;
+}
+.voapl-table thead th.voapl-num {
+  white-space: normal;
+  word-break: break-word;
+}
+
+.btn-export {
+  color: #52c41a;
+  border-color: #52c41a;
+}

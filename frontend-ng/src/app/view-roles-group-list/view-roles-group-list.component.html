@@ -1,0 +1,186 @@
+<div class="row">
+  <!-- Cột trái: Danh sách nhóm quyền -->
+  <div class="col-md-7 mb-3">
+    <nz-card>
+      <form class="row g-3 mb-3" (ngSubmit)="search()">
+        <div class="col-md-6">
+          <label class="form-label">{{ 'sys.role.viewRolesGroupList.search.keyword' | translate:'Từ khóa (ID, Tên)' }}</label>
+          <input nz-input [(ngModel)]="searchKeyword" name="vrglSearchKeyword"
+                 [placeholder]="'sys.role.viewRolesGroupList.search.keyword.placeholder' | translate:'Nhập mã hoặc tên nhóm quyền'">
+        </div>
+        <div class="col-md-6 d-flex align-items-end gap-2 flex-wrap">
+          <button nz-button nzType="primary" type="submit">
+            <i class="bx bx-search"></i> {{ 'common.search' | translate:'Tìm kiếm' }}
+          </button>
+          <button nz-button type="button" (click)="clearSearch()">
+            <i class="bx bx-x"></i> {{ 'common.clearFilter' | translate:'Xóa lọc' }}
+          </button>
+          <button nz-button nzType="primary" type="button" (click)="openAddModal()">
+            <i class="bx bx-plus"></i> {{ 'common.addNew' | translate:'Thêm mới' }}
+          </button>
+          <button nz-button nzType="default" type="button" class="vrgl-btn-export" (click)="exportExcel()">
+            <i class="bx bx-export"></i> {{ 'common.exportExcel' | translate:'Xuất Excel' }}
+          </button>
+        </div>
+      </form>
+
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+      <nz-table [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="25" [nzShowSizeChanger]="true"
+                [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="vrglTotalTpl"
+                [nzScroll]="{ y: 'calc(100vh - 420px)' }" #vrglTable>
+        <thead>
+          <tr>
+            <th class="text-center" nzWidth="60px">{{ 'common.stt' | translate:'STT' }}</th>
+            <th nzWidth="140px">{{ 'sys.role.viewRolesGroupList.col.roleGroupId' | translate:'Mã Nhóm (ID)' }}</th>
+            <th>{{ 'sys.role.viewRolesGroupList.col.nameVi' | translate:'Tên TV' }}</th>
+            <th class="text-center" nzWidth="100px">{{ 'sys.role.viewRolesGroupList.col.sysType' | translate:'Hệ thống' }}</th>
+            <th class="text-center" nzWidth="90px">{{ 'sys.role.viewRolesGroupList.col.joinDefault' | translate:'Mặc định' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'sys.role.viewRolesGroupList.col.status' | translate:'Trạng thái' }}</th>
+            <th class="text-center" nzWidth="90px">{{ 'common.action' | translate:'Thao tác' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!loading() && rows().length === 0">
+            <td colspan="7" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+          </tr>
+          <tr *ngFor="let row of vrglTable.data; let i = index" class="vrgl-row-clickable"
+              [class.table-active]="selectedGroupNo() === row.roleGroupNo" (click)="selectGroup(row)">
+            <td class="text-center">{{ i + 1 }}</td>
+            <td [attr.title]="row.roleGroupId || null">{{ row.roleGroupId }}</td>
+            <td [attr.title]="row.nameVi || null">{{ row.nameVi }}</td>
+            <td class="text-center">
+              <nz-tag [nzColor]="row.sysType === 0 ? 'blue' : 'gold'">{{ sysTypeLabel(row.sysType) }}</nz-tag>
+            </td>
+            <td class="text-center">
+              <i *ngIf="row.joinDefault === 1" class="bx bx-check text-success fs-5"></i>
+            </td>
+            <td class="text-center">
+              <nz-tag [nzColor]="row.activity === 1 ? 'success' : 'default'">
+                {{ row.activity === 1 ? ('common.active' | translate:'Hoạt động') : ('common.inactive' | translate:'Ngừng hoạt động') }}
+              </nz-tag>
+            </td>
+            <td class="text-center">
+              <button nz-button nzType="text" nzSize="small" [title]="'common.edit' | translate:'Sửa'"
+                      (click)="openEditModal(row); $event.stopPropagation()">
+                <i class="bx bx-edit text-warning"></i>
+              </button>
+              <button nz-button nzType="text" nzSize="small" [title]="'common.delete' | translate:'Xóa'"
+                      (click)="openDeleteConfirm(row); $event.stopPropagation()">
+                <i class="bx bx-trash text-danger"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+        <ng-template #vrglTotalTpl let-total>
+          {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+        </ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+
+  <!-- Cột phải: Gán Role cho Nhóm quyền -->
+  <div class="col-md-5 mb-3">
+    <nz-card>
+      <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+        <h6 class="mb-0 fw-bold">
+          <ng-container *ngIf="selectedGroupLabel(); else vrglNoSelTitle">
+            {{ 'sys.role.viewRolesGroupList.msg.panelPrefix' | translate:'Phân quyền hạn -' }}
+            <span class="text-primary">{{ selectedGroupLabel() }}</span>
+          </ng-container>
+          <ng-template #vrglNoSelTitle>{{ 'sys.role.viewRolesGroupList.panel.title' | translate:'Phân quyền hạn' }}</ng-template>
+        </h6>
+        <button nz-button nzType="primary" nzSize="small" type="button"
+                [disabled]="!selectedGroupNo()" [nzLoading]="savingRelations()" (click)="saveRelations()">
+          <i class="bx bx-save"></i> {{ 'sys.role.viewRolesGroupList.btn.saveRelations' | translate:'Lưu quyền hạn' }}
+        </button>
+      </div>
+
+      <div *ngIf="!selectedGroupNo()" class="p-2 bg-light border text-muted">
+        <i class="bx bx-info-circle"></i> {{ 'sys.role.viewRolesGroupList.hint.selectGroup' | translate:'Vui lòng chọn một nhóm quyền bên trái để phân quyền.' }}
+      </div>
+      <div *ngIf="selectedGroupNo() && relationsLoading()" class="p-2 bg-light border text-muted">
+        <i class="bx bx-loader-alt bx-spin"></i>
+      </div>
+
+      <div *ngIf="selectedGroupNo() && !relationsLoading()" class="vrgl-roles-scroll mt-2">
+        <div *ngIf="allRoles().length === 0" class="text-center text-muted p-3">
+          {{ 'sys.role.viewRolesGroupList.msg.noRoleData' | translate:'Không có dữ liệu quyền hạn.' }}
+        </div>
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item" *ngFor="let role of allRoles()">
+            <label nz-checkbox [ngModel]="isRoleChecked(role.roleNo)"
+                    (ngModelChange)="toggleRole(role.roleNo, $event)" [name]="'vrglRoleChk' + role.roleNo">
+              {{ role.nameVi || role.roleId }} <small class="text-muted">({{ role.roleId }})</small>
+            </label>
+          </li>
+        </ul>
+      </div>
+    </nz-card>
+  </div>
+</div>
+
+<!-- Modal Thêm mới / Cập nhật -->
+<nz-modal [nzVisible]="modalVisible()" [nzTitle]="'sys.role.viewRolesGroupList.modal.title' | translate:'Thông tin Nhóm quyền'"
+          nzWidth="700px" (nzOnCancel)="closeModal()" (nzOnOk)="saveForm()" [nzOkLoading]="saving()"
+          [nzOkText]="'common.save' | translate:'Lưu'" [nzCancelText]="'common.close' | translate:'Đóng'">
+  <ng-container *nzModalContent>
+    <div class="row g-3">
+      <div class="col-md-12">
+        <label class="form-label fw-semibold">{{ 'sys.role.viewRolesGroupList.label.roleGroupId' | translate:'Mã Nhóm (ID)' }}</label>
+        <input nz-input [ngModel]="form.roleGroupId" name="vrglRoleGroupId" readonly
+               [placeholder]="'sys.role.viewRolesGroupList.label.roleGroupId.placeholder' | translate:'Tự động sinh khi lưu'">
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'sys.role.viewRolesGroup.label.nameVi' | translate:'Tên Tiếng Việt' }} <span class="text-danger">*</span></label>
+        <input nz-input [(ngModel)]="form.nameVi" name="vrglNameVi">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'sys.role.viewRolesGroup.label.nameEn' | translate:'Tên Tiếng Anh' }}</label>
+        <input nz-input [(ngModel)]="form.nameEn" name="vrglNameEn">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'sys.role.viewRolesGroup.label.nameZh' | translate:'Tên Tiếng Trung' }}</label>
+        <input nz-input [(ngModel)]="form.nameZh" name="vrglNameZh">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'sys.role.viewRolesGroup.label.nameKo' | translate:'Tên Tiếng Hàn' }}</label>
+        <input nz-input [(ngModel)]="form.nameKo" name="vrglNameKo">
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label fw-semibold d-block">{{ 'sys.role.viewRolesGroup.label.sysType' | translate:'Loại hệ thống' }}</label>
+        <nz-select class="w-100" [(ngModel)]="form.sysType" name="vrglSysType">
+          <nz-option [nzValue]="0" [nzLabel]="'sys.role.viewRolesGroup.opt.hub' | translate:'Hub'"></nz-option>
+          <nz-option [nzValue]="1" [nzLabel]="'sys.role.viewRolesGroup.opt.partner' | translate:'Partner'"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'sys.role.viewRolesGroup.label.orderNo' | translate:'Thứ tự' }}</label>
+        <nz-input-number class="w-100" [(ngModel)]="form.orderNo" name="vrglOrderNo" [nzMin]="0"></nz-input-number>
+      </div>
+
+      <div class="col-md-6">
+        <label nz-checkbox [(ngModel)]="form.joinDefault" name="vrglJoinDefault">
+          {{ 'sys.role.viewRolesGroupList.label.joinDefault' | translate:'Mặc định tham gia' }}
+        </label>
+      </div>
+      <div class="col-md-6">
+        <label nz-checkbox [(ngModel)]="form.activity" name="vrglActivity">
+          {{ 'sys.role.viewRolesGroup.label.activity' | translate:'Hoạt động' }}
+        </label>
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal xác nhận xóa -->
+<nz-modal [nzVisible]="deleteVisible()" [nzTitle]="'common.confirm' | translate:'Xác nhận'"
+          (nzOnCancel)="closeDeleteConfirm()" (nzOnOk)="confirmDelete()" [nzOkLoading]="deleting()"
+          [nzOkText]="'common.confirm' | translate:'Xác nhận'" [nzCancelText]="'common.cancel' | translate:'Hủy'">
+  <ng-container *nzModalContent>
+    <p class="mb-1">{{ 'sys.role.viewRolesGroupList.msg.confirmDelete' | translate:'Bạn có chắc muốn xóa nhóm quyền này?' }}</p>
+    <p class="fw-bold mb-0">{{ deleteTargetName }}</p>
+  </ng-container>
+</nz-modal>

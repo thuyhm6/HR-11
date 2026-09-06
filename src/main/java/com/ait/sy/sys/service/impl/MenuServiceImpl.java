@@ -66,19 +66,6 @@ public class MenuServiceImpl implements MenuService {
         return buildMenuTree(allMenus, "1");
     }
 
-    @Override
-    public boolean hasMenusByUserPermissionBySysType(String userNo, String sysType) {
-        if (userNo == null || userNo.trim().isEmpty()) {
-            return false;
-        }
-
-        if (sysType == null || sysType.trim().isEmpty()) {
-            return false;
-        }
-
-        return menuMapper.countMenusByUserPermissionBySysType(userNo, sysType) > 0;
-    }
-
     private List<MenuDTO> buildMenuTree(List<MenuDTO> allMenus, String sysType) {
         List<MenuDTO> rootMenus = new ArrayList<>();
 

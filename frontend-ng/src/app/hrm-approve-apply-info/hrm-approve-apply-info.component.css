@@ -1,0 +1,9 @@
+.haai-row-clickable {
+  cursor: pointer;
+}
+.haai-row-clickable:hover {
+  background: #fafafa;
+}
+.haai-row-active {
+  background: #e6f4ff;
+}

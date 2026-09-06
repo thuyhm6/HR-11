@@ -1,0 +1,185 @@
+<!-- ===== Thanh tìm kiếm ===== -->
+<div class="card mb-3">
+  <div class="card-body py-2">
+    <form class="row g-2 align-items-end" (ngSubmit)="search()">
+      <div class="col-auto d-flex align-items-center gap-2 flex-wrap">
+        <label class="form-label mb-0 fw-semibold">{{ 'common.time' | translate:'Thời gian' }}</label>
+        <nz-range-picker [(ngModel)]="dateRange" name="haaiDateRange" nzFormat="dd/MM/yyyy"></nz-range-picker>
+      </div>
+      <div class="col-auto d-flex align-items-center gap-3">
+        <label class="form-label mb-0 fw-semibold">{{ 'common.status' | translate:'Trạng thái' }}</label>
+        <nz-radio-group [(ngModel)]="activityFilter" name="haaiActivityFilter">
+          <label nz-radio-button nzValue="">{{ 'hmai.filter.all' | translate:'Tất cả' }}</label>
+          <label nz-radio-button nzValue="1">{{ 'hmai.status.submitted' | translate:'Chờ duyệt' }}</label>
+          <label nz-radio-button nzValue="2">{{ 'hmai.status.approved' | translate:'Đã duyệt' }}</label>
+          <label nz-radio-button nzValue="3">{{ 'hmai.status.rejected' | translate:'Đã từ chối' }}</label>
+        </nz-radio-group>
+      </div>
+      <div class="col-auto d-flex align-items-center gap-2">
+        <label class="form-label mb-0 fw-semibold">{{ 'hmai.filter.keyword' | translate:'Mã NV / Tên NV' }}</label>
+        <input nz-input [(ngModel)]="keyword" name="haaiKeyword" style="width:200px;"
+               [placeholder]="'hmai.filter.keyword' | translate:'Mã NV / Tên NV'">
+      </div>
+      <div class="col-auto ms-auto">
+        <button nz-button nzType="primary" nzSize="small" type="submit">
+          <i class="bx bx-search"></i> {{ 'common.search' | translate:'Tra cứu' }}
+        </button>
+        <button nz-button nzSize="small" type="button" class="ms-1" (click)="reset()">
+          <i class="bx bx-x"></i> {{ 'common.reset' | translate:'Đặt lại' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+<!-- ===== Split panel: Danh sách | Chi tiết ===== -->
+<div class="row g-3">
+
+  <!-- == CỘT TRÁI: Danh sách (server-side) == -->
+  <div class="col-xl-5 col-lg-6">
+    <div class="card h-100">
+      <div class="card-body p-0">
+        <nz-table [nzData]="rows()" [nzFrontPagination]="false" [nzLoading]="loading()"
+                  [nzTotal]="recordsTotal()" [nzPageIndex]="pageIndex" [nzPageSize]="pageSize"
+                  [nzPageSizeOptions]="pageSizeOptions" nzShowSizeChanger [nzShowTotal]="haaiTotalTpl"
+                  (nzPageIndexChange)="onPageIndexChange($event)" (nzPageSizeChange)="onPageSizeChange($event)"
+                  nzSize="small" [nzScroll]="{ y: 'calc(100vh - 320px)' }">
+          <thead>
+            <tr>
+              <th class="text-center" nzWidth="50px">No.</th>
+              <th>{{ 'hmai.col.empCode' | translate:'Mã NV' }}</th>
+              <th>{{ 'hmai.col.empName' | translate:'Tên nhân viên' }}</th>
+              <th>{{ 'hmai.col.dept' | translate:'Phòng ban' }}</th>
+              <th>{{ 'hmai.col.type' | translate:'Loại thay đổi' }}</th>
+              <th class="text-center">{{ 'hmai.col.applyDate' | translate:'Ngày nộp' }}</th>
+              <th class="text-center">{{ 'hmai.col.distinction' | translate:'Loại áp dụng' }}</th>
+              <th class="text-center">{{ 'hmai.col.status' | translate:'Trạng thái' }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="!loading() && rows().length === 0">
+              <td colspan="8" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+            </tr>
+            <tr *ngFor="let row of rows(); let i = index" class="haai-row-clickable"
+                [class.haai-row-active]="selectedRow() === row" (click)="openDetail(row)">
+              <td class="text-center">{{ (pageIndex - 1) * pageSize + i + 1 }}</td>
+              <td class="text-center text-nowrap">{{ row.empCode }}</td>
+              <td>{{ row.empName }}</td>
+              <td>{{ row.deptName }}</td>
+              <td>{{ typeLabel(row.applyTableType) }}</td>
+              <td class="text-center text-nowrap">{{ row.createDate }}</td>
+              <td class="text-center">{{ distinctionLabel(row.applyType) }}</td>
+              <td class="text-center"><nz-tag [nzColor]="activityColor(row.activity)">{{ activityLabel(row.activity) }}</nz-tag></td>
+            </tr>
+          </tbody>
+          <ng-template #haaiTotalTpl let-total>
+            {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+          </ng-template>
+        </nz-table>
+      </div>
+    </div>
+  </div>
+
+  <!-- == CỘT PHẢI: Chi tiết so sánh == -->
+  <div class="col-xl-7 col-lg-6">
+    <div class="card h-100">
+      <div class="card-header py-2 d-flex align-items-center gap-2 flex-wrap">
+        <i class="bx bx-info-circle text-primary"></i>
+        <strong>{{ 'hmai.detail.title' | translate:'Chi tiết yêu cầu thay đổi' }}</strong>
+        <nz-tag *ngIf="selectedRow() as row" class="ms-2">{{ typeLabel(row.applyTableType) }}</nz-tag>
+        <div class="ms-auto d-flex gap-2" *ngIf="selectedRow() as row">
+          <ng-container *ngIf="row.activity === 1">
+            <button nz-button nzType="primary" nzSize="small" [nzLoading]="actionLoading()" (click)="confirmApprove()">
+              <i class="bx bx-check-circle"></i> {{ 'hmai.btn.approve' | translate:'Phê duyệt' }}
+            </button>
+            <button nz-button nzDanger nzSize="small" [nzLoading]="actionLoading()" (click)="confirmReject()">
+              <i class="bx bx-x-circle"></i> {{ 'hmai.btn.reject' | translate:'Từ chối' }}
+            </button>
+          </ng-container>
+        </div>
+      </div>
+      <div class="card-body" style="min-height:300px; overflow-y:auto; max-height:calc(100vh - 280px);">
+        <div class="text-center text-muted py-5" *ngIf="!selectedRow()">
+          <i class="bx bx-select-multiple fs-1 d-block mb-2"></i>
+          <span>{{ 'hmai.detail.placeholder' | translate:'Chọn một yêu cầu để xem chi tiết' }}</span>
+        </div>
+
+        <ng-container *ngIf="selectedRow()">
+          <nz-alert *ngIf="detailError()" nzType="error" [nzMessage]="detailError() ?? ''" class="mb-2"></nz-alert>
+
+          <div class="row g-2" *ngIf="!detailError()">
+            <!-- Dữ liệu thay đổi (mới) -->
+            <div class="col-md-6">
+              <div class="card border-primary">
+                <div class="card-header py-1 bg-primary bg-opacity-10 text-primary fw-semibold small">
+                  <i class="bx bx-edit-alt me-1"></i>{{ 'hmai.detail.newData' | translate:'Dữ liệu thay đổi' }}
+                </div>
+                <div class="card-body p-0">
+                  <div class="table-responsive">
+                    <table class="table table-bordered table-sm mb-0">
+                      <tbody>
+                        <tr *ngIf="!detailLoading() && compareRows().length === 0">
+                          <td class="text-center text-muted small py-3">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+                        </tr>
+                        <tr *ngFor="let r of compareRows()" [class.table-warning]="r.changed" [class.fw-semibold]="r.changed">
+                          <th class="table-light text-nowrap small" style="width:40%;">{{ r.label }}</th>
+                          <td class="small">{{ r.newVal }}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Dữ liệu ban đầu (gốc) -->
+            <div class="col-md-6">
+              <div class="card border-secondary">
+                <div class="card-header py-1 bg-secondary bg-opacity-10 text-secondary fw-semibold small">
+                  <i class="bx bx-history me-1"></i>{{ 'hmai.detail.originalData' | translate:'Dữ liệu ban đầu' }}
+                </div>
+                <div class="card-body p-0">
+                  <div class="table-responsive">
+                    <table class="table table-bordered table-sm mb-0">
+                      <tbody>
+                        <tr *ngIf="compareRows().length === 0">
+                          <td class="text-center text-muted small py-3">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+                        </tr>
+                        <tr *ngIf="compareRows().length > 0 && !detailOriginalData()">
+                          <td class="text-center text-muted small py-3">
+                            <i class="bx bx-info-circle me-1"></i>{{ 'hmai.detail.noOriginal' | translate:'Bản ghi mới (chưa có dữ liệu ban đầu)' }}
+                          </td>
+                        </tr>
+                        <tr *ngFor="let r of compareRows()" [hidden]="!detailOriginalData()">
+                          <th class="table-light text-nowrap small" style="width:40%;">{{ r.label }}</th>
+                          <td class="small">{{ r.origVal }}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- File đính kèm -->
+          <div class="mt-3" *ngIf="!detailError()">
+            <h6 class="fw-bold text-secondary border-bottom pb-1">
+              <i class="bx bx-paperclip me-1"></i>{{ 'epi.field.attachFiles' | translate:'File đính kèm' }}
+            </h6>
+            <ul class="list-group list-group-flush">
+              <li class="list-group-item text-muted small" *ngIf="!detailLoading() && detailFiles().length === 0">
+                {{ 'veai.msg.noFile' | translate:'Không có file đính kèm' }}
+              </li>
+              <li class="list-group-item py-1 px-2 d-flex align-items-center gap-2" *ngFor="let f of detailFiles()">
+                <i class="bx bx-file text-primary"></i>
+                <a [href]="'/ess/empinfo/api/files/download/' + f.fileNo" target="_blank" class="text-truncate">{{ f.fileName }}</a>
+              </li>
+            </ul>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+</div>

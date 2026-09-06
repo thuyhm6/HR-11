@@ -1,0 +1,248 @@
+<div class="row">
+  <div class="col-12">
+    <nz-card>
+      <!-- Header / Controls -->
+      <div class="row align-items-center g-3 mb-3">
+        <div class="col-md-auto">
+          <label class="fw-bold text-muted">{{ 'pa.workFlow.paySchedule' | translate:'Kế hoạch trả lương' }}</label>
+        </div>
+        <div class="col-md-4">
+          <nz-select class="w-100" [(ngModel)]="payScheduleNo" name="vpwfPayScheduleNo" nzAllowClear nzShowSearch
+                     [nzPlaceHolder]="'pa.workFlow.selectSchedule' | translate:'-- Chọn kế hoạch --'">
+            <nz-option *ngFor="let s of schedules()" [nzValue]="s.payScheduleNo"
+                       [nzLabel]="s.payDate + (s.salaryDistinName ? ' ' + s.salaryDistinName : '')"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-auto" *ngIf="currentData() as data">
+          <span class="text-muted small">{{ 'pa.workFlow.hrPeriod' | translate:'Thời gian' }}</span>
+          <span class="fw-semibold small ms-1">{{ toDmy(data.hrStartDate) }}</span>
+          <span class="text-muted mx-1">~</span>
+          <span class="fw-semibold small">{{ toDmy(data.hrEndDate) }}</span>
+          <span class="text-muted small ms-3">{{ 'pa.workFlow.arPeriod' | translate:'Thời gian' }}</span>
+          <span class="fw-semibold small ms-1">{{ toDmy(data.arStartDate) }}</span>
+          <span class="text-muted mx-1">~</span>
+          <span class="fw-semibold small">{{ toDmy(data.arEndDate) }}</span>
+          <span class="text-muted small ms-3">{{ 'pa.workFlow.empCount' | translate:'Số lượng' }}</span>
+          <span class="fw-bold text-primary small ms-1">{{ data.empCount ?? '--' }}</span>
+        </div>
+        <div class="col-md text-end d-flex gap-2 justify-content-end">
+          <button nz-button nzType="primary" nzSize="small" type="button" [nzLoading]="searching()" (click)="search()">
+            <i class="bx bx-search-alt-2"></i>
+            <span>{{ 'pa.workFlow.search' | translate:'Tra cứu' }}</span>
+          </button>
+          <button nz-button nzType="default" nzSize="small" type="button" [disabled]="!currentData() || executing()"
+                  [nzLoading]="executing()" (click)="execute()">
+            <i class="bx bx-play-circle"></i>
+            <span>{{ 'pa.workFlow.execute' | translate:'Thực hiện' }}</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Process Flow -->
+      <div class="bg-light" *ngIf="currentData() as data">
+        <div class="process-container">
+
+          <!-- Cột 1: Tạo đối tượng + Tạo dữ liệu chấm công -->
+          <div class="vertical-groups">
+            <div class="process-group">
+              <div class="process-header">{{ 'pa.workFlow.step.objCreate' | translate:'Tạo đối tượng tính lương' }}</div>
+              <div class="step-item">
+                <div class="step-btn checkbox-step">
+                  <input type="checkbox" id="vpwfChkObjCreate" [(ngModel)]="chkObjCreate" name="vpwfChkObjCreate">
+                  <label for="vpwfChkObjCreate" class="mb-0">{{ 'pa.workFlow.step.objCreate.label' | translate:'Tạo đối tượng' }}</label>
+                  <button class="btn btn-link btn-sm p-0 ms-1 text-warning" type="button" (click)="openRecordsModal('objCreate')">
+                    <i [class]="iconClass(data.objCreateFlag)"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="step-arrow-down"><i class="bx bx-down-arrow-alt"></i></div>
+
+            <div class="process-group">
+              <div class="process-header">{{ 'pa.workFlow.step.arMonthCal' | translate:'Tạo dữ liệu chấm công tháng' }}</div>
+              <div class="step-item">
+                <div class="step-btn checkbox-step">
+                  <input type="checkbox" id="vpwfChkArMonthCal" [(ngModel)]="chkArMonthCal" name="vpwfChkArMonthCal">
+                  <label for="vpwfChkArMonthCal" class="mb-0">{{ 'pa.workFlow.step.arMonthCal.label' | translate:'Tổng hợp chấm công tháng' }}</label>
+                  <button class="btn btn-link btn-sm p-0 ms-1 text-warning" type="button" (click)="openRecordsModal('arMonthCal')">
+                    <i [class]="iconClass(data.arMonthCalFlag)"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="group-connector"><i class="bx bx-right-arrow-alt" style="font-size:2rem;"></i></div>
+
+          <!-- Cột 2: Tạo dữ liệu lương + Điều chỉnh tiền lương -->
+          <div class="vertical-groups">
+            <div class="process-group">
+              <div class="process-header">{{ 'pa.workFlow.step.paCal' | translate:'Tạo dữ liệu lương tháng' }}</div>
+              <div class="step-item">
+                <div class="step-btn checkbox-step">
+                  <input type="checkbox" id="vpwfChkPaCal" [(ngModel)]="chkPaCal" name="vpwfChkPaCal">
+                  <label for="vpwfChkPaCal" class="mb-0">{{ 'pa.workFlow.step.paCal.label' | translate:'Tính lương' }}</label>
+                  <button class="btn btn-link btn-sm p-0 ms-1 text-warning" type="button" (click)="openRecordsModal('paCal')">
+                    <i [class]="iconClass(data.paCalFlag)"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="step-arrow-down"><i class="bx bx-up-arrow-alt"></i></div>
+
+            <div class="process-group">
+              <div class="process-header">{{ 'pa.workFlow.step.adjust' | translate:'Điều chỉnh tiền lương' }}</div>
+              <div class="step-item">
+                <div class="step-btn active-step" role="button"
+                     (click)="openInputItemDataTab('2', 'pa.workFlow.step.adjust.pay', 'Điều chỉnh trả lương')">
+                  {{ 'pa.workFlow.step.adjust.pay' | translate:'Điều chỉnh trả lương' }}
+                </div>
+              </div>
+              <div class="step-item">
+                <div class="step-btn active-step" role="button"
+                     (click)="openInputItemDataTab('4', 'pa.workFlow.step.adjust.deduct', 'Điều chỉnh khoản trừ')">
+                  {{ 'pa.workFlow.step.adjust.deduct' | translate:'Điều chỉnh khoản trừ' }}
+                </div>
+              </div>
+              <div class="step-item">
+                <div class="step-btn active-step" role="button"
+                     (click)="openAccountTab()">
+                  {{ 'pa.workFlow.step.adjust.account' | translate:'Thông tin tài khoản' }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="group-connector"><i class="bx bx-right-arrow-alt" style="font-size:2rem;"></i></div>
+
+          <!-- Cột 3: Đối chiếu lương -->
+          <div class="process-group">
+            <div class="process-header">{{ 'pa.workFlow.step.reconcile' | translate:'Đối chiếu lương' }}</div>
+            <div class="step-item">
+              <div class="step-btn active-step" role="button" (click)="openRecordsModal('reconcileEmp')">{{ 'pa.workFlow.step.reconcile.emp' | translate:'NV tham gia tính lương' }}</div>
+            </div>
+            <div class="step-item">
+              <div class="step-btn active-step" role="button" (click)="openRecordsModal('reconcilePay')">{{ 'pa.workFlow.step.reconcile.pay' | translate:'Các khoản chi trả' }}</div>
+            </div>
+            <div class="step-item">
+              <div class="step-btn active-step" role="button" (click)="openRecordsModal('reconcileDecision')">{{ 'pa.workFlow.step.reconcile.decision' | translate:'Quyết định thực hiện' }}</div>
+            </div>
+            <div class="step-item">
+              <div class="step-btn active-step" role="button" (click)="openRecordsModal('reconcileDetail')">{{ 'pa.workFlow.step.reconcile.detail' | translate:'Chi tiết lương' }}</div>
+            </div>
+            <div class="step-item">
+              <div class="step-btn active-step" role="button" (click)="openRecordsModal('reconcilePersonal')">{{ 'pa.workFlow.step.reconcile.personal' | translate:'Kiểm tra cá nhân' }}</div>
+            </div>
+            <div class="step-item">
+              <div class="step-btn active-step" role="button" (click)="openRecordsModal('reconcileItem')">{{ 'pa.workFlow.step.reconcile.item' | translate:'Đối chiếu hạng mục' }}</div>
+            </div>
+            <div class="step-item">
+              <div class="step-btn active-step" role="button" (click)="openRecordsModal('reconcileChange')">{{ 'pa.workFlow.step.reconcile.change' | translate:'Khoản tiền thay đổi' }}</div>
+            </div>
+            <div class="step-item">
+              <div class="step-btn active-step" role="button" (click)="openRecordsModal('reconcileResult')">{{ 'pa.workFlow.step.reconcile.result' | translate:'Đối chiếu kết quả' }}</div>
+            </div>
+          </div>
+
+          <div class="group-connector"><i class="bx bx-right-arrow-alt" style="font-size:2rem;"></i></div>
+
+          <!-- Cột 4: Khóa lương + Tra cứu bảng lương -->
+          <div class="vertical-groups">
+            <div class="process-group">
+              <div class="process-header">{{ 'pa.workFlow.step.confirm' | translate:'Khóa lương tránh thực hiện lỗi' }}</div>
+              <div class="step-item">
+                <div class="step-btn checkbox-step">
+                  <input type="checkbox" id="vpwfChkPaConfirm" [(ngModel)]="chkPaConfirm" name="vpwfChkPaConfirm">
+                  <label for="vpwfChkPaConfirm" class="mb-0">{{ 'pa.workFlow.step.confirm.label' | translate:'Chốt lương' }}</label>
+                  <button class="btn btn-link btn-sm p-0 ms-1 text-warning" type="button" (click)="openRecordsModal('confirm')">
+                    <i [class]="iconClass(data.paConfirmFlag)"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="step-arrow-down"><i class="bx bx-down-arrow-alt"></i></div>
+
+            <div class="process-group">
+              <div class="process-header">{{ 'pa.workFlow.step.report' | translate:'Tra cứu bảng lương' }}</div>
+              <div class="step-item">
+                <div class="step-btn active-step" role="button" (click)="openRecordsModal('reportMonthly')">{{ 'pa.workFlow.step.report.monthly' | translate:'Lương tháng chi tiết' }}</div>
+              </div>
+              <div class="step-item">
+                <div class="step-btn active-step" role="button" (click)="openRecordsModal('reportYearly')">{{ 'pa.workFlow.step.report.yearly' | translate:'Lương năm chi tiết' }}</div>
+              </div>
+              <div class="step-item">
+                <div class="step-btn active-step" role="button" (click)="openRecordsModal('reportSlip')">{{ 'pa.workFlow.step.report.slip' | translate:'Phiếu lương' }}</div>
+              </div>
+              <div class="step-item">
+                <div class="step-btn active-step" role="button" (click)="openRecordsModal('reportTotalEmp')">{{ 'pa.workFlow.step.report.totalEmp' | translate:'Tổng lương (cá nhân)' }}</div>
+              </div>
+              <div class="step-item">
+                <div class="step-btn active-step" role="button" (click)="openRecordsModal('reportTotalDept')">{{ 'pa.workFlow.step.report.totalDept' | translate:'Tổng lương (phòng ban)' }}</div>
+              </div>
+              <div class="step-item">
+                <div class="step-btn active-step" role="button" (click)="openRecordsModal('reportTable')">{{ 'pa.workFlow.step.report.table' | translate:'Bảng lương' }}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="group-connector"><i class="bx bx-right-arrow-alt" style="font-size:2rem;"></i></div>
+
+          <!-- Cột 5: Mở lương -->
+          <div class="process-group">
+            <div class="process-header">{{ 'pa.workFlow.step.open' | translate:'Mở lương' }}</div>
+            <div class="step-item">
+              <div class="step-btn checkbox-step">
+                <input type="checkbox" id="vpwfChkPaOpen" [(ngModel)]="chkPaOpen" name="vpwfChkPaOpen">
+                <label for="vpwfChkPaOpen" class="mb-0">{{ 'pa.workFlow.step.open.label' | translate:'Mở lương' }}</label>
+                <button class="btn btn-link btn-sm p-0 ms-1 text-warning" type="button" (click)="openRecordsModal('open')">
+                  <i [class]="iconClass(data.paOpenFlag)"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /.process-container -->
+      </div>
+    </nz-card>
+  </div>
+</div>
+
+<!-- Loading Overlay -->
+<div class="vpwf-loading-overlay" *ngIf="executing()">
+  <div class="vpwf-loading-box">
+    <nz-spin nzSize="large"></nz-spin>
+    <div class="fw-bold fs-6 mt-3">{{ 'pa.workFlow.msgExecuting' | translate:'Đang thực hiện...' }}</div>
+    <div class="text-muted small mt-1">{{ executingStepText() }}</div>
+  </div>
+</div>
+
+<!-- Modal lịch sử thao tác -->
+<nz-modal [nzVisible]="recordsModalVisible()" [nzTitle]="'pa.workFlow.records.title' | translate:'Lịch sử thao tác'"
+          nzWidth="700px" (nzOnCancel)="closeRecordsModal()" [nzFooter]="null">
+  <ng-container *nzModalContent>
+    <nz-table [nzData]="records()" [nzLoading]="recordsLoading()" [nzShowPagination]="false" nzSize="small">
+      <thead>
+        <tr>
+          <th class="text-center" style="width:60px;">{{ 'pa.workFlow.records.no' | translate:'No.' }}</th>
+          <th>{{ 'pa.workFlow.records.step' | translate:'Bước xử lý' }}</th>
+          <th class="text-center" style="width:170px;">{{ 'pa.workFlow.records.datetime' | translate:'Thời gian thực hiện' }}</th>
+          <th class="text-center" style="width:200px;">{{ 'pa.workFlow.records.operator' | translate:'Người thao tác' }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngIf="!recordsLoading() && records().length === 0">
+          <td colspan="4" class="text-center text-muted py-3">{{ 'pa.workFlow.records.noData' | translate:'Không có dữ liệu lịch sử' }}</td>
+        </tr>
+        <tr *ngFor="let rec of records(); let i = index">
+          <td class="text-center">{{ rec.rowNum || (i + 1) }}</td>
+          <td>{{ stepName(rec.flowStep) }}</td>
+          <td class="text-center">{{ rec.createDate }}</td>
+          <td class="text-center">{{ rec.createdBy }}{{ rec.createdIp ? ' ' + rec.createdIp : '' }}</td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </ng-container>
+</nz-modal>

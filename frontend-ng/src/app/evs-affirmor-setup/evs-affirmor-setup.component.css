@@ -1,0 +1,18 @@
+::ng-deep tr.eas-row-ticked {
+  background-color: #fff3cd !important;
+}
+
+::ng-deep .eas-affirm-display {
+  cursor: pointer;
+  display: inline-block;
+  min-width: 60px;
+  min-height: 1.2em;
+}
+
+::ng-deep .eas-affirm-display:hover {
+  text-decoration: underline dotted #aaa;
+}
+
+::ng-deep .eas-picker-row {
+  cursor: pointer;
+}

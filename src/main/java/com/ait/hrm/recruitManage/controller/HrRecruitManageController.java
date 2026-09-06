@@ -11,7 +11,6 @@ import com.ait.sy.sys.dto.DataTablesResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,7 +19,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
-import jakarta.servlet.http.HttpSession;
 import java.util.List;
 import java.util.Map;
 
@@ -31,17 +29,8 @@ public class HrRecruitManageController {
     @Autowired
     private HrRecruitManageService service;
 
-    @GetMapping("/viewRecruitList")
-    public String viewRecruitList(Model model, HttpSession session) {
-        model.addAttribute("title", "Quyết định nhận việc");
-        return "hrm/recruitManage/viewRecruitList";
-    }
-
-    @GetMapping("/viewExperienceBatchList")
-    public String viewExperienceBatchList(Model model) {
-        model.addAttribute("title", "Quyết định hàng loạt");
-        return "hrm/recruitManage/viewExperienceBatchList";
-    }
+    // Trang Thymeleaf viewRecruitList.html đã được thay bằng Angular route /view-recruit-list
+    // Trang Thymeleaf viewExperienceBatchList.html đã được thay bằng Angular route /view-experience-batch-list
 
     // ── Employee ─────────────────────────────────────────────────────────────
 
@@ -174,12 +163,7 @@ public class HrRecruitManageController {
     }
 
     // ── Nhận việc hàng loạt (Recruit Batch) ──────────────────────────────────
-
-    @GetMapping("/viewRecruitBatchList")
-    public String viewRecruitBatchList(Model model) {
-        model.addAttribute("title", "Nhận việc hàng loạt");
-        return "hrm/recruitManage/viewRecruitBatchList";
-    }
+    // Trang Thymeleaf viewRecruitBatchList.html đã được thay bằng Angular route /view-recruit-batch-list
 
     @GetMapping("/api/rblBatch/registerList")
     @ResponseBody

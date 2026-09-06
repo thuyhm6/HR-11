@@ -23,14 +23,6 @@ public class ArItemController {
     private ArItemService arItemService;
 
     /**
-     * Mở giao diện trang Danh sách hạng mục
-     */
-    @GetMapping("/viewArItem")
-    public String viewArItem() {
-        return "ar/attendanceSettings/viewArItem";
-    }
-
-    /**
      * API: Lấy danh sách hạng mục hoặc tìm kiếm
      */
     @GetMapping("/api/arItem")

@@ -1,0 +1,267 @@
+<div class="row">
+  <div class="col-12">
+    <!-- Điều kiện tìm kiếm -->
+    <nz-card class="mb-3 sticky-filter-card">
+      <form class="row g-3" (ngSubmit)="search()">
+        <div class="col-md-3">
+          <label class="form-label">{{ 'evs.viewEvsAffirmorSetup.evalName' | translate:'Tên đánh giá' }}</label>
+          <nz-select class="w-100" [(ngModel)]="resumeSeq" name="easResumeSeq">
+            <nz-option *ngFor="let r of resumeOptions()" [nzValue]="r.seq" [nzLabel]="r.resumeName"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'evs.viewEvsAffirmorSetup.department' | translate:'Phòng ban' }}</label>
+          <nz-tree-select class="w-100" [nzNodes]="deptNodes()" [(ngModel)]="deptNos" name="easDeptNos"
+                           nzCheckable nzShowSearch nzAllowClear
+                           [nzPlaceHolder]="'evs.viewEvsAffirmorSetup.placeholder.selectDept' | translate:'Chọn phòng ban'"></nz-tree-select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'evs.viewEvsAffirmorSetup.PINGJIAREN.a' | translate:'Người đánh giá' }}</label>
+          <input nz-input [(ngModel)]="affirmorKeyword" name="easAffirmorKeyword"
+                 [placeholder]="'evs.viewEvsAffirmorSetup.placeholder.selectKeyword' | translate:'Nhập từ khóa'">
+        </div>
+        <div class="col-md-3 d-flex align-items-end gap-2 flex-wrap">
+          <button nz-button nzType="primary" type="submit">
+            <i class="bx bx-search"></i> {{ 'evs.viewEvsAffirmorSetup.btnSearch' | translate:'Tra cứu' }}
+          </button>
+          <button nz-button type="button" (click)="clearSearch()">
+            <i class="bx bx-x"></i> {{ 'evs.viewEvsAffirmorSetup.btnClearFilter' | translate:'Xóa lọc' }}
+          </button>
+        </div>
+        <div class="col-12 d-flex gap-2 flex-wrap">
+          <button nz-button nzType="primary" type="button" (click)="openAddModal()">
+            <i class="bx bx-plus"></i> {{ 'evs.viewEvsAffirmorSetup.btnAddNew' | translate:'Thêm mới' }}
+          </button>
+          <button nz-button nzType="primary" type="button" [nzLoading]="saving()" (click)="saveAll()">
+            <i class="bx bx-save"></i> {{ 'evs.viewEvsAffirmorSetup.btnSaveAll' | translate:'Lưu tất cả' }}
+          </button>
+          <button nz-button nzType="default" type="button" (click)="createTarget()">
+            <i class="bx bx-target-lock"></i> {{ 'evs.viewEvsAffirmorSetup.CreateTarget.a' | translate:'Tạo mục tiêu' }}
+          </button>
+          <button nz-button nzDanger type="button" [nzLoading]="startingEvs()" (click)="evsStart()">
+            <i class="bx bx-play-circle"></i> {{ 'evs.viewEvsAffirmorSetup.StartEvaluation.a' | translate:'Bắt đầu đánh giá' }}
+          </button>
+          <button nz-button nzDanger nzType="default" type="button" (click)="openDeleteConfirm()">
+            <i class="bx bx-trash"></i> {{ 'evs.viewEvsAffirmorSetup.btnDelete' | translate:'Xóa' }}
+          </button>
+        </div>
+      </form>
+    </nz-card>
+
+    <!-- Thanh áp dụng hàng loạt -->
+    <nz-card class="mb-3">
+      <div class="d-flex align-items-end gap-2 flex-wrap">
+        <div>
+          <label class="form-label">{{ 'evs.viewEvsAffirmorSetup.PINGJIAJIEDUAN.a' | translate:'Giai đoạn' }}</label>
+          <nz-select style="width:180px;" [(ngModel)]="bulkStage" name="easBulkStage"
+                     [nzPlaceHolder]="'evs.viewEvsAffirmorSetup.selectOption' | translate:'Lựa chọn'">
+            <nz-option nzValue="1" [nzLabel]="'evs.viewEvsAffirmorSetup.evalStage1' | translate:'Người đánh giá 1'"></nz-option>
+            <nz-option nzValue="2" [nzLabel]="'evs.viewEvsAffirmorSetup.evalStage2' | translate:'Người đánh giá 2'"></nz-option>
+          </nz-select>
+        </div>
+        <div>
+          <label class="form-label">{{ 'evs.viewEvsAffirmorSetup.PINGJIAREN.a' | translate:'Người đánh giá' }}</label>
+          <div class="input-group input-group-sm" style="width:260px;">
+            <input class="form-control" readonly [value]="bulkDisplay"
+                   [placeholder]="'evs.viewEvsAffirmorSetup.placeholder.selectKeyword' | translate:'Chọn từ khóa'"
+                   (click)="openPicker({ kind: 'bulk' })" style="cursor:pointer;">
+            <button class="btn btn-outline-secondary" type="button" (click)="openPicker({ kind: 'bulk' })">
+              <i class="bx bx-search"></i>
+            </button>
+          </div>
+        </div>
+        <button nz-button type="button" (click)="bulkClear()">
+          {{ 'evs.viewEvsAffirmorSetup.btnClear' | translate:'Xóa' }}
+        </button>
+        <button nz-button nzType="primary" type="button" (click)="bulkApply()">
+          {{ 'evs.viewEvsAffirmorSetup.btnDoAll' | translate:'Thực hiện tất cả' }}
+        </button>
+      </div>
+    </nz-card>
+
+    <nz-card>
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+      <nz-table [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="50" [nzShowSizeChanger]="true"
+                [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="easTotalTpl"
+                [nzScroll]="{ x: '1700px' }" #easTable="nzTable">
+        <thead>
+          <tr>
+            <th class="text-center" nzWidth="40px">
+              <label nz-checkbox [ngModel]="allTickedOnPage(easTable.data)" [nzIndeterminate]="someTickedOnPage(easTable.data)"
+                     (ngModelChange)="toggleAllOnPage(easTable.data, $event)"
+                     [title]="'evs.viewEvsAffirmorSetup.selectAll' | translate:'Chọn tất cả'"></label>
+            </th>
+            <th class="text-center" nzWidth="50px">{{ 'common.stt' | translate:'No.' }}</th>
+            <th nzWidth="160px">{{ 'common.empName' | translate:'Họ tên' }}</th>
+            <th class="text-center" nzWidth="100px">{{ 'evs.viewEvsAffirmorSetup.empCode' | translate:'Mã NV' }}</th>
+            <th nzWidth="160px">{{ 'evs.viewEvsAffirmorSetup.department' | translate:'Phòng ban' }}</th>
+            <th class="text-center" nzWidth="140px">{{ 'common.position' | translate:'Chức vụ' }}</th>
+            <th class="text-center" nzWidth="120px">{{ 'common.joinDate' | translate:'Ngày vào làm' }}</th>
+            <th nzWidth="160px">{{ 'evs.viewEvsAffirmorSetup.evalSheet' | translate:'Bảng đánh giá' }}</th>
+            <th class="text-center" nzWidth="130px">{{ 'evs.viewEvsAffirmorSetup.PINGJIAQUN.a' | translate:'Nhóm ĐG' }}</th>
+            <th nzWidth="160px">{{ 'evs.viewEvsAffirmorSetup.dg1Name' | translate:'ĐG1 - Họ tên' }}</th>
+            <th class="text-center" nzWidth="140px">{{ 'evs.viewEvsAffirmorSetup.dg1Position' | translate:'ĐG1 - Chức vụ' }}</th>
+            <th nzWidth="160px">{{ 'evs.viewEvsAffirmorSetup.dg2Name' | translate:'ĐG2 - Họ tên' }}</th>
+            <th class="text-center" nzWidth="140px">{{ 'evs.viewEvsAffirmorSetup.dg2Position' | translate:'ĐG2 - Chức vụ' }}</th>
+            <th nzWidth="180px">{{ 'evs.viewEvsAffirmorSetup.changeBy' | translate:'Người thay đổi' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!loading() && easTable.data.length === 0">
+            <td colspan="13" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+          </tr>
+          <tr *ngFor="let row of easTable.data; let i = index" [class.eas-row-ticked]="isTicked(row)">
+            <td class="text-center">
+              <label nz-checkbox [ngModel]="isTicked(row)" (ngModelChange)="toggleTicked(row, $event)"></label>
+            </td>
+            <td class="text-center">{{ i + 1 }}</td>
+            <td [attr.title]="row.localName || null">{{ row.localName }}</td>
+            <td class="text-center">{{ row.empid }}</td>
+            <td [attr.title]="row.deptname || null">{{ row.deptname }}</td>
+            <td class="text-center">{{ row.postGradeName }}</td>
+            <td class="text-center">{{ row.dateStarted }}</td>
+            <td>
+              {{ row.listTypeName }}
+              <br *ngIf="row.evsGroupName">
+              <small class="text-muted" *ngIf="row.evsGroupName">{{ row.evsGroupName }}</small>
+            </td>
+            <td class="text-center">{{ row.evsOccGroupName }}</td>
+            <td>
+              <span class="eas-affirm-display" [title]="'evs.viewEvsAffirmorSetup.clickToEdit' | translate:'Click để chỉnh sửa'"
+                    (click)="openPicker({ kind: 'row', row: row, level: 1 })">
+                {{ row.localName1 || '—' }}
+              </span>
+            </td>
+            <td class="text-center"><small class="text-muted">{{ row.postGradeName1 }}</small></td>
+            <td>
+              <span class="eas-affirm-display" [title]="'evs.viewEvsAffirmorSetup.clickToEdit' | translate:'Click để chỉnh sửa'"
+                    (click)="openPicker({ kind: 'row', row: row, level: 2 })">
+                {{ row.localName2 || '—' }}
+              </span>
+            </td>
+            <td class="text-center"><small class="text-muted">{{ row.postGradeName2 }}</small></td>
+            <td>
+              <small>{{ row.updatedBy }}<br>{{ row.updateDate }}</small>
+            </td>
+          </tr>
+        </tbody>
+        <ng-template #easTotalTpl let-total>
+          {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+        </ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>
+
+<!-- Popup tìm kiếm nhân viên - dùng chung cho sửa 1 ô người đánh giá / áp dụng hàng loạt / modal Thêm mới -->
+<nz-modal [nzVisible]="pickerVisible()" [nzTitle]="'empSearch.title' | translate:'Tìm kiếm nhân viên'"
+          nzWidth="800px" (nzOnCancel)="closePicker()" [nzFooter]="null">
+  <ng-container *nzModalContent>
+    <form class="row g-2 align-items-end mb-3" (ngSubmit)="pickerSearch()">
+      <div class="col-md-8">
+        <label class="form-label">{{ 'empSearch.field.keyword' | translate:'Mã nhân viên / Họ tên' }}</label>
+        <input nz-input [(ngModel)]="pickerKeyword" name="easPickerKeyword"
+               [placeholder]="'empSearch.placeholder.keyword' | translate:'Nhập mã hoặc họ tên'"
+               (keydown.enter)="$event.preventDefault(); pickerSearch()">
+      </div>
+      <div class="col-md-4">
+        <button nz-button nzType="primary" type="submit">
+          <i class="bx bx-search"></i> {{ 'common.search' | translate:'Tìm kiếm' }}
+        </button>
+      </div>
+    </form>
+
+    <nz-table [nzData]="pickerRows()" [nzLoading]="pickerLoading()" [nzPageSize]="10" nzSize="small" #easPickerTable="nzTable">
+      <thead>
+        <tr>
+          <th class="text-center" nzWidth="60px">{{ 'empSearch.col.no' | translate:'STT' }}</th>
+          <th nzWidth="110px">{{ 'common.empId' | translate:'Mã nhân viên' }}</th>
+          <th>{{ 'common.empName' | translate:'Họ tên' }}</th>
+          <th>{{ 'common.deptName' | translate:'Phòng ban' }}</th>
+          <th>{{ 'common.position' | translate:'Chức vụ' }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngIf="!pickerLoading() && easPickerTable.data.length === 0">
+          <td colspan="5" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+        </tr>
+        <tr *ngFor="let row of easPickerTable.data; let i = index" class="eas-picker-row" (click)="selectEmployee(row)">
+          <td class="text-center">{{ i + 1 }}</td>
+          <td>{{ row.empid }}</td>
+          <td>{{ row.localName }}</td>
+          <td>{{ row.deptname }}</td>
+          <td>{{ row.postGradeName }}</td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal thêm mới đối tượng đánh giá -->
+<nz-modal [nzVisible]="addModalVisible()" [nzTitle]="'evs.viewEvsAffirmorSetup.addModalTitle' | translate:'Thêm mới đối tượng đánh giá'"
+          nzWidth="700px" (nzOnCancel)="closeAddModal()" (nzOnOk)="saveNewObject()" [nzOkLoading]="adding()"
+          [nzOkText]="'common.save' | translate:'Lưu'" [nzCancelText]="'common.close' | translate:'Đóng'">
+  <ng-container *nzModalContent>
+    <div class="mb-3">
+      <label class="form-label fw-semibold">{{ 'evs.viewEvsAffirmorSetup.evalObject' | translate:'Đối tượng đánh giá' }} <span class="text-danger">*</span></label>
+      <div class="input-group input-group-sm">
+        <input class="form-control" readonly [value]="addForm.objectDisplay"
+               [placeholder]="'evs.viewEvsAffirmorSetup.placeholder.selectEmployee' | translate:'Chọn nhân viên...'">
+        <button class="btn btn-outline-primary" type="button" (click)="openPicker({ kind: 'addField', field: 'object' })">
+          <i class="bx bx-search"></i>
+        </button>
+        <button class="btn btn-outline-secondary" type="button" (click)="clearAddField('object')">
+          <i class="bx bx-x"></i>
+        </button>
+      </div>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">{{ 'evs.viewEvsAffirmorSetup.YICIPINGJIAREN.a' | translate:'Người đánh giá lần 1' }}</label>
+      <div class="input-group input-group-sm">
+        <input class="form-control" readonly [value]="addForm.affirm1Display"
+               [placeholder]="'evs.viewEvsAffirmorSetup.placeholder.selectEmployee' | translate:'Chọn nhân viên...'">
+        <button class="btn btn-outline-primary" type="button" (click)="openPicker({ kind: 'addField', field: 'affirm1' })">
+          <i class="bx bx-search"></i>
+        </button>
+        <button class="btn btn-outline-secondary" type="button" (click)="clearAddField('affirm1')">
+          <i class="bx bx-x"></i>
+        </button>
+      </div>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">{{ 'evs.viewEvsAffirmorSetup.LAINGCIPINGJIAREN.a' | translate:'Người đánh giá lần 2' }}</label>
+      <div class="input-group input-group-sm">
+        <input class="form-control" readonly [value]="addForm.affirm2Display"
+               [placeholder]="'evs.viewEvsAffirmorSetup.placeholder.selectEmployee' | translate:'Chọn nhân viên...'">
+        <button class="btn btn-outline-primary" type="button" (click)="openPicker({ kind: 'addField', field: 'affirm2' })">
+          <i class="bx bx-search"></i>
+        </button>
+        <button class="btn btn-outline-secondary" type="button" (click)="clearAddField('affirm2')">
+          <i class="bx bx-x"></i>
+        </button>
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal xác nhận xóa -->
+<nz-modal [nzVisible]="deleteVisible()" [nzTitle]="'common.confirm' | translate:'Xác nhận'"
+          (nzOnCancel)="closeDeleteConfirm()" (nzOnOk)="confirmDelete()" [nzOkLoading]="deleting()"
+          [nzOkText]="'evs.viewEvsAffirmorSetup.btnDelete' | translate:'Xóa'" nzOkDanger
+          [nzCancelText]="'common.cancel' | translate:'Hủy'">
+  <ng-container *nzModalContent>
+    <p class="mb-0">{{ 'evs.viewEvsAffirmorSetup.msg.confirmDelete' | translate:'Bạn có chắc muốn xóa các dòng đã chọn không?' }} ({{ tickedCount }})</p>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal loading tạo mục tiêu -->
+<nz-modal [nzVisible]="creatingTarget()" [nzClosable]="false" [nzMaskClosable]="false" [nzFooter]="null" nzWidth="360px">
+  <ng-container *nzModalContent>
+    <div class="text-center py-3">
+      <nz-spin nzSize="large"></nz-spin>
+      <div class="fw-semibold mt-3">{{ 'evs.viewEvsAffirmorSetup.loadingTitle' | translate:'Đang tạo mục tiêu...' }}</div>
+      <div class="text-muted small mt-1">{{ 'evs.viewEvsAffirmorSetup.loadingMessage' | translate:'Vui lòng chờ, quá trình này có thể mất vài phút.' }}</div>
+    </div>
+  </ng-container>
+</nz-modal>

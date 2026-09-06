@@ -1,0 +1,103 @@
+<div class="row">
+  <div class="col-12">
+    <nz-card>
+      <nz-alert *ngIf="warningMessage()" nzType="warning" [nzMessage]="warningMessage() ?? ''" nzShowIcon class="mb-3"></nz-alert>
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" nzShowIcon class="mb-3"></nz-alert>
+      <nz-alert *ngIf="successMessage()" nzType="success" [nzMessage]="successMessage() ?? ''" nzShowIcon class="mb-3"></nz-alert>
+
+      <div class="row g-2 align-items-end">
+        <div class="col-auto">
+          <label class="form-label">{{ 'ess.changeUser.empSearch' | translate:'Mã nhân viên/Họ tên' }}</label>
+          <div class="cu-picker-input">
+            <input nz-input [(ngModel)]="selectedEmpDisplay" name="cu_empName"
+                   style="min-width:260px;"
+                   [placeholder]="'empSearch.placeholder.keyword' | translate:'Nhập mã hoặc họ tên'"
+                   (ngModelChange)="onEmpInputChange()"
+                   (keydown.enter)="$event.preventDefault(); openPicker()">
+            <button nz-button type="button" (click)="openPicker()">
+              <i class="bx bx-search"></i>
+            </button>
+          </div>
+        </div>
+        <div class="col-auto ms-auto">
+          <button nz-button nzType="primary" type="button" [nzLoading]="changing()" (click)="onChangeClick()">
+            <i class="bx bx-transfer-alt"></i>
+            {{ 'ess.changeUser.changeBtn' | translate:'Thay đổi người dùng' }}
+          </button>
+        </div>
+      </div>
+    </nz-card>
+  </div>
+</div>
+
+<!-- Modal tìm kiếm nhân viên - thay cho fragment employeeSearchModal.html (jQuery + DataTables). -->
+<nz-modal [nzVisible]="pickerVisible()" [nzTitle]="'empSearch.title' | translate:'Tìm kiếm nhân viên'"
+          nzWidth="900px" (nzOnCancel)="closePicker()" [nzFooter]="null">
+  <ng-container *nzModalContent>
+    <form class="row g-2 align-items-end mb-3" (ngSubmit)="pickerSearch()">
+      <div class="col-md-5">
+        <label class="form-label">{{ 'empSearch.field.keyword' | translate:'Mã nhân viên / Họ tên' }}</label>
+        <input nz-input [(ngModel)]="pickerKeyword" name="pickerKeyword"
+               [placeholder]="'empSearch.placeholder.keyword' | translate:'Nhập mã hoặc họ tên'"
+               (keydown.enter)="$event.preventDefault(); pickerSearch()">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">{{ 'empSearch.field.dept' | translate:'Phòng ban' }}</label>
+        <nz-tree-select class="w-100" [nzNodes]="deptNodes()" [(ngModel)]="pickerDeptNos" name="pickerDeptNos"
+                         nzCheckable nzShowSearch nzAllowClear
+                         [nzPlaceHolder]="'vdp.search.dept.placeholder' | translate:'Chọn phòng ban'"></nz-tree-select>
+        <div *ngIf="deptTreeErrorMessage()" class="text-danger small mt-1">{{ deptTreeErrorMessage() }}</div>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">{{ 'empSearch.field.empOffice' | translate:'Trạng thái làm việc' }}</label>
+        <nz-select class="w-100" [(ngModel)]="pickerEmpOffice" name="pickerEmpOffice" nzAllowClear
+                   [nzPlaceHolder]="'common.selectAll' | translate:'-- Tất cả --'">
+          <nz-option *ngFor="let c of empOfficeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-12 d-flex gap-2">
+        <button nz-button nzType="primary" type="submit">
+          <i class="bx bx-search"></i> {{ 'common.search' | translate:'Tìm kiếm' }}
+        </button>
+        <button nz-button type="button" (click)="pickerClear()">
+          <i class="bx bx-x"></i> {{ 'empSearch.btn.clearFilter' | translate:'Xóa bộ lọc' }}
+        </button>
+      </div>
+    </form>
+
+    <nz-alert *ngIf="pickerErrorMessage()" nzType="error" [nzMessage]="pickerErrorMessage() ?? ''" class="mb-2"></nz-alert>
+
+    <nz-table [nzData]="pickerRows()" [nzLoading]="pickerLoading()" [nzPageSize]="10" nzSize="small" #cuTable>
+      <thead>
+        <tr>
+          <th class="text-center" nzWidth="60px">{{ 'empSearch.col.no' | translate:'STT' }}</th>
+          <th nzWidth="110px">{{ 'common.empId' | translate:'Mã nhân viên' }}</th>
+          <th>{{ 'common.empName' | translate:'Họ tên' }}</th>
+          <th>{{ 'common.deptName' | translate:'Phòng ban' }}</th>
+          <th>{{ 'epi.field.position' | translate:'Chức vụ' }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of cuTable.data; let i = index" class="cu-row-clickable" (click)="selectEmployee(row)">
+          <td class="text-center">{{ i + 1 }}</td>
+          <td>{{ row.empId }}</td>
+          <td>{{ row.localName }}</td>
+          <td>{{ row.deptName || row.deptNo }}</td>
+          <td>{{ row.position }}</td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal xác nhận đổi người dùng - thay cho window.confirm() gốc. -->
+<nz-modal [nzVisible]="confirmVisible()" [nzTitle]="'common.confirm' | translate:'Xác nhận'"
+          (nzOnCancel)="closeConfirm()" (nzOnOk)="confirmChange()" [nzOkLoading]="changing()"
+          [nzOkText]="'common.confirm' | translate:'Xác nhận'"
+          [nzCancelText]="'common.cancel' | translate:'Hủy'">
+  <ng-container *nzModalContent>
+    <nz-alert *ngIf="confirmErrorMessage()" nzType="error" [nzMessage]="confirmErrorMessage() ?? ''" class="mb-2"></nz-alert>
+    <p class="mb-1">{{ 'ess.changeUser.confirm' | translate:'Bạn có chắc chắn muốn thay đổi người dùng?' }}</p>
+    <p class="fw-bold mb-0">{{ selectedEmpDisplay }}</p>
+  </ng-container>
+</nz-modal>

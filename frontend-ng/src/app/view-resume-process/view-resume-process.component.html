@@ -1,0 +1,149 @@
+<div class="row">
+  <div class="col-12">
+    <nz-card [nzBodyStyle]="{ padding: '0' }">
+      <!-- Header / Controls -->
+      <div class="card-header bg-white border-bottom p-3">
+        <div class="row align-items-center g-3">
+          <div class="col-md-auto">
+            <label class="fw-bold text-muted">{{ 'orgResumeProcess.versionName' | translate:'Tên phiên bản' }}</label>
+          </div>
+          <div class="col-md-4">
+            <nz-select class="w-100" id="vrpSelect" [(ngModel)]="selectedNo" [nzLoading]="loading()"
+                       nzShowSearch nzAllowClear
+                       [nzPlaceHolder]="'orgResumeProcess.selectPlaceholder' | translate:'-- Chọn phiên bản thay đổi --'">
+              <nz-option *ngFor="let r of resumeOptions()" [nzValue]="r.no" [nzLabel]="resumeLabel(r)"></nz-option>
+            </nz-select>
+          </div>
+          <div class="col-md-auto">
+            <span class="text-muted">{{ 'common.status' | translate:'Trạng thái' }}: </span>
+            <span id="vrpStatus" class="fw-bold" [class.text-success]="selectedNo && statusActive()"
+                  [class.text-danger]="selectedNo && !statusActive()" [class.text-muted]="!selectedNo">
+              {{ !selectedNo ? '---' : (statusActive() ? ('common.active' | translate:'Hoạt động') : ('common.inactive' | translate:'Không hoạt động')) }}
+            </span>
+          </div>
+          <div class="col-md text-end">
+            <button nz-button nzType="default" nzSize="small" id="vrpBtnExecute" [nzLoading]="executing()" (click)="execute()">
+              {{ executing() ? ('common.processing' | translate:'Đang thực hiện...') : ('orgResumeProcess.execute' | translate:'Thực hiện') }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Process Flow -->
+      <div class="card-body bg-light">
+        <div class="vrp-process-container">
+
+          <!-- Group 1: Edit Organization Tree -->
+          <div class="vrp-process-group">
+            <div class="vrp-process-header">{{ 'orgResumeProcess.groupEditOrgTree' | translate:'Edit Organization Tree' }}</div>
+
+            <div class="vrp-step-item">
+              <div class="vrp-step-btn vrp-checkbox-step">
+                <input type="checkbox" id="vrpChkCopyOrg" [(ngModel)]="chkCopyOrg">
+                <label for="vrpChkCopyOrg">{{ 'orgResumeProcess.step.copyOrg' | translate:'Sao chép tổ chức cũ' }}</label>
+              </div>
+            </div>
+
+            <div class="vrp-step-arrow-down"><i class='bx bx-down-arrow-alt'></i></div>
+
+            <div class="vrp-step-item">
+              <div class="vrp-step-btn vrp-active-step">
+                <i class='bx bxs-sitemap'></i> {{ 'orgResumeProcess.step.setupOrg' | translate:'Thiết lập tổ chức' }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Arrow Right -->
+          <div class="vrp-group-connector">
+            <i class='bx bx-right-arrow-alt' style="font-size: 2rem;"></i>
+          </div>
+
+          <!-- Group 2: Make Actions -->
+          <div class="vrp-process-group">
+            <div class="vrp-process-header">{{ 'orgResumeProcess.groupMakeActions' | translate:'Make Actions' }}</div>
+
+            <div class="vrp-step-item">
+              <div class="vrp-step-btn vrp-active-step">
+                <i class='bx bxs-user-check'></i> {{ 'orgResumeProcess.step.checkDeptManager' | translate:'Kiểm tra trưởng bộ phận' }}
+              </div>
+            </div>
+
+            <div class="vrp-step-arrow-down"><i class='bx bx-down-arrow-alt'></i></div>
+
+            <div class="vrp-step-item">
+              <div class="vrp-step-btn vrp-checkbox-step">
+                <input type="checkbox" id="vrpChkScfl" [(ngModel)]="chkScfl">
+                <label for="vrpChkScfl">{{ 'orgResumeProcess.step.scfl' | translate:'Tự động tạo ra quyết định' }}</label>
+              </div>
+            </div>
+
+            <div class="vrp-step-arrow-down"><i class='bx bx-down-arrow-alt'></i></div>
+
+            <div class="vrp-step-item">
+              <div class="vrp-step-btn vrp-active-step">
+                <i class='bx bxs-file-find'></i> {{ 'orgResumeProcess.step.checkDecision' | translate:'Kiểm tra quyết định' }}
+              </div>
+            </div>
+
+            <div class="vrp-step-arrow-down"><i class='bx bx-down-arrow-alt'></i></div>
+
+            <div class="vrp-step-item">
+              <div class="vrp-step-btn vrp-active-step">
+                <i class='bx bxs-file-find'></i> {{ 'orgResumeProcess.step.checkDraftDecision' | translate:'Kiểm tra quyết định dự kiến' }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Arrow Right -->
+          <div class="vrp-group-connector">
+            <i class='bx bx-right-arrow-alt' style="font-size: 2rem;"></i>
+          </div>
+
+          <!-- Vertical Groups 3 & 4 -->
+          <div class="vrp-vertical-groups">
+            <!-- Group 3: Organization History -->
+            <div class="vrp-process-group">
+              <div class="vrp-process-header">{{ 'orgResumeProcess.groupOrgHistory' | translate:'Organization History' }}</div>
+
+              <div class="vrp-step-item">
+                <div class="vrp-step-btn vrp-checkbox-step">
+                  <input type="checkbox" id="vrpChkSczz" [(ngModel)]="chkSczz">
+                  <label for="vrpChkSczz">{{ 'orgResumeProcess.step.sczz' | translate:'Tạo ra nội dung thay đổi' }}</label>
+                </div>
+              </div>
+
+              <div class="vrp-step-arrow-down"><i class='bx bx-down-arrow-alt'></i></div>
+
+              <div class="vrp-step-item">
+                <div class="vrp-step-btn vrp-active-step">
+                  <i class='bx bx-history'></i> {{ 'orgResumeProcess.step.deptChangeHistory' | translate:'Lịch sử thay đổi-phòng ban' }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Group 4: Confirmation -->
+            <div class="vrp-process-group">
+              <div class="vrp-process-header">{{ 'orgResumeProcess.groupConfirmation' | translate:'Confirmation' }}</div>
+
+              <div class="vrp-step-item">
+                <div class="vrp-step-btn vrp-active-step">
+                  <i class='bx bx-check-shield'></i> {{ 'orgResumeProcess.step.checkChange' | translate:'Kiểm tra thay đổi' }}
+                </div>
+              </div>
+
+              <div class="vrp-step-arrow-down"><i class='bx bx-down-arrow-alt'></i></div>
+
+              <div class="vrp-step-item">
+                <div class="vrp-step-btn vrp-checkbox-step">
+                  <input type="checkbox" id="vrpChkQdzz" [(ngModel)]="chkQdzz">
+                  <label for="vrpChkQdzz">{{ 'orgResumeProcess.step.qdzz' | translate:'Hình thành tổ chức mới' }}</label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </nz-card>
+  </div>
+</div>

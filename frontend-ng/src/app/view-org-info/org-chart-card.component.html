@@ -1,0 +1,18 @@
+<div class="tf-nc" [class.dept-node]="node.type === 'DEPT'" [class.emp-node]="node.type !== 'DEPT'"
+     (click)="onToggle()">
+  <ng-container *ngIf="node.type === 'DEPT'; else empTpl">
+    <div class="dept-header">{{ node.name || node.code }}</div>
+    <div class="dept-info">{{ node.code }}</div>
+    <div class="manager-info" *ngIf="node.managerId">
+      <img [src]="node.imageUrl || defaultAvatar" (error)="onImgError($event)" class="manager-img" alt="">
+      <div class="manager-details">
+        <div class="manager-name">{{ node.managerName }}</div>
+        <div>ID: {{ node.managerId }}</div>
+      </div>
+    </div>
+    <div class="toggle-btn" *ngIf="hasChildren">{{ collapsed ? '+' : '-' }}</div>
+  </ng-container>
+  <ng-template #empTpl>
+    <div class="emp-name">{{ node.code }} - {{ node.name }}</div>
+  </ng-template>
+</div>

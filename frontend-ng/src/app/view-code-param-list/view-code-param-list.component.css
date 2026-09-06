@@ -1,0 +1,13 @@
+.vcpl-btn-export {
+  color: #52c41a;
+  border-color: #52c41a;
+}
+
+.vcpl-company-select {
+  min-width: 320px;
+}
+
+.vcpl-tree-scroll {
+  max-height: 700px;
+  overflow-y: auto;
+}

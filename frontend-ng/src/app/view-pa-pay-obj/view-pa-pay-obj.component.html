@@ -1,0 +1,190 @@
+<div class="row">
+  <div class="col-12">
+    <!-- Điều kiện tìm kiếm - đứng im khi cuộn (xem .sticky-filter-card trong styles.css) -->
+    <nz-card class="mb-3 sticky-filter-card">
+      <form class="row g-3" (ngSubmit)="search()">
+        <div class="col-md-4">
+          <label class="form-label">{{ 'pa.payObj.empSearch' | translate:'Mã NV/Họ tên' }}</label>
+          <input nz-input [(ngModel)]="empSearch" name="vppoEmpSearch"
+                 [placeholder]="'pa.payObj.empSearch.placeholder' | translate:'Nhập mã NV hoặc họ tên'">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'pa.payObj.payScheduleNo' | translate:'Kế hoạch trả lương' }}</label>
+          <nz-select class="w-100" [(ngModel)]="searchPayScheduleNo" name="vppoSearchPayScheduleNo" nzAllowClear
+                     [nzPlaceHolder]="'common.selectAll' | translate:'-- Tất cả --'">
+            <nz-option *ngFor="let p of payScheduleOptions()" [nzValue]="p.payScheduleNo" [nzLabel]="payScheduleLabel(p)"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'pa.payObj.includeType' | translate:'Phân biệt' }}</label>
+          <nz-select class="w-100" [(ngModel)]="searchIncludeType" name="vppoSearchIncludeType">
+            <nz-option nzValue="" [nzLabel]="'pa.payObj.includeType.all' | translate:'Tất cả'"></nz-option>
+            <nz-option nzValue="1" [nzLabel]="'pa.payObj.includeType.join' | translate:'Tham gia'"></nz-option>
+            <nz-option nzValue="0" [nzLabel]="'pa.payObj.includeType.notJoin' | translate:'Không tham gia'"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'pa.payObj.empOffice' | translate:'Trạng thái' }}</label>
+          <nz-select class="w-100" [(ngModel)]="searchEmpOffice" name="vppoSearchEmpOffice" nzAllowClear
+                     [nzPlaceHolder]="'common.selectAll' | translate:'-- Tất cả --'">
+            <nz-option *ngFor="let c of empOfficeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-12 d-flex align-items-end gap-2 flex-wrap">
+          <button nz-button nzType="primary" type="submit">
+            <i class="bx bx-search"></i> {{ 'pa.payObj.search' | translate:'Tra cứu' }}
+          </button>
+          <button nz-button nzType="primary" type="button" (click)="openAddModal()">
+            <i class="bx bx-plus"></i> {{ 'pa.payObj.addNew' | translate:'Thêm mới' }}
+          </button>
+          <button nz-button nzDanger type="button" (click)="openDeleteConfirm()">
+            <i class="bx bx-trash"></i> {{ 'pa.payObj.delete' | translate:'Xóa' }}
+          </button>
+          <button nz-button type="button" [nzLoading]="saving()" (click)="saveDirty()">
+            <i class="bx bx-save"></i> {{ 'pa.payObj.save' | translate:'Lưu' }}
+          </button>
+          <button nz-button nzType="default" type="button" class="vppo-btn-export" [nzLoading]="exporting()" (click)="exportExcel()">
+            <i class="bx bx-export"></i> {{ 'pa.payObj.exportExcel' | translate:'Xuất Excel' }}
+          </button>
+        </div>
+      </form>
+    </nz-card>
+
+    <nz-card>
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+      <nz-table [nzData]="rows()" [nzFrontPagination]="false" [nzLoading]="loading()"
+                [nzTotal]="recordsFiltered()" [nzPageIndex]="pageIndex" [nzPageSize]="pageSize"
+                [nzPageSizeOptions]="pageSizeOptions" nzShowSizeChanger [nzShowTotal]="vppoTotalTpl"
+                (nzPageIndexChange)="onPageIndexChange($event)" (nzPageSizeChange)="onPageSizeChange($event)"
+                [nzScroll]="{ x: '1300px', y: 'calc(100vh - 420px)' }">
+        <thead>
+          <tr>
+            <th class="text-center" nzWidth="50px">
+              <label nz-checkbox [ngModel]="allChecked" [nzIndeterminate]="someChecked"
+                     [ngModelOptions]="{ standalone: true }" (ngModelChange)="toggleAll($event)"></label>
+            </th>
+            <th class="text-center" nzWidth="60px">{{ 'pa.payObj.no' | translate:'No.' }}</th>
+            <th nzWidth="180px">{{ 'pa.payObj.empName' | translate:'Họ tên' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'pa.payObj.empId' | translate:'Mã nhân viên' }}</th>
+            <th nzWidth="180px">{{ 'pa.payObj.deptName' | translate:'Phòng ban' }}</th>
+            <th class="text-center" nzWidth="170px">{{ 'pa.payObj.includeType' | translate:'Phân biệt' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'pa.payObj.createdBy' | translate:'Người tạo' }}</th>
+            <th class="text-center" nzWidth="150px">{{ 'pa.payObj.createDate' | translate:'Thời gian tạo' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'pa.payObj.updatedBy' | translate:'Người thay đổi' }}</th>
+            <th class="text-center" nzWidth="150px">{{ 'pa.payObj.updateDate' | translate:'Thời gian thay đổi' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!loading() && rows().length === 0">
+            <td colspan="10" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+          </tr>
+          <tr *ngFor="let row of rows(); let i = index" [class.table-warning]="isDirty(row)">
+            <td class="text-center">
+              <label nz-checkbox [ngModel]="isChecked(row)" [ngModelOptions]="{ standalone: true }"
+                     (ngModelChange)="toggleRow(row, $event)"></label>
+            </td>
+            <td class="text-center">{{ (pageIndex - 1) * pageSize + i + 1 }}</td>
+            <td [attr.title]="row.empName || null">{{ row.empName }}</td>
+            <td class="text-center">{{ row.empId }}</td>
+            <td [attr.title]="row.deptName || null">{{ row.deptName }}</td>
+            <td class="text-center">
+              <nz-select class="w-100" [ngModel]="row.includeType" [ngModelOptions]="{ standalone: true }"
+                         (ngModelChange)="onIncludeTypeChange(row, $event)">
+                <nz-option [nzValue]="1" [nzLabel]="'pa.payObj.includeType.join' | translate:'Tham gia'"></nz-option>
+                <nz-option [nzValue]="0" [nzLabel]="'pa.payObj.includeType.notJoin' | translate:'Không tham gia'"></nz-option>
+              </nz-select>
+            </td>
+            <td class="text-center">{{ row.createdBy }}</td>
+            <td class="text-center">{{ row.createDate }}</td>
+            <td class="text-center">{{ row.updatedBy }}</td>
+            <td class="text-center">{{ row.updateDate }}</td>
+          </tr>
+        </tbody>
+        <ng-template #vppoTotalTpl let-total>
+          {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+        </ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>
+
+<!-- Modal Thêm mới -->
+<nz-modal [nzVisible]="addModalVisible()" [nzTitle]="'pa.payObj.addTitle' | translate:'Thêm mới đối tượng nhận lương'"
+          nzWidth="600px" (nzOnCancel)="closeAddModal()" (nzOnOk)="saveNew()" [nzOkLoading]="addSaving()"
+          [nzOkText]="'pa.payObj.save' | translate:'Lưu'" [nzCancelText]="'common.close' | translate:'Đóng'">
+  <ng-container *nzModalContent>
+    <div class="mb-3">
+      <label class="form-label fw-semibold">{{ 'pa.payObj.payScheduleNo' | translate:'Kế hoạch trả lương' }} <span class="text-danger">*</span></label>
+      <nz-select class="w-100" [(ngModel)]="addForm.payScheduleNo" name="vppoAddPayScheduleNo">
+        <nz-option *ngFor="let p of payScheduleOptions()" [nzValue]="p.payScheduleNo" [nzLabel]="payScheduleLabel(p)"></nz-option>
+      </nz-select>
+    </div>
+    <div class="mb-3">
+      <label class="form-label fw-semibold">{{ 'pa.payObj.empId' | translate:'Mã nhân viên' }} <span class="text-danger">*</span></label>
+      <div class="input-group">
+        <input nz-input [ngModel]="addForm.empDisplay" name="vppoAddEmpDisplay" readonly>
+        <button nz-button type="button" [title]="'tempEmp.pickEmp' | translate:'Chọn nhân viên'" (click)="openPicker()">
+          <i class="bx bx-search"></i>
+        </button>
+      </div>
+    </div>
+    <div class="mb-3">
+      <label class="form-label fw-semibold">{{ 'pa.payObj.includeType' | translate:'Phân biệt' }}</label>
+      <nz-select class="w-100" [(ngModel)]="addForm.includeType" name="vppoAddIncludeType">
+        <nz-option [nzValue]="1" [nzLabel]="'pa.payObj.includeType.join' | translate:'Tham gia'"></nz-option>
+        <nz-option [nzValue]="0" [nzLabel]="'pa.payObj.includeType.notJoin' | translate:'Không tham gia'"></nz-option>
+      </nz-select>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal chọn nhân viên -->
+<nz-modal [nzVisible]="pickerVisible()" [nzTitle]="'empSearch.title' | translate:'Tìm kiếm nhân viên'"
+          nzWidth="800px" (nzOnCancel)="closePicker()" [nzFooter]="null">
+  <ng-container *nzModalContent>
+    <form class="row g-2 align-items-end mb-3" (ngSubmit)="pickerSearch()">
+      <div class="col-md-8">
+        <label class="form-label">{{ 'empSearch.field.keyword' | translate:'Mã nhân viên / Họ tên' }}</label>
+        <input nz-input [(ngModel)]="pickerKeyword" name="vppoPickerKeyword"
+               [placeholder]="'empSearch.placeholder.keyword' | translate:'Nhập mã hoặc họ tên'"
+               (keydown.enter)="$event.preventDefault(); pickerSearch()">
+      </div>
+      <div class="col-md-4">
+        <button nz-button nzType="primary" type="submit">
+          <i class="bx bx-search"></i> {{ 'pa.payObj.search' | translate:'Tra cứu' }}
+        </button>
+      </div>
+    </form>
+
+    <nz-table [nzData]="pickerRows()" [nzLoading]="pickerLoading()" [nzPageSize]="10" nzSize="small" #vppoPickerTable>
+      <thead>
+        <tr>
+          <th class="text-center" nzWidth="60px">{{ 'empSearch.col.no' | translate:'STT' }}</th>
+          <th nzWidth="110px">{{ 'common.empId' | translate:'Mã nhân viên' }}</th>
+          <th>{{ 'common.empName' | translate:'Họ tên' }}</th>
+          <th>{{ 'common.deptName' | translate:'Phòng ban' }}</th>
+          <th>{{ 'epi.field.position' | translate:'Chức vụ' }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of vppoPickerTable.data; let i = index" class="vppo-row-clickable" (click)="selectPickedEmployee(row)">
+          <td class="text-center">{{ i + 1 }}</td>
+          <td>{{ row.empId }}</td>
+          <td>{{ row.localName }}</td>
+          <td>{{ row.deptName || row.deptNo }}</td>
+          <td>{{ row.position }}</td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal xác nhận xóa -->
+<nz-modal [nzVisible]="deleteVisible()" [nzTitle]="'common.confirm' | translate:'Xác nhận'"
+          (nzOnCancel)="closeDeleteConfirm()" (nzOnOk)="confirmDelete()" [nzOkLoading]="deleting()"
+          [nzOkText]="'common.confirm' | translate:'Xác nhận'" [nzCancelText]="'common.cancel' | translate:'Hủy'">
+  <ng-container *nzModalContent>
+    <p class="mb-0">{{ 'pa.payObj.confirmDelete' | translate:'Bạn có chắc chắn muốn xóa các bản ghi đã chọn?' }} ({{ deleteCount }})</p>
+  </ng-container>
+</nz-modal>

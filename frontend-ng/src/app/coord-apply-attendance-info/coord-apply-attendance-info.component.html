@@ -1,0 +1,105 @@
+<div class="row">
+  <div class="col-12">
+    <!-- Điều kiện tìm kiếm - đứng im khi cuộn (xem .sticky-filter-card trong styles.css) -->
+    <nz-card class="mb-3 sticky-filter-card">
+      <form class="row g-3 align-items-end" (ngSubmit)="search()">
+        <div class="col-md-2">
+          <label class="form-label">{{ 'ex.field.empIdOrName' | translate:'Mã NV / Họ tên' }}</label>
+          <input nz-input [(ngModel)]="keyword" name="keyword"
+                 [placeholder]="'ex.placeholder.empIdOrName' | translate:'Nhập mã hoặc họ tên'">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'ex.field.dept' | translate:'Phòng ban' }}</label>
+          <nz-tree-select class="w-100" [nzNodes]="deptNodes()" [(ngModel)]="deptNos" name="deptNos"
+                           nzCheckable nzShowSearch nzAllowClear
+                           [nzPlaceHolder]="'ex.placeholder.dept' | translate:'Chọn phòng ban'"></nz-tree-select>
+          <div *ngIf="deptTreeErrorMessage()" class="text-danger small mt-1">{{ deptTreeErrorMessage() }}</div>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'ex.field.fromDate' | translate:'Ngày bắt đầu' }}</label>
+          <nz-date-picker class="w-100" [(ngModel)]="fromDate" name="fromDate" nzFormat="yyyy/MM/dd"></nz-date-picker>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'ex.field.toDate' | translate:'Ngày kết thúc' }}</label>
+          <nz-date-picker class="w-100" [(ngModel)]="toDate" name="toDate" nzFormat="yyyy/MM/dd"></nz-date-picker>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'ex.field.postFamily' | translate:'Nhóm nhân viên' }}</label>
+          <nz-select class="w-100" [(ngModel)]="postFamily" name="postFamily" nzAllowClear
+                     [nzPlaceHolder]="'ex.opt.all' | translate:'-- Tất cả --'">
+            <nz-option *ngFor="let c of postFamilyOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'ex.field.shiftNo' | translate:'Ca làm việc' }}</label>
+          <nz-select class="w-100" [(ngModel)]="shiftNo" name="shiftNo" nzAllowClear
+                     [nzPlaceHolder]="'ex.opt.all' | translate:'-- Tất cả --'">
+            <nz-option *ngFor="let s of shiftOptions()" [nzValue]="s.shiftNo" [nzLabel]="s.nameVi || s.shiftName || ''"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'cai.field.category' | translate:'Phân loại' }}</label>
+          <nz-select class="w-100" [(ngModel)]="itemNoSearch" name="itemNoSearch" nzAllowClear
+                     [nzPlaceHolder]="'ex.opt.all' | translate:'-- Tất cả --'">
+            <nz-option *ngFor="let o of itemOptions()" [nzValue]="o.itemNo" [nzLabel]="o.itemName"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-4 d-flex align-items-end gap-2 flex-wrap">
+          <button nz-button nzType="primary" type="submit">
+            <i class="bx bx-search"></i> {{ 'ex.btn.search' | translate:'Tra cứu' }}
+          </button>
+          <button nz-button nzType="default" type="button" (click)="exportExcel()">
+            <i class="bx bx-export"></i> {{ 'ex.btn.export' | translate:'Xuất Excel' }}
+          </button>
+        </div>
+      </form>
+    </nz-card>
+
+    <nz-card>
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+      <nz-table [nzData]="rows()" [nzFrontPagination]="false" [nzLoading]="loading()"
+                [nzTotal]="recordsTotal()" [nzPageIndex]="pageIndex" [nzPageSize]="pageSize"
+                [nzPageSizeOptions]="pageSizeOptions" nzShowSizeChanger [nzShowTotal]="caiTotalTpl"
+                (nzPageIndexChange)="onPageIndexChange($event)" (nzPageSizeChange)="onPageSizeChange($event)"
+                [nzScroll]="{ x: '1280px', y: 'calc(100vh - 380px)' }"
+                class="table-nowrap">
+        <!-- nzWidth khai báo cho từng cột để đồng bộ độ rộng header/body khi dùng nzScroll (xem
+             giải thích ở dept-ot-apply-info.component.html). -->
+        <thead>
+          <tr>
+            <th class="text-center" nzWidth="60px">{{ 'ex.col.no' | translate:'No.' }}</th>
+            <th class="text-center" nzWidth="100px">{{ 'ex.col.empId' | translate:'Mã nhân viên' }}</th>
+            <th nzWidth="160px">{{ 'ex.col.fullName' | translate:'Họ tên' }}</th>
+            <th nzWidth="180px">{{ 'ex.col.dept' | translate:'Phòng ban' }}</th>
+            <th nzWidth="120px">{{ 'ex.col.position' | translate:'Chức vụ' }}</th>
+            <th class="text-center" nzWidth="100px">{{ 'cai.col.shift' | translate:'Ca' }}</th>
+            <th nzWidth="140px">{{ 'cai.col.category' | translate:'Phân loại' }}</th>
+            <th class="text-center" nzWidth="80px">{{ 'cai.col.duration' | translate:'Thời lượng' }}</th>
+            <th class="text-center" nzWidth="100px">{{ 'cai.col.workDate' | translate:'Ngày công' }}</th>
+            <th class="text-center" nzWidth="150px">{{ 'cai.col.fromTime' | translate:'Thời gian bắt đầu' }}</th>
+            <th class="text-center" nzWidth="150px">{{ 'cai.col.toTime' | translate:'Thời gian kết thúc' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of rows(); let i = index">
+            <td class="text-center">{{ (pageIndex - 1) * pageSize + i + 1 }}</td>
+            <td class="text-center" [attr.title]="row.empId || null">{{ row.empId }}</td>
+            <td [attr.title]="row.localName || null">{{ row.localName }}</td>
+            <td [attr.title]="row.deptName || null">{{ row.deptName }}</td>
+            <td [attr.title]="row.postGradeName || null">{{ row.postGradeName }}</td>
+            <td class="text-center">{{ row.shiftName }}</td>
+            <td [attr.title]="row.itemName || null">{{ row.itemName }}</td>
+            <td class="text-center">{{ row.quantity }} {{ row.unit }}</td>
+            <td class="text-center">{{ row.arDateStr }}</td>
+            <td class="text-center">{{ row.fromDate }}</td>
+            <td class="text-center">{{ row.toTime }}</td>
+          </tr>
+        </tbody>
+        <ng-template #caiTotalTpl let-total>
+          {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+        </ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>

@@ -22,11 +22,8 @@ public class SyCodeParamController {
     @Autowired
     private SyCodeParamService syCodeParamService;
 
-    // View Mapping
-    @GetMapping("/basicMaintenance/viewCodePamers")
-    public String viewCodePamers() {
-        return "sys/basicMaintenance/viewCodePamers";
-    }
+    // Trang Thymeleaf viewCodePamers.html đã được thay bằng Angular route /view-code-param-list (xem
+    // ViewCodeParamListComponent) - các API JSON bên dưới vẫn giữ nguyên, không đổi backend.
 
     // API Mappings
     @GetMapping("/api/code_param/list")

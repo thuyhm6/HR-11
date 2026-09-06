@@ -21,11 +21,6 @@ public class PaFormulaController {
     @Autowired
     private PaFormulaService paFormulaService;
 
-    @GetMapping("/viewPaFormula")
-    public String viewPaFormula() {
-        return "pa/salary/viewPaFormula";
-    }
-
     @GetMapping("/formula/api/itemList")
     @ResponseBody
     public ResponseEntity<?> getItemList() {

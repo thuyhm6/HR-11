@@ -1,0 +1,185 @@
+<div class="vcc-wrap">
+  <!-- ===== Toolbar ===== -->
+  <div id="vcc_toolbar" class="vcc-toolbar">
+    <div class="vcc-nav">
+      <button nz-button nzType="default" nzShape="circle" [attr.title]="'cccal.btn.prevMonth' | translate:'Tháng trước'" (click)="prevMonth()">
+        <i class="bx bx-chevron-left"></i>
+      </button>
+      <nz-select id="vcc_monthSel" class="vcc-combo" [(ngModel)]="selectedMonth">
+        <nz-option *ngFor="let m of monthOptions" [nzValue]="m" [nzLabel]="monthKeys[m - 1] | translate"></nz-option>
+      </nz-select>
+      <nz-select id="vcc_yearSel" class="vcc-combo vcc-year" [(ngModel)]="selectedYear">
+        <nz-option *ngFor="let y of yearOptions" [nzValue]="y" [nzLabel]="y"></nz-option>
+      </nz-select>
+      <nz-select id="vcc_groupFilter" class="vcc-combo vcc-group" [(ngModel)]="selectedGroupId"
+                 [nzAllowClear]="true" [nzPlaceHolder]="'cccal.select.chooseGroup' | translate:'-- Chọn nhóm ca --'"
+                 (ngModelChange)="onGroupFilterChange()">
+        <nz-option *ngFor="let g of groupOptions()" [nzValue]="g.codeNo" [nzLabel]="g.codeName"></nz-option>
+      </nz-select>
+    </div>
+    <div class="vcc-actions">
+      <button id="vcc_searchBtn" nz-button nzType="default" (click)="search()">
+        <i class="bx bx-refresh"></i> {{ 'cccal.btn.search' | translate:'Tra cứu' }}
+      </button>
+      <button id="vcc_addBtn" nz-button nzType="primary" (click)="openAddModal()">
+        <i class="bx bx-plus"></i> {{ 'cccal.btn.addNew' | translate:'Thêm mới' }}
+      </button>
+    </div>
+  </div>
+
+  <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-2"></nz-alert>
+
+  <!-- ===== Calendar grid ===== -->
+  <div id="vcc_gridWrap" class="vcc-grid-wrap">
+    <div class="vcc-hrow">
+      <div class="vcc-hcell vcc-col-sun"><i class="bx bxs-sun"></i> {{ 'cccal.day.sun' | translate:'CN' }}</div>
+      <div class="vcc-hcell">{{ 'cccal.day.mon' | translate:'T2' }}</div>
+      <div class="vcc-hcell">{{ 'cccal.day.tue' | translate:'T3' }}</div>
+      <div class="vcc-hcell">{{ 'cccal.day.wed' | translate:'T4' }}</div>
+      <div class="vcc-hcell">{{ 'cccal.day.thu' | translate:'T5' }}</div>
+      <div class="vcc-hcell">{{ 'cccal.day.fri' | translate:'T6' }}</div>
+      <div class="vcc-hcell vcc-col-sat"><i class="bx bxs-star"></i> {{ 'cccal.day.sat' | translate:'T7' }}</div>
+    </div>
+
+    <div id="vcc_body">
+      <div *ngIf="loading()" class="vcc-status-msg">...</div>
+      <div *ngIf="!loading() && emptyMessage()" class="vcc-status-msg">{{ emptyMessage() }}</div>
+
+      <ng-container *ngIf="!loading()">
+        <div class="vcc-week" *ngFor="let week of weeks()">
+          <div *ngFor="let cell of week"
+               class="vcc-day"
+               [class.is-empty]="cell.isEmpty"
+               [class.is-today]="cell.isToday"
+               [class.is-rest]="!cell.isEmpty && !cell.hasWork"
+               [class.is-work]="!cell.isEmpty && cell.hasWork"
+               [class.vcc-clickable]="!cell.isEmpty"
+               (click)="dayClick(cell)">
+            <ng-container *ngIf="!cell.isEmpty">
+              <div class="vcc-day-top">
+                <span class="vcc-day-num" [class.is-sun]="cell.isSunday" [class.is-sat]="cell.isSaturday">{{ cell.day }}</span>
+                <span class="vcc-status" [class.s-work]="cell.hasWork" [class.s-rest]="!cell.hasWork">
+                  {{ (cell.hasWork ? 'cccal.status.work' : 'cccal.status.rest') | translate }}
+                </span>
+              </div>
+              <div class="vcc-tags">
+                <ng-container *ngIf="cell.items.length === 0">
+                  <span class="vcc-tag t-rest" *ngIf="cell.isWeekend">{{ 'cccal.tag.weekend' | translate:'Cuối tuần' }}</span>
+                  <span class="vcc-tag t-wd" *ngIf="!cell.isWeekend">{{ 'cccal.tag.noData' | translate:'Chưa có dữ liệu' }}</span>
+                </ng-container>
+                <span class="vcc-tag t-sh" *ngFor="let it of cell.items">{{ it.shiftName || shiftLabel(it.shiftNo) }}</span>
+              </div>
+            </ng-container>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+
+  <!-- ===== Legend ===== -->
+  <div class="vcc-legend">
+    <span class="vcc-legend-item"><span class="vcc-legend-dot vcc-lg-work"></span> {{ 'cccal.legend.workday' | translate:'Ngày làm việc' }}</span>
+    <span class="vcc-legend-item"><span class="vcc-legend-dot vcc-lg-rest"></span> {{ 'cccal.legend.restday' | translate:'Ngày nghỉ' }}</span>
+    <span class="vcc-legend-item"><span class="vcc-legend-dot vcc-lg-today"></span> {{ 'cccal.legend.today' | translate:'Hôm nay' }}</span>
+  </div>
+</div>
+
+<!-- ===== Modal Thêm mới (batch theo khoảng ngày) ===== -->
+<nz-modal [nzVisible]="addModalVisible()" [nzTitle]="'cccal.modal.addTitle' | translate:'Thêm Mới Lịch Nhóm Ca'"
+          nzWidth="520px" (nzOnCancel)="closeAddModal()" [nzOkLoading]="addSaving()"
+          [nzOkText]="'cccal.btn.addNew' | translate:'Thêm Mới'" [nzCancelText]="'cccal.btn.close' | translate:'Đóng'"
+          (nzOnOk)="saveBatch()">
+  <ng-container *nzModalContent>
+    <form class="vcc-form">
+      <div class="vcc-form-row">
+        <label>{{ 'cccal.label.fromDate' | translate:'Từ ngày' }} <span class="vcc-required">*</span> /
+          {{ 'cccal.label.toDate' | translate:'Đến ngày' }} <span class="vcc-required">*</span></label>
+        <nz-range-picker id="vcc_dateRange" [(ngModel)]="addForm.dateRange" name="addDateRange" nzFormat="dd/MM/yyyy"></nz-range-picker>
+      </div>
+      <div class="vcc-form-row">
+        <label>{{ 'cccal.label.groupShift' | translate:'Nhóm ca' }} <span class="vcc-required">*</span></label>
+        <nz-select id="vcc_addGroupId" [(ngModel)]="addForm.groupId" name="addGroupId"
+                   [nzPlaceHolder]="'cccal.select.chooseGroup' | translate:'-- Chọn nhóm ca --'">
+          <nz-option *ngFor="let g of groupOptions()" [nzValue]="g.codeNo" [nzLabel]="g.codeName"></nz-option>
+        </nz-select>
+      </div>
+      <div class="vcc-form-row-2">
+        <div class="vcc-form-row">
+          <label>{{ 'cccal.label.workShift' | translate:'Ca làm việc (Work Shift)' }} <span class="vcc-required">*</span></label>
+          <nz-select id="vcc_workShift" [(ngModel)]="addForm.workShift" name="workShift">
+            <nz-option *ngFor="let s of shiftOptions()" [nzValue]="s.shiftNo" [nzLabel]="s.nameVi || s.shiftNo"></nz-option>
+          </nz-select>
+        </div>
+        <div class="vcc-form-row">
+          <label>{{ 'cccal.label.restShift' | translate:'Ca nghỉ ngơi (Rest Shift)' }} <span class="vcc-required">*</span></label>
+          <nz-select id="vcc_restShift" [(ngModel)]="addForm.restShift" name="restShift">
+            <nz-option *ngFor="let s of shiftOptions()" [nzValue]="s.shiftNo" [nzLabel]="s.nameVi || s.shiftNo"></nz-option>
+          </nz-select>
+        </div>
+      </div>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- ===== Modal Cập nhật 1 ngày ===== -->
+<nz-modal [nzVisible]="editModalVisible()" [nzTitle]="editModalTitle()"
+          nzWidth="640px" (nzOnCancel)="closeEditModal()" [nzOkLoading]="editSaving()"
+          [nzOkText]="'cccal.btn.save' | translate:'Lưu'" [nzCancelText]="'cccal.btn.close' | translate:'Đóng'"
+          (nzOnOk)="saveEdit()">
+  <ng-container *nzModalContent>
+    <form class="vcc-form">
+      <div class="vcc-form-row-2">
+        <div class="vcc-form-row">
+          <label>{{ 'cccal.label.workdayflag' | translate:'Ngày làm việc' }}</label>
+          <nz-select id="vcc_workdayflag" [(ngModel)]="editForm.workdayflag" name="workdayflag">
+            <nz-option [nzValue]="0" [nzLabel]="'cccal.option.restday' | translate:'0 — Ngày nghỉ'"></nz-option>
+            <nz-option [nzValue]="1" [nzLabel]="'cccal.option.workday' | translate:'1 — Ngày làm việc'"></nz-option>
+          </nz-select>
+        </div>
+        <div class="vcc-form-row">
+          <label>{{ 'cccal.label.shiftNo' | translate:'Ca làm việc (Shift No)' }}</label>
+          <nz-select id="vcc_shiftNo" [(ngModel)]="editForm.shiftNo" name="shiftNo" [nzAllowClear]="true">
+            <nz-option *ngFor="let s of shiftOptions()" [nzValue]="s.shiftNo" [nzLabel]="s.nameVi || s.shiftNo"></nz-option>
+          </nz-select>
+        </div>
+      </div>
+      <div class="vcc-form-row-3">
+        <div class="vcc-form-row">
+          <label>{{ 'cccal.label.typeid' | translate:'TypeID' }}</label>
+          <nz-select id="vcc_typeid" [(ngModel)]="editForm.typeid" name="typeid" [nzAllowClear]="true">
+            <nz-option *ngFor="let t of typeOptions()" [nzValue]="t.codeNo" [nzLabel]="t.codeName"></nz-option>
+          </nz-select>
+        </div>
+        <div class="vcc-form-row">
+          <label>{{ 'cccal.label.overtypeid' | translate:'OvertypeID' }}</label>
+          <nz-select id="vcc_overtypeid" [(ngModel)]="editForm.overtypeid" name="overtypeid" [nzAllowClear]="true">
+            <nz-option *ngFor="let t of typeOptions()" [nzValue]="t.codeNo" [nzLabel]="t.codeName"></nz-option>
+          </nz-select>
+        </div>
+        <div class="vcc-form-row">
+          <label>{{ 'cccal.label.typeidDefault' | translate:'TypeID mặc định' }}</label>
+          <nz-select id="vcc_typeidDefault" [(ngModel)]="editForm.typeidDefault" name="typeidDefault" [nzAllowClear]="true">
+            <nz-option *ngFor="let t of typeOptions()" [nzValue]="t.codeNo" [nzLabel]="t.codeName"></nz-option>
+          </nz-select>
+        </div>
+      </div>
+      <div class="vcc-form-row-3">
+        <div class="vcc-form-row">
+          <label>{{ 'cccal.label.operationId' | translate:'Operation ID' }}</label>
+          <input nz-input id="vcc_operationId" [(ngModel)]="editForm.operationId" name="operationId" />
+        </div>
+        <div class="vcc-form-row">
+          <label>{{ 'cccal.label.orderno' | translate:'Sắp xếp' }}</label>
+          <nz-input-number id="vcc_orderno" [(ngModel)]="editForm.orderno" name="orderno" [nzMin]="0" style="width:100%"></nz-input-number>
+        </div>
+        <div class="vcc-form-row">
+          <label>{{ 'cccal.label.activity' | translate:'Trạng thái' }}</label>
+          <nz-select id="vcc_activity" [(ngModel)]="editForm.activity" name="activity">
+            <nz-option [nzValue]="1" [nzLabel]="'cccal.option.active' | translate:'Hoạt động'"></nz-option>
+            <nz-option [nzValue]="0" [nzLabel]="'cccal.option.inactive' | translate:'Ngừng'"></nz-option>
+          </nz-select>
+        </div>
+      </div>
+    </form>
+  </ng-container>
+</nz-modal>

@@ -1,0 +1,196 @@
+<div class="row">
+  <div class="col-12">
+    <!-- Điều kiện tìm kiếm - đứng im khi cuộn (xem .sticky-filter-card trong styles.css) -->
+    <nz-card class="mb-3 sticky-filter-card">
+      <form class="row g-3" (ngSubmit)="search()">
+        <div class="col-md-3">
+          <label class="form-label">{{ 'common.empId' | translate:'Mã nhân viên' }}</label>
+          <input nz-input [(ngModel)]="searchEmpId" name="fiSearchEmpId"
+                 [placeholder]="'common.placeholder.enterEmpId' | translate:'Nhập mã nhân viên'">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'common.empName' | translate:'Họ tên' }}</label>
+          <input nz-input [(ngModel)]="searchLocalName" name="fiSearchLocalName"
+                 [placeholder]="'common.placeholder.enterEmpName' | translate:'Nhập họ tên'">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'hrm.empinfo.family.searchFamName' | translate:'Tên người thân' }}</label>
+          <input nz-input [(ngModel)]="searchFamName" name="fiSearchFamName"
+                 [placeholder]="'hrm.empinfo.family.searchFamName' | translate:'Nhập tên người thân'">
+        </div>
+        <div class="col-md-3 d-flex align-items-end gap-2 flex-wrap">
+          <button nz-button nzType="primary" type="submit">
+            <i class="bx bx-search"></i> {{ 'essDept.search' | translate:'Tra cứu' }}
+          </button>
+          <button nz-button type="button" (click)="clearSearch()">
+            <i class="bx bx-x"></i> {{ 'essDept.clearFilter' | translate:'Xóa lọc' }}
+          </button>
+        </div>
+        <div class="col-12 d-flex gap-2 flex-wrap">
+          <button nz-button nzType="primary" type="button" (click)="openAddModal()">
+            <i class="bx bx-plus"></i> {{ 'common.addNew' | translate:'Thêm mới' }}
+          </button>
+          <button nz-button nzType="default" type="button" class="fi-btn-export" (click)="exportExcel()">
+            <i class="bx bx-export"></i> {{ 'essDept.exportExcel' | translate:'Xuất excel' }}
+          </button>
+        </div>
+      </form>
+    </nz-card>
+
+    <nz-card>
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+      <!-- nzWidth khai báo cho từng cột để đồng bộ độ rộng header/body khi dùng nzScroll. -->
+      <nz-table [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="25" [nzShowSizeChanger]="true"
+                [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="fiTotalTpl"
+                [nzScroll]="{ x: '1180px', y: 'calc(100vh - 420px)' }" #fiTable>
+        <thead>
+          <tr>
+            <th class="text-center" nzWidth="60px">{{ 'common.stt' | translate:'STT' }}</th>
+            <th class="text-center" nzWidth="100px">{{ 'common.empId' | translate:'Mã NV' }}</th>
+            <th nzWidth="150px">{{ 'common.empName' | translate:'Họ tên' }}</th>
+            <th nzWidth="150px">{{ 'hrm.empinfo.family.colFamName' | translate:'Tên người thân' }}</th>
+            <th nzWidth="110px">{{ 'hrm.empinfo.family.colRelation' | translate:'Quan hệ' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'hrm.empinfo.family.famBorndate' | translate:'Ngày sinh' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'hrm.empinfo.family.colPhone' | translate:'SĐT' }}</th>
+            <th nzWidth="150px">{{ 'hrm.empinfo.family.colOcupation' | translate:'Nghề nghiệp' }}</th>
+            <th class="text-center" nzWidth="120px">{{ 'hrm.empinfo.family.colDependent' | translate:'Người phụ thuộc' }}</th>
+            <th class="text-center" nzWidth="90px">{{ 'common.action' | translate:'Thao tác' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!loading() && rows().length === 0">
+            <td colspan="10" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+          </tr>
+          <tr *ngFor="let row of fiTable.data; let i = index">
+            <td class="text-center">{{ i + 1 }}</td>
+            <td class="text-center" [attr.title]="row.empId || null">{{ row.empId }}</td>
+            <td [attr.title]="row.localName || null">{{ row.localName }}</td>
+            <td [attr.title]="row.famName || null">{{ row.famName }}</td>
+            <td [attr.title]="row.famTypeName || null">{{ row.famTypeName }}</td>
+            <td class="text-center">{{ row.famBorndate }}</td>
+            <td class="text-center">{{ row.famPhone }}</td>
+            <td [attr.title]="row.ocupation || null">{{ row.ocupation }}</td>
+            <td class="text-center"><i *ngIf="row.taxYn === 'Y'" class="bx bx-check text-success"></i></td>
+            <td class="text-center">
+              <button nz-button nzType="text" nzSize="small" [title]="'common.edit' | translate:'Sửa'" (click)="openEditModal(row)">
+                <i class="bx bx-edit text-warning"></i>
+              </button>
+              <button nz-button nzType="text" nzSize="small" [title]="'common.delete' | translate:'Xóa'" (click)="openDeleteConfirm(row)">
+                <i class="bx bx-trash text-danger"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+        <ng-template #fiTotalTpl let-total>
+          {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+        </ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>
+
+<!-- Modal Thêm mới / Cập nhật -->
+<nz-modal [nzVisible]="modalVisible()" [nzTitle]="modalTitle()" nzWidth="900px"
+          (nzOnCancel)="closeModal()" (nzOnOk)="saveForm()" [nzOkLoading]="saving()"
+          [nzOkText]="'common.save' | translate:'Lưu'" [nzCancelText]="'common.close' | translate:'Đóng'">
+  <ng-container *nzModalContent>
+    <div class="row g-3">
+      <div class="col-md-4">
+        <label class="form-label fw-semibold">{{ 'hrm.empinfo.family.employee' | translate:'Nhân viên' }} <span class="text-danger">*</span></label>
+        <input nz-input [ngModel]="empKeyword" (ngModelChange)="onEmpKeywordChange($event)"
+               [nzAutocomplete]="fiEmpAuto" [placeholder]="'hrm.empinfo.workexp.selectEmp' | translate:'Chọn nhân viên...'">
+        <nz-autocomplete #fiEmpAuto>
+          <nz-auto-option *ngFor="let opt of empOptions()" [nzValue]="opt" (click)="onEmpSelected(opt)">
+            {{ opt.empId }} - {{ opt.localName }} <small class="text-muted">({{ opt.deptName }})</small>
+          </nz-auto-option>
+        </nz-autocomplete>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-semibold">{{ 'hrm.empinfo.family.famName' | translate:'Tên người thân' }} <span class="text-danger">*</span></label>
+        <input nz-input [(ngModel)]="form.famName">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-semibold">{{ 'hrm.empinfo.family.famType' | translate:'Quan hệ' }} <span class="text-danger">*</span></label>
+        <nz-select class="w-100" [(ngModel)]="form.famTypeCode" nzAllowClear nzShowSearch
+                   [nzPlaceHolder]="'hrm.empinfo.family.famTypePlaceholder' | translate:'Vợ/Chồng/Con/Bố/Mẹ...'">
+          <nz-option *ngFor="let c of famTypeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+        </nz-select>
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label fw-semibold">{{ 'hrm.empinfo.family.famBorndate' | translate:'Ngày sinh' }}</label>
+        <nz-date-picker class="w-100" [(ngModel)]="form.famBorndate" nzFormat="dd/MM/yyyy"></nz-date-picker>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label fw-semibold">{{ 'hrm.empinfo.family.famIdcard' | translate:'CCCD/CMND' }}</label>
+        <input nz-input [(ngModel)]="form.famIdcard">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label fw-semibold d-block">{{ 'hrm.empinfo.family.gender' | translate:'Giới tính' }}</label>
+        <nz-select class="w-100" [(ngModel)]="form.gender">
+          <nz-option nzValue="Male" [nzLabel]="'hrm.empinfo.family.male' | translate:'Nam'"></nz-option>
+          <nz-option nzValue="Female" [nzLabel]="'hrm.empinfo.family.female' | translate:'Nữ'"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label fw-semibold">{{ 'hrm.empinfo.family.famPhone' | translate:'Số điện thoại' }}</label>
+        <input nz-input [(ngModel)]="form.famPhone">
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label fw-semibold">{{ 'hrm.empinfo.family.famEmail' | translate:'Email' }}</label>
+        <input nz-input [(ngModel)]="form.famEmail" type="email">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-semibold">{{ 'hrm.empinfo.family.ocupation' | translate:'Nghề nghiệp' }}</label>
+        <input nz-input [(ngModel)]="form.ocupation">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-semibold">{{ 'hrm.empinfo.family.famCompanyName' | translate:'Nơi làm việc' }}</label>
+        <input nz-input [(ngModel)]="form.famCompanyName">
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'hrm.empinfo.family.famAddress' | translate:'Địa chỉ' }}</label>
+        <input nz-input [(ngModel)]="form.famAddress">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label fw-semibold d-block">{{ 'hrm.empinfo.family.liveYn' | translate:'Sống cùng' }}</label>
+        <nz-select class="w-100" [(ngModel)]="form.liveYn">
+          <nz-option nzValue="N" [nzLabel]="'common.no' | translate:'Không'"></nz-option>
+          <nz-option nzValue="Y" [nzLabel]="'common.yes' | translate:'Có'"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label fw-semibold d-block">{{ 'hrm.empinfo.family.emergencyContactYn' | translate:'LH Khẩn cấp' }}</label>
+        <nz-select class="w-100" [(ngModel)]="form.emergencyContactYn">
+          <nz-option nzValue="N" [nzLabel]="'common.no' | translate:'Không'"></nz-option>
+          <nz-option nzValue="Y" [nzLabel]="'common.yes' | translate:'Có'"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label fw-semibold d-block">{{ 'hrm.empinfo.family.taxYn' | translate:'Giảm trừ gia cảnh' }}</label>
+        <nz-select class="w-100" [(ngModel)]="form.taxYn">
+          <nz-option nzValue="N" [nzLabel]="'common.no' | translate:'Không'"></nz-option>
+          <nz-option nzValue="Y" [nzLabel]="'common.yes' | translate:'Có'"></nz-option>
+        </nz-select>
+      </div>
+
+      <div class="col-12">
+        <label class="form-label fw-semibold">{{ 'hrm.empinfo.family.remarks' | translate:'Ghi chú' }}</label>
+        <textarea nz-input [(ngModel)]="form.remarks" rows="2"></textarea>
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal xác nhận xóa -->
+<nz-modal [nzVisible]="deleteVisible()" [nzTitle]="'common.confirm' | translate:'Xác nhận'"
+          (nzOnCancel)="closeDeleteConfirm()" (nzOnOk)="confirmDelete()" [nzOkLoading]="deleting()"
+          [nzOkText]="'common.confirm' | translate:'Xác nhận'" [nzCancelText]="'common.cancel' | translate:'Hủy'">
+  <ng-container *nzModalContent>
+    <p class="mb-1">{{ 'hrm.empinfo.family.confirmDelete' | translate:'Bạn có chắc chắn muốn xóa bản ghi này?' }}</p>
+    <p class="fw-bold mb-0">{{ deleteTargetName }}</p>
+  </ng-container>
+</nz-modal>

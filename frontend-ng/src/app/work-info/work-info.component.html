@@ -1,0 +1,158 @@
+<div class="row">
+  <div class="col-12">
+
+    <!-- ===== Thông tin nhân viên (tương đương fragments/essEmpInfoCard.html) ===== -->
+    <div class="card mb-3" *ngIf="basicInfo() as info">
+      <div class="card-body p-0">
+        <table class="table table-bordered table-sm align-middle mb-0" style="table-layout:fixed;">
+          <colgroup>
+            <col style="width:15%;"><col style="width:35%;"><col style="width:15%;"><col style="width:35%;">
+          </colgroup>
+          <tbody>
+            <tr>
+              <th class="table-light text-center">{{ 'essEmpCard.localName' | translate:'Họ tên' }}</th>
+              <td>{{ info.localName }}</td>
+              <th class="table-light text-center">{{ 'essEmpCard.empId' | translate:'Mã nhân viên' }}</th>
+              <td>{{ info.empId }}</td>
+            </tr>
+            <tr>
+              <th class="table-light text-center">{{ 'essEmpCard.deptName' | translate:'Phòng ban' }}</th>
+              <td>{{ info.deptName }}</td>
+              <th class="table-light text-center">{{ 'essEmpCard.headDept' | translate:'Trưởng phòng' }}</th>
+              <td>{{ info.headDepartment }}</td>
+            </tr>
+            <tr>
+              <th class="table-light text-center">{{ 'essEmpCard.postFamily' | translate:'Nhóm nhân viên' }}</th>
+              <td>{{ info.postFamilyName }}</td>
+              <th class="table-light text-center">{{ 'essEmpCard.postGrade' | translate:'Chức vụ' }}</th>
+              <td>{{ info.postGradeName }}</td>
+            </tr>
+            <tr>
+              <th class="table-light text-center">{{ 'essEmpCard.positionName' | translate:'Chức danh' }}</th>
+              <td>{{ info.positionNoName }}</td>
+              <th class="table-light text-center">{{ 'essEmpCard.dateStarted' | translate:'Ngày vào làm' }}</th>
+              <td>{{ info.dateStarted }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== Quyết định nhân sự ===== -->
+    <div class="card mb-3">
+      <div class="card-header bg-light py-2">
+        <strong><i class="bx bx-transfer me-1"></i>{{ 'epi.section.hrDecision' | translate:'Quyết định nhân sự' }}</strong>
+      </div>
+      <div class="card-body p-0">
+        <nz-alert *ngIf="insideError()" nzType="error" [nzMessage]="insideError() ?? ''" class="m-2"></nz-alert>
+        <nz-table [nzData]="insideList()" [nzLoading]="insideLoading()" [nzShowPagination]="false" nzSize="small" #wiInsideTable>
+          <thead>
+            <tr>
+              <th style="width:140px;">{{ 'epi.field.period' | translate:'Thời gian' }}</th>
+              <th>{{ 'epi.field.decision' | translate:'Quyết định' }}</th>
+              <th>{{ 'epi.field.reason' | translate:'Lý do' }}</th>
+              <th>{{ 'epi.field.department' | translate:'Phòng ban' }}</th>
+              <th>{{ 'epi.field.work' | translate:'Công việc' }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="!insideLoading() && wiInsideTable.data.length === 0">
+              <td colspan="5" class="text-center text-muted">{{ 'epi.msg.noData' | translate:'Không có dữ liệu' }}</td>
+            </tr>
+            <tr *ngFor="let row of wiInsideTable.data">
+              <td>{{ row.startDate }}</td>
+              <td>{{ row.transCode }}</td>
+              <td></td>
+              <td>{{ row.deptName }}</td>
+              <td>{{ row.mainBusiness || row.postGrade }}</td>
+            </tr>
+          </tbody>
+        </nz-table>
+      </div>
+    </div>
+
+    <!-- ===== Kinh nghiệm ===== -->
+    <div class="card mb-3">
+      <div class="card-header bg-light py-2 d-flex justify-content-between align-items-center">
+        <strong><i class="bx bx-buildings me-1"></i>{{ 'epi.section.workExp' | translate:'Kinh nghiệm' }}</strong>
+        <button nz-button nzType="primary" nzSize="small" (click)="openWorkExpModal(null)">
+          <i class="bx bx-plus me-1"></i>{{ 'epi.btn.addNew' | translate:'Thêm mới' }}
+        </button>
+      </div>
+      <div class="card-body p-0">
+        <nz-alert *ngIf="workExpError()" nzType="error" [nzMessage]="workExpError() ?? ''" class="m-2"></nz-alert>
+        <nz-table [nzData]="workExpList()" [nzLoading]="workExpLoading()" [nzShowPagination]="false" nzSize="small" #wiWorkExpTable>
+          <thead>
+            <tr>
+              <th>{{ 'epi.field.cpnyName' | translate:'Tên công ty' }}</th>
+              <th style="width:120px;">{{ 'epi.field.startDate' | translate:'Ngày vào làm' }}</th>
+              <th style="width:120px;">{{ 'epi.field.endDate' | translate:'Ngày thôi việc' }}</th>
+              <th>{{ 'epi.field.reason' | translate:'Lý do' }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="!workExpLoading() && wiWorkExpTable.data.length === 0">
+              <td colspan="4" class="text-center text-muted">{{ 'epi.msg.noData' | translate:'Không có dữ liệu' }}</td>
+            </tr>
+            <tr *ngFor="let row of wiWorkExpTable.data" class="wi-row-clickable" (click)="openWorkExpModal(row)">
+              <td><a href="javascript:void(0)" class="text-primary">{{ row.cpnyName }}</a></td>
+              <td>{{ row.startMonth || row.startDate }}</td>
+              <td>{{ row.endMonth || row.endDate }}</td>
+              <td>{{ row.resignReason }}</td>
+            </tr>
+          </tbody>
+        </nz-table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== Modal: Thêm/Sửa Kinh nghiệm ===== -->
+<nz-modal [nzVisible]="workExpModalVisible()" [nzTitle]="workExpModalTitle()" nzWidth="800px"
+          (nzOnCancel)="closeWorkExpModal()" (nzOnOk)="saveWorkExp()" [nzOkLoading]="workExpSaving()"
+          [nzOkText]="'epi.btn.submitRequest' | translate:'Gửi yêu cầu'" [nzCancelText]="'common.close' | translate:'Đóng'">
+  <ng-container *nzModalContent>
+    <div class="row g-2">
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'epi.field.cpnyName' | translate:'Tên công ty' }} <span class="text-danger">*</span></label>
+        <input nz-input [(ngModel)]="workExpForm.cpnyName">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'epi.field.department' | translate:'Phòng ban' }}</label>
+        <input nz-input [(ngModel)]="workExpForm.deptName">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-semibold">{{ 'epi.field.startMonth' | translate:'Ngày vào làm (MM/YYYY)' }}</label>
+        <input nz-input [(ngModel)]="workExpForm.startMonth" placeholder="VD: 01/2020">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-semibold">{{ 'epi.field.endMonth' | translate:'Ngày thôi việc (MM/YYYY)' }}</label>
+        <input nz-input [(ngModel)]="workExpForm.endMonth" placeholder="VD: 12/2022">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-semibold">{{ 'epi.field.position' | translate:'Chức vụ' }}</label>
+        <input nz-input [(ngModel)]="workExpForm.position">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'epi.field.resignReason' | translate:'Lý do nghỉ việc' }}</label>
+        <input nz-input [(ngModel)]="workExpForm.resignReason">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'epi.field.witness' | translate:'Người làm chứng' }}</label>
+        <input nz-input [(ngModel)]="workExpForm.witness">
+      </div>
+      <div class="col-12">
+        <label class="form-label fw-semibold">{{ 'epi.field.remark' | translate:'Ghi chú' }}</label>
+        <textarea nz-input [(ngModel)]="workExpForm.remark" rows="2"></textarea>
+      </div>
+      <div class="col-12 mt-2">
+        <nz-alert nzType="info" [nzMessage]="'epi.msg.applyNote' | translate:'Yêu cầu sẽ được gửi đến người quản lý để xét duyệt, không cập nhật trực tiếp hồ sơ.'" class="mb-2"></nz-alert>
+        <label class="form-label fw-semibold">{{ 'epi.field.attachFiles' | translate:'File đính kèm' }}</label>
+        <input #workExpFileInput type="file" class="form-control form-control-sm" multiple
+               accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg" (change)="onWorkExpFilesChange($event)">
+        <div class="form-text">{{ 'epi.msg.uploadHint' | translate:'Hỗ trợ: PDF, Word, Excel, hình ảnh. Có thể chọn nhiều file.' }}</div>
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>

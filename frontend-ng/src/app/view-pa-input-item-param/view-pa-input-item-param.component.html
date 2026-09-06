@@ -1,0 +1,137 @@
+<div class="row">
+  <div class="col-12">
+    <!-- Điều kiện tìm kiếm -->
+    <nz-card class="mb-3 sticky-filter-card">
+      <form class="row g-3" (ngSubmit)="search()">
+        <div class="col-md-3">
+          <label class="form-label">{{ 'pa.inputItemParam.itemType' | translate:'Loại hạng mục' }}</label>
+          <nz-select class="w-100" [(ngModel)]="searchItemType" name="vpiipSearchItemType" nzAllowClear
+                     [nzPlaceHolder]="'pa.salaryCode.itemType.all' | translate:'Tất cả'">
+            <nz-option *ngFor="let t of itemTypes" [nzValue]="t.value" [nzLabel]="i18n.t(t.key, t.fallback)"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">{{ 'pa.inputItemParam.itemName' | translate:'Tên hạng mục' }}</label>
+          <input nz-input [(ngModel)]="searchAliasName" name="vpiipSearchAliasName" (keyup.enter)="search()">
+        </div>
+        <div class="col-md-5 d-flex align-items-end gap-2 flex-wrap">
+          <button nz-button nzType="primary" type="submit">
+            <i class="bx bx-search"></i> {{ 'pa.inputItemParam.search' | translate:'Tra cứu' }}
+          </button>
+          <button nz-button nzType="default" type="button" (click)="editSelected()">
+            <i class="bx bx-edit"></i> {{ 'pa.inputItemParam.edit' | translate:'Sửa' }}
+          </button>
+          <button nz-button nzDanger type="button" (click)="openDeleteConfirm()">
+            <i class="bx bx-trash"></i> {{ 'pa.inputItemParam.delete' | translate:'Xóa' }}
+          </button>
+        </div>
+      </form>
+    </nz-card>
+
+    <nz-card>
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+      <!-- Server-side pagination (draw/start/length -> recordsTotal), đúng hành vi DataTables gốc. -->
+      <nz-table [nzData]="rows()" [nzFrontPagination]="false" [nzLoading]="loading()" [nzTotal]="totalRecords()"
+                [nzPageIndex]="pageIndex" [nzPageSize]="pageSize" [nzPageSizeOptions]="pageSizeOptions"
+                [nzShowSizeChanger]="true" [nzShowTotal]="vpiipTotalTpl"
+                (nzPageIndexChange)="onPageIndexChange($event)" (nzPageSizeChange)="onPageSizeChange($event)"
+                [nzScroll]="{ x: '1200px', y: 'calc(100vh - 420px)' }" #vpiipTable>
+        <thead>
+          <tr>
+            <th class="text-center" nzWidth="40px">
+              <label nz-checkbox [ngModel]="allChecked" [nzIndeterminate]="someChecked" (ngModelChange)="toggleAllChecked($event)"></label>
+            </th>
+            <th class="text-center" nzWidth="50px">{{ 'pa.inputItemParam.no' | translate:'STT' }}</th>
+            <th nzWidth="130px">{{ 'pa.inputItemParam.company' | translate:'Công ty' }}</th>
+            <th nzWidth="170px">{{ 'pa.inputItemParam.itemType' | translate:'Loại hạng mục' }}</th>
+            <th nzWidth="150px">{{ 'pa.inputItemParam.distinctField1' | translate:'Hạng mục phân biệt 1' }}</th>
+            <th nzWidth="150px">{{ 'pa.inputItemParam.distinctField2' | translate:'Hạng mục phân biệt 2' }}</th>
+            <th class="text-center" nzWidth="130px">{{ 'pa.inputItemParam.defaultVal' | translate:'Giá trị mặc định' }}</th>
+            <th>{{ 'pa.inputItemParam.itemName' | translate:'Tên hạng mục' }}</th>
+            <th class="text-center" nzWidth="130px">{{ 'pa.inputItemParam.activity' | translate:'Tình trạng sử dụng' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!loading() && rows().length === 0">
+            <td colspan="9" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+          </tr>
+          <tr *ngFor="let row of vpiipTable.data; let i = index" class="vpiip-row-clickable" (click)="openEditModal(row)">
+            <td class="text-center" (click)="$event.stopPropagation()">
+              <label nz-checkbox [ngModel]="isChecked(row)" (ngModelChange)="toggleChecked(row, $event)"></label>
+            </td>
+            <td class="text-center">{{ (pageIndex - 1) * pageSize + i + 1 }}</td>
+            <td [attr.title]="row.cpnyName || null">{{ row.cpnyName }}</td>
+            <td>{{ itemTypeLabel(row.itemType) }}</td>
+            <td [attr.title]="row.distinctFieldName || null">{{ row.distinctFieldName }}</td>
+            <td [attr.title]="row.distinctField2ndName || null">{{ row.distinctField2ndName }}</td>
+            <td class="text-center">{{ row.defaultVal }}</td>
+            <td [attr.title]="row.aliasName || null">{{ row.aliasName }}</td>
+            <td class="text-center">
+              <nz-tag [nzColor]="row.activity === 1 ? 'success' : 'default'">
+                {{ row.activity === 1 ? ('pa.inputItemParam.activity.use' | translate:'Sử dụng') : ('pa.inputItemParam.activity.notUse' | translate:'Không sử dụng') }}
+              </nz-tag>
+            </td>
+          </tr>
+        </tbody>
+        <ng-template #vpiipTotalTpl let-total>
+          {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+        </ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>
+
+<!-- Modal chỉnh sửa -->
+<nz-modal [nzVisible]="modalVisible()" [nzTitle]="modalTitle()" nzWidth="600px"
+          (nzOnCancel)="closeModal()" (nzOnOk)="saveForm()" [nzOkLoading]="saving()"
+          [nzOkText]="'pa.inputItemParam.save' | translate:'Lưu'" [nzCancelText]="'common.close' | translate:'Đóng'">
+  <ng-container *nzModalContent>
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'pa.inputItemParam.company' | translate:'Công ty' }}</label>
+        <div class="form-control-plaintext">{{ form.cpnyId }}</div>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'pa.inputItemParam.itemType' | translate:'Loại hạng mục' }}</label>
+        <div class="form-control-plaintext">{{ form.itemTypeLabel }}</div>
+      </div>
+      <div class="col-12">
+        <label class="form-label fw-semibold">{{ 'pa.inputItemParam.itemName' | translate:'Tên hạng mục' }}</label>
+        <div class="form-control-plaintext">{{ form.aliasName }}</div>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'pa.inputItemParam.distinctField1' | translate:'Hạng mục phân biệt 1' }}</label>
+        <nz-select class="w-100" [(ngModel)]="form.distinctField" name="vpiipFormDistinctField" nzAllowClear>
+          <nz-option *ngFor="let d of distinctOptions()" [nzValue]="d.distinctField" [nzLabel]="d.distinctFieldName || d.distinctField"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'pa.inputItemParam.distinctField2' | translate:'Hạng mục phân biệt 2' }}</label>
+        <nz-select class="w-100" [(ngModel)]="form.distinctField2nd" name="vpiipFormDistinctField2nd" nzAllowClear>
+          <nz-option *ngFor="let d of distinctOptions()" [nzValue]="d.distinctField" [nzLabel]="d.distinctFieldName || d.distinctField"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ 'pa.inputItemParam.defaultVal' | translate:'Giá trị mặc định' }}</label>
+        <input nz-input [(ngModel)]="form.defaultVal" name="vpiipFormDefaultVal" maxlength="50">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold d-block">{{ 'pa.inputItemParam.activity' | translate:'Tình trạng sử dụng' }}</label>
+        <nz-select class="w-100" [(ngModel)]="form.activity" name="vpiipFormActivity">
+          <nz-option [nzValue]="1" [nzLabel]="'pa.inputItemParam.activity.use' | translate:'Sử dụng'"></nz-option>
+          <nz-option [nzValue]="0" [nzLabel]="'pa.inputItemParam.activity.notUse' | translate:'Không sử dụng'"></nz-option>
+        </nz-select>
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal xác nhận xóa nhiều dòng -->
+<nz-modal [nzVisible]="deleteVisible()" [nzTitle]="'common.confirm' | translate:'Xác nhận'"
+          (nzOnCancel)="closeDeleteConfirm()" (nzOnOk)="confirmDelete()" [nzOkLoading]="deleting()"
+          [nzOkText]="'common.confirm' | translate:'Xác nhận'" [nzCancelText]="'common.cancel' | translate:'Hủy'">
+  <ng-container *nzModalContent>
+    <p class="mb-0">{{ 'pa.inputItemParam.confirmDelete' | translate:'Bạn có chắc chắn muốn xóa các bản ghi đã chọn?' }} ({{ selectedCount }})</p>
+  </ng-container>
+</nz-modal>

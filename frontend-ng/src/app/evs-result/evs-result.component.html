@@ -1,0 +1,351 @@
+<div class="row">
+  <div class="col-12">
+    <!-- Điều kiện tìm kiếm -->
+    <nz-card class="mb-2 sticky-filter-card">
+      <div class="row g-3 align-items-end">
+        <div class="col-md-3">
+          <label class="form-label">{{ 'evs.result.label.evaluationName' | translate:'Tên đánh giá' }}</label>
+          <nz-select class="w-100" [(ngModel)]="resumeSeq" name="verResumeSeq" (ngModelChange)="onResumeChange()">
+            <nz-option *ngFor="let r of resumeOptions()" [nzValue]="r.seq" [nzLabel]="r.resumeName"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'evs.result.label.empSearch' | translate:'Mã NV / Họ tên' }}</label>
+          <div class="input-group input-group-sm">
+            <input class="form-control" readonly [value]="empDisplay"
+                   [placeholder]="'evs.result.placeholder.selectEmployee' | translate:'Chọn nhân viên...'"
+                   (click)="openEmployeePicker()" style="cursor:pointer;">
+            <button class="btn btn-outline-secondary" type="button" (click)="openEmployeePicker()">
+              <i class="bx bx-search"></i>
+            </button>
+            <button class="btn btn-outline-secondary" type="button" (click)="clearEmpSearch()">
+              <i class="bx bx-x"></i>
+            </button>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'evs.result.label.dept' | translate:'Phòng ban' }}</label>
+          <nz-tree-select class="w-100" [nzNodes]="deptNodes()" [(ngModel)]="deptNos" name="verDeptNos"
+                           nzCheckable nzShowSearch nzAllowClear
+                           [nzPlaceHolder]="'evs.result.placeholder.selectDept' | translate:'Chọn phòng ban'"></nz-tree-select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'evs.result.label.status' | translate:'Trạng thái' }}</label>
+          <nz-select class="w-100" [(ngModel)]="statusFilter" name="verStatusFilter" nzAllowClear
+                     [nzPlaceHolder]="'common.selectAll' | translate:'-- Tất cả --'">
+            <nz-option *ngFor="let s of statusOptions()" [nzValue]="s.codeNo" [nzLabel]="s.codeName"></nz-option>
+          </nz-select>
+        </div>
+      </div>
+    </nz-card>
+
+    <!-- Hai panel thống kê -->
+    <div class="row mb-2 g-2">
+      <!-- Panel trái: Tiêu chuẩn cơ bản -->
+      <div class="col-md-8">
+        <nz-card class="h-100" [nzBodyStyle]="{ padding: '8px' }">
+          <div class="fw-semibold small mb-1">{{ 'evs.result.panel.standard' | translate:'Tiêu chuẩn cơ bản' }}</div>
+          <div class="table-responsive">
+            <table class="table table-bordered table-sm mb-0 text-center">
+              <thead class="table-light">
+                <tr>
+                  <th rowspan="2" class="align-middle">-</th>
+                  <th rowspan="2" class="align-middle">{{ 'evs.result.col.total' | translate:'Tổng số người' }}</th>
+                  <th colspan="2">EX</th>
+                  <th colspan="2">VG</th>
+                  <th colspan="2">GD</th>
+                  <th colspan="2">NI</th>
+                  <th colspan="2">UN</th>
+                </tr>
+                <tr>
+                  <th *ngFor="let g of grades">{{ 'evs.result.col.count' | translate:'Số lượng' }}</th>
+                  <ng-container *ngFor="let g of grades">
+                    <th></th>
+                  </ng-container>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>{{ 'evs.result.col.std' | translate:'Tỷ lệ tiêu chuẩn' }}</td>
+                  <td>{{ stdStat().total }}</td>
+                  <ng-container *ngFor="let g of grades">
+                    <td>{{ stdStat().cnt[g] }}</td>
+                    <td>{{ stdStat().pct[g] }}%</td>
+                  </ng-container>
+                </tr>
+                <tr>
+                  <td>{{ 'evs.result.col.hr' | translate:'Nhân sự' }}</td>
+                  <td>{{ hrStat().total }}</td>
+                  <ng-container *ngFor="let g of grades">
+                    <td>{{ hrStat()[g] }}</td>
+                    <td>{{ pct(hrStat()[g], hrStat().total) }}%</td>
+                  </ng-container>
+                </tr>
+                <tr>
+                  <td>{{ 'evs.result.col.prog_l2' | translate:'Lần 2' }}</td>
+                  <td>{{ l2Stat().total }}</td>
+                  <ng-container *ngFor="let g of grades">
+                    <td>{{ l2Stat()[g] }}</td>
+                    <td>{{ pct(l2Stat()[g], l2Stat().total) }}%</td>
+                  </ng-container>
+                </tr>
+                <tr>
+                  <td>{{ 'evs.result.col.prog_l1' | translate:'Lần 1' }}</td>
+                  <td>{{ l1Stat().total }}</td>
+                  <ng-container *ngFor="let g of grades">
+                    <td>{{ l1Stat()[g] }}</td>
+                    <td>{{ pct(l1Stat()[g], l1Stat().total) }}%</td>
+                  </ng-container>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </nz-card>
+      </div>
+
+      <!-- Panel phải: Trạng thái tiến hành -->
+      <div class="col-md-4">
+        <nz-card class="h-100" [nzBodyStyle]="{ padding: '8px' }">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span class="fw-semibold small">{{ 'evs.result.panel.statusProgress' | translate:'Trạng thái tiến hành' }}</span>
+            <div class="d-flex gap-1">
+              <button nz-button nzSize="small" type="button" (click)="sendEmail()">
+                {{ 'evs.result.btn.email' | translate:'Email' }}
+              </button>
+              <button nz-button nzDanger nzSize="small" type="button" [nzLoading]="endingEvaluation()" (click)="evaluateEnd()">
+                {{ 'evs.result.btn.evaluateEnd' | translate:'Đánh giá kết thúc' }}
+              </button>
+            </div>
+          </div>
+          <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+            <button nz-button nzType="primary" nzSize="small" type="button" [nzLoading]="changingStatus()" (click)="changeStatus()">
+              {{ 'evs.result.btn.changeStatus' | translate:'Thay đổi trạng thái' }}
+            </button>
+          </div>
+          <div class="fw-semibold small mb-1">{{ 'evs.result.panel.progress' | translate:'Tình trạng đánh giá giai đoạn' }}</div>
+          <table class="table table-bordered table-sm text-center mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>{{ 'evs.result.col.total' | translate:'Tổng số người' }}</th>
+                <th>{{ 'evs.result.col.prog_self' | translate:'Bản thân' }}</th>
+                <th>{{ 'evs.result.col.prog_l1' | translate:'Lần 1' }}</th>
+                <th>{{ 'evs.result.col.prog_l2' | translate:'Lần 2' }}</th>
+                <th>{{ 'evs.result.col.prog_done' | translate:'Hoàn thành' }}</th>
+                <th>{{ 'evs.result.col.prog_end' | translate:'Kết thúc' }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>{{ progressStat().total }}</td>
+                <td>{{ progressStat().self }}</td>
+                <td>{{ progressStat().l1 }}</td>
+                <td>{{ progressStat().l2 }}</td>
+                <td>{{ progressStat().done }}</td>
+                <td>{{ progressStat().end }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </nz-card>
+      </div>
+    </div>
+
+    <!-- Thanh hành động & lọc nhanh -->
+    <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+      <span class="small text-muted">{{ 'evs.result.label.total' | translate:'Tổng' }}: <strong>{{ filteredRows().length }}</strong></span>
+      <div class="d-flex align-items-center gap-1">
+        <label class="form-label small text-muted mb-0">{{ 'evs.result.quickFilter' | translate:'Lọc nhanh' }}</label>
+        <input nz-input style="width:150px;" [(ngModel)]="quickFilter" name="verQuickFilter"
+               [placeholder]="'evs.result.placeholder.keyword' | translate:'Từ khóa...'">
+      </div>
+      <button nz-button nzType="primary" nzSize="small" type="button" (click)="search()">
+        <i class="bx bx-search"></i> {{ 'evs.result.btn.search' | translate:'Tra cứu' }}
+      </button>
+      <button nz-button nzSize="small" type="button" (click)="openTemplate()">
+        <i class="bx bx-file"></i> {{ 'evs.result.btn.template' | translate:'Bản mẫu' }}
+      </button>
+      <button nz-button nzSize="small" type="button" (click)="insertFile()">
+        <i class="bx bx-paperclip"></i> {{ 'evs.result.btn.insertFile' | translate:'Chèn file' }}
+      </button>
+      <button nz-button nzSize="small" type="button" [nzLoading]="copyingGrade()" (click)="copyGrade()">
+        <i class="bx bx-copy"></i> {{ 'evs.result.btn.copyGrade' | translate:'Sao chép cấp đánh giá' }}
+      </button>
+      <button nz-button nzType="primary" nzSize="small" type="button" [nzLoading]="saving()" (click)="saveAll()">
+        <i class="bx bx-save"></i> {{ 'evs.result.btn.save' | translate:'Lưu' }}
+      </button>
+      <button nz-button nzSize="small" type="button" class="ver-btn-export" (click)="exportExcel()">
+        <i class="bx bx-export"></i> {{ 'evs.result.btn.exportExcel' | translate:'Xuất Excel' }}
+      </button>
+    </div>
+
+    <nz-card>
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+      <div class="table-responsive" style="max-height:calc(100vh - 460px); overflow-y:auto;">
+        <nz-table [nzData]="filteredRows()" [nzLoading]="loading()" [nzShowPagination]="false"
+                  nzSize="small" [nzScroll]="{ x: '2100px' }" #verTable="nzTable">
+          <thead>
+            <tr>
+              <th rowspan="2" class="text-center align-middle" nzWidth="36px">
+                <label nz-checkbox [ngModel]="allTicked" [nzIndeterminate]="someTicked" (ngModelChange)="toggleAllTicked($event)"
+                       [title]="'evs.result.label.selectAll' | translate:'Chọn tất cả'"></label>
+              </th>
+              <th rowspan="2" class="text-center align-middle" nzWidth="45px">{{ 'evs.result.col.no' | translate:'No.' }}</th>
+              <th rowspan="2" class="align-middle" nzWidth="150px">{{ 'evs.result.col.name' | translate:'Họ tên' }}</th>
+              <th rowspan="2" class="text-center align-middle" nzWidth="100px">{{ 'evs.result.col.empId' | translate:'Mã nhân viên' }}</th>
+              <th rowspan="2" class="align-middle" nzWidth="150px">{{ 'evs.result.col.dept' | translate:'Phòng ban' }}</th>
+              <th rowspan="2" class="text-center align-middle" nzWidth="120px">{{ 'evs.result.col.position' | translate:'Chức vụ' }}</th>
+              <th rowspan="2" class="text-center align-middle" nzWidth="110px">{{ 'evs.result.col.dateStarted' | translate:'Ngày vào làm' }}</th>
+              <th rowspan="2" class="text-center align-middle" nzWidth="100px">{{ 'evs.result.col.statusActivity' | translate:'Trạng thái' }}</th>
+              <th colspan="3" class="text-center">{{ 'evs.result.col.self' | translate:'Bản thân' }}</th>
+              <th colspan="5" class="text-center">{{ 'evs.result.col.appraiser1' | translate:'Người đánh giá lần 1' }}</th>
+              <th colspan="5" class="text-center">{{ 'evs.result.col.appraiser2' | translate:'Người đánh giá lần 2' }}</th>
+              <th rowspan="2" class="text-center align-middle" nzWidth="150px">{{ 'evs.result.col.hrGrade' | translate:'Cấp đánh giá (nhân sự)' }}</th>
+              <th rowspan="2" class="align-middle" nzWidth="180px">{{ 'evs.result.col.opinion' | translate:'Ý kiến' }}</th>
+              <th rowspan="2" class="text-center align-middle" nzWidth="170px">{{ 'evs.result.col.updatedBy' | translate:'Người thay đổi' }}</th>
+            </tr>
+            <tr>
+              <th class="text-center" nzWidth="110px">{{ 'evs.result.col.statusEval' | translate:'Trạng thái' }}</th>
+              <th class="text-center" nzWidth="80px">{{ 'evs.result.col.point' | translate:'Điểm số' }}</th>
+              <th class="text-center" nzWidth="70px">{{ 'evs.result.col.grade' | translate:'Cấp' }}</th>
+              <th nzWidth="140px">{{ 'evs.result.col.name' | translate:'Họ tên' }}</th>
+              <th class="text-center" nzWidth="120px">{{ 'evs.result.col.position' | translate:'Chức vụ' }}</th>
+              <th class="text-center" nzWidth="110px">{{ 'evs.result.col.statusEval' | translate:'Trạng thái' }}</th>
+              <th class="text-center" nzWidth="80px">{{ 'evs.result.col.point' | translate:'Điểm số' }}</th>
+              <th class="text-center" nzWidth="70px">{{ 'evs.result.col.grade' | translate:'Cấp' }}</th>
+              <th nzWidth="140px">{{ 'evs.result.col.name' | translate:'Họ tên' }}</th>
+              <th class="text-center" nzWidth="120px">{{ 'evs.result.col.position' | translate:'Chức vụ' }}</th>
+              <th class="text-center" nzWidth="110px">{{ 'evs.result.col.statusEval' | translate:'Trạng thái' }}</th>
+              <th class="text-center" nzWidth="80px">{{ 'evs.result.col.point' | translate:'Điểm số' }}</th>
+              <th class="text-center" nzWidth="70px">{{ 'evs.result.col.grade' | translate:'Cấp' }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="!loading() && verTable.data.length === 0">
+              <td colspan="24" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+            </tr>
+            <tr *ngFor="let row of verTable.data; let i = index" [class.ver-ticked]="isTicked(row)">
+              <td class="text-center">
+                <label nz-checkbox [ngModel]="isTicked(row)" (ngModelChange)="toggleTicked(row, $event)"></label>
+              </td>
+              <td class="text-center">{{ i + 1 }}</td>
+              <td [attr.title]="row.localName || null">{{ row.localName }}</td>
+              <td class="text-center">{{ row.empid }}</td>
+              <td [attr.title]="row.deptname || null">{{ row.deptname }}</td>
+              <td class="text-center">{{ row.postGradeName }}</td>
+              <td class="text-center">{{ row.dateStarted }}</td>
+              <td class="text-center">{{ row.activityName }}</td>
+              <!-- Bản thân -->
+              <td class="text-center">
+                <span [class]="row.affirmFlagName0 === 'Evaluated' ? 'ver-status-evaluated' : 'ver-status-not-eval'">
+                  <i class="bx" [class.bx-check-circle]="row.affirmFlagName0 === 'Evaluated'" [class.bx-x-circle]="row.affirmFlagName0 !== 'Evaluated'"></i>
+                  {{ row.affirmFlagName0 }}
+                </span>
+              </td>
+              <td class="text-center">{{ row.evsPoint0 }}</td>
+              <td class="text-center">
+                <span *ngIf="row.evsGrade0" class="ver-grade-badge" [class]="'ver-grade-' + row.evsGrade0">{{ row.evsGrade0 }}</span>
+              </td>
+              <!-- ĐG1 -->
+              <td>{{ row.localName1 }}</td>
+              <td class="text-center"><small class="text-muted">{{ row.postGradeName1 }}</small></td>
+              <td class="text-center">
+                <span [class]="row.affirmFlagName1 === 'Evaluated' ? 'ver-status-evaluated' : 'ver-status-not-eval'">
+                  <i class="bx" [class.bx-check-circle]="row.affirmFlagName1 === 'Evaluated'" [class.bx-x-circle]="row.affirmFlagName1 !== 'Evaluated'"></i>
+                  {{ row.affirmFlagName1 }}
+                </span>
+              </td>
+              <td class="text-center">{{ row.evsPoint1 }}</td>
+              <td class="text-center">
+                <span *ngIf="row.evsGrade1" class="ver-grade-badge" [class]="'ver-grade-' + row.evsGrade1">{{ row.evsGrade1 }}</span>
+              </td>
+              <!-- ĐG2 -->
+              <td>{{ row.localName2 }}</td>
+              <td class="text-center"><small class="text-muted">{{ row.postGradeName2 }}</small></td>
+              <td class="text-center">
+                <span [class]="row.affirmFlagName2 === 'Evaluated' ? 'ver-status-evaluated' : 'ver-status-not-eval'">
+                  <i class="bx" [class.bx-check-circle]="row.affirmFlagName2 === 'Evaluated'" [class.bx-x-circle]="row.affirmFlagName2 !== 'Evaluated'"></i>
+                  {{ row.affirmFlagName2 }}
+                </span>
+              </td>
+              <td class="text-center">{{ row.evsPoint2 }}</td>
+              <td class="text-center">
+                <span *ngIf="row.evsGrade2" class="ver-grade-badge" [class]="'ver-grade-' + row.evsGrade2">{{ row.evsGrade2 }}</span>
+              </td>
+              <!-- Cấp đánh giá (nhân sự) - sửa trực tiếp -->
+              <td>
+                <nz-select class="w-100 ver-grade-sel" [ngModel]="row.finalGradeLetter" (ngModelChange)="onFinalGradeChange(row, $event)"
+                           nzAllowClear [nzPlaceHolder]="'common.select' | translate:'-- Chọn --'">
+                  <nz-option *ngFor="let o of gradeOptions()" [nzValue]="o.codeNo" [nzLabel]="o.description || o.codeName"></nz-option>
+                </nz-select>
+              </td>
+              <!-- Ý kiến - sửa trực tiếp -->
+              <td>
+                <input nz-input class="ver-content-inp" [(ngModel)]="row.finalAffirmContent" (ngModelChange)="onContentChange(row)">
+              </td>
+              <td class="text-center">
+                <small>{{ row.updatedBy }}<br>{{ row.updateDate }}</small>
+              </td>
+            </tr>
+          </tbody>
+        </nz-table>
+      </div>
+    </nz-card>
+  </div>
+</div>
+
+<!-- Popup tìm kiếm nhân viên (lọc theo đối tượng đánh giá) -->
+<nz-modal [nzVisible]="pickerVisible()" [nzTitle]="'empSearch.title' | translate:'Tìm kiếm nhân viên'"
+          nzWidth="900px" (nzOnCancel)="closePicker()" [nzFooter]="null">
+  <ng-container *nzModalContent>
+    <form class="row g-2 align-items-end mb-3" (ngSubmit)="pickerSearch()">
+      <div class="col-md-5">
+        <label class="form-label">{{ 'empSearch.field.keyword' | translate:'Mã nhân viên / Họ tên' }}</label>
+        <input nz-input [(ngModel)]="pickerKeyword" name="verPickerKeyword"
+               [placeholder]="'empSearch.placeholder.keyword' | translate:'Nhập mã hoặc họ tên'"
+               (keydown.enter)="$event.preventDefault(); pickerSearch()">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">{{ 'empSearch.field.dept' | translate:'Phòng ban' }}</label>
+        <nz-tree-select class="w-100" [nzNodes]="deptNodes()" [(ngModel)]="pickerDeptNos" name="verPickerDeptNos"
+                         nzCheckable nzShowSearch nzAllowClear
+                         [nzPlaceHolder]="'vdp.search.dept.placeholder' | translate:'Chọn phòng ban'"></nz-tree-select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">{{ 'empSearch.field.empOffice' | translate:'Trạng thái làm việc' }}</label>
+        <nz-select class="w-100" [(ngModel)]="pickerEmpOffice" name="verPickerEmpOffice" nzAllowClear
+                   [nzPlaceHolder]="'common.selectAll' | translate:'-- Tất cả --'">
+          <nz-option *ngFor="let c of empOfficeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-12 d-flex gap-2">
+        <button nz-button nzType="primary" type="submit">
+          <i class="bx bx-search"></i> {{ 'common.search' | translate:'Tìm kiếm' }}
+        </button>
+      </div>
+    </form>
+
+    <nz-table [nzData]="pickerRows()" [nzLoading]="pickerLoading()" [nzPageSize]="10" nzSize="small" #verPickerTable="nzTable">
+      <thead>
+        <tr>
+          <th class="text-center" nzWidth="60px">{{ 'empSearch.col.no' | translate:'STT' }}</th>
+          <th nzWidth="110px">{{ 'common.empId' | translate:'Mã nhân viên' }}</th>
+          <th>{{ 'common.empName' | translate:'Họ tên' }}</th>
+          <th>{{ 'common.deptName' | translate:'Phòng ban' }}</th>
+          <th>{{ 'common.position' | translate:'Chức vụ' }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngIf="!pickerLoading() && verPickerTable.data.length === 0">
+          <td colspan="5" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+        </tr>
+        <tr *ngFor="let row of verPickerTable.data; let i = index" class="ver-picker-row" (click)="selectEmployee(row)">
+          <td class="text-center">{{ i + 1 }}</td>
+          <td>{{ row.empId }}</td>
+          <td>{{ row.localName }}</td>
+          <td>{{ row.deptName }}</td>
+          <td>{{ row.position }}</td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </ng-container>
+</nz-modal>
