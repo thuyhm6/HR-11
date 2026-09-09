@@ -31,7 +31,13 @@ export class OrgChartCardComponent {
     if (this.hasChildren) this.toggleFn(this.node.id);
   }
 
+  /** Chỉ fallback về defaultAvatar đúng 1 lần/thẻ <img> (đánh dấu qua dataset) - nếu không, khi chính
+   *  defaultAvatar cũng lỗi (404/mất mạng...), việc gán lại y hệt src cũ sẽ khiến trình duyệt tải lại
+   *  và bắn 'error' lần nữa, tạo vòng lặp vô hạn liên tục gọi request/ghi log ở backend. */
   onImgError(event: Event): void {
-    (event.target as HTMLImageElement).src = this.defaultAvatar;
+    const img = event.target as HTMLImageElement;
+    if (img.dataset['avatarFallback'] === '1') return;
+    img.dataset['avatarFallback'] = '1';
+    img.src = this.defaultAvatar;
   }
 }

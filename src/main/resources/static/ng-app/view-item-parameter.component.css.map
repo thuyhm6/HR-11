@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/view-item-parameter/view-item-parameter.component.css"],
+  "sourcesContent": [".vip-btn-export {\n  color: #52c41a;\n  border-color: #52c41a;\n}\n\n.vip-tree-scroll {\n  max-height: 700px;\n  overflow-y: auto;\n}\n"],
+  "mappings": ";AAAA,CAAC;AACC,SAAO;AACP,gBAAc;AAChB;AAEA,CAAC;AACC,cAAY;AACZ,cAAY;AACd;",
+  "names": []
+}

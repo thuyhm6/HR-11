@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/view-pa-input-item-param/view-pa-input-item-param.component.css"],
+  "sourcesContent": [".vpiip-row-clickable {\n  cursor: pointer;\n}\n"],
+  "mappings": ";AAAA,CAAC;AACC,UAAQ;AACV;",
+  "names": []
+}

@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/view-pa-pay-obj/view-pa-pay-obj.component.css"],
+  "sourcesContent": [".vppo-btn-export {\n  color: #52c41a;\n  border-color: #52c41a;\n}\n\n.vppo-row-clickable {\n  cursor: pointer;\n}\n"],
+  "mappings": ";AAAA,CAAC;AACC,SAAO;AACP,gBAAc;AAChB;AAEA,CAAC;AACC,UAAQ;AACV;",
+  "names": []
+}

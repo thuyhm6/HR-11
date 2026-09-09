@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/evs-item-panel/evs-item-panel.component.css"],
+  "sourcesContent": ["::ng-deep .eip-row-edit {\n  background-color: #fffde7 !important;\n  cursor: default;\n}\n\n::ng-deep tr:not(.eip-row-edit) {\n  cursor: pointer;\n}\n\n::ng-deep .eip-row-new td {\n  font-style: italic;\n}\n"],
+  "mappings": ";AAAA,UAAU,CAAC;AACT,oBAAkB;AAClB,UAAQ;AACV;AAEA,UAAU,EAAE,KAAK,CALN;AAMT,UAAQ;AACV;AAEA,UAAU,CAAC,YAAY;AACrB,cAAY;AACd;",
+  "names": []
+}

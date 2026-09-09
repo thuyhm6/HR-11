@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/view-ot-report/view-ot-report.component.css"],
+  "sourcesContent": ["table td, table th {\n  white-space: nowrap;\n}\n\n/* Ti\u00EAu \u0111\u1EC1 \u0111\u01B0\u1EE3c ph\u00E9p xu\u1ED1ng d\u00F2ng khi t\u00EAn c\u1ED9t d\u00E0i h\u01A1n \u0111\u1ED9 r\u1ED9ng c\u1ED9t (d\u1EEF li\u1EC7u td v\u1EABn gi\u1EEF nowrap). */\ntable th {\n  white-space: normal;\n  word-break: break-word;\n  text-align: center;\n  vertical-align: middle;\n}\n\n.ot-metric-col {\n  width: 90px;\n  min-width: 90px;\n  max-width: 90px;\n}\n\n.otr-col-stt {\n  width: 55px;\n  min-width: 55px;\n}\n\n.otr-col-emp-id {\n  width: 110px;\n  min-width: 110px;\n}\n\n.otr-col-emp-name {\n  width: 160px;\n  min-width: 160px;\n}\n\n.otr-col-dept {\n  width: 200px;\n  min-width: 200px;\n}\n\n.otr-col-total {\n  width: 110px;\n  min-width: 110px;\n}\n\ntd.ot-metric-col {\n  white-space: nowrap;\n}\n\n.table-scroll-wrapper {\n  overflow-x: auto;\n}\n"],
+  "mappings": ";AAAA,MAAM;AAAI,MAAM;AACd,eAAa;AACf;AAGA,MAAM;AACJ,eAAa;AACb,cAAY;AACZ,cAAY;AACZ,kBAAgB;AAClB;AAEA,CAAC;AACC,SAAO;AACP,aAAW;AACX,aAAW;AACb;AAEA,CAAC;AACC,SAAO;AACP,aAAW;AACb;AAEA,CAAC;AACC,SAAO;AACP,aAAW;AACb;AAEA,CAAC;AACC,SAAO;AACP,aAAW;AACb;AAEA,CAAC;AACC,SAAO;AACP,aAAW;AACb;AAEA,CAAC;AACC,SAAO;AACP,aAAW;AACb;AAEA,EAAE,CA/BD;AAgCC,eAAa;AACf;AAEA,CAAC;AACC,cAAY;AACd;",
+  "names": []
+}

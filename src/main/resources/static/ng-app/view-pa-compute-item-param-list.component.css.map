@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/view-pa-compute-item-param-list/view-pa-compute-item-param-list.component.css"],
+  "sourcesContent": [".vpcipl-row-clickable {\n  cursor: pointer;\n}\n"],
+  "mappings": ";AAAA,CAAC;AACC,UAAQ;AACV;",
+  "names": []
+}

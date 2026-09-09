@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/confirm-target1/confirm-target1.component.css"],
+  "sourcesContent": [".vct1-clickable {\n  cursor: pointer;\n}\n.vct1-clickable:hover {\n  background-color: #f0f4ff;\n}\n\n.vct1-active {\n  background-color: #cce5ff !important;\n}\n\n.vct1-blue-name {\n  color: #0d6efd;\n  font-weight: 500;\n}\n"],
+  "mappings": ";AAAA,CAAC;AACC,UAAQ;AACV;AACA,CAHC,cAGc;AACb,oBAAkB;AACpB;AAEA,CAAC;AACC,oBAAkB;AACpB;AAEA,CAAC;AACC,SAAO;AACP,eAAa;AACf;",
+  "names": []
+}

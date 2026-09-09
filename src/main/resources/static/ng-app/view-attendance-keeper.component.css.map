@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/view-attendance-keeper/view-attendance-keeper.component.css"],
+  "sourcesContent": [".vak-list-scroll {\n  max-height: calc(100vh - 320px);\n  overflow-y: auto;\n}\n\n.vak-list-item {\n  cursor: pointer;\n}\n\n.vak-tree-scroll {\n  max-height: calc(100vh - 380px);\n  overflow-y: auto;\n}\n\n.vak-row-clickable {\n  cursor: pointer;\n}\n\n.vak-pre-line {\n  white-space: pre-line;\n}\n"],
+  "mappings": ";AAAA,CAAC;AACC,cAAY,KAAK,MAAM,EAAE;AACzB,cAAY;AACd;AAEA,CAAC;AACC,UAAQ;AACV;AAEA,CAAC;AACC,cAAY,KAAK,MAAM,EAAE;AACzB,cAAY;AACd;AAEA,CAAC;AACC,UAAQ;AACV;AAEA,CAAC;AACC,eAAa;AACf;",
+  "names": []
+}

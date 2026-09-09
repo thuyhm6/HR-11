@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/view-temp-emp-info-list/view-temp-emp-info-list.component.css"],
+  "sourcesContent": [".vtei-row-clickable {\n  cursor: pointer;\n}\n.vtei-row-clickable:hover {\n  background: #fafafa;\n}\n\n.vtei-btn-export {\n  color: #52c41a;\n  border-color: #52c41a;\n}\n"],
+  "mappings": ";AAAA,CAAC;AACC,UAAQ;AACV;AACA,CAHC,kBAGkB;AACjB,cAAY;AACd;AAEA,CAAC;AACC,SAAO;AACP,gBAAc;AAChB;",
+  "names": []
+}

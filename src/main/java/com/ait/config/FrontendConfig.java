@@ -25,12 +25,17 @@ public class FrontendConfig implements WebMvcConfigurer {
         @Override
         public void addResourceHandlers(ResourceHandlerRegistry registry) {
                 // Serve ảnh đại diện nhân viên từ thư mục upload ngoài classpath
-                // Đăng ký trước /assets/** để Spring ưu tiên path cụ thể hơn
+                // Đăng ký trước /assets/** để Spring ưu tiên path cụ thể hơn (pattern cụ thể hơn luôn
+                // thắng bất kể thứ tự đăng ký) - nên handler /assets/** bên dưới KHÔNG được dùng làm
+                // fallback cho các request vào /assets/images/users/** dù cùng phục vụ từ webapp root.
+                // Vì vậy phải khai báo thêm location "/assets/images/users/" (webapp) ngay tại đây: ảnh
+                // đại diện thật (đã upload) ưu tiên lấy trước, không thấy mới rơi xuống ảnh mặc định
+                // dummy-avatar.jpg nằm sẵn trong webapp - tránh 404 NoResourceFoundException liên tục.
                 File uploadDir = new File(photoUploadPath);
                 String uploadDirPath = uploadDir.getAbsolutePath().replace("\\", "/");
                 if (!uploadDirPath.endsWith("/")) uploadDirPath += "/";
                 registry.addResourceHandler("/assets/images/users/**")
-                                .addResourceLocations("file:" + uploadDirPath)
+                                .addResourceLocations("file:" + uploadDirPath, "/assets/images/users/")
                                 .setCacheControl(CacheControl.maxAge(Duration.ofHours(1)));
 
                 // Alias cho font Font Awesome - /assets/css/all.min.css tham chiếu font tương đối

@@ -12,6 +12,11 @@ export const V_GAP = 60;
  *  root duy nhất. Không bao giờ trùng với id thật (id thật là số/uuid từ DB). */
 const SYNTHETIC_ROOT_ID = '__org_chart_root__';
 
+/** hậu tố id node ảo gom nhóm các nhân viên (EMP) cùng cha thành 1 ô duy nhất, hiển thị dạng danh sách
+ *  dọc (xem org-chart-card.component.html, case 'EMP_GROUP') thay vì mỗi nhân viên 1 ô xếp ngang -
+ *  tránh cây bị phình ngang khi 1 phòng ban có nhiều nhân viên trực thuộc. */
+const EMP_GROUP_ID_SUFFIX = '__emp_group__';
+
 export interface OrgLayoutNode {
   data: OrgNodeDto;
   x: number;
@@ -39,11 +44,27 @@ function sortChildren(a: OrgNodeDto, b: OrgNodeDto): number {
   return (a.name || '').localeCompare(b.name || '');
 }
 
+/** Bọc các con kiểu EMP (nhân viên) của 1 node thành 1 node ảo duy nhất 'EMP_GROUP' - node ảo này luôn
+ *  là node lá (không đệ quy tiếp), OrgChartCardComponent render nội dung của nó (children = danh sách
+ *  nhân viên gốc) dưới dạng danh sách dọc. Con kiểu DEPT vẫn giữ nguyên, tiếp tục đệ quy bình thường. */
+function groupEmpChildren(sortedChildren: OrgNodeDto[], parent: OrgNodeDto): OrgNodeDto[] {
+  const depts = sortedChildren.filter((c) => c.type === 'DEPT');
+  const emps = sortedChildren.filter((c) => c.type !== 'DEPT');
+  if (emps.length === 0) return depts;
+  const group: OrgNodeDto = {
+    id: `${parent.id}${EMP_GROUP_ID_SUFFIX}`, parentId: parent.id, name: null, title: null,
+    type: 'EMP_GROUP', code: null, managerName: null, managerId: null, imageUrl: null,
+    level: parent.level + 1, children: emps,
+  };
+  return [...depts, group];
+}
+
 function childrenAccessor(collapsedIds: Set<string>) {
   return (d: OrgNodeDto): OrgNodeDto[] | undefined => {
+    if (d.type === 'EMP_GROUP') return undefined;
     if (d.id !== SYNTHETIC_ROOT_ID && collapsedIds.has(d.id)) return undefined;
     if (!d.children || d.children.length === 0) return undefined;
-    return [...d.children].sort(sortChildren);
+    return groupEmpChildren([...d.children].sort(sortChildren), d);
   };
 }
 
@@ -72,7 +93,7 @@ export function computeOrgChartLayout(roots: OrgNodeDto[], collapsedIds: Set<str
     data: d.data,
     x: toLayoutX(d.x!),
     y: toLayoutY(d.y!),
-    hasChildren: !!d.data.children?.length,
+    hasChildren: d.data.type !== 'EMP_GROUP' && !!d.data.children?.length,
     collapsed: collapsedIds.has(d.data.id),
   }));
 

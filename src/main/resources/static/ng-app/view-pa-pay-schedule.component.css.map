@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/view-pa-pay-schedule/view-pa-pay-schedule.component.css"],
+  "sourcesContent": [".vpps-btn-export {\n  color: #52c41a;\n  border-color: #52c41a;\n}\n\n.vpps-row-clickable {\n  cursor: pointer;\n}\n"],
+  "mappings": ";AAAA,CAAC;AACC,SAAO;AACP,gBAAc;AAChB;AAEA,CAAC;AACC,UAAQ;AACV;",
+  "names": []
+}

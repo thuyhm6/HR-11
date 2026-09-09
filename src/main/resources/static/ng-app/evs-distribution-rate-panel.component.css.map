@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/evs-distribution-rate-panel/evs-distribution-rate-panel.component.css"],
+  "sourcesContent": ["::ng-deep .edr-row-clickable {\n  cursor: pointer;\n}\n"],
+  "mappings": ";AAAA,UAAU,CAAC;AACT,UAAQ;AACV;",
+  "names": []
+}

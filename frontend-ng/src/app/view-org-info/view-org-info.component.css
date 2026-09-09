@@ -144,6 +144,33 @@
   text-overflow: ellipsis;
 }
 
+/* Ô gom nhóm nhân viên (EMP_GROUP, xem org-chart-layout.ts) - thay cho việc mỗi nhân viên là 1 ô xếp
+   ngang cạnh nhau: các nhân viên cùng cha giờ liệt kê thành 1 danh sách dọc bên trong 1 ô duy nhất. */
+.emp-group-node {
+  border-top: 4px solid #28a745;
+  padding: 6px 8px;
+  text-align: left;
+  cursor: default;
+}
+
+.emp-group-list {
+  max-height: 128px;
+  overflow-y: auto;
+}
+
+.emp-group-row {
+  font-size: 12px;
+  padding: 3px 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-bottom: 1px dashed #eee;
+}
+
+.emp-group-row:last-child {
+  border-bottom: none;
+}
+
 .toggle-btn {
   position: absolute;
   bottom: -12px;

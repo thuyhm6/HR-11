@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/dept-ot-apply-info/dept-ot-apply-info.component.css"],
+  "sourcesContent": ["table td, table th {\n  white-space: nowrap;\n}\n\n.table-scroll-wrapper {\n  overflow-x: auto;\n}\n"],
+  "mappings": ";AAAA,MAAM;AAAI,MAAM;AACd,eAAa;AACf;AAEA,CAAC;AACC,cAAY;AACd;",
+  "names": []
+}

@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/evs-by-self-htsv/evs-by-self-htsv.component.css"],
+  "sourcesContent": [".vebsh-rich-content p {\n  margin: 0;\n}\n.vebsh-rich-content ul,\n.vebsh-rich-content ol {\n  margin: 0;\n  padding-left: 1.2em;\n}\n\n.vebsh-score-input {\n  width: 100px;\n  text-align: center;\n  margin: 0 auto;\n}\n"],
+  "mappings": ";AAAA,CAAC,mBAAmB;AAClB,UAAQ;AACV;AACA,CAHC,mBAGmB;AACpB,CAJC,mBAImB;AAClB,UAAQ;AACR,gBAAc;AAChB;AAEA,CAAC;AACC,SAAO;AACP,cAAY;AACZ,UAAQ,EAAE;AACZ;",
+  "names": []
+}

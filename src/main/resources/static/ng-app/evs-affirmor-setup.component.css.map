@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/evs-affirmor-setup/evs-affirmor-setup.component.css"],
+  "sourcesContent": ["::ng-deep tr.eas-row-ticked {\n  background-color: #fff3cd !important;\n}\n\n::ng-deep .eas-affirm-display {\n  cursor: pointer;\n  display: inline-block;\n  min-width: 60px;\n  min-height: 1.2em;\n}\n\n::ng-deep .eas-affirm-display:hover {\n  text-decoration: underline dotted #aaa;\n}\n\n::ng-deep .eas-picker-row {\n  cursor: pointer;\n}\n"],
+  "mappings": ";AAAA,UAAU,EAAE,CAAC;AACX,oBAAkB;AACpB;AAEA,UAAU,CAAC;AACT,UAAQ;AACR,WAAS;AACT,aAAW;AACX,cAAY;AACd;AAEA,UAAU,CAPC,kBAOkB;AAC3B,mBAAiB,UAAU,OAAO;AACpC;AAEA,UAAU,CAAC;AACT,UAAQ;AACV;",
+  "names": []
+}

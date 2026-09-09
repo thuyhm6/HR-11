@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/view-roles-group-list/view-roles-group-list.component.css"],
+  "sourcesContent": [".vrgl-btn-export {\n  color: #52c41a;\n  border-color: #52c41a;\n}\n\n.vrgl-row-clickable {\n  cursor: pointer;\n}\n\n.vrgl-roles-scroll {\n  max-height: 560px;\n  overflow-y: auto;\n}\n"],
+  "mappings": ";AAAA,CAAC;AACC,SAAO;AACP,gBAAc;AAChB;AAEA,CAAC;AACC,UAAQ;AACV;AAEA,CAAC;AACC,cAAY;AACZ,cAAY;AACd;",
+  "names": []
+}

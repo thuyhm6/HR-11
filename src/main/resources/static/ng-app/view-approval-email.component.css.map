@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/view-approval-email/view-approval-email.component.css"],
+  "sourcesContent": [".table-warning {\n  background-color: #fff3cd;\n}\n"],
+  "mappings": ";AAAA,CAAC;AACC,oBAAkB;AACpB;",
+  "names": []
+}

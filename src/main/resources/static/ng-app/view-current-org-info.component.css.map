@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/view-current-org-info/view-current-org-info.component.css"],
+  "sourcesContent": [".curr-org-tree-scroll {\n  max-height: calc(100vh - 280px);\n  overflow-y: auto;\n}\n"],
+  "mappings": ";AAAA,CAAC;AACC,cAAY,KAAK,MAAM,EAAE;AACzB,cAAY;AACd;",
+  "names": []
+}

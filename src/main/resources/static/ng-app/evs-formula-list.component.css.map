@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/evs-formula-list/evs-formula-list.component.css"],
+  "sourcesContent": ["::ng-deep .efl-row-clickable {\n  cursor: pointer;\n}\n\n.efl-mono {\n  font-family: monospace;\n  font-size: 0.85rem;\n}\n"],
+  "mappings": ";AAAA,UAAU,CAAC;AACT,UAAQ;AACV;AAEA,CAAC;AACC,eAAa;AACb,aAAW;AACb;",
+  "names": []
+}

@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/coord-apply-ot-info-list/coord-apply-ot-info-list.component.css"],
+  "sourcesContent": ["table td, table th {\n  white-space: nowrap;\n}\n\ntable td {\n  vertical-align: middle;\n}\n"],
+  "mappings": ";AAAA,MAAM;AAAI,MAAM;AACd,eAAa;AACf;AAEA,MAAM;AACJ,kBAAgB;AAClB;",
+  "names": []
+}
