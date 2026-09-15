@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["src/app/view-ar-card-record-meal/view-ar-card-record-meal.component.css"],
-  "sourcesContent": ["table td, table th {\n  white-space: nowrap;\n}\n\ntable td {\n  vertical-align: middle;\n}\n\n.acrm-form-row { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }\n.acrm-form-row label { font-size: .82rem; font-weight: 600; color: #334155; }\n.acrm-form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }\n"],
-  "mappings": ";AAAA,MAAM;AAAI,MAAM;AACd,eAAa;AACf;AAEA,MAAM;AACJ,kBAAgB;AAClB;AAEA,CAAC;AAAgB,WAAS;AAAM,kBAAgB;AAAQ,OAAK;AAAK,iBAAe;AAAM;AACvF,CADC,cACc;AAAQ,aAAW;AAAQ,eAAa;AAAK,SAAO;AAAS;AAC5E,CAAC;AAAkB,WAAS;AAAM,yBAAuB,IAAI;AAAK,OAAK;AAAM;",
-  "names": []
-}

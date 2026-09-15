@@ -31,57 +31,55 @@
     <nz-card>
       <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
 
-      <div class="fw-bold mb-2">{{ 'common.total' | translate:'Tổng' }}: {{ recordsTotal() }}</div>
-
-      <!-- Bọc div cuộn ngang thủ công (không dùng nzScroll) - xem giải thích trong
-           dept-ot-apply-info.component.html: header 3 hàng rowspan/colspan ở đây có 34 cột lá
-           nhưng hàng 1 có ô gộp colspan không có nzWidth, khiến colgroup đồng bộ sai nếu bật nzScroll. -->
-      <div class="table-scroll-wrapper">
-        <nz-table [nzData]="rows()" [nzFrontPagination]="false" [nzLoading]="loading()"
-                  [nzTotal]="recordsTotal()" [nzPageIndex]="pageIndex" [nzPageSize]="pageSize"
-                  [nzPageSizeOptions]="pageSizeOptions" nzShowSizeChanger
-                  (nzPageIndexChange)="onPageIndexChange($event)" (nzPageSizeChange)="onPageSizeChange($event)"
-                  class="table-nowrap">
-          <thead>
-            <tr>
-              <th rowspan="3" class="otr-col-stt">{{ 'common.stt' | translate:'STT' }}</th>
-              <th rowspan="3" class="otr-col-emp-id">{{ 'common.empId' | translate:'Mã nhân viên' }}</th>
-              <th rowspan="3" class="otr-col-emp-name">{{ 'common.empName' | translate:'Tên nhân viên' }}</th>
-              <th rowspan="3" class="otr-col-dept">{{ 'common.deptName' | translate:'Bộ phận' }}</th>
-              <th rowspan="3" class="otr-col-total">{{ 'ess.viewOtReport.totalOtMonth.b' | translate:'Tổng tăng ca tháng' }}</th>
-              <th rowspan="3" class="otr-col-total">{{ 'ess.viewOtReport.preMonthlyTotalQty.b' | translate:'Tổng tăng ca tháng trước' }}</th>
-              <th rowspan="3" class="otr-col-total">{{ 'ess.viewOtReport.totalOtYear.b' | translate:'Tổng tăng ca năm' }}</th>
-              <th rowspan="3" class="ot-metric-col" *ngFor="let m of otMetricColumns">{{ m.labelKey | translate:m.fallback }}</th>
-              <th [attr.colspan]="18">{{ 'ess.viewOtReport.excessOt.b' | translate:'Tăng ca vượt' }}</th>
-            </tr>
-            <tr>
-              <th [attr.colspan]="9">{{ 'ess.viewArPersonalYearList.REGULAR_DAYS.b' | translate:'Chính thức' }}</th>
-              <th [attr.colspan]="9">{{ 'ess.viewArPersonalYearList.PROBATION_DAYS.b' | translate:'Thử việc' }}</th>
-            </tr>
-            <tr>
-              <th class="ot-metric-col" *ngFor="let m of otMetricColumns">{{ m.labelKey | translate:m.fallback }}</th>
-              <th class="ot-metric-col" *ngFor="let m of otMetricColumns">{{ m.labelKey | translate:m.fallback }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngIf="!loading() && rows().length === 0">
-              <td [attr.colspan]="34" class="text-center">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
-            </tr>
-            <tr *ngFor="let row of rows(); let i = index">
-              <td class="text-center">{{ (pageIndex - 1) * pageSize + i + 1 }}</td>
-              <td class="text-center" [attr.title]="row.empId || null">{{ row.empId }}</td>
-              <td [attr.title]="row.localName || null">{{ row.localName }}</td>
-              <td [attr.title]="row.deptName || null">{{ row.deptName }}</td>
-              <td class="text-end">{{ row.totalOtMonth }}</td>
-              <td class="text-end">{{ row.preMonthlyTotalQty }}</td>
-              <td class="text-end">{{ row.totalOtYear }}</td>
-              <td class="text-end ot-metric-col" *ngFor="let m of otMetricColumns">{{ row[m.monthField] }}</td>
-              <td class="text-end ot-metric-col" *ngFor="let m of otMetricColumns">{{ row[m.officialField] }}</td>
-              <td class="text-end ot-metric-col" *ngFor="let m of otMetricColumns">{{ row[m.probationField] }}</td>
-            </tr>
-          </tbody>
-        </nz-table>
-      </div>
+      <!-- Không dùng nzScroll - xem giải thích trong dept-ot-apply-info.component.html: header 3 hàng
+           rowspan/colspan ở đây có 34 cột lá nhưng hàng 1 có ô gộp colspan không có nzWidth, khiến
+           colgroup đồng bộ sai nếu bật nzScroll. Cố định tiêu đề + chỉ cuộn dữ liệu bằng ::ng-deep nhắm
+           vào .ant-table-container (DOM nội bộ nz-table, xem component.css) thay vì bọc div cuộn thủ
+           công, giống ot-month-limit-list, để thanh phân trang không bị cuốn vào vùng cuộn. -->
+      <nz-table [nzData]="rows()" [nzFrontPagination]="false" [nzLoading]="loading()"
+                [nzTotal]="recordsTotal()" [nzPageIndex]="pageIndex" [nzPageSize]="pageSize"
+                [nzPageSizeOptions]="pageSizeOptions" nzShowSizeChanger
+                (nzPageIndexChange)="onPageIndexChange($event)" (nzPageSizeChange)="onPageSizeChange($event)"
+                class="table-nowrap otr-table">
+        <thead>
+          <tr>
+            <th rowspan="3" class="otr-col-stt">{{ 'common.stt' | translate:'STT' }}</th>
+            <th rowspan="3" class="otr-col-emp-id">{{ 'common.empId' | translate:'Mã nhân viên' }}</th>
+            <th rowspan="3" class="otr-col-emp-name">{{ 'common.empName' | translate:'Tên nhân viên' }}</th>
+            <th rowspan="3" class="otr-col-dept">{{ 'common.deptName' | translate:'Bộ phận' }}</th>
+            <th rowspan="3" class="otr-col-total">{{ 'ess.viewOtReport.totalOtMonth.b' | translate:'Tổng tăng ca tháng' }}</th>
+            <th rowspan="3" class="otr-col-total">{{ 'ess.viewOtReport.preMonthlyTotalQty.b' | translate:'Tổng tăng ca tháng trước' }}</th>
+            <th rowspan="3" class="otr-col-total">{{ 'ess.viewOtReport.totalOtYear.b' | translate:'Tổng tăng ca năm' }}</th>
+            <th rowspan="3" class="ot-metric-col" *ngFor="let m of otMetricColumns">{{ m.labelKey | translate:m.fallback }}</th>
+            <th [attr.colspan]="18">{{ 'ess.viewOtReport.excessOt.b' | translate:'Tăng ca vượt' }}</th>
+          </tr>
+          <tr>
+            <th [attr.colspan]="9">{{ 'ess.viewArPersonalYearList.REGULAR_DAYS.b' | translate:'Chính thức' }}</th>
+            <th [attr.colspan]="9">{{ 'ess.viewArPersonalYearList.PROBATION_DAYS.b' | translate:'Thử việc' }}</th>
+          </tr>
+          <tr>
+            <th class="ot-metric-col" *ngFor="let m of otMetricColumns">{{ m.labelKey | translate:m.fallback }}</th>
+            <th class="ot-metric-col" *ngFor="let m of otMetricColumns">{{ m.labelKey | translate:m.fallback }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!loading() && rows().length === 0">
+            <td [attr.colspan]="34" class="text-center">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+          </tr>
+          <tr *ngFor="let row of rows(); let i = index">
+            <td class="text-center">{{ (pageIndex - 1) * pageSize + i + 1 }}</td>
+            <td class="text-center" [attr.title]="row.empId || null">{{ row.empId }}</td>
+            <td [attr.title]="row.localName || null">{{ row.localName }}</td>
+            <td [attr.title]="row.deptName || null">{{ row.deptName }}</td>
+            <td class="text-end">{{ row.totalOtMonth }}</td>
+            <td class="text-end">{{ row.preMonthlyTotalQty }}</td>
+            <td class="text-end">{{ row.totalOtYear }}</td>
+            <td class="text-end ot-metric-col" *ngFor="let m of otMetricColumns">{{ row[m.monthField] }}</td>
+            <td class="text-end ot-metric-col" *ngFor="let m of otMetricColumns">{{ row[m.officialField] }}</td>
+            <td class="text-end ot-metric-col" *ngFor="let m of otMetricColumns">{{ row[m.probationField] }}</td>
+          </tr>
+        </tbody>
+      </nz-table>
     </nz-card>
   </div>
 </div>

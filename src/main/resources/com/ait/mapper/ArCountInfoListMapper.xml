@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ait.ar.countAttendance.mapper.ArCountInfoListMapper">
+
+    <resultMap id="ArCountInfoOtResultMap" type="com.ait.ar.countAttendance.dto.ArCountInfoOtDto">
+        <id     column="EMPID_ID"       property="empId"         jdbcType="VARCHAR" />
+        <result column="LOCAL_NAME"     property="localName"     jdbcType="VARCHAR" />
+        <result column="PERSON_ID_ID"   property="personId"      jdbcType="VARCHAR" />
+        <result column="DEPT_NAME"      property="deptName"      jdbcType="VARCHAR" />
+        <result column="TEAM_NAME"      property="teamName"      jdbcType="VARCHAR" />
+        <result column="POST_GRADE_NO"  property="postGradeName" jdbcType="VARCHAR" />
+        <result column="EMP_TYPE_NAME"  property="empTypeName"   jdbcType="VARCHAR" />
+        <result column="SHIFT_NAME"     property="shiftName"     jdbcType="VARCHAR" />
+        <result column="YEAR"           property="year"          jdbcType="VARCHAR" />
+        <result column="OT_TOTAIL"      property="otTotal"       jdbcType="DECIMAL" />
+
+        <association property="january" javaType="com.ait.ar.countAttendance.dto.ArCountInfoOtMonthDto">
+            <result column="JANUARY"                property="total"         jdbcType="DECIMAL" />
+            <result column="JANUARY_NORMAL_WORK"     property="normalWork"    jdbcType="DECIMAL" />
+            <result column="JANUARY_SATURDAY"        property="saturday"      jdbcType="DECIMAL" />
+            <result column="JANUARY_WEEKLY_HOLIDAY"  property="weeklyHoliday" jdbcType="DECIMAL" />
+            <result column="JANUARY_PUBLIC_HOLIDAY"  property="publicHoliday" jdbcType="DECIMAL" />
+            <result column="JANUARY_MEAL_OT_INCEN"   property="mealOtIncen"   jdbcType="DECIMAL" />
+            <result column="JANUARY_NIGHT_INCEN"     property="nightIncen"    jdbcType="DECIMAL" />
+            <result column="JANUARY_SATURDAY_INCEN"  property="saturdayIncen" jdbcType="DECIMAL" />
+        </association>
+        <association property="february" javaType="com.ait.ar.countAttendance.dto.ArCountInfoOtMonthDto">
+            <result column="FEBRUARY"                property="total"         jdbcType="DECIMAL" />
+            <result column="FEBRUARY_NORMAL_WORK"    property="normalWork"    jdbcType="DECIMAL" />
+            <result column="FEBRUARY_SATURDAY"       property="saturday"      jdbcType="DECIMAL" />
+            <result column="FEBRUARY_WEEKLY_HOLIDAY" property="weeklyHoliday" jdbcType="DECIMAL" />
+            <result column="FEBRUARY_PUBLIC_HOLIDAY" property="publicHoliday" jdbcType="DECIMAL" />
+            <result column="FEBRUARY_MEAL_OT_INCEN"  property="mealOtIncen"   jdbcType="DECIMAL" />
+            <result column="FEBRUARY_NIGHT_INCEN"    property="nightIncen"    jdbcType="DECIMAL" />
+            <result column="FEBRUARY_SATURDAY_INCEN" property="saturdayIncen" jdbcType="DECIMAL" />
+        </association>
+        <association property="march" javaType="com.ait.ar.countAttendance.dto.ArCountInfoOtMonthDto">
+            <result column="MARCH"                property="total"         jdbcType="DECIMAL" />
+            <result column="MARCH_NORMAL_WORK"     property="normalWork"    jdbcType="DECIMAL" />
+            <result column="MARCH_SATURDAY"        property="saturday"      jdbcType="DECIMAL" />
+            <result column="MARCH_WEEKLY_HOLIDAY"  property="weeklyHoliday" jdbcType="DECIMAL" />
+            <result column="MARCH_PUBLIC_HOLIDAY"  property="publicHoliday" jdbcType="DECIMAL" />
+            <result column="MARCH_MEAL_OT_INCEN"   property="mealOtIncen"   jdbcType="DECIMAL" />
+            <result column="MARCH_NIGHT_INCEN"     property="nightIncen"    jdbcType="DECIMAL" />
+            <result column="MARCH_SATURDAY_INCEN"  property="saturdayIncen" jdbcType="DECIMAL" />
+        </association>
+        <association property="april" javaType="com.ait.ar.countAttendance.dto.ArCountInfoOtMonthDto">
+            <result column="APRIL"                property="total"         jdbcType="DECIMAL" />
+            <result column="APRIL_NORMAL_WORK"     property="normalWork"    jdbcType="DECIMAL" />
+            <result column="APRIL_SATURDAY"        property="saturday"      jdbcType="DECIMAL" />
+            <result column="APRIL_WEEKLY_HOLIDAY"  property="weeklyHoliday" jdbcType="DECIMAL" />
+            <result column="APRIL_PUBLIC_HOLIDAY"  property="publicHoliday" jdbcType="DECIMAL" />
+            <result column="APRIL_MEAL_OT_INCEN"   property="mealOtIncen"   jdbcType="DECIMAL" />
+            <result column="APRIL_NIGHT_INCEN"     property="nightIncen"    jdbcType="DECIMAL" />
+            <result column="APRIL_SATURDAY_INCEN"  property="saturdayIncen" jdbcType="DECIMAL" />
+        </association>
+        <association property="may" javaType="com.ait.ar.countAttendance.dto.ArCountInfoOtMonthDto">
+            <result column="MAY"                property="total"         jdbcType="DECIMAL" />
+            <result column="MAY_NORMAL_WORK"     property="normalWork"    jdbcType="DECIMAL" />
+            <result column="MAY_SATURDAY"        property="saturday"      jdbcType="DECIMAL" />
+            <result column="MAY_WEEKLY_HOLIDAY"  property="weeklyHoliday" jdbcType="DECIMAL" />
+            <result column="MAY_PUBLIC_HOLIDAY"  property="publicHoliday" jdbcType="DECIMAL" />
+            <result column="MAY_MEAL_OT_INCEN"   property="mealOtIncen"   jdbcType="DECIMAL" />
+            <result column="MAY_NIGHT_INCEN"     property="nightIncen"    jdbcType="DECIMAL" />
+            <result column="MAY_SATURDAY_INCEN"  property="saturdayIncen" jdbcType="DECIMAL" />
+        </association>
+        <association property="june" javaType="com.ait.ar.countAttendance.dto.ArCountInfoOtMonthDto">
+            <result column="JUNE"                property="total"         jdbcType="DECIMAL" />
+            <result column="JUNE_NORMAL_WORK"     property="normalWork"    jdbcType="DECIMAL" />
+            <result column="JUNE_SATURDAY"        property="saturday"      jdbcType="DECIMAL" />
+            <result column="JUNE_WEEKLY_HOLIDAY"  property="weeklyHoliday" jdbcType="DECIMAL" />
+            <result column="JUNE_PUBLIC_HOLIDAY"  property="publicHoliday" jdbcType="DECIMAL" />
+            <result column="JUNE_MEAL_OT_INCEN"   property="mealOtIncen"   jdbcType="DECIMAL" />
+            <result column="JUNE_NIGHT_INCEN"     property="nightIncen"    jdbcType="DECIMAL" />
+            <result column="JUNE_SATURDAY_INCEN"  property="saturdayIncen" jdbcType="DECIMAL" />
+        </association>
+        <association property="july" javaType="com.ait.ar.countAttendance.dto.ArCountInfoOtMonthDto">
+            <result column="JULY"                property="total"         jdbcType="DECIMAL" />
+            <result column="JULY_NORMAL_WORK"     property="normalWork"    jdbcType="DECIMAL" />
+            <result column="JULY_SATURDAY"        property="saturday"      jdbcType="DECIMAL" />
+            <result column="JULY_WEEKLY_HOLIDAY"  property="weeklyHoliday" jdbcType="DECIMAL" />
+            <result column="JULY_PUBLIC_HOLIDAY"  property="publicHoliday" jdbcType="DECIMAL" />
+            <result column="JULY_MEAL_OT_INCEN"   property="mealOtIncen"   jdbcType="DECIMAL" />
+            <result column="JULY_NIGHT_INCEN"     property="nightIncen"    jdbcType="DECIMAL" />
+            <result column="JULY_SATURDAY_INCEN"  property="saturdayIncen" jdbcType="DECIMAL" />
+        </association>
+        <association property="august" javaType="com.ait.ar.countAttendance.dto.ArCountInfoOtMonthDto">
+            <result column="AUGUST"                property="total"         jdbcType="DECIMAL" />
+            <result column="AUGUST_NORMAL_WORK"     property="normalWork"    jdbcType="DECIMAL" />
+            <result column="AUGUST_SATURDAY"        property="saturday"      jdbcType="DECIMAL" />
+            <result column="AUGUST_WEEKLY_HOLIDAY"  property="weeklyHoliday" jdbcType="DECIMAL" />
+            <result column="AUGUST_PUBLIC_HOLIDAY"  property="publicHoliday" jdbcType="DECIMAL" />
+            <result column="AUGUST_MEAL_OT_INCEN"   property="mealOtIncen"   jdbcType="DECIMAL" />
+            <result column="AUGUST_NIGHT_INCEN"     property="nightIncen"    jdbcType="DECIMAL" />
+            <result column="AUGUST_SATURDAY_INCEN"  property="saturdayIncen" jdbcType="DECIMAL" />
+        </association>
+        <association property="september" javaType="com.ait.ar.countAttendance.dto.ArCountInfoOtMonthDto">
+            <result column="SEPTEMBER"                property="total"         jdbcType="DECIMAL" />
+            <result column="SEPTEMBER_NORMAL_WORK"     property="normalWork"    jdbcType="DECIMAL" />
+            <result column="SEPTEMBER_SATURDAY"        property="saturday"      jdbcType="DECIMAL" />
+            <result column="SEPTEMBER_WEEKLY_HOLIDAY"  property="weeklyHoliday" jdbcType="DECIMAL" />
+            <result column="SEPTEMBER_PUBLIC_HOLIDAY"  property="publicHoliday" jdbcType="DECIMAL" />
+            <result column="SEPTEMBER_MEAL_OT_INCEN"   property="mealOtIncen"   jdbcType="DECIMAL" />
+            <result column="SEPTEMBER_NIGHT_INCEN"     property="nightIncen"    jdbcType="DECIMAL" />
+            <result column="SEPTEMBER_SATURDAY_INCEN"  property="saturdayIncen" jdbcType="DECIMAL" />
+        </association>
+        <association property="october" javaType="com.ait.ar.countAttendance.dto.ArCountInfoOtMonthDto">
+            <result column="OCTOBER"                property="total"         jdbcType="DECIMAL" />
+            <result column="OCTOBER_NORMAL_WORK"     property="normalWork"    jdbcType="DECIMAL" />
+            <result column="OCTOBER_SATURDAY"        property="saturday"      jdbcType="DECIMAL" />
+            <result column="OCTOBER_WEEKLY_HOLIDAY"  property="weeklyHoliday" jdbcType="DECIMAL" />
+            <result column="OCTOBER_PUBLIC_HOLIDAY"  property="publicHoliday" jdbcType="DECIMAL" />
+            <result column="OCTOBER_MEAL_OT_INCEN"   property="mealOtIncen"   jdbcType="DECIMAL" />
+            <result column="OCTOBER_NIGHT_INCEN"     property="nightIncen"    jdbcType="DECIMAL" />
+            <result column="OCTOBER_SATURDAY_INCEN"  property="saturdayIncen" jdbcType="DECIMAL" />
+        </association>
+        <association property="november" javaType="com.ait.ar.countAttendance.dto.ArCountInfoOtMonthDto">
+            <result column="NOVEMBER"                property="total"         jdbcType="DECIMAL" />
+            <result column="NOVEMBER_NORMAL_WORK"     property="normalWork"    jdbcType="DECIMAL" />
+            <result column="NOVEMBER_SATURDAY"        property="saturday"      jdbcType="DECIMAL" />
+            <result column="NOVEMBER_WEEKLY_HOLIDAY"  property="weeklyHoliday" jdbcType="DECIMAL" />
+            <result column="NOVEMBER_PUBLIC_HOLIDAY"  property="publicHoliday" jdbcType="DECIMAL" />
+            <result column="NOVEMBER_MEAL_OT_INCEN"   property="mealOtIncen"   jdbcType="DECIMAL" />
+            <result column="NOVEMBER_NIGHT_INCEN"     property="nightIncen"    jdbcType="DECIMAL" />
+            <result column="NOVEMBER_SATURDAY_INCEN"  property="saturdayIncen" jdbcType="DECIMAL" />
+        </association>
+        <association property="december" javaType="com.ait.ar.countAttendance.dto.ArCountInfoOtMonthDto">
+            <result column="DECEMBER"                property="total"         jdbcType="DECIMAL" />
+            <result column="DECEMBER_NORMAL_WORK"     property="normalWork"    jdbcType="DECIMAL" />
+            <result column="DECEMBER_SATURDAY"        property="saturday"      jdbcType="DECIMAL" />
+            <result column="DECEMBER_WEEKLY_HOLIDAY"  property="weeklyHoliday" jdbcType="DECIMAL" />
+            <result column="DECEMBER_PUBLIC_HOLIDAY"  property="publicHoliday" jdbcType="DECIMAL" />
+            <result column="DECEMBER_MEAL_OT_INCEN"   property="mealOtIncen"   jdbcType="DECIMAL" />
+            <result column="DECEMBER_NIGHT_INCEN"     property="nightIncen"    jdbcType="DECIMAL" />
+            <result column="DECEMBER_SATURDAY_INCEN"  property="saturdayIncen" jdbcType="DECIMAL" />
+        </association>
+    </resultMap>
+
+    <!--
+        Tổng hợp tăng ca năm cho từng nhân viên, chi tiết theo từng tháng (12 tháng x 7 loại tăng ca).
+        Mã loại truyền cho GET_AR_OT_TOTAIL theo quy luật: mã tổng tháng = 30 + số thứ tự tháng (31..42),
+        mã chi tiết = (mã tổng tháng)*10 + số thứ tự loại (1..7: NORMAL_WORK, SATURDAY, WEEKLY_HOLIDAY,
+        PUBLIC_HOLIDAY, MEAL_OT_INCEN, NIGHT_INCEN, SATURDAY_INCEN) - suy ra từ mã tháng 1 (31, 311..317)
+        do người yêu cầu cung cấp; mã '201' là tổng tăng ca cả năm.
+        params.year được ArCountInfoListServiceImpl tính sẵn từ startTime (DD/MM/YYYY) để tránh phải
+        TO_CHAR(TO_DATE(#{startTime},'DD/MM/YYYY'),'YYYY') lặp lại ở từng cột GET_AR_OT_TOTAIL bên dưới.
+    -->
+    <select id="selectOtSummaryList" parameterType="com.ait.ar.countAttendance.dto.ArCountInfoOtSearchDto"
+            resultMap="ArCountInfoOtResultMap">
+        SELECT H.EMPID EMPID_ID,
+               H.LOCAL_NAME,
+               H.PERSON_ID PERSON_ID_ID,
+               GET_DEPT_NAME(H.DEPTNO, #{lang, jdbcType=VARCHAR}) DEPT_NAME,
+               GET_DEPT_NAME_BY_LEVEL(H.DEPTNO, H.CPNY_ID, '2', #{lang, jdbcType=VARCHAR}) TEAM_NAME,
+               GET_GLOBAL_NAME(H.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}) POST_GRADE_NO,
+               GET_GLOBAL_NAME(H.EMP_TYPE_CODE, #{lang, jdbcType=VARCHAR}) EMP_TYPE_NAME,
+               GET_GLOBAL_NAME(H.SHIFT_NO, #{lang, jdbcType=VARCHAR}) SHIFT_NAME,
+               #{year, jdbcType=VARCHAR} YEAR,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-01-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '201') OT_TOTAIL,
+
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-01-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '31')  JANUARY,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-01-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '311') JANUARY_NORMAL_WORK,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-01-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '312') JANUARY_SATURDAY,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-01-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '313') JANUARY_WEEKLY_HOLIDAY,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-01-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '314') JANUARY_PUBLIC_HOLIDAY,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-01-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '315') JANUARY_MEAL_OT_INCEN,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-01-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '316') JANUARY_NIGHT_INCEN,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-01-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '317') JANUARY_SATURDAY_INCEN,
+
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-02-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '31')  FEBRUARY,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-02-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '311') FEBRUARY_NORMAL_WORK,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-02-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '312') FEBRUARY_SATURDAY,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-02-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '313') FEBRUARY_WEEKLY_HOLIDAY,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-02-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '314') FEBRUARY_PUBLIC_HOLIDAY,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-02-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '315') FEBRUARY_MEAL_OT_INCEN,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-02-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '316') FEBRUARY_NIGHT_INCEN,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-02-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '317') FEBRUARY_SATURDAY_INCEN,
+
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-03-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '31')  MARCH,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-03-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '311') MARCH_NORMAL_WORK,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-03-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '312') MARCH_SATURDAY,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-03-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '313') MARCH_WEEKLY_HOLIDAY,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-03-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '314') MARCH_PUBLIC_HOLIDAY,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-03-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '315') MARCH_MEAL_OT_INCEN,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-03-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '316') MARCH_NIGHT_INCEN,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-03-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '317') MARCH_SATURDAY_INCEN,
+
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-04-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '31')  APRIL,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-04-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '311') APRIL_NORMAL_WORK,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-04-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '312') APRIL_SATURDAY,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-04-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '313') APRIL_WEEKLY_HOLIDAY,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-04-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '314') APRIL_PUBLIC_HOLIDAY,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-04-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '315') APRIL_MEAL_OT_INCEN,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-04-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '316') APRIL_NIGHT_INCEN,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-04-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '317') APRIL_SATURDAY_INCEN,
+
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-05-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '31')  MAY,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-05-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '311') MAY_NORMAL_WORK,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-05-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '312') MAY_SATURDAY,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-05-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '313') MAY_WEEKLY_HOLIDAY,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-05-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '314') MAY_PUBLIC_HOLIDAY,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-05-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '315') MAY_MEAL_OT_INCEN,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-05-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '316') MAY_NIGHT_INCEN,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-05-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '317') MAY_SATURDAY_INCEN,
+
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-06-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '31')  JUNE,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-06-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '311') JUNE_NORMAL_WORK,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-06-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '312') JUNE_SATURDAY,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-06-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '313') JUNE_WEEKLY_HOLIDAY,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-06-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '314') JUNE_PUBLIC_HOLIDAY,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-06-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '315') JUNE_MEAL_OT_INCEN,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-06-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '316') JUNE_NIGHT_INCEN,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-06-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '317') JUNE_SATURDAY_INCEN,
+
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-07-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '31')  JULY,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-07-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '311') JULY_NORMAL_WORK,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-07-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '312') JULY_SATURDAY,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-07-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '313') JULY_WEEKLY_HOLIDAY,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-07-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '314') JULY_PUBLIC_HOLIDAY,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-07-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '315') JULY_MEAL_OT_INCEN,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-07-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '316') JULY_NIGHT_INCEN,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-07-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '317') JULY_SATURDAY_INCEN,
+
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-08-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '31')  AUGUST,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-08-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '311') AUGUST_NORMAL_WORK,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-08-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '312') AUGUST_SATURDAY,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-08-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '313') AUGUST_WEEKLY_HOLIDAY,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-08-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '314') AUGUST_PUBLIC_HOLIDAY,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-08-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '315') AUGUST_MEAL_OT_INCEN,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-08-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '316') AUGUST_NIGHT_INCEN,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-08-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '317') AUGUST_SATURDAY_INCEN,
+
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-09-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '31')  SEPTEMBER,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-09-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '311') SEPTEMBER_NORMAL_WORK,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-09-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '312') SEPTEMBER_SATURDAY,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-09-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '313') SEPTEMBER_WEEKLY_HOLIDAY,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-09-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '314') SEPTEMBER_PUBLIC_HOLIDAY,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-09-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '315') SEPTEMBER_MEAL_OT_INCEN,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-09-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '316') SEPTEMBER_NIGHT_INCEN,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-09-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '317') SEPTEMBER_SATURDAY_INCEN,
+
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-10-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '31')  OCTOBER,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-10-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '311') OCTOBER_NORMAL_WORK,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-10-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '312') OCTOBER_SATURDAY,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-10-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '313') OCTOBER_WEEKLY_HOLIDAY,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-10-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '314') OCTOBER_PUBLIC_HOLIDAY,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-10-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '315') OCTOBER_MEAL_OT_INCEN,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-10-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '316') OCTOBER_NIGHT_INCEN,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-10-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '317') OCTOBER_SATURDAY_INCEN,
+
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-11-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '31')  NOVEMBER,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-11-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '311') NOVEMBER_NORMAL_WORK,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-11-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '312') NOVEMBER_SATURDAY,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-11-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '313') NOVEMBER_WEEKLY_HOLIDAY,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-11-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '314') NOVEMBER_PUBLIC_HOLIDAY,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-11-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '315') NOVEMBER_MEAL_OT_INCEN,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-11-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '316') NOVEMBER_NIGHT_INCEN,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-11-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '317') NOVEMBER_SATURDAY_INCEN,
+
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-12-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '31')  DECEMBER,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-12-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '311') DECEMBER_NORMAL_WORK,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-12-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '312') DECEMBER_SATURDAY,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-12-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '313') DECEMBER_WEEKLY_HOLIDAY,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-12-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '314') DECEMBER_PUBLIC_HOLIDAY,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-12-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '315') DECEMBER_MEAL_OT_INCEN,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-12-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '316') DECEMBER_NIGHT_INCEN,
+               GET_AR_OT_TOTAIL(#{year, jdbcType=VARCHAR}||'-12-01', #{cpnyId, jdbcType=VARCHAR}, H.PERSON_ID, '317') DECEMBER_SATURDAY_INCEN
+
+        FROM HR_DEPARTMENT D, HR_EMPLOYEE H
+        WHERE H.DEPTNO = D.DEPTNO
+          AND H.EMP_TYPE_CODE &lt;&gt; '10418'
+          AND H.PERSON_ID NOT LIKE '111111%'
+          AND H.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+          AND (H.DATE_LEFT IS NULL OR TO_CHAR(H.DATE_LEFT, 'YYYY/MM/DD') &gt;= TO_CHAR(ADD_MONTHS(TO_DATE(TO_CHAR(TO_DATE(#{startTime, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY/MM')||'/25','YYYY/MM/DD'),-1),'YYYY/MM/DD'))
+          <if test="keyword != null and keyword != ''">
+            AND (
+                UPPER(H.EMPID) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%'
+                OR CONVERTTOUNSIGN(UPPER(H.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{keyword, jdbcType=VARCHAR})) || '%'
+            )
+          </if>
+          <if test="deptNos != null and deptNos != ''">
+            AND INSTR(',' || #{deptNos, jdbcType=VARCHAR} || ',', ',' || H.DEPTNO || ',') &gt; 0
+          </if>
+          <if test="empTypeCode != null and empTypeCode != ''">
+            AND H.EMP_TYPE_CODE = #{empTypeCode, jdbcType=VARCHAR}
+          </if>
+          <if test="shiftNo != null and shiftNo != ''">
+            AND H.SHIFT_NO = #{shiftNo, jdbcType=VARCHAR}
+          </if>
+        ORDER BY H.EMPID
+    </select>
+
+</mapper>

@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["src/app/view-pa-work-flow/view-pa-work-flow.component.css"],
-  "sourcesContent": [".vpwf-loading-overlay {\n  position: fixed;\n  inset: 0;\n  background: rgba(0, 0, 0, 0.45);\n  z-index: 9999;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n\n.vpwf-loading-box {\n  min-width: 260px;\n  padding: 1.5rem;\n  text-align: center;\n  background: #fff;\n  border-radius: 0.5rem;\n  box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.175);\n}\n"],
-  "mappings": ";AAAA,CAAC;AACC,YAAU;AACV,SAAO;AACP,cAAY,KAAK,CAAC,EAAE,CAAC,EAAE,CAAC,EAAE;AAC1B,WAAS;AACT,WAAS;AACT,eAAa;AACb,mBAAiB;AACnB;AAEA,CAAC;AACC,aAAW;AACX,WAAS;AACT,cAAY;AACZ,cAAY;AACZ,iBAAe;AACf,cAAY,EAAE,KAAK,KAAK,KAAK,CAAC,EAAE,CAAC,EAAE,CAAC,EAAE;AACxC;",
-  "names": []
-}

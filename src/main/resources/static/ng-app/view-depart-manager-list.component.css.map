@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["src/app/view-depart-manager-list/view-depart-manager-list.component.css"],
-  "sourcesContent": [".vdm-btn-save {\n  color: #d97706;\n  border-color: #d97706;\n  margin-left: 4px;\n}\n\n.vdm-btn-export {\n  color: #52c41a;\n  border-color: #52c41a;\n  margin-left: 4px;\n}\n\n.vdm-mass-toolbar {\n  font-size: 0.85rem;\n}\n\n.vdm-tree-icon {\n  cursor: pointer;\n  width: 20px;\n  display: inline-block;\n  text-align: center;\n}\n\n.vdm-update-time {\n  font-size: 0.75rem;\n}\n\n.vdm-table {\n  font-size: 0.85rem;\n}\n"],
-  "mappings": ";AAAA,CAAC;AACC,SAAO;AACP,gBAAc;AACd,eAAa;AACf;AAEA,CAAC;AACC,SAAO;AACP,gBAAc;AACd,eAAa;AACf;AAEA,CAAC;AACC,aAAW;AACb;AAEA,CAAC;AACC,UAAQ;AACR,SAAO;AACP,WAAS;AACT,cAAY;AACd;AAEA,CAAC;AACC,aAAW;AACb;AAEA,CAAC;AACC,aAAW;AACb;",
-  "names": []
-}

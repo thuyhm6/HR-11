@@ -1,0 +1,15 @@
+<div class="topbar-item d-flex align-items-center" nz-dropdown nzTrigger="click" [nzDropdownMenu]="lswLangMenu"
+     [title]="'topbar.language' | translate:'Ngôn ngữ'">
+  <span class="topbar-button d-flex align-items-center gap-1">
+    <iconify-icon icon="solar:global-bold-duotone" class="fs-24 align-middle"></iconify-icon>
+    <span class="d-none d-md-inline text-uppercase">{{ i18n.currentLang() }}</span>
+  </span>
+</div>
+
+<nz-dropdown-menu #lswLangMenu="nzDropdownMenu">
+  <ul nz-menu>
+    <li nz-menu-item *ngFor="let lang of languages" [nzSelected]="i18n.currentLang() === lang.code" (click)="select(lang.code)">
+      {{ lang.nativeName }}
+    </li>
+  </ul>
+</nz-dropdown-menu>

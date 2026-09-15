@@ -1,0 +1,31 @@
+/* Header 2 hàng (rowspan/colspan) nên không dùng nzScroll (xem giải thích ở dept-ot-apply-info -
+   nz-table chỉ đồng bộ độ rộng cột theo hàng đầu tiên của thead nên không tự co giãn đúng với header
+   nhiều hàng có colspan/rowspan). Để vẫn cố định tiêu đề + chỉ cuộn phần dữ liệu (giống
+   coord-apply-attendance-info) mà không dùng được nzScroll, tự giới hạn chiều cao + overflow ngay trên
+   .ant-table-container (khối bọc <table>, KHÔNG bọc luôn thanh phân trang - thanh phân trang là 1 phần
+   tử riêng nằm ngoài .ant-table-container trong DOM của nz-table) rồi dùng position:sticky cho <thead>.
+   Phải dùng ::ng-deep vì .ant-table-container là DOM nội bộ do nz-table tự sinh ra, nằm ngoài template
+   của component này nên CSS encapsulation mặc định của Angular không chạm tới được. */
+::ng-deep .omll-table .ant-table-container {
+  max-height: calc(100vh - 430px);
+  overflow: auto;
+}
+::ng-deep .omll-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+::ng-deep .omll-table thead th {
+  background-color: #fafafa;
+}
+
+/* Header 2 hàng (rowspan/colspan) nên không dùng nzScroll (tableLayout=auto) - chỉ cần giới hạn độ rộng
+   tối thiểu cho 65 cột số (13 kỳ x 5 loại) để bảng không bị bóp quá chật, giống acil-ot-table. */
+.omll-table .omll-num {
+  min-width: 70px;
+}
+
+.btn-export {
+  color: #52c41a;
+  border-color: #52c41a;
+}

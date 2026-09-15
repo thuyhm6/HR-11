@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["src/app/reg-personal-target/reg-personal-target.component.css"],
-  "sourcesContent": [".rpt-item-table :where(td, th) {\n  vertical-align: middle;\n}\n\n.rpt-clickable {\n  cursor: pointer;\n}\n.rpt-clickable:hover {\n  background-color: #f0f4ff;\n}\n\n.rpt-edit-row {\n  background-color: #fff9e6 !important;\n}\n\n.rpt-total-ok {\n  color: #198754 !important;\n}\n.rpt-total-err {\n  color: #dc3545 !important;\n}\n"],
-  "mappings": ";AAAA,CAAC,eAAe,OAAO,IAAI;AACzB,kBAAgB;AAClB;AAEA,CAAC;AACC,UAAQ;AACV;AACA,CAHC,aAGa;AACZ,oBAAkB;AACpB;AAEA,CAAC;AACC,oBAAkB;AACpB;AAEA,CAAC;AACC,SAAO;AACT;AACA,CAAC;AACC,SAAO;AACT;",
-  "names": []
-}

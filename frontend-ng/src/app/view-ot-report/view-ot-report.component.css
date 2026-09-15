@@ -45,6 +45,20 @@ td.ot-metric-col {
   white-space: nowrap;
 }
 
-.table-scroll-wrapper {
-  overflow-x: auto;
+/* Cố định tiêu đề (header 3 hàng rowspan/colspan) + chỉ cuộn phần dữ liệu, giống ot-month-limit-list:
+   không dùng được nzScroll (xem giải thích ở view-ot-report.component.html) nên tự giới hạn chiều cao +
+   overflow ngay trên .ant-table-container (DOM nội bộ nz-table, ngoài template component nên phải dùng
+   ::ng-deep) rồi sticky <thead> - thanh phân trang nằm ngoài .ant-table-container nên không bị cuốn vào
+   vùng cuộn. */
+::ng-deep .otr-table .ant-table-container {
+  max-height: calc(100vh - 380px);
+  overflow: auto;
+}
+::ng-deep .otr-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+::ng-deep .otr-table thead th {
+  background-color: #fafafa;
 }

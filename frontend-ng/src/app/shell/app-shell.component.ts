@@ -14,6 +14,7 @@ import { TranslatePipe } from '../i18n/translate.pipe';
 import { ChangePasswordModalComponent } from './change-password-modal.component';
 import { ExternalTabComponent } from './external-tab.component';
 import { ForcePasswordChangeModalComponent } from './force-password-change-modal.component';
+import { LanguageSwitcherComponent } from './language-switcher.component';
 import { LockScreenOverlayComponent } from './lock-screen-overlay.component';
 import { LockScreenService } from './lock-screen.service';
 import { NotificationsDropdownComponent } from './notifications-dropdown.component';
@@ -52,6 +53,7 @@ const I18N_KEYS = [
     NzDropdownModule,
     NzBadgeModule,
     NotificationsDropdownComponent,
+    LanguageSwitcherComponent,
     ThemeSettingsComponent,
     ForcePasswordChangeModalComponent,
     LockScreenOverlayComponent,
@@ -89,6 +91,7 @@ export class AppShellComponent implements OnInit, OnDestroy {
   /** Trang Thymeleaf cũ đã được migrate sang Angular - map URL cũ (lưu trong DB menu) sang route Angular. */
   private static readonly MIGRATED_ROUTES: Record<string, string> = {
     '/ess/infoApply/viewDeptOtApplyInfo': '/dept-ot-apply-info',
+    '/ess/infoApply/viewOverTimeLimtShenPiList': '/ot-month-limit-list',
     '/ess/viewDept/ManageEmpPositionInfoList': '/manage-emp-position-info',
     '/ess/viewDept/ManageCountInfoList': '/manage-count-info',
     '/evs/manage/viewEvsResultEmp': '/evs-result-emp',
@@ -127,6 +130,7 @@ export class AppShellComponent implements OnInit, OnDestroy {
     '/ess/infoApply/viewOtReport': '/view-ot-report',
     '/ess/viewDept/viewArPersonalList': '/view-ar-personal-list',
     '/ess/viewDept/viewOtApplyPersonalList': '/view-ot-apply-personal-list',
+    '/ar/countAttendance/arCountInfoList': '/ar-count-info-list',
     '/ar/attendanceSettings/viewClassCalendar': '/view-class-calendar',
     '/ar/attendanceSettings/viewCycleParameter': '/view-cycle-parameter',
     '/ar/attendanceSettings/viewCycle': '/view-cycle',

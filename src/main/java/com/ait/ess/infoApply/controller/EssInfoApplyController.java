@@ -4,12 +4,15 @@ import com.ait.ess.infoApply.dto.EssCwaAbnormalDto;
 import com.ait.ess.infoApply.dto.EssCoordApplyOtInfoDto;
 import com.ait.ess.infoApply.dto.EssDeptOtApplyInfoDto;
 import com.ait.ess.infoApply.dto.EssOtApplyListDto;
+import com.ait.ess.infoApply.dto.EssOtMonthLimitDto;
+import com.ait.ess.infoApply.dto.EssOtMonthLimitSearchDto;
 import com.ait.ess.infoApply.dto.EssOtReportDto;
 import com.ait.ess.infoApply.dto.EssPersonOtInfoDto;
 import com.ait.ess.infoApply.service.EssCwaAbnormalService;
 import com.ait.ess.infoApply.service.EssCoordApplyOtInfoService;
 import com.ait.ess.infoApply.service.EssDeptOtApplyInfoService;
 import com.ait.ess.infoApply.service.EssOtApplyService;
+import com.ait.ess.infoApply.service.EssOtMonthLimitService;
 import com.ait.ess.infoApply.service.EssOtReportService;
 import com.ait.ess.infoApply.service.EssPersonOtInfoService;
 import com.ait.sy.sys.dto.DataTablesResponse;
@@ -54,6 +57,9 @@ public class EssInfoApplyController {
 
     @Autowired
     private EssDeptOtApplyInfoService essDeptOtApplyInfoService;
+
+    @Autowired
+    private EssOtMonthLimitService essOtMonthLimitService;
 
     // Trang Thymeleaf viewSSTOtApplyInfo.html đã được thay bằng Angular route /sst-ot-apply-info
     // (xem frontend-ng/src/app/sst-ot-apply-info/ và MIGRATED_ROUTES trong app-shell.component.ts) -
@@ -269,5 +275,21 @@ public class EssInfoApplyController {
     @GetMapping("/api/deptOtApplyInfo/export")
     public void exportDeptOtApplyInfo(EssDeptOtApplyInfoDto params, HttpServletResponse response) throws IOException {
         essDeptOtApplyInfoService.exportReport(params, response);
+    }
+
+    // Trang Thymeleaf viewOverTimeLimtShenPiList.html đã được thay bằng Angular route /ot-month-limit-list
+    // (xem frontend-ng/src/app/ot-month-limit-list/ và MIGRATED_ROUTES trong app-shell.component.ts).
+
+    @GetMapping("/api/otMonthLimit/list")
+    @ResponseBody
+    public ResponseEntity<List<EssOtMonthLimitDto>> getOtMonthLimitList(
+            @RequestParam String year,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String deptNos) {
+        EssOtMonthLimitSearchDto params = new EssOtMonthLimitSearchDto();
+        params.setYear(year);
+        params.setKeyword(keyword);
+        params.setDeptNos(deptNos);
+        return ResponseEntity.ok(essOtMonthLimitService.getOtMonthLimitList(params));
     }
 }

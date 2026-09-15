@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["src/app/view-start-point/view-start-point.component.css"],
-  "sourcesContent": [".vsp-decision-row {\n  cursor: pointer;\n}\n.vsp-decision-row:hover {\n  background: #fafafa;\n}\n.vsp-decision-row-active {\n  background: #e6f4ff;\n}\n.vsp-loading {\n  opacity: 0.6;\n  pointer-events: none;\n}\n"],
-  "mappings": ";AAAA,CAAC;AACC,UAAQ;AACV;AACA,CAHC,gBAGgB;AACf,cAAY;AACd;AACA,CAAC;AACC,cAAY;AACd;AACA,CAAC;AACC,WAAS;AACT,kBAAgB;AAClB;",
-  "names": []
-}

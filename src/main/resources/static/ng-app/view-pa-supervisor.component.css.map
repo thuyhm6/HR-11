@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["src/app/view-pa-supervisor/view-pa-supervisor.component.css"],
-  "sourcesContent": [".vps-btn-export {\n  color: #52c41a;\n  border-color: #52c41a;\n}\n\n.vps-row-clickable {\n  cursor: pointer;\n}\n\n.vps-tree-scroll {\n  max-height: calc(100vh - 480px);\n  overflow-y: auto;\n}\n"],
-  "mappings": ";AAAA,CAAC;AACC,SAAO;AACP,gBAAc;AAChB;AAEA,CAAC;AACC,UAAQ;AACV;AAEA,CAAC;AACC,cAAY,KAAK,MAAM,EAAE;AACzB,cAAY;AACd;",
-  "names": []
-}

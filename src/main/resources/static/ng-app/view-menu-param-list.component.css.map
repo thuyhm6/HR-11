@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["src/app/view-menu-param-list/view-menu-param-list.component.css"],
-  "sourcesContent": [".vmpl-btn-export {\n  color: #52c41a;\n  border-color: #52c41a;\n}\n\n.vmpl-company-select {\n  min-width: 320px;\n}\n\n.vmpl-tree-scroll {\n  max-height: 700px;\n  overflow-y: auto;\n}\n"],
-  "mappings": ";AAAA,CAAC;AACC,SAAO;AACP,gBAAc;AAChB;AAEA,CAAC;AACC,aAAW;AACb;AAEA,CAAC;AACC,cAAY;AACZ,cAAY;AACd;",
-  "names": []
-}

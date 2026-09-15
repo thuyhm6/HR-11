@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["src/app/view-pa-emp-account/view-pa-emp-account.component.css"],
-  "sourcesContent": [".vpea-btn-export {\n  color: #52c41a;\n  border-color: #52c41a;\n}\n\n.vpea-row-clickable {\n  cursor: pointer;\n}\n"],
-  "mappings": ";AAAA,CAAC;AACC,SAAO;AACP,gBAAc;AAChB;AAEA,CAAC;AACC,UAAQ;AACV;",
-  "names": []
-}

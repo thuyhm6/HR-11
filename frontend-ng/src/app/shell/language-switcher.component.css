@@ -1,0 +1,11 @@
+.topbar-button {
+  display: inline-flex;
+  align-items: center;
+  color: inherit;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+.topbar-button:hover {
+  background: rgba(255, 255, 255, 0.15);
+}

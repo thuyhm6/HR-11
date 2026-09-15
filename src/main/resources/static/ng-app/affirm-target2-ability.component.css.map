@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["src/app/affirm-target2-ability/affirm-target2-ability.component.css"],
-  "sourcesContent": [".vat2a-score-select {\n  min-width: 120px;\n}\n"],
-  "mappings": ";AAAA,CAAC;AACC,aAAW;AACb;",
-  "names": []
-}

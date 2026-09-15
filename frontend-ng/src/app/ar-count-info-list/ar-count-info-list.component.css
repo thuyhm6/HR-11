@@ -1,0 +1,62 @@
+.table-scroll-wrapper {
+  overflow-x: auto;
+}
+
+/* Tab "Nghỉ phép" - cột số động (theo AR_ITEM) không xác định trước, giữ sticky bằng CSS thủ công
+   thay vì nzScroll/nzLeft, giống hệt view-ar-personal-list. */
+.acil-leave-table {
+  table-layout: fixed;
+}
+.acil-sticky {
+  position: sticky;
+  z-index: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background-color: #fff;
+}
+.acil-leave-table thead .acil-sticky {
+  background-color: #e6f4ff;
+  z-index: 3;
+}
+.acil-sticky-0 {
+  width: 40px;
+  left: 0;
+}
+.acil-sticky-1 {
+  width: 90px;
+  left: 40px;
+}
+.acil-sticky-2 {
+  width: 160px;
+  left: 130px;
+}
+.acil-sticky-3 {
+  width: 150px;
+  left: 290px;
+  box-shadow: 6px 0 10px -2px rgba(0, 0, 0, .25);
+}
+
+.acil-nowrap {
+  white-space: nowrap;
+}
+
+/* Cột số: giới hạn độ rộng, cho phép tiêu đề xuống dòng - dùng chung cho cả 2 tab. */
+.acil-num {
+  width: 60px;
+}
+.acil-leave-table thead th.acil-num {
+  white-space: normal;
+  word-break: break-word;
+}
+
+/* Tab "Tăng ca" - header 2 hàng (rowspan/colspan) nên không dùng nzScroll (tableLayout=auto), chỉ cần
+   giới hạn độ rộng tối thiểu cho 84 cột số (12 tháng x 7 loại) để bảng không bị bóp quá chật. */
+.acil-ot-table .acil-num {
+  min-width: 70px;
+}
+
+.btn-export {
+  color: #52c41a;
+  border-color: #52c41a;
+}

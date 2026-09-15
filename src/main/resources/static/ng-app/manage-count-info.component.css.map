@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["src/app/manage-count-info/manage-count-info.component.css"],
-  "sourcesContent": [".mci-total-card {\n  border-color: #1a3fa0;\n}\n.mci-total-count {\n  font-size: 2.5rem;\n  font-weight: 700;\n  color: #1a3fa0;\n  line-height: 1.2;\n}\n\n.btn-export {\n  color: #52c41a;\n  border-color: #52c41a;\n}\n"],
-  "mappings": ";AAAA,CAAC;AACC,gBAAc;AAChB;AACA,CAAC;AACC,aAAW;AACX,eAAa;AACb,SAAO;AACP,eAAa;AACf;AAEA,CAAC;AACC,SAAO;AACP,gBAAc;AAChB;",
-  "names": []
-}

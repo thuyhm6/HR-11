@@ -2,8 +2,7 @@
   <nz-sider nzCollapsible [nzCollapsed]="sidebarCollapsed()" [nzTrigger]="null" [nzWidth]="240" [nzCollapsedWidth]="64" class="app-sider">
     <div class="logo-box">
       <a routerLink="/dashboard" class="d-flex align-items-center text-white text-decoration-none px-2">
-        <i class="bx bx-buildings fs-22 me-2"></i>
-        <span class="fw-bold" *ngIf="!sidebarCollapsed()">VHR</span>
+        <img src="/assets/images/logo.jpg" alt="VHR" class="app-logo-img me-2">
       </a>
     </div>
 
@@ -61,7 +60,6 @@
           <button type="button" class="button-toggle-menu me-2" (click)="toggleSidebar()">
             <iconify-icon icon="solar:hamburger-menu-broken" class="fs-24 align-middle"></iconify-icon>
           </button>
-          <span class="fw-bold fs-18">VHR System</span>
         </div>
 
         <!-- Menu ngang theo ngữ cảnh: rỗng ban đầu, chỉ hiện khi bấm 1 menu ở sidebar (hoặc chính
@@ -102,6 +100,8 @@
         <div class="d-flex align-items-center gap-1 topbar-actions ms-auto flex-shrink-0">
           <app-notifications-dropdown [mode]="notificationMode()"></app-notifications-dropdown>
 
+          <app-language-switcher></app-language-switcher>
+
           <div class="topbar-item d-none d-md-flex">
             <button type="button" class="topbar-button" (click)="openThemeSettings()">
               <iconify-icon icon="solar:settings-bold-duotone" class="fs-24 align-middle"></iconify-icon>
@@ -116,7 +116,6 @@
           </div>
           <nz-dropdown-menu #userMenu="nzDropdownMenu">
             <ul nz-menu class="user-dropdown-menu">
-              <li class="dropdown-header-item">{{ user()?.employeeName || user()?.username || 'HR System' }}</li>
               <li nz-menu-divider></li>
               <li *ngIf="user()?.hasSysTypeZeroMenus" nz-menu-item>
                 <a href="/sys/hrm" target="_blank" rel="noopener noreferrer" (click)="openHrmManagementSystem($event)" class="d-flex align-items-center text-reset text-decoration-none">

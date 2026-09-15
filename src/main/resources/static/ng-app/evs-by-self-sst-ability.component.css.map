@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["src/app/evs-by-self-sst-ability/evs-by-self-sst-ability.component.css"],
-  "sourcesContent": [".vebssa-score-select {\n  min-width: 110px;\n}\n"],
-  "mappings": ";AAAA,CAAC;AACC,aAAW;AACb;",
-  "names": []
-}

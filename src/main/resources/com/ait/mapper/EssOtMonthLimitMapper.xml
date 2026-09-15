@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ait.ess.infoApply.mapper.EssOtMonthLimitMapper">
+
+    <!-- 5 cột con dùng chung cho mỗi kỳ (cả năm / 1 tháng) - khai báo 1 lần bằng <sql> rồi include lại
+         13 lần (year + 12 tháng) để không phải lặp tay từng dòng result. -->
+    <resultMap id="EssOtMonthLimitResultMap" type="com.ait.ess.infoApply.dto.EssOtMonthLimitDto">
+        <result property="empId"     column="EMPID"      jdbcType="VARCHAR" />
+        <result property="localName" column="LOCAL_NAME"  jdbcType="VARCHAR" />
+
+        <association property="yearTotal" javaType="com.ait.ess.infoApply.dto.EssOtMonthLimitPeriodDto">
+            <result property="total"        column="YEAR_TOTAL"         jdbcType="DECIMAL" />
+            <result property="approval"     column="YEAR_APPROVAL"      jdbcType="DECIMAL" />
+            <result property="satApproval"  column="YEAR_SAT_APPROVAL"  jdbcType="DECIMAL" />
+            <result property="request"      column="YEAR_REQUEST"       jdbcType="DECIMAL" />
+            <result property="satRequest"   column="YEAR_SAT_REQUEST"   jdbcType="DECIMAL" />
+        </association>
+        <association property="january" javaType="com.ait.ess.infoApply.dto.EssOtMonthLimitPeriodDto">
+            <result property="total"        column="JAN_TOTAL"         jdbcType="DECIMAL" />
+            <result property="approval"     column="JAN_APPROVAL"      jdbcType="DECIMAL" />
+            <result property="satApproval"  column="JAN_SAT_APPROVAL"  jdbcType="DECIMAL" />
+            <result property="request"      column="JAN_REQUEST"       jdbcType="DECIMAL" />
+            <result property="satRequest"   column="JAN_SAT_REQUEST"   jdbcType="DECIMAL" />
+        </association>
+        <association property="february" javaType="com.ait.ess.infoApply.dto.EssOtMonthLimitPeriodDto">
+            <result property="total"        column="FEB_TOTAL"         jdbcType="DECIMAL" />
+            <result property="approval"     column="FEB_APPROVAL"      jdbcType="DECIMAL" />
+            <result property="satApproval"  column="FEB_SAT_APPROVAL"  jdbcType="DECIMAL" />
+            <result property="request"      column="FEB_REQUEST"       jdbcType="DECIMAL" />
+            <result property="satRequest"   column="FEB_SAT_REQUEST"   jdbcType="DECIMAL" />
+        </association>
+        <association property="march" javaType="com.ait.ess.infoApply.dto.EssOtMonthLimitPeriodDto">
+            <result property="total"        column="MAR_TOTAL"         jdbcType="DECIMAL" />
+            <result property="approval"     column="MAR_APPROVAL"      jdbcType="DECIMAL" />
+            <result property="satApproval"  column="MAR_SAT_APPROVAL"  jdbcType="DECIMAL" />
+            <result property="request"      column="MAR_REQUEST"       jdbcType="DECIMAL" />
+            <result property="satRequest"   column="MAR_SAT_REQUEST"   jdbcType="DECIMAL" />
+        </association>
+        <association property="april" javaType="com.ait.ess.infoApply.dto.EssOtMonthLimitPeriodDto">
+            <result property="total"        column="APR_TOTAL"         jdbcType="DECIMAL" />
+            <result property="approval"     column="APR_APPROVAL"      jdbcType="DECIMAL" />
+            <result property="satApproval"  column="APR_SAT_APPROVAL"  jdbcType="DECIMAL" />
+            <result property="request"      column="APR_REQUEST"       jdbcType="DECIMAL" />
+            <result property="satRequest"   column="APR_SAT_REQUEST"   jdbcType="DECIMAL" />
+        </association>
+        <association property="may" javaType="com.ait.ess.infoApply.dto.EssOtMonthLimitPeriodDto">
+            <result property="total"        column="MAY_TOTAL"         jdbcType="DECIMAL" />
+            <result property="approval"     column="MAY_APPROVAL"      jdbcType="DECIMAL" />
+            <result property="satApproval"  column="MAY_SAT_APPROVAL"  jdbcType="DECIMAL" />
+            <result property="request"      column="MAY_REQUEST"       jdbcType="DECIMAL" />
+            <result property="satRequest"   column="MAY_SAT_REQUEST"   jdbcType="DECIMAL" />
+        </association>
+        <association property="june" javaType="com.ait.ess.infoApply.dto.EssOtMonthLimitPeriodDto">
+            <result property="total"        column="JUN_TOTAL"         jdbcType="DECIMAL" />
+            <result property="approval"     column="JUN_APPROVAL"      jdbcType="DECIMAL" />
+            <result property="satApproval"  column="JUN_SAT_APPROVAL"  jdbcType="DECIMAL" />
+            <result property="request"      column="JUN_REQUEST"       jdbcType="DECIMAL" />
+            <result property="satRequest"   column="JUN_SAT_REQUEST"   jdbcType="DECIMAL" />
+        </association>
+        <association property="july" javaType="com.ait.ess.infoApply.dto.EssOtMonthLimitPeriodDto">
+            <result property="total"        column="JUL_TOTAL"         jdbcType="DECIMAL" />
+            <result property="approval"     column="JUL_APPROVAL"      jdbcType="DECIMAL" />
+            <result property="satApproval"  column="JUL_SAT_APPROVAL"  jdbcType="DECIMAL" />
+            <result property="request"      column="JUL_REQUEST"       jdbcType="DECIMAL" />
+            <result property="satRequest"   column="JUL_SAT_REQUEST"   jdbcType="DECIMAL" />
+        </association>
+        <association property="august" javaType="com.ait.ess.infoApply.dto.EssOtMonthLimitPeriodDto">
+            <result property="total"        column="AUG_TOTAL"         jdbcType="DECIMAL" />
+            <result property="approval"     column="AUG_APPROVAL"      jdbcType="DECIMAL" />
+            <result property="satApproval"  column="AUG_SAT_APPROVAL"  jdbcType="DECIMAL" />
+            <result property="request"      column="AUG_REQUEST"       jdbcType="DECIMAL" />
+            <result property="satRequest"   column="AUG_SAT_REQUEST"   jdbcType="DECIMAL" />
+        </association>
+        <association property="september" javaType="com.ait.ess.infoApply.dto.EssOtMonthLimitPeriodDto">
+            <result property="total"        column="SEP_TOTAL"         jdbcType="DECIMAL" />
+            <result property="approval"     column="SEP_APPROVAL"      jdbcType="DECIMAL" />
+            <result property="satApproval"  column="SEP_SAT_APPROVAL"  jdbcType="DECIMAL" />
+            <result property="request"      column="SEP_REQUEST"       jdbcType="DECIMAL" />
+            <result property="satRequest"   column="SEP_SAT_REQUEST"   jdbcType="DECIMAL" />
+        </association>
+        <association property="october" javaType="com.ait.ess.infoApply.dto.EssOtMonthLimitPeriodDto">
+            <result property="total"        column="OCT_TOTAL"         jdbcType="DECIMAL" />
+            <result property="approval"     column="OCT_APPROVAL"      jdbcType="DECIMAL" />
+            <result property="satApproval"  column="OCT_SAT_APPROVAL"  jdbcType="DECIMAL" />
+            <result property="request"      column="OCT_REQUEST"       jdbcType="DECIMAL" />
+            <result property="satRequest"   column="OCT_SAT_REQUEST"   jdbcType="DECIMAL" />
+        </association>
+        <association property="november" javaType="com.ait.ess.infoApply.dto.EssOtMonthLimitPeriodDto">
+            <result property="total"        column="NOV_TOTAL"         jdbcType="DECIMAL" />
+            <result property="approval"     column="NOV_APPROVAL"      jdbcType="DECIMAL" />
+            <result property="satApproval"  column="NOV_SAT_APPROVAL"  jdbcType="DECIMAL" />
+            <result property="request"      column="NOV_REQUEST"       jdbcType="DECIMAL" />
+            <result property="satRequest"   column="NOV_SAT_REQUEST"   jdbcType="DECIMAL" />
+        </association>
+        <association property="december" javaType="com.ait.ess.infoApply.dto.EssOtMonthLimitPeriodDto">
+            <result property="total"        column="DEC_TOTAL"         jdbcType="DECIMAL" />
+            <result property="approval"     column="DEC_APPROVAL"      jdbcType="DECIMAL" />
+            <result property="satApproval"  column="DEC_SAT_APPROVAL"  jdbcType="DECIMAL" />
+            <result property="request"      column="DEC_REQUEST"       jdbcType="DECIMAL" />
+            <result property="satRequest"   column="DEC_SAT_REQUEST"   jdbcType="DECIMAL" />
+        </association>
+    </resultMap>
+
+    <!--
+        Theo dõi tăng ca tháng (/ess/infoApply/viewOverTimeLimtShenPiList) - tổng hợp cả năm + từng
+        tháng cho từng nhân viên, dựa trên SQL do người yêu cầu cung cấp (function GET_AR_OT_TOTAIL với
+        mã loại: 500x/500=Tổng, 600x/600=Đã duyệt tăng ca, 900x/900=Đã duyệt phụ cấp thứ 7,
+        800x/800=Đăng ký tăng ca, 700x/700=Đăng ký phụ cấp thứ 7 - "x" chỉ áp dụng cho mã cả năm).
+        Đã sửa thiếu dấu phẩy giữa đối số ngày và #{cpnyId} so với SQL gốc người yêu cầu cung cấp (gây lỗi
+        cú pháp), theo đúng cách gọi GET_AR_OT_TOTAIL(ngày, cpnyId, personId, mã loại) đã dùng ở
+        ArCountInfoListMapper.xml / EssDeptOtApplyInfoMapper.xml.
+    -->
+    <select id="selectOtMonthLimitList" parameterType="com.ait.ess.infoApply.dto.EssOtMonthLimitSearchDto"
+            resultMap="EssOtMonthLimitResultMap">
+        SELECT
+            HR.EMPID      AS EMPID,
+            HR.LOCAL_NAME AS LOCAL_NAME,
+
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0101'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '5001') AS YEAR_TOTAL,
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0101'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '6001') AS YEAR_APPROVAL,
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0101'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '9001') AS YEAR_SAT_APPROVAL,
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0101'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '8001') AS YEAR_REQUEST,
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0101'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '7001') AS YEAR_SAT_REQUEST,
+
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0101'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '500') AS JAN_TOTAL,
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0101'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '600') AS JAN_APPROVAL,
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0101'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '900') AS JAN_SAT_APPROVAL,
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0101'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '800') AS JAN_REQUEST,
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0101'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '700') AS JAN_SAT_REQUEST,
+
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0102'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '500') AS FEB_TOTAL,
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0102'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '600') AS FEB_APPROVAL,
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0102'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '900') AS FEB_SAT_APPROVAL,
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0102'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '800') AS FEB_REQUEST,
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0102'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '700') AS FEB_SAT_REQUEST,
+
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0103'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '500') AS MAR_TOTAL,
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0103'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '600') AS MAR_APPROVAL,
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0103'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '900') AS MAR_SAT_APPROVAL,
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0103'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '800') AS MAR_REQUEST,
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0103'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '700') AS MAR_SAT_REQUEST,
+
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0104'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '500') AS APR_TOTAL,
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0104'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '600') AS APR_APPROVAL,
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0104'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '900') AS APR_SAT_APPROVAL,
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0104'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '800') AS APR_REQUEST,
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0104'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '700') AS APR_SAT_REQUEST,
+
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0105'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '500') AS MAY_TOTAL,
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0105'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '600') AS MAY_APPROVAL,
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0105'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '900') AS MAY_SAT_APPROVAL,
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0105'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '800') AS MAY_REQUEST,
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0105'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '700') AS MAY_SAT_REQUEST,
+
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0106'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '500') AS JUN_TOTAL,
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0106'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '600') AS JUN_APPROVAL,
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0106'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '900') AS JUN_SAT_APPROVAL,
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0106'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '800') AS JUN_REQUEST,
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0106'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '700') AS JUN_SAT_REQUEST,
+
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0107'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '500') AS JUL_TOTAL,
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0107'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '600') AS JUL_APPROVAL,
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0107'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '900') AS JUL_SAT_APPROVAL,
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0107'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '800') AS JUL_REQUEST,
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0107'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '700') AS JUL_SAT_REQUEST,
+
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0108'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '500') AS AUG_TOTAL,
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0108'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '600') AS AUG_APPROVAL,
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0108'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '900') AS AUG_SAT_APPROVAL,
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0108'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '800') AS AUG_REQUEST,
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0108'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '700') AS AUG_SAT_REQUEST,
+
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0109'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '500') AS SEP_TOTAL,
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0109'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '600') AS SEP_APPROVAL,
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0109'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '900') AS SEP_SAT_APPROVAL,
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0109'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '800') AS SEP_REQUEST,
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0109'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '700') AS SEP_SAT_REQUEST,
+
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0110'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '500') AS OCT_TOTAL,
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0110'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '600') AS OCT_APPROVAL,
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0110'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '900') AS OCT_SAT_APPROVAL,
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0110'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '800') AS OCT_REQUEST,
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0110'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '700') AS OCT_SAT_REQUEST,
+
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0111'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '500') AS NOV_TOTAL,
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0111'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '600') AS NOV_APPROVAL,
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0111'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '900') AS NOV_SAT_APPROVAL,
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0111'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '800') AS NOV_REQUEST,
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0111'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '700') AS NOV_SAT_REQUEST,
+
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0112'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '500') AS DEC_TOTAL,
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0112'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '600') AS DEC_APPROVAL,
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0112'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '900') AS DEC_SAT_APPROVAL,
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0112'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '800') AS DEC_REQUEST,
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE('0112'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '700') AS DEC_SAT_REQUEST
+
+        FROM HR_EMPLOYEE HR
+        WHERE HR.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+          AND HR.EMPID NOT LIKE '111111%'
+          AND HR.EMP_TYPE_CODE &lt;&gt; '10418'
+          AND (HR.DATE_LEFT IS NULL OR TO_CHAR(HR.DATE_LEFT,'YYYY/MM/DD') &gt; TO_CHAR(TO_DATE('0101'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD')
+          AND TO_CHAR(HR.DATE_STARTED,'YYYY/MM/DD') &lt;= TO_CHAR(TO_DATE('0101'||#{year, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'))
+          <if test="keyword != null and keyword != ''">
+            AND (
+                UPPER(HR.EMPID) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%'
+                OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{keyword, jdbcType=VARCHAR})) || '%'
+            )
+          </if>
+          <if test="deptNos != null and deptNos != ''">
+            AND INSTR(',' || #{deptNos, jdbcType=VARCHAR} || ',', ',' || HR.DEPTNO || ',') &gt; 0
+          </if>
+        ORDER BY HR.EMPID
+    </select>
+
+</mapper>

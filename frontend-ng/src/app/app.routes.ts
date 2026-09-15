@@ -13,6 +13,7 @@ export const routes: Routes = [
     children: [
       { path: 'dashboard', loadComponent: () => import('./dashboard/dashboard.component').then(m => m.DashboardComponent), data: { sysType: '1' } },
       { path: 'dept-ot-apply-info', loadComponent: () => import('./dept-ot-apply-info/dept-ot-apply-info.component').then(m => m.DeptOtApplyInfoComponent) },
+      { path: 'ot-month-limit-list', loadComponent: () => import('./ot-month-limit-list/ot-month-limit-list.component').then(m => m.OtMonthLimitListComponent) },
       { path: 'manage-emp-position-info', loadComponent: () => import('./manage-emp-position-info/manage-emp-position-info.component').then(m => m.ManageEmpPositionInfoComponent) },
       { path: 'manage-count-info', loadComponent: () => import('./manage-count-info/manage-count-info.component').then(m => m.ManageCountInfoComponent) },
       { path: 'evs-result-emp', loadComponent: () => import('./evs-result-emp/evs-result-emp.component').then(m => m.EvsResultEmpComponent) },
@@ -37,6 +38,7 @@ export const routes: Routes = [
       { path: 'view-ot-report', loadComponent: () => import('./view-ot-report/view-ot-report.component').then(m => m.ViewOtReportComponent) },
       { path: 'view-ar-personal-list', loadComponent: () => import('./view-ar-personal-list/view-ar-personal-list.component').then(m => m.ViewArPersonalListComponent) },
       { path: 'view-ot-apply-personal-list', loadComponent: () => import('./view-ot-apply-personal-list/view-ot-apply-personal-list.component').then(m => m.ViewOtApplyPersonalListComponent) },
+      { path: 'ar-count-info-list', loadComponent: () => import('./ar-count-info-list/ar-count-info-list.component').then(m => m.ArCountInfoListComponent) },
       { path: 'view-class-calendar', loadComponent: () => import('./view-class-calendar/view-class-calendar.component').then(m => m.ViewClassCalendarComponent) },
       { path: 'view-ar-card-record', loadComponent: () => import('./view-ar-card-record/view-ar-card-record.component').then(m => m.ViewArCardRecordComponent) },
       { path: 'view-ar-card-record-day', loadComponent: () => import('./view-ar-card-record-day/view-ar-card-record-day.component').then(m => m.ViewArCardRecordDayComponent) },

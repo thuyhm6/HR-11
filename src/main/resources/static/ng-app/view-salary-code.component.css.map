@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["src/app/view-salary-code/view-salary-code.component.css"],
-  "sourcesContent": [".vsc-row-clickable {\n  cursor: pointer;\n}\n"],
-  "mappings": ";AAAA,CAAC;AACC,UAAQ;AACV;",
-  "names": []
-}

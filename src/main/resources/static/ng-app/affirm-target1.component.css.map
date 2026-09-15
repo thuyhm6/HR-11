@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["src/app/affirm-target1/affirm-target1.component.css"],
-  "sourcesContent": [".vat1-score-input {\n  width: 72px;\n  text-align: center;\n  margin: 0 auto;\n}\n\n.vat1-grade-display {\n  font-weight: 500;\n}\n"],
-  "mappings": ";AAAA,CAAC;AACC,SAAO;AACP,cAAY;AACZ,UAAQ,EAAE;AACZ;AAEA,CAAC;AACC,eAAa;AACf;",
-  "names": []
-}

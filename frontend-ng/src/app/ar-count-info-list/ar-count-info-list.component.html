@@ -1,0 +1,214 @@
+<div class="row">
+  <div class="col-12">
+    <!-- Điều kiện tìm kiếm - dùng chung cho cả 2 tab, đứng im khi cuộn (xem .sticky-filter-card trong styles.css) -->
+    <nz-card class="mb-3 sticky-filter-card">
+      <form class="row g-3 align-items-end" (ngSubmit)="search()">
+        <div class="col-md-3">
+          <label class="form-label">{{ 'essDept.dept' | translate:'Phòng ban' }}</label>
+          <nz-tree-select class="w-100" id="acil-deptNos" [nzNodes]="deptNodes()" [(ngModel)]="deptNos" name="deptNos"
+                           nzCheckable nzShowSearch nzAllowClear
+                           [nzPlaceHolder]="'vdp.search.dept.placeholder' | translate:'Chọn phòng ban'"
+                           nzDropdownClassName="acil-dept-tree-dropdown"></nz-tree-select>
+          <div *ngIf="deptTreeErrorMessage()" class="text-danger small mt-1">{{ deptTreeErrorMessage() }}</div>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'essDept.keyword' | translate:'Mã nhân viên / Họ tên' }}</label>
+          <input nz-input id="acil-keyword" [(ngModel)]="keyword" name="keyword"
+                 [placeholder]="'vdp.search.empKeyword.placeholder' | translate:'Nhập mã hoặc họ tên'">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'vapl.label.empType' | translate:'Loại nhân viên' }}</label>
+          <nz-select class="w-100" id="acil-empTypeCode" [(ngModel)]="empTypeCode" name="empTypeCode" nzAllowClear
+                     [nzPlaceHolder]="'common.selectAll' | translate:'-- Tất cả --'">
+            <nz-option *ngFor="let c of empTypeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'common.shift' | translate:'Ca' }}</label>
+          <nz-select class="w-100" id="acil-shiftNo" [(ngModel)]="shiftNo" name="shiftNo" nzAllowClear
+                     [nzPlaceHolder]="'attSearch.all' | translate:'-- Tất cả --'">
+            <nz-option *ngFor="let s of shiftOptions()" [nzValue]="s.shiftNo" [nzLabel]="s.nameVi || s.shiftName || s.shiftNo"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'vapl.label.startDate' | translate:'Ngày bắt đầu' }}</label>
+          <nz-date-picker class="w-100" id="acil-startDate" [(ngModel)]="startDate" name="startDate" nzFormat="yyyy/MM/dd"
+                           [nzAllowClear]="false"></nz-date-picker>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'vapl.label.endDate' | translate:'Ngày kết thúc' }}</label>
+          <nz-date-picker class="w-100" id="acil-endDate" [(ngModel)]="endDate" name="endDate" nzFormat="yyyy/MM/dd"
+                           [nzAllowClear]="false"></nz-date-picker>
+        </div>
+        <div class="col-12 d-flex align-items-end gap-2 flex-wrap">
+          <button nz-button nzType="primary" type="submit" id="acil-btn-search">
+            <i class="bx bx-search"></i> {{ 'essDept.search' | translate:'Tra cứu' }}
+          </button>
+          <button nz-button nzType="default" type="button" class="btn-export" id="acil-btn-export" (click)="exportExcel()">
+            <i class="bx bx-export"></i> {{ 'essDept.exportExcel' | translate:'Xuất Excel' }}
+          </button>
+        </div>
+      </form>
+    </nz-card>
+
+    <nz-card>
+      <nz-tabs [nzSelectedIndex]="activeTabIndex()" (nzSelectedIndexChange)="onTabIndexChange($event)">
+
+        <!-- Tab 1: Nghỉ phép - dữ liệu từ selectSummaryList (ArPersonalListMapper.xml), giống view-ar-personal-list -->
+        <nz-tab [nzTitle]="'ar.arCountInfoList.GERENKAOQINXIANKUANG.b' | translate:'Nghỉ phép'">
+          <nz-alert *ngIf="leaveErrorMessage()" nzType="error" [nzMessage]="leaveErrorMessage() ?? ''" class="mb-3"></nz-alert>
+
+          <div class="table-scroll-wrapper">
+            <nz-table [nzData]="leaveRows()" [nzLoading]="leaveLoading()" [nzPageSize]="25" nzShowSizeChanger
+                      [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="acilLeaveTotalTpl"
+                      class="acil-leave-table" #acilLeaveTable>
+              <thead>
+                <tr>
+                  <th class="acil-sticky acil-sticky-0 text-center">{{ 'common.stt' | translate:'STT' }}</th>
+                  <th class="acil-sticky acil-sticky-1 text-center">{{ 'common.empId' | translate:'Mã nhân viên' }}</th>
+                  <th class="acil-sticky acil-sticky-2">{{ 'common.empName' | translate:'Họ tên' }}</th>
+                  <th class="acil-sticky acil-sticky-3">{{ 'common.deptName' | translate:'Phòng ban' }}</th>
+                  <th class="acil-nowrap">{{ 'vapl.msg.position' | translate:'Chức vụ' }}</th>
+                  <th class="acil-num">{{ 'vapl.msg.normalWork' | translate:'Tổng giờ công' }}</th>
+                  <th class="acil-num">{{ 'vapl.msg.lateEarlyGoTotal' | translate:'Tổng (muộn/sớm/ra ngoài)' }}</th>
+                  <th class="acil-num" *ngFor="let it of leaveItems()">{{ it.itemName }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngIf="!leaveLoading() && acilLeaveTable.data.length === 0">
+                  <td [attr.colspan]="7 + leaveItems().length" class="text-center text-muted">
+                    {{ 'vapl.msg.noData' | translate:'Không có dữ liệu' }}
+                  </td>
+                </tr>
+                <tr *ngFor="let row of acilLeaveTable.data; let i = index">
+                  <td class="acil-sticky acil-sticky-0 text-center">{{ i + 1 }}</td>
+                  <td class="acil-sticky acil-sticky-1 text-center" [attr.title]="row['EMPID'] || null">{{ row['EMPID'] }}</td>
+                  <td class="acil-sticky acil-sticky-2" [attr.title]="row['LOCAL_NAME'] || null">{{ row['LOCAL_NAME'] }}</td>
+                  <td class="acil-sticky acil-sticky-3" [attr.title]="row['DEPT_NAME'] || null">{{ row['DEPT_NAME'] }}</td>
+                  <td class="acil-nowrap" [attr.title]="row['POSITION_NAME'] || null">{{ row['POSITION_NAME'] }}</td>
+                  <td class="acil-num text-center fw-bold">{{ fmtQty(row['NORMAL_WORK']) }}</td>
+                  <td class="acil-num text-center fw-bold">{{ fmtQty(row['LATE_EARLY_GO_TOTAL']) }}</td>
+                  <td class="acil-num text-center" *ngFor="let it of leaveItems()">
+                    <a *ngIf="qty(row, it.itemId) > 0; else acilLeaveZeroTpl" href="javascript:void(0)"
+                       class="fw-bold" (click)="openLeaveDetail(row, it)">{{ fmtQty(row[it.itemId]) }}</a>
+                    <ng-template #acilLeaveZeroTpl><span class="text-muted">0</span></ng-template>
+                  </td>
+                </tr>
+              </tbody>
+              <ng-template #acilLeaveTotalTpl let-total>
+                {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+              </ng-template>
+            </nz-table>
+          </div>
+        </nz-tab>
+
+        <!-- Tab 2: Tăng ca - dữ liệu từ ArCountInfoListMapper#selectOtSummaryList (API riêng).
+             Mỗi tháng tách thành 7 cột con (7 loại tăng ca) thay vì 1 số tổng. Header 2 hàng có
+             rowspan/colspan nên KHÔNG dùng nzScroll (nz-table chỉ đồng bộ độ rộng cột theo hàng đầu
+             tiên của thead khi bật nzScroll, xem giải thích ở dept-ot-apply-info.component.html) -
+             bọc div cuộn ngang thủ công để trình duyệt tự xử lý rowspan/colspan (tableLayout=auto). -->
+        <nz-tab [nzTitle]="'ar.arCountInfoList.GERENJIABANXIANKUANG.b' | translate:'Tăng ca'">
+          <nz-alert *ngIf="otErrorMessage()" nzType="error" [nzMessage]="otErrorMessage() ?? ''" class="mb-3"></nz-alert>
+
+          <div class="table-scroll-wrapper">
+            <nz-table [nzData]="otRows()" [nzLoading]="otLoading()" [nzPageSize]="25" nzShowSizeChanger
+                      [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="acilOtTotalTpl"
+                      class="table-nowrap acil-ot-table" #acilOtTable>
+              <thead>
+                <tr>
+                  <th rowspan="2" class="text-center">{{ 'common.stt' | translate:'STT' }}</th>
+                  <th rowspan="2" class="text-center">{{ 'common.empId' | translate:'Mã nhân viên' }}</th>
+                  <th rowspan="2">{{ 'common.empName' | translate:'Họ tên' }}</th>
+                  <th rowspan="2">{{ 'common.deptName' | translate:'Phòng ban' }}</th>
+                  <th rowspan="2">{{ 'acil.col.teamName' | translate:'Tổ/Nhóm' }}</th>
+                  <th rowspan="2">{{ 'vapl.msg.position' | translate:'Chức vụ' }}</th>
+                  <th rowspan="2">{{ 'common.empType' | translate:'Loại nhân viên' }}</th>
+                  <th rowspan="2" class="text-center">{{ 'common.shift' | translate:'Ca' }}</th>
+                  <th rowspan="2" class="text-center">{{ 'essDept.year' | translate:'Năm' }}</th>
+                  <th rowspan="2" class="text-center">{{ 'acil.col.otTotal' | translate:'Tổng tăng ca năm' }}</th>
+                  <th *ngFor="let mc of monthColumns" [attr.colspan]="otSubtypes.length" class="text-center">
+                    {{ mc.labelKey | translate:mc.labelKey }}
+                  </th>
+                </tr>
+                <tr>
+                  <ng-container *ngFor="let mc of monthColumns">
+                    <th class="text-center acil-num" *ngFor="let st of otSubtypes">{{ st.labelKey | translate:st.labelKey }}</th>
+                  </ng-container>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngIf="!otLoading() && acilOtTable.data.length === 0">
+                  <td [attr.colspan]="10 + monthColumns.length * otSubtypes.length" class="text-center text-muted">
+                    {{ 'vapl.msg.noData' | translate:'Không có dữ liệu' }}
+                  </td>
+                </tr>
+                <tr *ngFor="let row of acilOtTable.data; let i = index">
+                  <td class="text-center">{{ i + 1 }}</td>
+                  <td class="text-center" [attr.title]="row.empId || null">{{ row.empId }}</td>
+                  <td [attr.title]="row.localName || null">{{ row.localName }}</td>
+                  <td [attr.title]="row.deptName || null">{{ row.deptName }}</td>
+                  <td [attr.title]="row.teamName || null">{{ row.teamName }}</td>
+                  <td [attr.title]="row.postGradeName || null">{{ row.postGradeName }}</td>
+                  <td [attr.title]="row.empTypeName || null">{{ row.empTypeName }}</td>
+                  <td class="text-center" [attr.title]="row.shiftName || null">{{ row.shiftName }}</td>
+                  <td class="text-center">{{ row.year }}</td>
+                  <td class="text-center fw-bold">{{ fmtQty(row.otTotal) }}</td>
+                  <ng-container *ngFor="let mc of monthColumns">
+                    <td class="text-center acil-num" *ngFor="let st of otSubtypes">{{ fmtQty(monthValue(row, mc)[st.key]) }}</td>
+                  </ng-container>
+                </tr>
+              </tbody>
+              <ng-template #acilOtTotalTpl let-total>
+                {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+              </ng-template>
+            </nz-table>
+          </div>
+        </nz-tab>
+
+      </nz-tabs>
+    </nz-card>
+  </div>
+</div>
+
+<!-- Modal chi tiết chấm công (tab Nghỉ phép) -->
+<nz-modal [nzVisible]="leaveDetailVisible()"
+          [nzTitle]="leaveDetailTitle() || ('apsl.modal.title' | translate:'Chi tiết chấm công')"
+          nzWidth="900px" [nzBodyStyle]="{ 'max-height': '70vh', 'overflow-y': 'auto' }"
+          (nzOnCancel)="closeLeaveDetail()" [nzFooter]="null">
+  <ng-container *nzModalContent>
+    <nz-alert *ngIf="leaveDetailErrorMessage()" nzType="error" [nzMessage]="leaveDetailErrorMessage() ?? ''" class="mb-2"></nz-alert>
+    <nz-table [nzData]="leaveDetailRows()" [nzLoading]="leaveDetailLoading()" [nzShowPagination]="false" nzSize="small">
+      <thead>
+        <tr>
+          <th class="text-center" style="width:50px">{{ 'common.stt' | translate:'STT' }}</th>
+          <th class="text-center" style="width:110px">{{ 'common.empId' | translate:'Mã nhân viên' }}</th>
+          <th style="min-width:140px">{{ 'common.empName' | translate:'Họ tên' }}</th>
+          <th style="min-width:120px">{{ 'apsl.detail.col.shift' | translate:'Ca' }}</th>
+          <th class="text-center" style="width:110px">{{ 'apsl.detail.col.date' | translate:'Ngày' }}</th>
+          <th style="min-width:150px">{{ 'apsl.detail.col.leaveType' | translate:'Loại nghỉ phụ lục' }}</th>
+          <th class="text-center" style="width:120px">{{ 'apsl.detail.col.startTime' | translate:'Thời gian bắt đầu' }}</th>
+          <th class="text-center" style="width:120px">{{ 'apsl.detail.col.endTime' | translate:'Thời gian kết thúc' }}</th>
+          <th class="text-center" style="width:90px">{{ 'apsl.detail.col.duration' | translate:'Thời lượng' }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngIf="!leaveDetailLoading() && leaveDetailRows().length === 0">
+          <td colspan="9" class="text-center text-muted">
+            {{ 'apsl.detail.hint' | translate:'Chọn vào từng con số để xem chi tiết.' }}
+          </td>
+        </tr>
+        <tr *ngFor="let d of leaveDetailRows(); let i = index">
+          <td class="text-center">{{ i + 1 }}</td>
+          <td class="text-center">{{ d.empId }}</td>
+          <td>{{ d.localName }}</td>
+          <td class="text-center">{{ d.shiftName || d.shiftNo }}</td>
+          <td class="text-center">{{ formatDetailDate(d.arDateStr) }}</td>
+          <td>{{ d.itemName }}</td>
+          <td class="text-center">{{ d.fromTimeStr }}</td>
+          <td class="text-center">{{ d.toTimeStr }}</td>
+          <td class="text-center">{{ fmtQty(d.quantity) }}</td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </ng-container>
+</nz-modal>

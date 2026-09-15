@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["src/app/view-ar-item/view-ar-item.component.css"],
-  "sourcesContent": [".vai-btn-export {\n  color: #52c41a;\n  border-color: #52c41a;\n}\n"],
-  "mappings": ";AAAA,CAAC;AACC,SAAO;AACP,gBAAc;AAChB;",
-  "names": []
-}
