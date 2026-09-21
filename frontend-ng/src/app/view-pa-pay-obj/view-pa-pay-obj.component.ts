@@ -132,13 +132,19 @@ export class ViewPaPayObjComponent implements OnInit {
 
   ngOnInit(): void {
     this.i18n.loadKeys(I18N_KEYS);
-    this.loadPayScheduleOptions();
     this.loadEmpOfficeOptions();
-    this.search();
+    this.loadPayScheduleOptions();
   }
 
+  /** Không còn lựa chọn "Tất cả" - mặc định lấy kế hoạch trả lương đầu tiên làm điều kiện tìm kiếm,
+   *  rồi mới tra cứu (search() chỉ chạy sau khi đã có searchPayScheduleNo mặc định). */
   private loadPayScheduleOptions(): void {
-    this.api.getPayScheduleOptions().subscribe((list) => this.payScheduleOptions.set(list ?? []));
+    this.api.getPayScheduleOptions().subscribe((list) => {
+      const options = list ?? [];
+      this.payScheduleOptions.set(options);
+      this.searchPayScheduleNo = options.length > 0 ? options[0].payScheduleNo : null;
+      this.search();
+    });
   }
 
   private loadEmpOfficeOptions(): void {

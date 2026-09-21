@@ -2,6 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { SyRoleGroupDto } from '../view-roles-group-list/view-roles-group-list.model';
+import { HrDepartmentDto } from '../view-current-org-info/view-current-org-info.model';
 import { SyUserDto, UserActionResult, UserRelationsPayload } from './view-login-user.model';
 
 const API_BASE = '/sys/api/user';
@@ -15,10 +16,17 @@ const API_BASE = '/sys/api/user';
 export class ViewLoginUserService {
   constructor(private readonly http: HttpClient) {}
 
-  list(keyword: string): Observable<SyUserDto[]> {
+  list(keyword: string, deptNo: string | null): Observable<SyUserDto[]> {
     let params = new HttpParams();
     if (keyword) params = params.set('keyword', keyword);
+    if (deptNo) params = params.set('deptNo', deptNo);
     return this.http.get<SyUserDto[]>(`${API_BASE}/list`, { params, withCredentials: true });
+  }
+
+  /** Danh sách Bộ phận để đổ vào ô chọn tìm kiếm - dùng lại nguyên API /org/api/current/structure đã
+   *  có sẵn ở CurrentOrgController (xem ViewCurrentOrgInfoService), không tạo API mới. */
+  getDepartments(): Observable<HrDepartmentDto[]> {
+    return this.http.get<HrDepartmentDto[]>('/org/api/current/structure', { withCredentials: true });
   }
 
   detail(userNo: string): Observable<SyUserDto> {

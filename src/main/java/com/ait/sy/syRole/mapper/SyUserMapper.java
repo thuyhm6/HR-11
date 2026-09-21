@@ -85,12 +85,13 @@ public interface SyUserMapper {
     java.util.List<SyUser> findAll();
 
     /**
-     * Tìm users theo từ khóa
-     * 
+     * Tìm users theo từ khóa và/hoặc Bộ phận
+     *
      * @param keyword
+     * @param deptNo  Mã bộ phận (DEPTNO), lọc theo bộ phận của nhân viên gắn với user
      * @return
      */
-    java.util.List<SyUser> searchUsers(@Param("keyword") String keyword);
+    java.util.List<SyUser> searchUsers(@Param("keyword") String keyword, @Param("deptNo") String deptNo);
 
     /**
      * Cập nhật password cho user

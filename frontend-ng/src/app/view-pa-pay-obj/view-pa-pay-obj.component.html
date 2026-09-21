@@ -10,8 +10,8 @@
         </div>
         <div class="col-md-3">
           <label class="form-label">{{ 'pa.payObj.payScheduleNo' | translate:'Kế hoạch trả lương' }}</label>
-          <nz-select class="w-100" [(ngModel)]="searchPayScheduleNo" name="vppoSearchPayScheduleNo" nzAllowClear
-                     [nzPlaceHolder]="'common.selectAll' | translate:'-- Tất cả --'">
+          <nz-select class="w-100" [(ngModel)]="searchPayScheduleNo" name="vppoSearchPayScheduleNo"
+                     (ngModelChange)="search()">
             <nz-option *ngFor="let p of payScheduleOptions()" [nzValue]="p.payScheduleNo" [nzLabel]="payScheduleLabel(p)"></nz-option>
           </nz-select>
         </div>

@@ -39,14 +39,13 @@
               <label nz-checkbox [ngModel]="allChecked()" (ngModelChange)="toggleAllChecked($event)"></label>
             </th>
             <th class="text-center" nzWidth="120px">{{ 'pa.formula.conditionSeq' | translate:'Trình tự tính' }}</th>
-            <th nzWidth="30%">{{ 'pa.formula.condition' | translate:'Điều kiện' }}</th>
-            <th nzWidth="30%">{{ 'pa.formula.formular' | translate:'Công thức' }}</th>
-            <th>{{ 'pa.formula.description' | translate:'Mô tả' }}</th>
+            <th>{{ 'pa.formula.condition' | translate:'Điều kiện' }}</th>
+            <th>{{ 'pa.formula.formular' | translate:'Công thức' }}</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngIf="!loading() && rows().length === 0">
-            <td colspan="6" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+            <td colspan="5" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
           </tr>
           <tr *ngFor="let row of vpfTable.data; let i = index" class="vpf-row" (click)="openEditModal(row)">
             <td class="text-center">{{ i + 1 }}</td>
@@ -69,7 +68,6 @@
             </td>
             <td class="vpf-cell-wrap" [innerHTML]="highlightExpr(row.condition)"></td>
             <td class="vpf-cell-wrap" [innerHTML]="highlightExpr(row.formular)"></td>
-            <td class="vpf-cell-wrap">{{ row.description }}</td>
           </tr>
         </tbody>
         <ng-template #vpfTotalTpl let-total>

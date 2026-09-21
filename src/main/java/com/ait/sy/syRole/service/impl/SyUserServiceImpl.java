@@ -29,8 +29,8 @@ public class SyUserServiceImpl implements SyUserService {
     private PasswordEncoder passwordEncoder;
 
     @Override
-    public List<SyUserDto> searchUsers(String keyword) {
-        List<SyUser> users = syUserMapper.searchUsers(keyword);
+    public List<SyUserDto> searchUsers(String keyword, String deptNo) {
+        List<SyUser> users = syUserMapper.searchUsers(keyword, deptNo);
         return users.stream().map(u -> {
             SyUserDto dto = new SyUserDto();
             dto.setUserNo(u.getUserNo());

@@ -54,6 +54,7 @@ const I18N_KEYS = [
   'empSearch.title', 'empSearch.field.keyword', 'empSearch.placeholder.keyword', 'empSearch.field.dept',
   'empSearch.field.empOffice', 'empSearch.btn.clearFilter', 'empSearch.col.no', 'epi.field.position',
   'vdp.search.dept.placeholder', 'mep.msg.loadDeptFailed',
+  'pa.payObj.empSearch.placeholder',
 ];
 
 const EMP_OFFICE_PARENT_CODE = '15118';
@@ -515,13 +516,16 @@ export class ViewPaInputItemDataComponent implements OnInit {
 
   // ==================== Popup tìm kiếm nhân viên ====================
 
+  /** Mở popup tìm nhân viên, mồi sẵn từ khóa bằng nội dung đang gõ ở ô Mã NV/Họ tên rồi tra cứu
+   *  ngay (đúng hành vi openPicker của ChangeUserComponent) - ra đúng 1 kết quả thì pickerSearch
+   *  tự chọn luôn và đóng popup, nhiều kết quả thì hiển thị trong popup để người dùng bấm chọn. */
   openPicker(): void {
-    this.pickerKeyword = '';
+    this.pickerKeyword = this.form.empDisplay.trim();
     this.pickerDeptNos = [];
     this.pickerEmpOffice = null;
-    this.pickerRows.set([]);
     this.pickerErrorMessage.set(null);
     this.pickerVisible.set(true);
+    this.pickerSearch();
   }
 
   closePicker(): void {
@@ -537,8 +541,13 @@ export class ViewPaInputItemDataComponent implements OnInit {
       empOffice: this.pickerEmpOffice ?? '',
     }).subscribe({
       next: (rows) => {
-        this.pickerRows.set(rows ?? []);
         this.pickerLoading.set(false);
+        // Tự động chọn ngay nếu chỉ có đúng 1 kết quả (giống ChangeUserComponent/EmployeeSearchModal gốc).
+        if (rows && rows.length === 1) {
+          this.selectEmployee(rows[0]);
+          return;
+        }
+        this.pickerRows.set(rows ?? []);
       },
       error: () => {
         this.pickerErrorMessage.set(this.i18n.t('common.loadFail', 'Tải dữ liệu thất bại!'));
@@ -559,6 +568,12 @@ export class ViewPaInputItemDataComponent implements OnInit {
     this.form.personId = row.personId;
     this.form.empDisplay = `${row.empId} - ${row.localName}`;
     this.pickerVisible.set(false);
+  }
+
+  /** Người dùng gõ lại nội dung ô nhân viên -> hủy personId đã chọn trước đó, bắt buộc tra cứu lại
+   *  để đảm bảo mã NV hợp lệ (giống tinh thần cảnh báo "arSupervisor.js.pleaseSearch" ở trang khác). */
+  onEmpDisplayChange(): void {
+    this.form.personId = null;
   }
 
   // ==================== Helpers ====================

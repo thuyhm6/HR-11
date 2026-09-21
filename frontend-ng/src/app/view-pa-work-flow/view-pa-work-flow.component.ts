@@ -204,6 +204,7 @@ export class ViewPaWorkFlowComponent implements OnInit {
     if (index >= tasks.length) {
       this.executing.set(false);
       this.message.success(this.i18n.t('pa.workFlow.msgExecuteSuccess', 'Tất cả các bước đã hoàn thành thành công!'));
+      this.uncheckExecutedTasks(tasks);
       this.search();
       return;
     }
@@ -216,6 +217,15 @@ export class ViewPaWorkFlowComponent implements OnInit {
         this.message.error(err?.error?.error || this.i18n.t('common.loadFail', 'Tải dữ liệu thất bại!'));
       },
     });
+  }
+
+  /** Bỏ tick các checkbox bước vừa thực hiện thành công, để tránh bấm nhầm thực hiện lại. */
+  private uncheckExecutedTasks(tasks: PaWorkFlowTaskType[]): void {
+    if (tasks.includes('createPaObj')) this.chkObjCreate = false;
+    if (tasks.includes('arMonthCal')) this.chkArMonthCal = false;
+    if (tasks.includes('paMonthCal')) this.chkPaCal = false;
+    if (tasks.includes('paConfirm')) this.chkPaConfirm = false;
+    if (tasks.includes('paOpen')) this.chkPaOpen = false;
   }
 
   /** Mở modal "Lịch sử thao tác" - giống vpwfOpenMenu ở bản gốc (đúng cho cả nút "sổ" cạnh checkbox

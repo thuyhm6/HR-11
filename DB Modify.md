@@ -15,7 +15,7 @@ sy0000	\assets\images\icon\system.png
 /sys/rightsManagement/viewLoginUser đổi thành /sys/syRole/viewLoginUser
 
 --Lúc nào chạy chính thức thì thực hiện
-/ess/infoApplyLeave/viewCheckAttencetanceExForBatchList đổi thành /ess/infoApplyAttendan3ce/viewCheckAttencetanceExForBatchList
+/ess/infoApplyLeave/viewCheckAttencetanceExForBatchList đổi thành /ess/infoApplyAttendance/viewCheckAttencetanceExForBatchList
 
 bảng ESS_OT_APPLY_TB_EXCEL_TEMP đổi UPLOAD_DATE thành date
 

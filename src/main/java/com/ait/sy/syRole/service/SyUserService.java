@@ -5,7 +5,7 @@ import java.util.List;
 import com.ait.sy.syRole.dto.SyUserDto;
 
 public interface SyUserService {
-    List<SyUserDto> searchUsers(String keyword);
+    List<SyUserDto> searchUsers(String keyword, String deptNo);
 
     SyUserDto findByUserNo(String userNo);
 

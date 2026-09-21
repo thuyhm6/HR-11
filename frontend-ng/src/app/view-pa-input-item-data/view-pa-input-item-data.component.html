@@ -13,7 +13,7 @@
         <div *ngFor="let item of items()" class="vpid-item-row d-flex align-items-center px-3 py-2 border-bottom"
              [class.active]="currentParamNo() === item.paramNo" (click)="selectItem(item)">
           <i class="bx bxs-file me-2 text-warning flex-shrink-0"></i>
-          <span class="small text-truncate" [attr.title]="item.paramName">{{ item.paramName }}</span>
+          <span class="small text-truncate" [attr.title]="item.paramName" [attr.nz-value]="item.paramNo">{{ item.paramName }}</span>
         </div>
       </div>
     </nz-card>
@@ -151,9 +151,11 @@
           {{ 'pa.inputItemData.personId' | translate:'Mã nhân viên' }} <span class="text-danger">*</span>
         </label>
         <div class="d-flex gap-2">
-          <input nz-input [ngModel]="form.empDisplay" name="vpidEmpDisplay" readonly
-                 [ngModelOptions]="{ standalone: true }"
-                 [placeholder]="'arSupervisor.placeholder.selectEmp' | translate:'Chọn nhân viên...'">
+          <input nz-input [(ngModel)]="form.empDisplay" name="vpidEmpDisplay"
+                 [ngModelOptions]="{ standalone: true }" [readOnly]="!isNew()"
+                 (ngModelChange)="onEmpDisplayChange()"
+                 (keydown.enter)="$event.preventDefault(); openPicker()"
+                 [placeholder]="'pa.payObj.empSearch.placeholder' | translate:'Nhập mã NV hoặc họ tên, bấm Enter để tìm...'">
           <button *ngIf="isNew()" nz-button nzType="default" type="button" (click)="openPicker()">
             <i class="bx bx-search"></i> {{ 'arSupervisor.btn.select' | translate:'Chọn' }}
           </button>

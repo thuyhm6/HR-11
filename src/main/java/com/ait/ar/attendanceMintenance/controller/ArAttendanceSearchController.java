@@ -3,6 +3,7 @@ package com.ait.ar.attendanceMintenance.controller;
 import com.ait.ar.attendanceMintenance.dto.ArAttendanceSearchDto;
 import hanwha.neo.branch.ss.att.service.NeoHrWsProxy;
 import hanwha.neo.branch.ss.att.vo.ArraysHrOffVo;
+import hanwha.neo.branch.ss.att.vo.HrOffCodeVo;
 import hanwha.neo.branch.ss.att.vo.HrOffListVo;
 import hanwha.neo.branch.ss.att.vo.SyncHrOffDataRequest;
 import com.ait.ar.attendanceMintenance.dto.ArCardRecordDayDto;
@@ -418,9 +419,21 @@ public class ArAttendanceSearchController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> testSyncCleverse(@RequestBody Map<String, String> body) {
         Map<String, Object> result = new java.util.HashMap<>();
-        //final String DEV_ENDPOINT = "https://epdev.cleverse.kr/soap/org/neoHrWs";
-        final String DEV_ENDPOINT = "https://epdev.cleverse.hanwha.com/soap/org/neoHrWs";
+        // Endpoint test do admin hệ thống Clever cung cấp để test đồng bộ (2026-09-21).
+        final String DEV_ENDPOINT = "http://epapidev.cleverse.hanwha.com/soap/org/neoHrWs";
         try {
+            java.text.SimpleDateFormat ifDateFormat = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
+            ifDateFormat.setTimeZone(java.util.TimeZone.getTimeZone("Asia/Seoul"));
+            String ifDateIso = ifDateFormat.format(new java.util.Date());
+
+            HrOffCodeVo offCode = new HrOffCodeVo();
+            offCode.setEnterCd(body.getOrDefault("enterCd", ""));
+            offCode.setGntCd(body.getOrDefault("gntCd", ""));
+            offCode.setGntNm(body.getOrDefault("gntNm", ""));
+            offCode.setVacationYn(body.getOrDefault("vacationYn", "Y"));
+            offCode.setIfDate(ifDateIso);
+            offCode.setIfId(body.getOrDefault("ifId", "HVR"));
+
             HrOffListVo item = new HrOffListVo();
             item.setEnterCd(body.getOrDefault("enterCd", ""));
             item.setSabun(body.getOrDefault("sabun", ""));
@@ -430,12 +443,13 @@ public class ArAttendanceSearchController {
             item.setOrgCd(body.getOrDefault("orgCd", ""));
             item.setInstanceId(body.getOrDefault("instanceId", ""));
             item.setCancelYn(body.getOrDefault("cancelYn", "N"));
-            item.setIfDate(new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm").format(new java.util.Date()));
-            item.setIfId(body.getOrDefault("ifId", "HHR"));
+            item.setIfDate(ifDateIso);
+            item.setIfId(body.getOrDefault("ifId", "HVR"));
             item.setStatus(body.getOrDefault("status", "0"));
             item.setReason(body.getOrDefault("reason", ""));
 
             ArraysHrOffVo arrays = new ArraysHrOffVo();
+            arrays.setHrOffCode(new HrOffCodeVo[]{offCode});
             arrays.setHrOffList(new HrOffListVo[]{item});
 
             SyncHrOffDataRequest request = new SyncHrOffDataRequest();
@@ -444,7 +458,7 @@ public class ArAttendanceSearchController {
             NeoHrWsProxy proxy = new NeoHrWsProxy();
             proxy.setEndpoint(DEV_ENDPOINT);
 
-            log.info("[syncCleverse/test] Sending to DEV endpoint: {}, sabun={}, gntCd={}", DEV_ENDPOINT, item.getSabun(), item.getGntCd());
+            log.info("[syncCleverse/test] Sending to TEST endpoint: {}, sabun={}, gntCd={}", DEV_ENDPOINT, item.getSabun(), item.getGntCd());
             String wsResult = proxy.syncHrOffData(request);
             log.info("[syncCleverse/test] Response: {}", wsResult);
 

@@ -3,12 +3,20 @@
   <div class="col-md-7 mb-3">
     <nz-card>
       <form class="row g-3 mb-3" (ngSubmit)="search()">
-        <div class="col-md-6">
-          <label class="form-label">{{ 'sys.role.viewLoginUser.search.keyword' | translate:'Từ khóa (ID, Tên)' }}</label>
-          <input nz-input [(ngModel)]="searchKeyword" name="vluSearchKeyword"
+        <div class="col-md-4">
+          <label class="form-label" for="vlu-search-keyword">{{ 'sys.role.viewLoginUser.search.keyword' | translate:'Từ khóa (ID, Tên)' }}</label>
+          <input nz-input id="vlu-search-keyword" [(ngModel)]="searchKeyword" name="vluSearchKeyword"
                  [placeholder]="'sys.role.viewLoginUser.search.keyword.placeholder' | translate:'Nhập ID, Mã NV hoặc Tên'">
         </div>
-        <div class="col-md-6 d-flex align-items-end gap-2 flex-wrap">
+        <div class="col-md-3">
+          <label class="form-label" for="vlu-search-dept">{{ 'common.deptName' | translate:'Phòng ban' }}</label>
+          <nz-select id="vlu-search-dept" class="w-100" [(ngModel)]="searchDeptNo" name="vluSearchDeptNo"
+                     nzAllowClear nzShowSearch [nzPlaceHolder]="'ex.placeholder.dept' | translate:'Chọn phòng ban'">
+            <nz-option *ngFor="let dept of departments()" [nzValue]="dept.deptNo"
+                       [nzLabel]="dept.orgNameLocal || dept.deptNo"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-5 d-flex align-items-end gap-2 flex-wrap">
           <button nz-button nzType="primary" type="submit">
             <i class="bx bx-search"></i> {{ 'common.search' | translate:'Tìm kiếm' }}
           </button>

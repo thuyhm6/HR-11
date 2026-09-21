@@ -98,6 +98,8 @@ export class AttendanceSearchComponent implements OnInit {
   readonly syncSending = signal(false);
   readonly syncResult = signal<{ success: boolean; text: string } | null>(null);
   syncForm: SyncCleversePayload = this.defaultSyncForm();
+  /** Endpoint test do admin hệ thống Clever cung cấp (2026-09-21), khớp với backend testSyncCleverse. */
+  readonly testEndpoint = 'http://epapidev.cleverse.hanwha.com/soap/org/neoHrWs';
 
   constructor(
     private readonly api: AttendanceSearchService,
@@ -213,19 +215,22 @@ export class AttendanceSearchComponent implements OnInit {
     });
   }
 
+  /** Giá trị mặc định lấy từ dữ liệu mẫu do admin hệ thống Clever cung cấp để test (2026-09-21). */
   private defaultSyncForm(): SyncCleversePayload {
     return {
-      enterCd: 'HAPM',
-      sabun: '19945437',
-      gntCd: '517_EH',
-      sYmd: '20260612',
-      eYmd: '20260612',
-      orgCd: '',
-      instanceId: 'HAPM19910157Q28242988',
+      enterCd: 'HWVHR',
+      sabun: 'epclvsadmin',
+      gntCd: 'HVR_01',
+      gntNm: 'remote work',
+      vacationYn: 'Y',
+      sYmd: '20260904',
+      eYmd: '20261104',
+      orgCd: '10030911',
+      instanceId: 'VHR-INSTANCE_ID',
       cancelYn: 'N',
-      ifId: 'HHR',
-      status: '0',
-      reason: 'Refresh',
+      ifId: 'HVR',
+      status: '1',
+      reason: 'remote work',
     };
   }
 

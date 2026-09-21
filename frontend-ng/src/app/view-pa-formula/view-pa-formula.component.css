@@ -3,8 +3,15 @@
   overflow-y: auto;
 }
 
-.vpf-cell-wrap {
-  white-space: pre-wrap;
+/* Cột Điều kiện/Công thức: ghi đè rule global .ant-table-fixed-header ... td { white-space: nowrap;
+   text-overflow: ellipsis } ở styles.css (cùng độ đặc hiệu CSS, nạp sau nên thắng) - yêu cầu xuống
+   dòng hiển thị đầy đủ dữ liệu thay vì ẩn bớt kèm "...". ::ng-deep cần thiết vì nz-table render cấu
+   trúc bảng thật (.ant-table-tbody > tr > td) nằm ngoài phạm vi View Encapsulation của <td> gắn class
+   này. */
+:host ::ng-deep .ant-table-tbody > tr > td.vpf-cell-wrap {
+  white-space: pre-wrap !important;
+  overflow: visible !important;
+  text-overflow: unset !important;
   word-break: break-word;
 }
 

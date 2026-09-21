@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ait.sy.sqlMaster.mapper.SySqlParamMapper">
+
+    <resultMap id="SySqlParamResultMap" type="com.ait.sy.sqlMaster.model.SySqlParam">
+        <id column="SQL_SEQ" property="sqlSeq" jdbcType="VARCHAR"/>
+        <id column="SQL_PARAM_NO" property="sqlParamNo" jdbcType="VARCHAR"/>
+        <result column="PARAM" property="param" jdbcType="VARCHAR"/>
+        <result column="PARAM_DESC" property="paramDesc" jdbcType="VARCHAR"/>
+        <result column="SQL_PARAM_TP" property="sqlParamTp" jdbcType="VARCHAR"/>
+        <result column="DEFAULT_VAL" property="defaultVal" jdbcType="VARCHAR"/>
+        <result column="SORT_CD" property="sortCd" jdbcType="INTEGER"/>
+        <result column="USE_YN" property="useYn" jdbcType="VARCHAR"/>
+        <result column="CREATE_DATE" property="createDate" jdbcType="TIMESTAMP"/>
+        <result column="CREATED_BY" property="createdBy" jdbcType="VARCHAR"/>
+        <result column="UPDATE_DATE" property="updateDate" jdbcType="TIMESTAMP"/>
+        <result column="UPDATED_BY" property="updatedBy" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <select id="findBySqlSeq" resultMap="SySqlParamResultMap">
+        SELECT SQL_SEQ, SQL_PARAM_NO, PARAM, PARAM_DESC, SQL_PARAM_TP, DEFAULT_VAL, SORT_CD, USE_YN,
+               CREATE_DATE, CREATED_BY, UPDATE_DATE, UPDATED_BY
+        FROM SY_SQL_PARAM
+        WHERE SQL_SEQ = #{sqlSeq, jdbcType=VARCHAR}
+        ORDER BY SORT_CD ASC
+    </select>
+
+    <insert id="insert">
+        INSERT INTO SY_SQL_PARAM (
+            SQL_SEQ, SQL_PARAM_NO, PARAM, PARAM_DESC, SQL_PARAM_TP, DEFAULT_VAL, SORT_CD, USE_YN,
+            CREATE_DATE, CREATED_BY, UPDATE_DATE, UPDATED_BY
+        ) VALUES (
+            #{sqlSeq, jdbcType=VARCHAR}, #{sqlParamNo, jdbcType=VARCHAR}, #{param, jdbcType=VARCHAR},
+            #{paramDesc, jdbcType=VARCHAR}, #{sqlParamTp, jdbcType=VARCHAR}, #{defaultVal, jdbcType=VARCHAR},
+            #{sortCd, jdbcType=INTEGER}, #{useYn, jdbcType=VARCHAR},
+            SYSDATE, #{adminID, jdbcType=VARCHAR}, SYSDATE, #{adminID, jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <delete id="deleteBySqlSeq">
+        DELETE FROM SY_SQL_PARAM
+        WHERE SQL_SEQ = #{sqlSeq, jdbcType=VARCHAR}
+    </delete>
+
+</mapper>

@@ -2523,12 +2523,9 @@ hãy chuyển giao diện /sys/rightsManagement/viewLoginUser.html này về d�
 hãy chuyển giao diện /sys/rightsManagement/viewLoginInfo.html này về dạng Angular + NG-ZORRO  (Frontend) dữ liệu hiển thị ra không dùng dataTables nữa mà dùng nz-table (tham khảo pa-month-person-info). sau khi hoàn thành thì có thể xóa file /sys/rightsManagement/viewLoginInfo.html cũ đi.
 hãy chuyển giao diện /hrm/approve/viewEssApplyInfo.html này về dạng Angular + NG-ZORRO  (Frontend) dữ liệu hiển thị ra không dùng dataTables nữa mà dùng nz-table (tham khảo pa-month-person-info). sau khi hoàn thành thì có thể xóa file /hrm/approve/viewEssApplyInfo.html cũ đi.
 hãy chuyển giao diện /sys/rightsManagement/viewLoginUserIPList.html này về dạng Angular + NG-ZORRO  (Frontend) dữ liệu hiển thị ra không dùng dataTables nữa mà dùng nz-table (tham khảo pa-month-person-info). sau khi hoàn thành thì có thể xóa file /sys/rightsManagement/viewLoginUserIPList.html cũ đi.
-
-
-
-
-
 Căn cứ vào manage-emp-position-info.
+
+tương tụ view-roles-group như hãy tạo cho tôi giao diện /sys/rightsManagement/viewSyRolesGroupList - Phân quyền người dùng. mục đích là phân quyền cho người dùng theo từng nhóm quyền trong view-roles-group
 
 bạn đã loại bỏ mất những thành phần trong topbar.html (gồm Đổi mật khẩu, và link HR Management System).hãy đưa 2 phần này vào. và sau đó có thể xóa topbar.html đi nếu nó không cần thiết nữa. khi bấm vào link HR Management System vẫn điều hướng bình thường sang hrm.html. nhưng bây giờ hãy chuyển sang dạng Angular + NG-ZORRO  (Frontend) cho hrm.html, và khi bấm vào link HR Management System thì vẫn điều hướng sang hrm.html nhưng không hiển thị tên của tab đó lên ô địa chỉ chỉ trình duyệt nữa. sau khi chuyển sang Angular + NG-ZORRO  (Frontend) cho hrm.html thì có thể xóa hrm.html cũ đi.
 cập nhật lại thông báo ở bên hrm giúp tôi, khi chuyển sang hrm thì thông báo phỉa chuyển sang attendance-ex-confirm và leave-confirm, và đếm lại số lương thông báo

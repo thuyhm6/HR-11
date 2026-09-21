@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ait.sy.sqlMaster.mapper.SySqlMasterMapper">
+
+    <resultMap id="SySqlMasterResultMap" type="com.ait.sy.sqlMaster.model.SySqlMaster">
+        <id column="SQL_SEQ" property="sqlSeq" jdbcType="VARCHAR"/>
+        <result column="PGM_NM" property="pgmNm" jdbcType="VARCHAR"/>
+        <result column="SQL_NM" property="sqlNm" jdbcType="VARCHAR"/>
+        <result column="SQL_DESC" property="sqlDesc" jdbcType="VARCHAR"/>
+        <result column="SQL_STMT" property="sqlStmt" jdbcType="CLOB"/>
+        <result column="USE_YN" property="useYn" jdbcType="VARCHAR"/>
+        <result column="CREATE_DATE" property="createDate" jdbcType="TIMESTAMP"/>
+        <result column="CREATED_BY" property="createdBy" jdbcType="VARCHAR"/>
+        <result column="UPDATE_DATE" property="updateDate" jdbcType="TIMESTAMP"/>
+        <result column="UPDATED_BY" property="updatedBy" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!-- Danh sách cho màn hình list: không lấy SQL_STMT (CLOB) để tránh tải nặng -->
+    <select id="findAll" resultMap="SySqlMasterResultMap">
+        SELECT SQL_SEQ, PGM_NM, SQL_NM, SQL_DESC, USE_YN,
+               CREATE_DATE, CREATED_BY, UPDATE_DATE, UPDATED_BY
+        FROM SY_SQL_MASTER
+        WHERE CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+        <if test="keyword != null and keyword != ''">
+            AND (
+                SQL_NM LIKE '%' || #{keyword, jdbcType=VARCHAR} || '%' OR
+                SQL_DESC LIKE '%' || #{keyword, jdbcType=VARCHAR} || '%'
+            )
+        </if>
+        <if test="pgmNm != null and pgmNm != ''">
+            AND PGM_NM = #{pgmNm, jdbcType=VARCHAR}
+        </if>
+        ORDER BY TO_NUMBER(SQL_SEQ) DESC
+    </select>
+
+    <!-- Chi tiết đầy đủ, bao gồm SQL_STMT -->
+    <select id="findBySqlSeq" resultMap="SySqlMasterResultMap">
+        SELECT SQL_SEQ, PGM_NM, SQL_NM, SQL_DESC, SQL_STMT, USE_YN,
+               CREATE_DATE, CREATED_BY, UPDATE_DATE, UPDATED_BY
+        FROM SY_SQL_MASTER
+        WHERE SQL_SEQ = #{sqlSeq, jdbcType=VARCHAR} AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+    </select>
+
+    <select id="getNextSqlSeq" resultType="java.lang.String">
+        SELECT TO_CHAR(SY_SQL_MASTER_SEQ.NEXTVAL) FROM DUAL
+    </select>
+
+    <insert id="insert">
+        INSERT INTO SY_SQL_MASTER (
+            SQL_SEQ, CPNY_ID, PGM_NM, SQL_NM, SQL_DESC, SQL_STMT, USE_YN,
+            CREATE_DATE, CREATED_BY, UPDATE_DATE, UPDATED_BY
+        ) VALUES (
+            #{sqlSeq, jdbcType=VARCHAR}, #{cpnyId, jdbcType=VARCHAR}, #{pgmNm, jdbcType=VARCHAR},
+            #{sqlNm, jdbcType=VARCHAR}, #{sqlDesc, jdbcType=VARCHAR}, #{sqlStmt, jdbcType=CLOB},
+            #{useYn, jdbcType=VARCHAR}, SYSDATE, #{adminID, jdbcType=VARCHAR}, SYSDATE, #{adminID, jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <update id="update">
+        UPDATE SY_SQL_MASTER SET
+            PGM_NM = #{pgmNm, jdbcType=VARCHAR},
+            SQL_NM = #{sqlNm, jdbcType=VARCHAR},
+            SQL_DESC = #{sqlDesc, jdbcType=VARCHAR},
+            SQL_STMT = #{sqlStmt, jdbcType=CLOB},
+            USE_YN = #{useYn, jdbcType=VARCHAR},
+            UPDATE_DATE = SYSDATE,
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR}
+        WHERE SQL_SEQ = #{sqlSeq, jdbcType=VARCHAR} AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+    </update>
+
+    <delete id="deleteBySqlSeq">
+        DELETE FROM SY_SQL_MASTER
+        WHERE SQL_SEQ = #{sqlSeq, jdbcType=VARCHAR} AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+    </delete>
+
+</mapper>

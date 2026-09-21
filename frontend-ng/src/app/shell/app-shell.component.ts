@@ -224,7 +224,12 @@ export class AppShellComponent implements OnInit, OnDestroy {
     '/sys/basicMaintenance/viewCodeManage': '/view-code-manage',
     '/sys/basicMaintenance/viewCodePamers': '/view-code-param-list',
     '/sys/basicMaintenance/viewCompany': '/view-company',
+    '/sys/rightsManagement/viewRolesGroup': '/view-roles-group',
+    '/sys/rightsManagement/viewSyRolesGroupList': '/view-roles-group-list',
+    '/sys/rightsManagement/viewLoginUser': '/view-login-user',
     '/sys/syRole/viewRolesGroup': '/view-roles-group',
+    '/sys/syRole/viewSyRolesGroupList': '/view-roles-group-list',
+    '/sys/syRole/viewLoginUser': '/view-login-user',
   };
 
   constructor(

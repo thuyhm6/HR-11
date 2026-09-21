@@ -150,6 +150,7 @@ export const routes: Routes = [
       { path: 'view-roles-group', loadComponent: () => import('./view-roles-group/view-roles-group.component').then(m => m.ViewRolesGroupComponent) },
       { path: 'view-roles-group-list', loadComponent: () => import('./view-roles-group-list/view-roles-group-list.component').then(m => m.ViewRolesGroupListComponent) },
       { path: 'view-login-user', loadComponent: () => import('./view-login-user/view-login-user.component').then(m => m.ViewLoginUserComponent) },
+      { path: 'view-sql-master-list', loadComponent: () => import('./view-sql-master-list/view-sql-master-list.component').then(m => m.ViewSqlMasterListComponent) },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
     ],
   },

@@ -38,11 +38,14 @@ public class SyUserController {
 
     @GetMapping("/sys/api/user/list")
     @ResponseBody
-    public List<SyUserDto> list(@RequestParam(required = false) String keyword, HttpSession session) {
+    public List<SyUserDto> list(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String deptNo,
+            HttpSession session) {
         if (!isAdmin(session)) {
             return List.of();
         }
-        return syUserService.searchUsers(keyword);
+        return syUserService.searchUsers(keyword, deptNo);
     }
 
     @GetMapping("/sys/api/user/detail")

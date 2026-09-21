@@ -56,6 +56,8 @@ export interface SyncCleversePayload {
   enterCd: string;
   sabun: string;
   gntCd: string;
+  gntNm: string;
+  vacationYn: string;
   sYmd: string;
   eYmd: string;
   orgCd: string;

@@ -28,13 +28,13 @@
     </div>
 
     <div class="d-flex gap-2 justify-content-center mt-3">
-      <button nz-button nzType="primary" nzSize="large" [nzLoading]="loading()" (click)="onUnlock()">
-        <iconify-icon *ngIf="!loading()" icon="solar:lock-keyhole-unlocked-bold-duotone" class="me-1"></iconify-icon>
-        Mở khóa
+      <button nz-button nzType="primary" nzSize="large" class="lock-screen-btn" [nzLoading]="loading()" (click)="onUnlock()">
+        <iconify-icon *ngIf="!loading()" icon="solar:lock-keyhole-unlocked-bold-duotone"></iconify-icon>
+        <span>Mở khóa</span>
       </button>
-      <a href="/logout" nz-button nzType="default" nzSize="large" nzGhost>
-        <iconify-icon icon="solar:logout-2-bold-duotone" class="me-1"></iconify-icon>
-        Đăng xuất
+      <a href="/logout" nz-button nzType="default" nzSize="large" nzGhost class="lock-screen-btn">
+        <iconify-icon icon="solar:logout-2-bold-duotone"></iconify-icon>
+        <span>Đăng xuất</span>
       </a>
     </div>
   </div>

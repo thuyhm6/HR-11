@@ -28,7 +28,7 @@ const I18N_KEYS = [
   'common.totalRows', 'common.loadFail', 'common.saveFail', 'common.deleteSuccess', 'common.deleteFail',
   'arItemParam.treeSearchPlaceholder',
   'pa.formula.itemList', 'pa.formula.formulaConfig', 'pa.formula.addNew', 'pa.formula.delete', 'pa.formula.no',
-  'pa.formula.conditionSeq', 'pa.formula.condition', 'pa.formula.formular', 'pa.formula.description',
+  'pa.formula.conditionSeq', 'pa.formula.condition', 'pa.formula.formular',
   'pa.formula.configItem', 'pa.formula.addTitle', 'pa.formula.editTitle', 'pa.formula.conditionLabel',
   'pa.formula.formularLabel', 'pa.formula.descriptionLabel', 'pa.formula.confirmDelete',
   'pa.formula.selectItemFirst', 'pa.formula.formularRequired', 'pa.formula.selectRequired',

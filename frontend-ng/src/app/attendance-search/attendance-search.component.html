@@ -116,7 +116,7 @@
           nzWidth="720px" (nzOnCancel)="closeSyncModal()" [nzFooter]="null">
   <ng-container *nzModalContent>
     <nz-alert nzType="info" class="mb-3"
-              nzMessage="DEV Endpoint: https://epdev.cleverse.hanwha.com/soap/org/neoHrWs"></nz-alert>
+              [nzMessage]="('attSearch.syncModal.endpoint' | translate:'Endpoint') + ': ' + testEndpoint"></nz-alert>
     <form class="row g-3">
       <div class="col-md-4">
         <label class="form-label fw-bold">{{ 'attSearch.syncModal.enterCd' | translate:'Mã công ty' }}</label>
@@ -129,6 +129,17 @@
       <div class="col-md-4">
         <label class="form-label fw-bold">{{ 'attSearch.syncModal.gntCd' | translate:'Mã chấm công' }}</label>
         <input nz-input id="as-sync-gntCd" [(ngModel)]="syncForm.gntCd" name="syncGntCd" maxlength="10">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-bold">{{ 'attSearch.syncModal.gntNm' | translate:'Tên loại nghỉ' }}</label>
+        <input nz-input id="as-sync-gntNm" [(ngModel)]="syncForm.gntNm" name="syncGntNm" maxlength="50">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label fw-bold">{{ 'attSearch.syncModal.vacationYn' | translate:'Tính là nghỉ phép (Y/N)' }}</label>
+        <nz-select class="w-100" id="as-sync-vacationYn" [(ngModel)]="syncForm.vacationYn" name="syncVacationYn">
+          <nz-option nzValue="Y" nzLabel="Y"></nz-option>
+          <nz-option nzValue="N" nzLabel="N"></nz-option>
+        </nz-select>
       </div>
       <div class="col-md-3">
         <label class="form-label fw-bold">{{ 'attSearch.syncModal.sYmd' | translate:'Ngày bắt đầu (YYYYMMDD)' }}</label>

@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzInputModule } from 'ng-zorro-antd/input';
+import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzModalModule } from 'ng-zorro-antd/modal';
@@ -13,6 +14,7 @@ import * as XLSX from 'xlsx';
 import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { SyRoleGroupDto } from '../view-roles-group-list/view-roles-group-list.model';
+import { HrDepartmentDto } from '../view-current-org-info/view-current-org-info.model';
 import { SyUserDto, UserRelationsPayload } from './view-login-user.model';
 import { ViewLoginUserService } from './view-login-user.service';
 
@@ -24,6 +26,7 @@ const DEFAULT_PASSWORD = '123456A@';
 const I18N_KEYS = [
   'common.search', 'common.clearFilter', 'common.exportExcel', 'common.close', 'common.confirm',
   'common.noData', 'common.totalRows', 'common.loadFail', 'common.saveSuccess', 'common.saveFail',
+  'common.deptName', 'ex.placeholder.dept',
   'sys.role.viewLoginUser.search.keyword', 'sys.role.viewLoginUser.search.keyword.placeholder',
   'sys.role.viewLoginUser.col.no', 'sys.role.viewLoginUser.col.loginId', 'sys.role.viewLoginUser.col.fullName',
   'sys.role.viewLoginUser.col.dept', 'sys.role.viewLoginUser.col.empCode', 'sys.role.viewLoginUser.col.accountType',
@@ -64,6 +67,7 @@ const PAGE_SIZE_OPTIONS = [20, 50, 100, 200];
     NzTableModule,
     NzCardModule,
     NzInputModule,
+    NzSelectModule,
     NzCheckboxModule,
     NzButtonModule,
     NzModalModule,
@@ -80,7 +84,9 @@ export class ViewLoginUserComponent implements OnInit {
   readonly loading = signal(false);
   readonly errorMessage = signal<string | null>(null);
   searchKeyword = '';
+  searchDeptNo: string | null = null;
 
+  readonly departments = signal<HrDepartmentDto[]>([]);
   readonly allRoleGroups = signal<SyRoleGroupDto[]>([]);
   readonly selectedUserNo = signal<string | null>(null);
   readonly selectedUserLabel = signal<string | null>(null);
@@ -106,13 +112,17 @@ export class ViewLoginUserComponent implements OnInit {
       next: (list) => this.allRoleGroups.set(list ?? []),
       error: () => this.allRoleGroups.set([]),
     });
+    this.api.getDepartments().subscribe({
+      next: (list) => this.departments.set(list ?? []),
+      error: () => this.departments.set([]),
+    });
     this.search();
   }
 
   search(): void {
     this.loading.set(true);
     this.errorMessage.set(null);
-    this.api.list(this.searchKeyword).subscribe({
+    this.api.list(this.searchKeyword, this.searchDeptNo).subscribe({
       next: (rows) => {
         this.rows.set(rows ?? []);
         this.loading.set(false);
@@ -127,6 +137,7 @@ export class ViewLoginUserComponent implements OnInit {
 
   clearSearch(): void {
     this.searchKeyword = '';
+    this.searchDeptNo = null;
     this.search();
   }
 

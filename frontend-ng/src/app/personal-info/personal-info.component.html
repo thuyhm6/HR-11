@@ -302,8 +302,8 @@
       <div class="col-md-3">
         <label class="form-label fw-semibold">{{ 'epi.field.existSingle' | translate:'EagleM' }}</label>
         <nz-select class="w-100" [(ngModel)]="personalForm.existSingle" nzAllowClear [nzPlaceHolder]="'epi.select.choose' | translate:'-- Chọn --'">
-          <nz-option value="1" [nzLabel]="'common.yes' | translate:'Yes'"></nz-option>
-          <nz-option value="0" [nzLabel]="'common.no' | translate:'No'"></nz-option>
+          <nz-option nzValue="1" [nzLabel]="'common.yes' | translate:'Yes'"></nz-option>
+          <nz-option nzValue="0" [nzLabel]="'common.no' | translate:'No'"></nz-option>
         </nz-select>
       </div>
       <div class="col-md-3">

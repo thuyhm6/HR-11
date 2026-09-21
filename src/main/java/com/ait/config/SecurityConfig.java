@@ -137,9 +137,14 @@ public class SecurityConfig implements WebMvcConfigurer {
                 return false;
             }
 
-            // Bắt buộc đổi mật khẩu nếu password chưa mã hóa
+            // Bắt buộc đổi mật khẩu nếu password chưa mã hóa. Ngoài "/dashboard" (trang chứa modal bắt
+            // buộc đổi mật khẩu) và "/api/change-first-password" (API submit đổi mật khẩu), phải cho
+            // qua thêm "/auth/api/me" và "/auth/api/menu" vì AppShellComponent (Angular) cần 2 API này
+            // để dựng shell (sidebar/menu, thông tin user) - thiếu chúng thì modal đổi mật khẩu cũng
+            // không hiện ra được vì chính nó phụ thuộc dữ liệu user lấy từ /auth/api/me.
             if (Boolean.TRUE.equals(session.getAttribute("requirePasswordChange"))) {
-                if (!requestUri.equals("/dashboard") && !requestUri.equals("/api/change-first-password")) {
+                if (!requestUri.equals("/dashboard") && !requestUri.equals("/api/change-first-password")
+                        && !requestUri.equals("/auth/api/me") && !requestUri.equals("/auth/api/menu")) {
                     response.sendRedirect("/dashboard");
                     return false;
                 }

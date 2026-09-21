@@ -32,3 +32,11 @@
 .lock-screen-input-group ::ng-deep iconify-icon {
   color: rgba(255, 255, 255, 0.7);
 }
+
+.lock-screen-btn {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 140px;
+}
