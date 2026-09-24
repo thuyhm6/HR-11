@@ -30,6 +30,8 @@
         <result column="EMP_OFFICE" property="empOffice" jdbcType="VARCHAR" />
         <result column="EMP_OFFICE_NAME" property="empOfficeName" jdbcType="VARCHAR" />
         <result column="PHOTO_PATH" property="photoPath" jdbcType="VARCHAR" />
+        <result column="COST_CENTER" property="costCenter" jdbcType="VARCHAR" />
+        <result column="SCHOOL_NAME" property="schoolName" jdbcType="VARCHAR" />
     </resultMap>
 
     <resultMap id="ManageEmpPositionInsideResultMap" type="com.ait.ess.viewDept.dto.ManageEmpPositionInsideDto">
@@ -82,7 +84,16 @@
             ) AS MANAGER_NAME,
             GET_GLOBAL_NAME(H.POSITION_NO, #{lang, jdbcType=VARCHAR}) AS POSITION_NO_NAME,
             H.EMP_OFFICE AS EMP_OFFICE,
-            GET_GLOBAL_NAME(H.EMP_OFFICE, #{lang, jdbcType=VARCHAR}) AS EMP_OFFICE_NAME
+            GET_GLOBAL_NAME(H.EMP_OFFICE, #{lang, jdbcType=VARCHAR}) AS EMP_OFFICE_NAME,
+            H.COST_CENTER AS COST_CENTER,
+            <!-- Trường tốt nghiệp: lấy bản ghi học vấn có END_DATE mới nhất (KEEP DENSE_RANK LAST
+                 tránh subquery lồng 2 cấp - Oracle không cho tham chiếu H.PERSON_ID sâu hơn 1 cấp) -->
+            (
+                SELECT MAX(HE.INSTITUTION_NAME) KEEP (DENSE_RANK LAST ORDER BY HE.END_DATE NULLS FIRST)
+                FROM HR_EDUCATION HE
+                WHERE HE.PERSON_ID = H.PERSON_ID
+                  AND HE.ACTIVITY = '1'
+            ) AS SCHOOL_NAME
         FROM HR_EMPLOYEE H, HR_DEPARTMENT D, SY_CODE SC, HR_PERSONAL_INFO HP
         WHERE H.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
           AND H.DEPTNO = D.DEPTNO(+)
@@ -108,7 +119,7 @@
         <if test="keyword != null and keyword != ''">
             AND (
                 UPPER(H.EMPID) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%'
-                OR UPPER(H.LOCAL_NAME) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%'
+                OR CONVERTTOUNSIGN(UPPER(H.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{keyword, jdbcType=VARCHAR})) || '%'
             )
         </if>
         <if test="deptNos != null and deptNos != ''">

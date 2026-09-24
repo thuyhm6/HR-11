@@ -26,6 +26,14 @@ export class LockScreenOverlayComponent {
 
   constructor(readonly lockScreen: LockScreenService) {}
 
+  resolveUserPhotoUrl(photoUrl: string | null | undefined): string {
+    const fallback = '/assets/images/users/dummy-avatar.jpg';
+    const normalized = photoUrl?.trim();
+    if (!normalized) return fallback;
+    if (/^(https?:)?\/\//i.test(normalized) || normalized.startsWith('data:')) return normalized;
+    return 'D:/source/VHR/HTSV_HR/' + normalized.replace(/^\/+/, '');
+  }
+
   togglePasswordVisibility(): void {
     this.showPassword = !this.showPassword;
   }

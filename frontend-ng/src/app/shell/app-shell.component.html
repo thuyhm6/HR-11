@@ -110,7 +110,7 @@
 
           <div class="topbar-item" nz-dropdown nzTrigger="click" [nzDropdownMenu]="userMenu">
             <span class="topbar-button d-flex align-items-center gap-2">
-              <img class="rounded-circle" width="32" [src]="user()?.photoUrl || '/assets/images/users/dummy-avatar.jpg'" alt="avatar">
+              <img class="rounded-circle" width="32" [src]="resolveUserPhotoUrl(user()?.photoUrl)" alt="avatar">
               <span class="d-none d-md-inline">{{ user()?.employeeName || user()?.username }}</span>
             </span>
           </div>

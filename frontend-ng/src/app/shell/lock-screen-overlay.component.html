@@ -5,7 +5,7 @@
     </div>
 
     <div class="mb-3">
-      <img [src]="user?.photoUrl || '/assets/images/users/dummy-avatar.jpg'" class="rounded-circle lock-screen-avatar" alt="avatar">
+      <img [src]="resolveUserPhotoUrl(user?.photoUrl)" class="rounded-circle lock-screen-avatar" alt="avatar">
     </div>
 
     <h5 class="text-white mb-1">{{ user?.employeeName || user?.username || 'HR System' }}</h5>

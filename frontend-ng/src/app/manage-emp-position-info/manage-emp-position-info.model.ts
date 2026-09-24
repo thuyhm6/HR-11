@@ -27,6 +27,8 @@ export interface ManageEmpPositionInfoDto {
   empOffice: string;
   empOfficeName: string;
   photoPath: string;
+  costCenter: string;
+  schoolName: string;
 }
 
 /** Tương ứng với ManageEmpPositionInsideDto.java (quá trình nội bộ trong modal chi tiết). */

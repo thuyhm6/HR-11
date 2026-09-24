@@ -69,6 +69,8 @@ export class AppShellComponent implements OnInit, OnDestroy {
   @ViewChild(ThemeSettingsComponent) themeSettings!: ThemeSettingsComponent;
   @ViewChild(ChangePasswordModalComponent) changePasswordModal!: ChangePasswordModalComponent;
 
+  private readonly photoBasePath = 'D:/source/VHR/HTSV_HR/';
+
   readonly user = signal<CurrentUser | null>(null);
   readonly menu = signal<MenuItem[]>([]);
   /** Nguồn dữ liệu duy nhất là ThemeService.menuSize - để nút hamburger (toggleSidebar) và drawer
@@ -93,6 +95,7 @@ export class AppShellComponent implements OnInit, OnDestroy {
     '/ess/infoApply/viewDeptOtApplyInfo': '/dept-ot-apply-info',
     '/ess/infoApply/viewOverTimeLimtShenPiList': '/ot-month-limit-list',
     '/ess/viewDept/ManageEmpPositionInfoList': '/manage-emp-position-info',
+    '/ess/viewDept/viewDeptPersonalInfoManageList': '/view-dept-personal-info',
     '/ess/viewDept/ManageCountInfoList': '/manage-count-info',
     '/evs/manage/viewEvsResultEmp': '/evs-result-emp',
     '/ess/viewDept/viewManageEvsResultEmpList': '/manage-evs-result-emp',
@@ -123,7 +126,7 @@ export class AppShellComponent implements OnInit, OnDestroy {
     '/ess/infoApplyAttendance/viewApplyAttenanceBatchInfoList': '/apply-attendance-batch-info',
     '/ar/attendanceMintenance/viewApplyAttenanceManagentInfoList_new': '/apply-attendance-batch-info',
     '/ess/infoApplyAttendance/viewAttendanceExForBatchInfoList': '/attendance-ex-batch-info',
-    '/ess/infoApplyAttendance/viewCheckAttencetanceExForBatchList': '/check-attendance-ex-for-batch',
+    '/ess/infoApplyLeave/viewCheckAttencetanceExForBatchList': '/check-attendance-ex-for-batch',
     '/ess/infoApplyAttendance/viewCoordApplyAttendanceInfoList': '/coord-apply-attendance-info',
     '/ess/infoApply/viewCoordApplyOtInfoList': '/coord-apply-ot-info-list',
     '/ess/viewDept/viewEmpCalendar': '/ess-view-emp-calendar',
@@ -148,7 +151,7 @@ export class AppShellComponent implements OnInit, OnDestroy {
     '/ar/attendanceSettings/viewShift': '/view-shift',
     '/ar/attendanceSettings/viewStatutoryHolidays': '/view-statutory-holidays',
     '/ar/attendanceSettings/viewCompanyCalendar': '/view-company-calendar',
-    '/ar/attendanceSettings/viewEmpCalendar': '/view-emp-calendar',
+    '/ar/attendanceMintenance/viewEmpCalendar': '/view-emp-calendar',
     '/ar/attendanceSettings/viewSummaryParamItem': '/view-summary-param-item',
     '/ar/attendanceSettings/viewSummaryItem': '/view-summary-item',
     '/ar/attendanceSettings/viewSummaryFormula': '/view-summary-formula',
@@ -322,6 +325,14 @@ export class AppShellComponent implements OnInit, OnDestroy {
     if (!menuUrl) return false;
     const key = this.angularRouteFor(menuUrl) ?? menuUrl;
     return this.tabs.activePath() === key;
+  }
+
+  resolveUserPhotoUrl(photoUrl: string | null | undefined): string {
+    const fallback = '/assets/images/users/dummy-avatar.jpg';
+    const normalized = photoUrl?.trim();
+    if (!normalized) return fallback;
+    if (/^(https?:)?\/\//i.test(normalized) || normalized.startsWith('data:')) return normalized;
+    return this.photoBasePath + normalized.replace(/^\/+/, '');
   }
 
   closeTab(event: MouseEvent, tab: TabItem): void {

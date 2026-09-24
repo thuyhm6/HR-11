@@ -1,0 +1,117 @@
+<div class="row">
+  <div class="col-12">
+    <!-- Điều kiện tìm kiếm - đứng im khi cuộn (xem .sticky-filter-card trong styles.css) -->
+    <nz-card class="mb-3 sticky-filter-card">
+      <form id="vdpi_searchForm" class="row g-3" (ngSubmit)="search()">
+        <div class="col-md-3">
+          <label class="form-label" for="vdpi_deptNos">{{ 'essDept.dept' | translate:'Phòng ban' }}</label>
+          <nz-tree-select id="vdpi_deptNos" class="w-100" [nzNodes]="deptNodes()" [(ngModel)]="deptNos" name="deptNos"
+                          nzCheckable nzShowSearch nzAllowClear
+                          [nzPlaceHolder]="'vdp.search.dept.placeholder' | translate:'Chọn phòng ban'"
+                          nzDropdownClassName="vdpi-dept-tree-dropdown"></nz-tree-select>
+          <div *ngIf="deptTreeErrorMessage()" class="text-danger small mt-1">{{ deptTreeErrorMessage() }}</div>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label" for="vdpi_keyword">{{ 'essDept.keyword' | translate:'Mã nhân viên / Họ tên' }}</label>
+          <input id="vdpi_keyword" nz-input [(ngModel)]="keyword" name="keyword"
+                 [placeholder]="'vdp.search.empKeyword.placeholder' | translate:'Nhập mã hoặc họ tên'">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label" for="vdpi_empTypeCode">{{ 'essDept.empType' | translate:'Loại nhân viên' }}</label>
+          <nz-select id="vdpi_empTypeCode" class="w-100" [(ngModel)]="empTypeCode" name="empTypeCode" nzAllowClear
+                     [nzPlaceHolder]="'common.selectAll' | translate:'-- Tất cả --'">
+            <nz-option *ngFor="let c of empTypeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label" for="vdpi_empOffice">{{ 'essDept.status' | translate:'Trạng thái' }}</label>
+          <nz-select id="vdpi_empOffice" class="w-100" [(ngModel)]="empOffice" name="empOffice" nzAllowClear
+                     [nzPlaceHolder]="'common.selectAll' | translate:'-- Tất cả --'">
+            <nz-option *ngFor="let c of empOfficeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label" for="vdpi_nationalityCode">{{ 'essDept.nationality' | translate:'Quốc tịch' }}</label>
+          <nz-select id="vdpi_nationalityCode" class="w-100" [(ngModel)]="nationalityCode" name="nationalityCode" nzAllowClear
+                     [nzPlaceHolder]="'common.selectAll' | translate:'-- Tất cả --'">
+            <nz-option *ngFor="let c of nationalityOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-12 d-flex justify-content-end gap-2 flex-wrap">
+          <button id="vdpi_btnSearch" nz-button nzType="primary" type="submit">
+            <i class="bx bx-search"></i> {{ 'essDept.search' | translate:'Tra cứu' }}
+          </button>
+          <button id="vdpi_btnExport" nz-button nzType="default" type="button" class="vdpi-btn-export" (click)="exportExcel()">
+            <i class="bx bx-export"></i> {{ 'essDept.exportExcel' | translate:'Xuất excel' }}
+          </button>
+        </div>
+      </form>
+    </nz-card>
+
+    <nz-card>
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+      <!-- nz-table: mỗi dòng là 1 thẻ nhân viên (ẩn thead), phân trang client-side -->
+      <nz-table #vdpiTable [nzData]="filteredRows()" [nzLoading]="loading()" [nzPageSize]="pageSize"
+                [(nzPageIndex)]="pageIndex" [nzShowTotal]="vdpiTotalTpl" nzSize="small"
+                [nzNoResult]="vdpiNoDataTpl" class="vdpi-card-list">
+        <tbody>
+          <tr *ngFor="let row of vdpiTable.data">
+            <td class="vdpi-card-cell">
+              <table class="vdpi-card-table">
+                <tbody>
+                  <tr>
+                    <td class="vdpi-photo-cell" rowspan="5">
+                      <div class="vdpi-photo-box">
+                        <img *ngIf="photoUrl(row) as src; else vdpiInitialsTpl" [src]="src" alt=""
+                             class="vdpi-photo-img" (error)="onPhotoError(row)">
+                        <ng-template #vdpiInitialsTpl>{{ initials(row.localName) }}</ng-template>
+                      </div>
+                    </td>
+                    <th class="vdpi-card-label">{{ 'common.empName' | translate:'Họ tên' }}</th>
+                    <td class="vdpi-card-value">
+                      <a href="javascript:void(0)" class="vdpi-name-link" (click)="openDetail(row)">{{ row.localName }}</a>
+                    </td>
+                    <th class="vdpi-card-label">{{ 'mep.col.jobTitle' | translate:'Chức danh' }}</th>
+                    <td class="vdpi-card-value">{{ jobTitle(row) }}</td>
+                  </tr>
+                  <tr>
+                    <th class="vdpi-card-label">{{ 'vdpi.card.job' | translate:'Công việc' }}</th>
+                    <td class="vdpi-card-value">{{ row.mainBusiness }}</td>
+                    <th class="vdpi-card-label">{{ 'essDept.empType' | translate:'Loại nhân viên' }}</th>
+                    <td class="vdpi-card-value">{{ row.empTypeName }}</td>
+                  </tr>
+                  <tr>
+                    <th class="vdpi-card-label">{{ 'vdpi.card.costCode' | translate:'Mã chi phí' }}</th>
+                    <td class="vdpi-card-value">{{ row.costCenter }}</td>
+                    <th class="vdpi-card-label">{{ 'vdpi.card.deptManager' | translate:'Trưởng phòng' }}</th>
+                    <td class="vdpi-card-value">{{ deptManager(row) }}</td>
+                  </tr>
+                  <tr>
+                    <th class="vdpi-card-label">{{ 'vdpi.card.workDuration' | translate:'Thời gian làm việc' }}</th>
+                    <td class="vdpi-card-value">{{ workDuration(row.dateStarted) }}</td>
+                    <th class="vdpi-card-label">{{ 'mep.col.dateJoined' | translate:'Ngày vào làm' }}</th>
+                    <td class="vdpi-card-value">{{ row.dateStarted }}</td>
+                  </tr>
+                  <tr>
+                    <th class="vdpi-card-label">{{ 'vdpi.card.school' | translate:'Trường tốt nghiệp' }}</th>
+                    <td class="vdpi-card-value">{{ row.schoolName }}</td>
+                    <th class="vdpi-card-label"></th>
+                    <td class="vdpi-card-value"></td>
+                  </tr>
+                </tbody>
+              </table>
+            </td>
+          </tr>
+        </tbody>
+        <ng-template #vdpiTotalTpl let-total>
+          {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+        </ng-template>
+        <ng-template #vdpiNoDataTpl>{{ 'mep.msg.noData' | translate:'Không có dữ liệu' }}</ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>
+
+<!-- Modal chi tiết nhân viên - dùng chung với manage-emp-position-info (EmpPositionDetailModalComponent) -->
+<app-emp-position-detail-modal [visible]="detailVisible()" [row]="detailRow()" (closed)="closeDetail()"></app-emp-position-detail-modal>

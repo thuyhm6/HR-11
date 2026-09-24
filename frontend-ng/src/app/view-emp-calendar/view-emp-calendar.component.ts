@@ -66,7 +66,7 @@ interface DayForm {
 }
 
 /**
- * Bản Angular của ar/attendanceSettings/viewEmpCalendar.html (Thymeleaf + jQuery) - trang lịch làm
+ * Bản Angular của ar/attendanceMintenance/viewEmpCalendar.html (Thymeleaf + jQuery) - trang lịch làm
  * việc tháng dạng lưới 7 cột cho HR admin xem/sửa lịch của BẤT KỲ nhân viên nào (khác bản ESS chỉ xem
  * lịch của chính mình). Gọi lại nguyên API JSON đã có sẵn ở ArCalenderController (xem
  * ViewEmpCalendarService) - không đổi backend, kể cả logic phân quyền resolvePersonIdForRequest/

@@ -9,20 +9,18 @@ import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import { NzTreeSelectModule } from 'ng-zorro-antd/tree-select';
 import { NzTreeNodeOptions } from 'ng-zorro-antd/tree';
-import { NzModalModule } from 'ng-zorro-antd/modal';
-import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { formatDate } from '@angular/common';
 import * as XLSX from 'xlsx';
 import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import {
-  AuthDeptNode,
   CodeItem,
   ManageEmpPositionInfoDto,
-  ManageEmpPositionInsideDto,
 } from './manage-emp-position-info.model';
 import { ManageEmpPositionInfoService } from './manage-emp-position-info.service';
+import { EmpPositionDetailModalComponent } from './emp-position-detail-modal.component';
+import { buildDeptTree, expandDeptSelection } from './dept-tree.util';
 
 /** Các key message.properties dùng trong trang này - tải trước 1 lần ở ngOnInit (xem I18nService). */
 const I18N_KEYS = [
@@ -34,11 +32,7 @@ const I18N_KEYS = [
   'common.stt', 'common.empId', 'common.empName', 'common.deptName',
   'mep.col.duty', 'mep.col.jobTitle', 'mep.col.positionTitle', 'mep.field.nationality',
   'essDept.status', 'mep.col.dateJoined', 'mep.col.manager',
-  'mep.modal.detailTitle', 'mep.detail.orgNameLocal', 'mep.detail.mainBusiness',
-  'mep.detail.employeeOwned', 'mep.detail.manager', 'mep.detail.managerEmp',
-  'mep.section.insideProcess', 'essDept.attStartDate', 'mep.col.mainBusiness', 'mep.col.transType',
-  'mep.msg.noData', 'mep.msg.noInsideExp', 'mep.msg.loadInsideEmpFailed', 'mep.detail.noImage',
-  'mep.msg.loadDeptFailed', 'common.loadFail', 'common.totalRows',
+  'mep.msg.noData', 'mep.msg.loadDeptFailed', 'common.loadFail', 'common.totalRows',
 ];
 
 const PAGE_SIZE_OPTIONS = [25, 50, 100, 200, 500];
@@ -67,10 +61,9 @@ const DEFAULT_EMP_OFFICE = '15119';
     NzButtonModule,
     NzDatePickerModule,
     NzTreeSelectModule,
-    NzModalModule,
-    NzDescriptionsModule,
     NzAlertModule,
     TranslatePipe,
+    EmpPositionDetailModalComponent,
   ],
   templateUrl: './manage-emp-position-info.component.html',
   styleUrl: './manage-emp-position-info.component.css',
@@ -81,7 +74,6 @@ export class ManageEmpPositionInfoComponent implements OnInit {
   readonly rows = signal<ManageEmpPositionInfoDto[]>([]);
   readonly loading = signal(false);
   readonly errorMessage = signal<string | null>(null);
-  readonly insideErrorMessage = signal<string | null>(null);
   readonly deptTreeErrorMessage = signal<string | null>(null);
 
   readonly deptNodes = signal<NzTreeNodeOptions[]>([]);
@@ -92,11 +84,8 @@ export class ManageEmpPositionInfoComponent implements OnInit {
 
   readonly detailVisible = signal(false);
   readonly detailRow = signal<ManageEmpPositionInfoDto | null>(null);
-  readonly insideRows = signal<ManageEmpPositionInsideDto[]>([]);
-  readonly insideLoading = signal(false);
-  readonly photoBroken = signal(false);
 
-  /** id -> danh sách id con trực tiếp - dùng để mở rộng lựa chọn cây phòng ban khi tra cứu (xem search()). */
+  /** id -> danh sách id con trực tiếp - dùng để mở rộng lựa chọn cây phòng ban khi tra cứu (xem dept-tree.util). */
   private deptChildrenMap = new Map<string, string[]>();
 
   keyword = '';
@@ -135,7 +124,7 @@ export class ManageEmpPositionInfoComponent implements OnInit {
     this.api
       .getList({
         keyword: this.keyword,
-        deptNos: this.expandDeptSelection(this.deptNos).join(','),
+        deptNos: expandDeptSelection(this.deptNos, this.deptChildrenMap).join(','),
         fromDate: this.formatYmd(this.fromDate),
         toDate: this.formatYmd(this.toDate),
         postFamily: this.postFamily ?? '',
@@ -170,42 +159,14 @@ export class ManageEmpPositionInfoComponent implements OnInit {
     this.search();
   }
 
+  /** Quá trình nội bộ được EmpPositionDetailModalComponent tự tải khi mở modal. */
   openDetail(row: ManageEmpPositionInfoDto): void {
     this.detailRow.set(row);
-    this.insideRows.set([]);
-    this.insideErrorMessage.set(null);
-    this.photoBroken.set(false);
     this.detailVisible.set(true);
-    if (!row.personId) return;
-    this.insideLoading.set(true);
-    this.api.getInsideExperience(row.personId).subscribe({
-      next: (rows) => {
-        this.insideRows.set(rows ?? []);
-        this.insideLoading.set(false);
-      },
-      error: () => {
-        this.insideErrorMessage.set(
-          this.i18n.t('mep.msg.loadInsideEmpFailed', 'Không tải được quá trình nội bộ của nhân viên.'),
-        );
-        this.insideLoading.set(false);
-      },
-    });
   }
 
   closeDetail(): void {
     this.detailVisible.set(false);
-  }
-
-  onPhotoError(): void {
-    this.photoBroken.set(true);
-  }
-
-  resolvePhotoUrl(photoPath: string | null | undefined): string | null {
-    if (!photoPath) return null;
-    const normalized = photoPath.trim();
-    if (!normalized) return null;
-    if (/^(https?:)?\/\//i.test(normalized) || normalized.startsWith('data:')) return normalized;
-    return normalized.startsWith('/') ? normalized : '/' + normalized.replace(/^\/+/, '');
   }
 
   /** Xuất excel client-side (giống bản gốc DataTables Buttons, không có endpoint export riêng ở
@@ -245,55 +206,14 @@ export class ManageEmpPositionInfoComponent implements OnInit {
 
   private loadDeptTree(): void {
     this.api.getAuthorizedDepartments().subscribe({
-      next: (list) => this.deptNodes.set(this.buildDeptTree(list ?? [])),
+      next: (list) => {
+        const tree = buildDeptTree(list ?? []);
+        this.deptChildrenMap = tree.childrenMap;
+        this.deptNodes.set(tree.nodes);
+      },
       error: () =>
         this.deptTreeErrorMessage.set(this.i18n.t('mep.msg.loadDeptFailed', 'Lỗi khi tải danh sách phòng ban')),
     });
-  }
-
-  private buildDeptTree(list: AuthDeptNode[]): NzTreeNodeOptions[] {
-    const map = new Map<string, NzTreeNodeOptions & { parent: string }>();
-    list.forEach((d) => map.set(d.id, { title: d.text, key: d.id, parent: d.parent, children: [] }));
-
-    this.deptChildrenMap = new Map<string, string[]>();
-    const roots: NzTreeNodeOptions[] = [];
-    map.forEach((node) => {
-      if (node.parent && node.parent !== '0' && map.has(node.parent)) {
-        map.get(node.parent)!.children!.push(node);
-        const siblings = this.deptChildrenMap.get(node.parent) ?? [];
-        siblings.push(node.key);
-        this.deptChildrenMap.set(node.parent, siblings);
-      } else {
-        roots.push(node);
-      }
-    });
-
-    const markLeaf = (nodes: NzTreeNodeOptions[]) => {
-      nodes.forEach((n) => {
-        n.isLeaf = !n.children || n.children.length === 0;
-        if (n.children?.length) markLeaf(n.children);
-      });
-    };
-    markLeaf(roots);
-    return roots;
-  }
-
-  /** nz-tree-select chỉ trả về key của node được tick trực tiếp - KHÔNG tự cascade xuống phòng ban
-   *  con như widget DeptTree.js gốc (hàm checkChildren() đệ quy). Backend lọc theo deptNos IN (...)
-   *  đúng từng mã, nên nếu không mở rộng thủ công ở đây, chọn 1 phòng ban cha (VD "HTSV") sẽ chỉ lọc
-   *  đúng nhân viên gán trực tiếp vào phòng đó, bỏ sót toàn bộ nhân viên ở các phòng ban con - khiến
-   *  kết quả tra cứu trống hoặc thiếu dữ liệu. */
-  private expandDeptSelection(selected: string[]): string[] {
-    const result = new Set<string>();
-    const stack = [...selected];
-    while (stack.length) {
-      const id = stack.pop()!;
-      if (result.has(id)) continue;
-      result.add(id);
-      const children = this.deptChildrenMap.get(id);
-      if (children) stack.push(...children);
-    }
-    return Array.from(result);
   }
 
   private loadCodeOptions(): void {

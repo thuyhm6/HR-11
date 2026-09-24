@@ -42,7 +42,7 @@ const YEAR_RANGE = 5;
  * dạng lưới 7 cột (không phải bảng danh sách nên không dùng nz-table), gọi lại nguyên các API JSON
  * đã có sẵn (xem EssViewEmpCalendarService) - không đổi backend. Luôn xem lịch của chính nhân viên
  * đang đăng nhập (personId lấy qua /ess/empinfo/api/personalInfo/myInfo), không có picker chọn nhân
- * viên khác như bản HRM gốc (/ar/attendanceSettings/viewEmpCalendar).
+ * viên khác như bản HRM gốc (/ar/attendanceMintenance/viewEmpCalendar).
  *
  * Modal chi tiết ngày (click vào 1 ô) được giữ lại trong code nhưng luôn ẩn (hrmMode = false) vì
  * trang ESS chỉ xem lịch của chính mình, giống hệt cách bản Thymeleaf gốc khoá click bằng CSS khi

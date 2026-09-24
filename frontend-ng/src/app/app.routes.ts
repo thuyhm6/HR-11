@@ -15,6 +15,7 @@ export const routes: Routes = [
       { path: 'dept-ot-apply-info', loadComponent: () => import('./dept-ot-apply-info/dept-ot-apply-info.component').then(m => m.DeptOtApplyInfoComponent) },
       { path: 'ot-month-limit-list', loadComponent: () => import('./ot-month-limit-list/ot-month-limit-list.component').then(m => m.OtMonthLimitListComponent) },
       { path: 'manage-emp-position-info', loadComponent: () => import('./manage-emp-position-info/manage-emp-position-info.component').then(m => m.ManageEmpPositionInfoComponent) },
+      { path: 'view-dept-personal-info', loadComponent: () => import('./view-dept-personal-info/view-dept-personal-info.component').then(m => m.ViewDeptPersonalInfoComponent) },
       { path: 'manage-count-info', loadComponent: () => import('./manage-count-info/manage-count-info.component').then(m => m.ManageCountInfoComponent) },
       { path: 'evs-result-emp', loadComponent: () => import('./evs-result-emp/evs-result-emp.component').then(m => m.EvsResultEmpComponent) },
       { path: 'manage-evs-result-emp', loadComponent: () => import('./manage-evs-result-emp/manage-evs-result-emp.component').then(m => m.ManageEvsResultEmpComponent) },

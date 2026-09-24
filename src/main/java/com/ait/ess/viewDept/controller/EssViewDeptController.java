@@ -135,7 +135,7 @@ public class EssViewDeptController {
 
     // Trang Thymeleaf viewEmpCalendar.html đã được thay bằng Angular route /ess-view-emp-calendar
 
-    // Trang Thymeleaf viewDeptPersonalInfoManageList.html đã được thay bằng Angular route /manage-emp-position-info
+    // Trang Thymeleaf viewDeptPersonalInfoManageList.html đã được thay bằng Angular route /view-dept-personal-info (dùng chung API bên dưới)
 
     // Trang Thymeleaf viewManageEvsResultEmpList.html đã được thay bằng Angular route /manage-evs-result-emp
 

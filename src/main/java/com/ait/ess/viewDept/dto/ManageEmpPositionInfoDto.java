@@ -35,6 +35,10 @@ public class ManageEmpPositionInfoDto {
     private String empOffice;
     private String empOfficeName;
     private String photoPath;
+    /** Mã chi phí (HR_EMPLOYEE.COST_CENTER) - hiển thị ở trang dạng thẻ view-dept-personal-info. */
+    private String costCenter;
+    /** Trường tốt nghiệp gần nhất (HR_EDUCATION.INSTITUTION_NAME). */
+    private String schoolName;
 
     private String keyword;
     private String deptNos;

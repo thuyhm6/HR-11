@@ -1,0 +1,68 @@
+<!-- Modal chi tiết nhân viên - rộng 60% viewport, nội dung dài quá thì tự cuộn dọc bên trong modal
+     (thay vì đẩy chiều cao modal vượt màn hình). -->
+<nz-modal [nzVisible]="visible" [nzTitle]="'mep.modal.detailTitle' | translate:'Chi tiết nhân viên'" nzWidth="60vw"
+          [nzBodyStyle]="{ 'max-height': '75vh', 'overflow-y': 'auto' }"
+          (nzOnCancel)="close()" [nzFooter]="null">
+  <ng-container *nzModalContent>
+    <ng-container *ngIf="row">
+      <div class="d-flex gap-3 mb-3">
+        <div class="mep-detail-photo-box">
+          <img *ngIf="resolvePhotoUrl(row.photoPath) as photoUrl; else noPhoto" [src]="photoUrl"
+               [hidden]="photoBroken()" class="mep-detail-photo-img" alt="photo" (error)="onPhotoError()">
+          <div *ngIf="photoBroken()" class="mep-detail-photo-fallback">{{ 'mep.detail.noImage' | translate:'Không có ảnh' }}</div>
+          <ng-template #noPhoto>
+            <div class="mep-detail-photo-fallback">{{ 'mep.detail.noImage' | translate:'Không có ảnh' }}</div>
+          </ng-template>
+        </div>
+        <nz-descriptions nzBordered [nzColumn]="2" nzSize="small" class="flex-grow-1">
+          <nz-descriptions-item [nzTitle]="'common.empId' | translate:'Mã nhân viên'">{{ row.empId }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'common.empName' | translate:'Họ tên'">{{ row.localName }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'common.deptName' | translate:'Phòng ban'">{{ row.deptName }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'mep.detail.orgNameLocal' | translate:'Tên phòng local'" [nzSpan]="1">{{ row.orgNameLocal }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'mep.col.duty' | translate:'Chức vụ'">{{ row.dutyName }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'mep.col.jobTitle' | translate:'Chức danh'">{{ row.postGradeNo }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'mep.col.positionTitle' | translate:'Vị trí'">{{ row.positionNoName || row.positionName }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'essDept.empGroup' | translate:'Nhóm nhân viên'">{{ row.postFamilyName }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'essDept.empType' | translate:'Loại nhân viên'">{{ row.empTypeName }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'essDept.status' | translate:'Trạng thái'">{{ row.empOfficeName }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'essDept.nationality' | translate:'Quốc tịch'">{{ row.nationalityName }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'mep.col.dateJoined' | translate:'Ngày vào làm'">{{ row.dateStarted }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'mep.detail.mainBusiness' | translate:'Nghiệp vụ chính'">{{ row.mainBusiness }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'mep.detail.employeeOwned' | translate:'Khối sở hữu'">{{ row.employeeOwned }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'mep.detail.manager' | translate:'Quản lý hiển thị'">{{ row.managerName }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'mep.detail.managerEmp' | translate:'Quản lý cập nhật'">{{ row.managerEmpName }}</nz-descriptions-item>
+        </nz-descriptions>
+      </div>
+
+      <h6 class="fw-bold mb-2">{{ 'mep.section.insideProcess' | translate:'Quá trình nội bộ' }}</h6>
+      <nz-alert *ngIf="insideErrorMessage()" nzType="error" [nzMessage]="insideErrorMessage() ?? ''" class="mb-2"></nz-alert>
+      <div class="table-responsive">
+        <nz-table [nzData]="insideRows()" [nzLoading]="insideLoading()" [nzShowPagination]="false" nzSize="small">
+          <thead>
+            <tr>
+              <th class="text-center" style="width:60px">{{ 'common.stt' | translate:'STT' }}</th>
+              <th class="text-center" style="width:140px">{{ 'essDept.attStartDate' | translate:'Ngày bắt đầu' }}</th>
+              <th>{{ 'common.deptName' | translate:'Phòng ban' }}</th>
+              <th>{{ 'mep.col.mainBusiness' | translate:'Nghiệp vụ chính' }}</th>
+              <th>{{ 'mep.col.jobTitle' | translate:'Chức danh' }}</th>
+              <th>{{ 'mep.col.transType' | translate:'Loại điều chuyển' }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="!insideLoading() && insideRows().length === 0">
+              <td colspan="6" class="text-center text-muted">{{ 'mep.msg.noInsideExp' | translate:'Không có dữ liệu quá trình nội bộ.' }}</td>
+            </tr>
+            <tr *ngFor="let item of insideRows(); let i = index">
+              <td class="text-center">{{ i + 1 }}</td>
+              <td class="text-center">{{ item.startDate }}</td>
+              <td>{{ item.deptName }}</td>
+              <td>{{ item.mainBusiness }}</td>
+              <td>{{ item.postGrade }}</td>
+              <td>{{ item.transCode }}</td>
+            </tr>
+          </tbody>
+        </nz-table>
+      </div>
+    </ng-container>
+  </ng-container>
+</nz-modal>

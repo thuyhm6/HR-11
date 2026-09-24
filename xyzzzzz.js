@@ -2536,3 +2536,5 @@ tạo mới giao diện /ess/infoApply/viewOverTimeLimtShenPiList - Theo dõi t�
 				HR.EMPID                                                                                                           AS EMPID,
 				HR.LOCAL_NAME                                                                                                      AS LOCAL_NAME,
 .
+
+Tạo mới lại cho tôi giao diện /ess/viewDept/viewDeptPersonalInfoManageList - Thông tin nhân sự với dạng Angular + NG-ZORRO  (Frontend). giao diện tham khảo hình ảnh. đây là một cách hiển thị khác của manage-emp-position-info
