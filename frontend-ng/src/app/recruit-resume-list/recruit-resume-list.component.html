@@ -1,0 +1,137 @@
+<nz-card [nzBodyStyle]="{ padding: '10px' }">
+  <!-- ════ Điều kiện tìm kiếm + toolbar ════ -->
+  <form class="row g-2 mb-2 align-items-end" (ngSubmit)="search()">
+    <div class="col-md-4">
+      <label class="form-label small mb-1">{{ 'rrl.registerInfo' | translate:'Ngày đăng ký' }}</label>
+      <div class="d-flex align-items-center gap-1">
+        <nz-date-picker class="flex-fill" id="rrlSearchStartDate" name="rrlSearchStartDate" nzSize="small"
+                        nzFormat="dd/MM/yyyy" [(ngModel)]="searchStartDate"
+                        [nzPlaceHolder]="'common.fromDate' | translate:'Từ ngày'"></nz-date-picker>
+        <span>~</span>
+        <nz-date-picker class="flex-fill" id="rrlSearchEndDate" name="rrlSearchEndDate" nzSize="small"
+                        nzFormat="dd/MM/yyyy" [(ngModel)]="searchEndDate"
+                        [nzPlaceHolder]="'common.toDate' | translate:'Đến ngày'"></nz-date-picker>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <label class="form-label small mb-1">{{ 'rrl.registerType' | translate:'Loại phát lệnh' }}</label>
+      <nz-select class="w-100" id="rrlSearchRegisterType" name="rrlSearchRegisterType" nzSize="small"
+                 nzShowSearch nzAllowClear [(ngModel)]="searchRegisterType"
+                 [nzPlaceHolder]="'common.selectAll' | translate:'-- Tất cả --'">
+        <nz-option *ngFor="let o of registerTypeOptions()" [nzValue]="o.codeNo" [nzLabel]="o.codeName"></nz-option>
+      </nz-select>
+    </div>
+    <div class="col-md-2">
+      <label class="form-label small mb-1">{{ 'common.status' | translate:'Trạng thái' }}</label>
+      <nz-select class="w-100" id="rrlSearchActivity" name="rrlSearchActivity" nzSize="small" nzAllowClear
+                 [(ngModel)]="searchActivity" [nzPlaceHolder]="'common.selectAll' | translate:'-- Tất cả --'">
+        <nz-option [nzValue]="ACTIVITY_IN_PROGRESS" [nzLabel]="'rrl.status.inProgress' | translate:'Đang xử lý'"></nz-option>
+        <nz-option [nzValue]="ACTIVITY_COMPLETED" [nzLabel]="'rrl.status.completed' | translate:'Đã hoàn tất'"></nz-option>
+      </nz-select>
+    </div>
+    <div class="col-md-3 d-flex flex-wrap gap-1 justify-content-end">
+      <button nz-button nzType="primary" nzSize="small" type="submit" id="rrlBtnSearch" [nzLoading]="loading()">
+        <i class="bx bx-search"></i> {{ 'common.search' | translate:'Tra cứu' }}
+      </button>
+      <button nz-button nzSize="small" type="button" id="rrlBtnAdd" (click)="openAdd()">
+        <i class="bx bx-plus"></i> {{ 'common.addNew' | translate:'Thêm mới' }}
+      </button>
+      <button nz-button nzSize="small" type="button" id="rrlBtnExport" [disabled]="rows().length === 0"
+              (click)="exportExcel()">
+        <i class="bx bx-export"></i> {{ 'common.exportExcel' | translate:'Xuất Excel' }}
+      </button>
+    </div>
+  </form>
+
+  <div class="small text-muted mb-1">{{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ rows().length }}</div>
+
+  <nz-table #rrlTable [nzData]="rows()" [nzLoading]="loading()" nzSize="small" class="table-nowrap"
+            [(nzPageIndex)]="pageIndex" [(nzPageSize)]="pageSize" nzShowSizeChanger [nzPageSizeOptions]="[20, 50, 100]"
+            [nzScroll]="{ x: '1100px', y: 'calc(100vh - 330px)' }">
+    <thead>
+      <tr>
+        <th class="text-center" nzWidth="60px">{{ 'common.stt' | translate:'STT' }}</th>
+        <th class="text-center" nzWidth="140px">{{ 'rrl.registerCode' | translate:'Mã xử lý tự động' }}</th>
+        <th class="text-center" nzWidth="110px">{{ 'rrl.registerInfo' | translate:'Ngày đăng ký' }}</th>
+        <th nzWidth="180px">{{ 'rrl.registerType' | translate:'Loại phát lệnh' }}</th>
+        <th class="text-center" nzWidth="110px">{{ 'rrl.registerDate' | translate:'Ngày hiệu lực' }}</th>
+        <th class="text-center" nzWidth="120px">{{ 'common.status' | translate:'Trạng thái' }}</th>
+        <th>{{ 'rrl.outline' | translate:'Khái quát phát lệnh' }}</th>
+        <th class="text-center" nzWidth="90px" nzRight>{{ 'common.action' | translate:'Thao tác' }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let row of rrlTable.data; let i = index" class="rrl-row" (click)="openEdit(row)">
+        <td class="text-center">{{ (pageIndex - 1) * pageSize + i + 1 }}</td>
+        <td class="text-center">{{ row.registerCode }}</td>
+        <td class="text-center">{{ row.registerInfo }}</td>
+        <td>{{ row.registerTypeName }}</td>
+        <td class="text-center">{{ row.registerDate }}</td>
+        <td class="text-center">
+          <nz-tag [nzColor]="isCompleted(row) ? 'success' : 'processing'">{{ statusLabel(row.activity) }}</nz-tag>
+        </td>
+        <td class="rrl-remark" [title]="row.remark || ''">{{ row.remark }}</td>
+        <td class="text-center" nzRight (click)="$event.stopPropagation()">
+          <button nz-button nzType="text" nzSize="small" [title]="'common.edit' | translate:'Sửa'"
+                  (click)="openEdit(row)">
+            <i class="bx bx-edit text-warning"></i>
+          </button>
+          <button nz-button nzType="text" nzSize="small" nzDanger [disabled]="isCompleted(row)"
+                  [title]="'common.delete' | translate:'Xóa'" (click)="confirmDelete(row)">
+            <i class="bx bx-trash"></i>
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </nz-table>
+</nz-card>
+
+<!-- ════ Modal thêm/sửa khái quát phát lệnh ════ -->
+<nz-modal [nzVisible]="modalVisible()" nzWidth="640px" (nzOnCancel)="closeModal()"
+          [nzTitle]="(form.seq ? 'rrl.modalEditTitle' : 'rrl.modalAddTitle') | translate:(form.seq ? 'Sửa khái quát phát lệnh' : 'Thêm khái quát phát lệnh')">
+  <ng-container *nzModalContent>
+    <div class="row g-2">
+      <div class="col-md-6">
+        <label class="form-label small mb-1" for="rrlFormRegisterCode">{{ 'rrl.registerCode' | translate:'Mã xử lý tự động' }}</label>
+        <input nz-input id="rrlFormRegisterCode" name="rrlFormRegisterCode" nzSize="small" [value]="form.registerCode" readonly>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label small mb-1" for="rrlFormRegisterInfo">{{ 'rrl.registerInfo' | translate:'Ngày đăng ký' }}</label>
+        <input nz-input id="rrlFormRegisterInfo" name="rrlFormRegisterInfo" nzSize="small" [value]="form.registerInfo" readonly>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label small mb-1">{{ 'rrl.registerType' | translate:'Loại phát lệnh' }} <span class="text-danger">*</span></label>
+        <nz-select class="w-100" id="rrlFormRegisterType" name="rrlFormRegisterType" nzSize="small" nzShowSearch
+                   [(ngModel)]="form.registerType" [nzDisabled]="isCompleted(form)"
+                   [nzPlaceHolder]="'common.placeholder.select' | translate:'-- Chọn --'">
+          <nz-option *ngFor="let o of registerTypeOptions()" [nzValue]="o.codeNo" [nzLabel]="o.codeName"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label small mb-1">{{ 'rrl.registerDate' | translate:'Ngày hiệu lực' }} <span class="text-danger">*</span></label>
+        <nz-date-picker class="w-100" id="rrlFormRegisterDate" name="rrlFormRegisterDate" nzSize="small"
+                        nzFormat="dd/MM/yyyy" [(ngModel)]="form.registerDate" [nzDisabled]="isCompleted(form)"></nz-date-picker>
+      </div>
+      <div class="col-12">
+        <label class="form-label small mb-1">{{ 'common.status' | translate:'Trạng thái' }}</label>
+        <div>
+          <nz-tag id="rrlFormStatus" [nzColor]="isCompleted(form) ? 'success' : 'processing'">{{ statusLabel(form.activity) }}</nz-tag>
+        </div>
+      </div>
+      <div class="col-12">
+        <label class="form-label small mb-1" for="rrlFormRemark">{{ 'rrl.outline' | translate:'Khái quát phát lệnh' }}</label>
+        <textarea nz-input id="rrlFormRemark" name="rrlFormRemark" rows="4" maxlength="1000"
+                  [(ngModel)]="form.remark" [disabled]="isCompleted(form)"></textarea>
+      </div>
+    </div>
+  </ng-container>
+  <div *nzModalFooter>
+    <button nz-button nzDanger *ngIf="form.seq" id="rrlFormBtnDelete" class="float-start"
+            [disabled]="isCompleted(form)" (click)="confirmDelete({ seq: form.seq, activity: form.activity })">
+      {{ 'common.delete' | translate:'Xóa' }}
+    </button>
+    <button nz-button id="rrlFormBtnCancel" (click)="closeModal()">{{ 'common.cancel' | translate:'Hủy' }}</button>
+    <button nz-button nzType="primary" id="rrlFormBtnSave" [nzLoading]="saving()" [disabled]="isCompleted(form)"
+            (click)="save()">{{ 'common.save' | translate:'Lưu' }}</button>
+  </div>
+</nz-modal>

@@ -1,0 +1,159 @@
+<div class="row">
+  <div class="col-12">
+    <!-- Điều kiện tìm kiếm - đứng im khi cuộn (xem .sticky-filter-card trong styles.css) -->
+    <nz-card class="mb-3 sticky-filter-card">
+      <form class="row g-3" (ngSubmit)="search()">
+        <div class="col-md-4">
+          <label class="form-label" for="vhal-search-apply-type">{{ 'sys.affirm.title.applyType' | translate:'Loại đơn' }}</label>
+          <nz-select id="vhal-search-apply-type" class="w-100" [(ngModel)]="searchApplyType" name="searchApplyType"
+                     nzAllowClear nzShowSearch [nzPlaceHolder]="'common.selectAll' | translate:'-- Tất cả --'">
+            <nz-option *ngFor="let c of applyTypes()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-8 d-flex align-items-end gap-2 flex-wrap">
+          <button nz-button nzType="primary" type="submit">
+            <i class="bx bx-search"></i> {{ 'common.search' | translate:'Tìm kiếm' }}
+          </button>
+          <button id="vhal-btn-add" nz-button type="button" (click)="openAdd()">
+            <i class="bx bx-plus"></i> {{ 'common.addNew' | translate:'Thêm mới' }}
+          </button>
+        </div>
+      </form>
+    </nz-card>
+
+    <nz-card>
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+      <nz-table [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="25" [nzShowSizeChanger]="true"
+                [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="vhalTotalTpl" nzBordered nzSize="small"
+                [nzScroll]="{ x: hasLengthRange ? '1340px' : '1100px' }" #vhalTable>
+        <thead>
+          <tr>
+            <th nzWidth="220px">{{ 'sys.affirm.title.applyType' | translate:'Loại đơn' }}</th>
+            <th class="text-center" nzWidth="120px">{{ 'vhal.col.empType' | translate:'Loại nhân viên' }}</th>
+            <th nzWidth="180px">{{ 'vaap.col.duty' | translate:'Vai trò' }}</th>
+            <ng-container *ngIf="hasLengthRange">
+              <th class="text-center" nzWidth="120px">{{ 'sys.affirm.title.startLength' | translate:'Độ dài bắt đầu' }}</th>
+              <th class="text-center" nzWidth="120px">{{ 'sys.affirm.title.endLength' | translate:'Độ dài kết thúc' }}</th>
+            </ng-container>
+            <th class="text-center" nzWidth="130px">{{ 'vhal.col.affirmLength' | translate:'Độ dài tuyến duyệt' }}</th>
+            <th nzWidth="180px">{{ 'vhal.col.lowLevel' | translate:'Cấp duyệt thấp nhất' }}</th>
+            <th nzWidth="180px">{{ 'vhal.col.highLevel' | translate:'Cấp duyệt cao nhất' }}</th>
+            <th class="text-center" nzWidth="100px">{{ 'common.action' | translate:'Thao tác' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of vhalTable.data">
+            <td [attr.title]="row.applyType">{{ row.applyName || row.applyType }}</td>
+            <td class="text-center">{{ empTypeLabel(row.empType) }}</td>
+            <td>{{ dutyLabel(row) }}</td>
+            <ng-container *ngIf="hasLengthRange">
+              <td class="text-center">{{ row.fromOffset }}</td>
+              <td class="text-center">{{ row.toOffset }}</td>
+            </ng-container>
+            <td class="text-center">{{ row.affirmLevel }}</td>
+            <td [attr.title]="row.lowLevel">{{ row.lowLevel }}<span *ngIf="row.lowLevelName"> - {{ row.lowLevelName }}</span></td>
+            <td [attr.title]="row.highLevel">{{ row.highLevel }}<span *ngIf="row.highLevelName"> - {{ row.highLevelName }}</span></td>
+            <td class="text-center text-nowrap">
+              <button nz-button nzType="text" nzSize="small" type="button" (click)="openEdit(row)"
+                      [attr.title]="'common.edit' | translate:'Sửa'"><i class="bx bx-edit"></i></button>
+              <button nz-button nzType="text" nzSize="small" nzDanger type="button" (click)="confirmDelete(row)"
+                      [attr.title]="'common.delete' | translate:'Xóa'"><i class="bx bx-trash"></i></button>
+            </td>
+          </tr>
+        </tbody>
+        <ng-template #vhalTotalTpl let-total>
+          {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+        </ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>
+
+<nz-modal [nzVisible]="modalVisible()" nzWidth="720px" [nzMaskClosable]="true" (nzOnCancel)="closeModal()"
+          [nzTitle]="(isEdit ? 'vhal.modal.editTitle' : 'vhal.modal.addTitle') | translate:(isEdit ? 'Cập nhật quy trình phê duyệt' : 'Thêm quy trình phê duyệt')"
+          [nzFooter]="vhalFooterTpl">
+  <ng-container *nzModalContent>
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label fw-semibold" for="vhal-form-apply-type">
+          {{ 'sys.affirm.title.applyType' | translate:'Loại đơn' }} <span class="text-danger">*</span>
+        </label>
+        <nz-select id="vhal-form-apply-type" class="w-100" [(ngModel)]="form.applyType" nzShowSearch
+                   [nzPlaceHolder]="'common.placeholder.select' | translate:'-- Chọn --'">
+          <nz-option *ngFor="let c of applyTypes()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold" for="vhal-form-emp-type">
+          {{ 'vhal.col.empType' | translate:'Loại nhân viên' }} <span class="text-danger">*</span>
+        </label>
+        <nz-select id="vhal-form-emp-type" class="w-100" [(ngModel)]="form.empType">
+          <nz-option [nzValue]="allValue" [nzLabel]="'vhal.all' | translate:'Tất cả'"></nz-option>
+          <nz-option nzValue="G" [nzLabel]="'vhal.empType.G' | translate:'Quản lý'"></nz-option>
+          <nz-option nzValue="O" [nzLabel]="'vhal.empType.O' | translate:'Khác'"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold" for="vhal-form-duty">
+          {{ 'vaap.col.duty' | translate:'Vai trò' }} <span class="text-danger">*</span>
+        </label>
+        <nz-select id="vhal-form-duty" class="w-100" [(ngModel)]="form.dutyNo" nzShowSearch>
+          <nz-option [nzValue]="allValue" [nzLabel]="'vhal.all' | translate:'Tất cả'"></nz-option>
+          <nz-option *ngFor="let c of dutyOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+        </nz-select>
+      </div>
+      <ng-container *ngIf="hasLengthRange">
+        <div class="col-md-6">
+          <label class="form-label fw-semibold" for="vhal-form-from-offset">
+            {{ 'sys.affirm.title.startLength' | translate:'Độ dài bắt đầu' }} <span class="text-danger">*</span>
+          </label>
+          <nz-input-number id="vhal-form-from-offset" class="w-100" [(ngModel)]="form.fromOffset"
+                           [nzMin]="0" [nzMax]="99999" [nzStep]="1" [nzPrecision]="0"></nz-input-number>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold" for="vhal-form-to-offset">
+            {{ 'sys.affirm.title.endLength' | translate:'Độ dài kết thúc' }} <span class="text-danger">*</span>
+          </label>
+          <nz-input-number id="vhal-form-to-offset" class="w-100" [(ngModel)]="form.toOffset"
+                           [nzMin]="0" [nzMax]="99999" [nzStep]="1" [nzPrecision]="0"></nz-input-number>
+        </div>
+        <div class="col-12 form-text mt-1">
+          {{ 'vaal.hint.lengthRange' | translate:'Tuyến duyệt áp dụng cho đơn có độ dài lớn hơn Độ dài bắt đầu và nhỏ hơn hoặc bằng Độ dài kết thúc.' }}
+        </div>
+      </ng-container>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold" for="vhal-form-affirm-level">
+          {{ 'vhal.col.affirmLength' | translate:'Độ dài tuyến duyệt' }} <span class="text-danger">*</span>
+        </label>
+        <nz-input-number id="vhal-form-affirm-level" class="w-100" [(ngModel)]="form.affirmLevel"
+                         [nzMin]="0" [nzMax]="99999" [nzStep]="1" [nzPrecision]="0"></nz-input-number>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold" for="vhal-form-low-level">
+          {{ 'vhal.col.lowLevel' | translate:'Cấp duyệt thấp nhất' }} <span class="text-danger">*</span>
+        </label>
+        <nz-select id="vhal-form-low-level" class="w-100" [(ngModel)]="form.lowLevel"
+                   [nzPlaceHolder]="'common.placeholder.select' | translate:'-- Chọn --'">
+          <nz-option *ngFor="let l of levelOptions()" [nzValue]="l.level" [nzLabel]="l.label"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold" for="vhal-form-high-level">
+          {{ 'vhal.col.highLevel' | translate:'Cấp duyệt cao nhất' }} <span class="text-danger">*</span>
+        </label>
+        <nz-select id="vhal-form-high-level" class="w-100" [(ngModel)]="form.highLevel"
+                   [nzPlaceHolder]="'common.placeholder.select' | translate:'-- Chọn --'">
+          <nz-option *ngFor="let l of levelOptions()" [nzValue]="l.level" [nzLabel]="l.label"></nz-option>
+        </nz-select>
+      </div>
+    </div>
+  </ng-container>
+
+  <ng-template #vhalFooterTpl>
+    <button nz-button type="button" (click)="closeModal()">{{ 'common.cancel' | translate:'Hủy' }}</button>
+    <button nz-button nzType="primary" type="button" [nzLoading]="saving()" (click)="save()">
+      {{ 'common.save' | translate:'Lưu' }}
+    </button>
+  </ng-template>
+</nz-modal>

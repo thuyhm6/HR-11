@@ -117,6 +117,37 @@
         ) WHERE RN &gt; #{start, jdbcType=INTEGER}
     </select>
 
+    <!-- ===== Danh sách ngày trong kỳ công (25 tháng trước -> 24 tháng chọn) - viewFixedDateList bản gốc,
+         dùng để dựng động 3 nhóm cột chi tiết theo ngày trên màn hình viewMonthDetailList ===== -->
+    <resultMap id="MonthDetailDateResultMap" type="com.ait.ess.tempEmp.dto.MonthDetailDateDto">
+        <result column="DDATE_STR"    property="ddateStr"   jdbcType="VARCHAR"/>
+        <result column="IWEEK"        property="iweek"      jdbcType="INTEGER"/>
+        <result column="TYPEID"       property="typeId"     jdbcType="VARCHAR"/>
+        <result column="IDAY"         property="iday"       jdbcType="VARCHAR"/>
+        <result column="DATE_KEY"     property="dateKey"    jdbcType="VARCHAR"/>
+        <result column="DAY_OT_KEY"   property="dayOtKey"   jdbcType="VARCHAR"/>
+        <result column="NIGHT_OT_KEY" property="nightOtKey" jdbcType="VARCHAR"/>
+        <result column="WEEK_TITLE"   property="weekTitle"  jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <select id="selectFixedDateList" parameterType="com.ait.ess.tempEmp.dto.MonthDetailListDto"
+            resultMap="MonthDetailDateResultMap">
+        <bind name="arMonth" value="month + year"/>
+        SELECT DDATE_STR,
+               IWEEK,
+               TYPEID,
+               IDAY,
+               'DATE_' || IDAY      AS DATE_KEY,
+               'DAY_OT_' || IDAY    AS DAY_OT_KEY,
+               'NIGHT_OT_' || IDAY  AS NIGHT_OT_KEY,
+               DECODE(IWEEK, 1, 'Mon', 2, 'Tues', 3, 'Wed', 4, 'Thur', 5, 'Fri', 6, 'Sat', 0, 'Sun') AS WEEK_TITLE
+          FROM AR_CALENDER
+         WHERE CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+           AND DDATE_STR BETWEEN TO_CHAR(ADD_MONTHS(TO_DATE(#{arMonth, jdbcType=VARCHAR},'MMYYYY'), -1),'YYYY/MM') || '/25'
+                             AND TO_CHAR(TO_DATE(#{arMonth, jdbcType=VARCHAR},'MMYYYY'),'YYYY/MM') || '/24'
+         ORDER BY DDATE_STR
+    </select>
+
     <!-- ===== Báo cáo "Công tính lương" (reportType = 305) ===== -->
     <!-- Khoảng ngày đầu/cuối tháng dùng lặp lại trong AR_GET_ATTEND_VALUE / GETTENPOINT -->
     <sql id="monthRange">
@@ -125,7 +156,7 @@
     </sql>
     <sql id="monthFirstDay">TO_CHAR(TO_DATE('01'||#{arMonth, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD')</sql>
     <sql id="monthYYYYMM">TO_CHAR(TO_DATE(#{arMonth, jdbcType=VARCHAR},'MMYYYY'),'YYYYMM')</sql>
-    <sql id="lastMonthYYYYMM">TO_CHAR(TO_DATE(#{arMonth, jdbcType=VARCHAR},'MMYYYY'),'YYYYMM')</sql>
+    <sql id="lastMonthYYYYMM">TO_CHAR(ADD_MONTHS(TO_DATE(#{arMonth, jdbcType=VARCHAR},'MMYYYY'),-1),'YYYYMM')</sql>
 
     <select id="selectSalaryReport" parameterType="com.ait.ess.tempEmp.dto.MonthDetailListDto"
             resultType="java.util.LinkedHashMap">
@@ -163,6 +194,26 @@
                 AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'NIGHT_WORK_SCHEDULE_DAYS') NIGHT_WORK_SCHEDULE_DAYS,
                 AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'PROB_WORK_DAYS') PROB_WORK_DAYS,
                 AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'REG_WORK_DAYS') REG_WORK_DAYS,
+                AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'PROB_OT_INCENTIVE') PROB_OT_INCENTIVE,
+                AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'PROB_OT_INCENTIVE_200') PROB_OT_INCENTIVE_200,
+                AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'PROB_OT_INCENTIVE_270') PROB_OT_INCENTIVE_270,
+                AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'PROB_OT_INCENTIVE_300') PROB_OT_INCENTIVE_300,
+                AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'PROB_OT_INCENTIVE_390') PROB_OT_INCENTIVE_390,
+                AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'PROB_NIGHT_INCENTIVE_200') PROB_NIGHT_INCENTIVE_200,
+                AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'PROB_NIGHT_INCENTIVE_270') PROB_NIGHT_INCENTIVE_270,
+                AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'PROB_NIGHT_INCENTIVE_390') PROB_NIGHT_INCENTIVE_390,
+                AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'PROB_DAY_SATURDAY') PROB_DAY_SATURDAY,
+                AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'PROB_NIGHT_SATURDAY') PROB_NIGHT_SATURDAY,
+                AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'REG_OT_INCENTIVE') REG_OT_INCENTIVE,
+                AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'REG_OT_INCENTIVE_200') REG_OT_INCENTIVE_200,
+                AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'REG_OT_INCENTIVE_270') REG_OT_INCENTIVE_270,
+                AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'REG_OT_INCENTIVE_300') REG_OT_INCENTIVE_300,
+                AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'REG_OT_INCENTIVE_390') REG_OT_INCENTIVE_390,
+                AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'REG_NIGHT_INCENTIVE_200') REG_NIGHT_INCENTIVE_200,
+                AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'REG_NIGHT_INCENTIVE_270') REG_NIGHT_INCENTIVE_270,
+                AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'REG_NIGHT_INCENTIVE_390') REG_NIGHT_INCENTIVE_390,
+                AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'REG_DAY_SATURDAY') REG_DAY_SATURDAY,
+                AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'REG_NIGHT_SATURDAY') REG_NIGHT_SATURDAY,
                 AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'PROB_REST_PAY_DAYS') PROB_REST_PAY_DAYS,
                 AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'REG_REST_PAY_DAYS') REG_REST_PAY_DAYS,
                 AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'PROB_LEAVE_PAY_DAYS')  PROB_LEAVE_PAY_DAYS,
@@ -329,6 +380,7 @@
                 AND (
                     UPPER(HR.EMPID) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%'
                     OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{keyword, jdbcType=VARCHAR})) || '%'
+                    OR UPPER(HR.ENGLISH_NAME) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%'
                 )
             </if>
             <if test="quickFilter != null and quickFilter != ''">
@@ -338,8 +390,36 @@
                     OR CONVERTTOUNSIGN(UPPER(GET_DEPT_NAME(HR.DEPTNO, #{lang, jdbcType=VARCHAR}))) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{quickFilter, jdbcType=VARCHAR})) || '%'
                 )
             </if>
-            <if test="deptNos != null and deptNos != ''">
-                AND INSTR(',' || #{deptNos, jdbcType=VARCHAR} || ',', ',' || HR.DEPTNO || ',') &gt; 0
+            <!-- Có chọn phòng ban thì lọc đúng các phòng ban đó, không chọn thì giới hạn theo phòng ban được phân quyền
+                 (trưởng phòng / AR_SUPERVISOR_INFO) - giống getMonthDetailRealTimeList bản gốc -->
+            <choose>
+                <when test="deptNos != null and deptNos != ''">
+                    AND INSTR(',' || #{deptNos, jdbcType=VARCHAR} || ',', ',' || HR.DEPTNO || ',') &gt; 0
+                </when>
+                <otherwise>
+                    AND EXISTS (
+                        SELECT B1.DEPTID
+                          FROM HR_DEPARTMENT B1
+                         WHERE B1.DEPTNO = HR.DEPTNO
+                         START WITH B1.DEPTNO IN (SELECT HRD.DEPTID
+                                                    FROM HR_DEPARTMENT HRD
+                                                   WHERE HRD.MANAGER_EMP_ID = #{adminID, jdbcType=VARCHAR})
+                        CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+                        UNION
+                        SELECT ASI.DEPTNO
+                          FROM AR_SUPERVISOR_INFO ASI
+                         WHERE ASI.DEPTNO = HR.DEPTNO
+                           AND ASI.PERSON_ID = #{adminID, jdbcType=VARCHAR}
+                    )
+                </otherwise>
+            </choose>
+            <if test="nationalityCode != null and nationalityCode != ''">
+                AND (SELECT HPI.NATIONALITY_CODE
+                       FROM HR_PERSONAL_INFO HPI
+                      WHERE HPI.PERSON_ID = HR.PERSON_ID) = #{nationalityCode, jdbcType=VARCHAR}
+            </if>
+            <if test="empOffice != null and empOffice != ''">
+                AND HR.EMP_OFFICE = #{empOffice, jdbcType=VARCHAR}
             </if>
         ORDER BY HR.EMPID ASC
     </select>

@@ -1,0 +1,72 @@
+<nz-modal [nzVisible]="visible" nzWidth="1100px" [nzMaskClosable]="true" (nzOnCancel)="close()"
+          [nzTitle]="'ar.viewRetrieveSqlMasterList.BAOBIAOCANSHUXIUGAI.b' | translate:'Sửa tham số bảng biểu'"
+          [nzFooter]="aepmFooterTpl">
+  <ng-container *nzModalContent>
+    <div class="row g-3 mb-3" *ngIf="master() as m">
+      <div class="col-md-2">
+        <label class="form-label fw-semibold">{{ 'disc.autoExcel.SQL_NO.Z' | translate:'STT SQL' }}</label>
+        <div id="aepm-sql-seq" class="form-control-plaintext">{{ m.sqlSeq }}</div>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label fw-semibold">{{ 'disc.autoExcel.SQL_MODULE.Z' | translate:'Module SQL' }}</label>
+        <div id="aepm-pgm-nm" class="form-control-plaintext">{{ m.pgmNm }}</div>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-semibold">{{ 'disc.autoExcel.SQL_NAME.Z' | translate:'Tên SQL' }}</label>
+        <div id="aepm-sql-nm" class="form-control-plaintext">{{ m.sqlNm }}</div>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label fw-semibold">{{ 'sys.basic.title.createDate' | translate:'Thời gian tạo' }}</label>
+        <div class="form-control-plaintext">{{ m.rgstDtime }}</div>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label fw-semibold">{{ 'inct.salesman.updateTime' | translate:'Thời gian cập nhật' }}</label>
+        <div class="form-control-plaintext">{{ m.updtDtime }}</div>
+      </div>
+    </div>
+
+    <nz-table [nzData]="params()" [nzLoading]="loading()" nzSize="small" nzBordered
+              [nzShowPagination]="false" [nzFrontPagination]="false" [nzScroll]="{ y: '40vh' }">
+      <thead>
+        <tr>
+          <th nzWidth="180px">{{ 'disc.autoExcel.PARAMETER.Z' | translate:'Tham số' }}</th>
+          <th>{{ 'disc.autoExcel.ENGLISH_DESCRIPTION.Z' | translate:'English description' }}</th>
+          <th>{{ 'disc.autoExcel.VIETNAMESE_DESCRIPTION.Z' | translate:'Miêu tả tiếng Việt' }}</th>
+          <th nzWidth="170px">{{ 'disc.autoExcel.PARAMETER_TYPE.Z' | translate:'Loại tham số' }}</th>
+          <th nzWidth="90px" class="text-center">{{ 'ar.viewRetrieveSqlMasterList.PAIXUHAO.b' | translate:'STT' }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let p of params()">
+          <td>
+            <code>{{ p.param }}</code>
+            <nz-tag *ngIf="p.system" nzColor="default" class="ms-1">{{ 'autoExcel.tag.system' | translate:'Hệ thống' }}</nz-tag>
+          </td>
+          <td><input nz-input nzSize="small" [(ngModel)]="p.enSqlParamDesc" [disabled]="isFixed(p)" maxlength="500"></td>
+          <td><input nz-input nzSize="small" [(ngModel)]="p.cnSqlParamDesc" [disabled]="isFixed(p)" maxlength="500"></td>
+          <td>
+            <nz-select class="w-100" nzSize="small" [(ngModel)]="p.sqlParamTp" [nzDisabled]="isFixed(p)" nzAllowClear
+                       [nzPlaceHolder]="'common.placeholder.select' | translate:'-- Chọn --'">
+              <nz-option *ngFor="let c of paramTypes()" [nzValue]="c.description" [nzLabel]="c.codeName || c.description"></nz-option>
+              <nz-option *ngIf="!hasTypeOption(p.sqlParamTp)" [nzValue]="p.sqlParamTp" [nzLabel]="p.sqlParamTp!"></nz-option>
+            </nz-select>
+          </td>
+          <td><input nz-input nzSize="small" class="text-center" [(ngModel)]="p.sortCd" [disabled]="isFixed(p)" maxlength="10"></td>
+        </tr>
+      </tbody>
+    </nz-table>
+
+    <div class="mt-3" *ngIf="master()?.sqlStmt as sql">
+      <label class="form-label fw-semibold" for="aepm-sql">{{ 'disc.autoExcel.SQL_CONTENT.Z' | translate:'Nội dung SQL' }}</label>
+      <textarea id="aepm-sql" nz-input class="font-monospace" rows="8" readonly [value]="sql"></textarea>
+    </div>
+  </ng-container>
+
+  <ng-template #aepmFooterTpl>
+    <button nz-button type="button" (click)="close()">{{ 'common.cancel' | translate:'Hủy' }}</button>
+    <button nz-button nzType="primary" type="button" [nzLoading]="saving()" [disabled]="loading() || !params().length"
+            (click)="submit()">
+      {{ 'common.save' | translate:'Lưu' }}
+    </button>
+  </ng-template>
+</nz-modal>

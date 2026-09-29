@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<!-- Cấu hình vai trò người duyệt (chuyển từ sqlArAffirmPost.xml - iBatis, dự án Hanwha_HTSV) -->
+<mapper namespace="com.ait.sy.syAffirm.mapper.ArAffirmPostMapper">
+
+    <resultMap id="ArAffirmPostResultMap" type="com.ait.sy.syAffirm.dto.ArAffirmPostDto">
+        <id column="DUTY" property="duty" jdbcType="VARCHAR" />
+        <result column="DUTY_NAME" property="dutyName" jdbcType="VARCHAR" />
+        <result column="AFFIRM_LEVEL" property="affirmLevel" jdbcType="INTEGER" />
+        <result column="UPDATED_BY_NAME" property="updatedByName" jdbcType="VARCHAR" />
+        <result column="UPDATE_DATE" property="updateDate" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <select id="selectList" resultMap="ArAffirmPostResultMap">
+        SELECT A.DUTY,
+               GET_GLOBAL_NAME(A.DUTY, #{lang, jdbcType=VARCHAR}) AS DUTY_NAME,
+               A.AFFIRM_LEVEL,
+               B.LOCAL_NAME AS UPDATED_BY_NAME,
+               TO_CHAR(A.UPDATE_DATE, 'DD/MM/YYYY') AS UPDATE_DATE
+          FROM SY_AFFIRM_LEVEL_SETUP A
+          LEFT JOIN HR_EMPLOYEE B
+            ON B.PERSON_ID = A.UPDATED_BY
+         WHERE A.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+         ORDER BY A.AFFIRM_LEVEL, A.DUTY
+    </select>
+
+    <select id="countByDuty" resultType="int">
+        SELECT COUNT(1)
+          FROM SY_AFFIRM_LEVEL_SETUP
+         WHERE CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+           AND DUTY = #{duty, jdbcType=VARCHAR}
+    </select>
+
+    <insert id="insert">
+        INSERT INTO SY_AFFIRM_LEVEL_SETUP
+               (CPNY_ID,
+                DUTY,
+                AFFIRM_LEVEL,
+                CREATE_DATE,
+                CREATED_BY,
+                UPDATE_DATE,
+                UPDATED_BY,
+                ACTIVITY)
+        VALUES (#{cpnyId, jdbcType=VARCHAR},
+                #{duty, jdbcType=VARCHAR},
+                #{affirmLevel, jdbcType=INTEGER},
+                SYSDATE,
+                #{adminID, jdbcType=VARCHAR},
+                SYSDATE,
+                #{adminID, jdbcType=VARCHAR},
+                1)
+    </insert>
+
+    <update id="update">
+        UPDATE SY_AFFIRM_LEVEL_SETUP
+           SET AFFIRM_LEVEL = #{affirmLevel, jdbcType=INTEGER},
+               UPDATE_DATE  = SYSDATE,
+               UPDATED_BY   = #{adminID, jdbcType=VARCHAR}
+         WHERE CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+           AND DUTY = #{duty, jdbcType=VARCHAR}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM SY_AFFIRM_LEVEL_SETUP
+         WHERE CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+           AND DUTY = #{duty, jdbcType=VARCHAR}
+    </delete>
+</mapper>

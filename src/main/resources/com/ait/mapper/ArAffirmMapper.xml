@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<!-- Quy trình phê duyệt chấm công (chuyển từ sqlArAffirm.xml - iBatis, dự án Hanwha_HTSV, TYPE = 'ar').
+     Cột/ResultMap chung với quy trình phê duyệt khác (TYPE = 'pa') lấy lại từ HrmAffirmMapper.xml. -->
+<mapper namespace="com.ait.sy.syAffirm.mapper.ArAffirmMapper">
+
+    <resultMap id="ApplyTypeResultMap" type="com.ait.sy.syAffirm.dto.AffirmSpecialTypeDto">
+        <id column="CODE_NO" property="codeNo" jdbcType="VARCHAR" />
+        <result column="CONTENT" property="content" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <resultMap id="ArAffirmResultMap" type="com.ait.sy.syAffirm.dto.ArAffirmDto"
+               extends="com.ait.sy.syAffirm.mapper.HrmAffirmMapper.HrmAffirmResultMap">
+        <result column="REFERENCN_FROM_OFFSET" property="fromOffset" jdbcType="INTEGER" />
+        <result column="REFERENCN_TO_OFFSET" property="toOffset" jdbcType="INTEGER" />
+    </resultMap>
+
+    <select id="selectApplyTypeList" resultMap="ApplyTypeResultMap">
+        SELECT A.CODE_NO,
+               S.CONTENT
+          FROM SY_CODE A
+          JOIN SY_CODE_PARAM SC
+            ON SC.CODE_NO = A.CODE_NO
+           AND SC.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+          LEFT JOIN SY_GLOBAL_NAME S
+            ON S.NO = A.CODE_NO
+           AND S.LANGUAGE = #{lang, jdbcType=VARCHAR}
+         WHERE A.ACTIVITY = 1
+           AND EXISTS (SELECT 1
+                         FROM SY_CODE C
+                         JOIN SY_CODE_PARAM P
+                           ON P.CODE_NO = C.CODE_NO
+                          AND P.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+                        WHERE C.PARENT_CODE_NO = 16413
+                          AND C.ACTIVITY = 1
+                          AND C.CODE_NO = A.PARENT_CODE_NO)
+         ORDER BY A.PARENT_CODE_NO, A.ORDERNO
+    </select>
+
+    <select id="selectList" resultMap="ArAffirmResultMap">
+        SELECT <include refid="com.ait.sy.syAffirm.mapper.HrmAffirmMapper.applyParamColumns"/>,
+               ESS.REFERENCN_FROM_OFFSET,
+               ESS.REFERENCN_TO_OFFSET
+          FROM ESS_LEAVE_APPLY_PARAM ESS
+         WHERE ESS.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+           AND ESS.TYPE = 'ar'
+        <if test="applyType != null and applyType != ''">
+           AND ESS.APPLY_TYPE = #{applyType, jdbcType=VARCHAR}
+        </if>
+         ORDER BY ESS.APPLY_TYPE, ESS.APPLY_PARAM_NO
+    </select>
+
+    <!-- Các cột REFERENCN_* cố định giữ nguyên hidden input của addArAffirmView.jsp / updateArAffirmView.jsp bản gốc
+         (2 trang dùng cùng giá trị): khoảng độ dài (FROM_OFFSET, TO_OFFSET] -->
+    <insert id="insert">
+        INSERT INTO ESS_LEAVE_APPLY_PARAM
+               (APPLY_PARAM_NO,
+                REFERENCN_FLAG,
+                REFERENCN_FROM_FLAG,
+                REFERENCN_FROM_OFFSET,
+                REFERENCN_FROM_RELATION,
+                REFERENCN_TO_FLAG,
+                REFERENCN_TO_OFFSET,
+                REFERENCN_TO_RELATION,
+                APPLY_TYPE,
+                DUTY_NO,
+                AFFIRM_LEVEL,
+                ACTIVITY,
+                CREATE_DATE,
+                CREATED_BY,
+                CPNY_ID,
+                LOW_LEVEL,
+                HIGH_LEVEL,
+                TYPE,
+                EMP_TYPE)
+        VALUES (ESS_LEAVE_APPLY_PARAM_SEQ.NEXTVAL,
+                1,
+                1,
+                #{fromOffset, jdbcType=INTEGER},
+                '&gt;',
+                0,
+                #{toOffset, jdbcType=INTEGER},
+                '&lt;=',
+                #{applyType, jdbcType=VARCHAR},
+                #{dutyNo, jdbcType=VARCHAR},
+                #{affirmLevel, jdbcType=INTEGER},
+                1,
+                SYSDATE,
+                #{adminID, jdbcType=VARCHAR},
+                #{cpnyId, jdbcType=VARCHAR},
+                #{lowLevel, jdbcType=INTEGER},
+                #{highLevel, jdbcType=INTEGER},
+                'ar',
+                #{empType, jdbcType=VARCHAR})
+    </insert>
+
+    <update id="update">
+        UPDATE ESS_LEAVE_APPLY_PARAM
+           SET REFERENCN_FLAG          = 1,
+               REFERENCN_FROM_FLAG     = 1,
+               REFERENCN_FROM_OFFSET   = #{fromOffset, jdbcType=INTEGER},
+               REFERENCN_FROM_RELATION = '&gt;',
+               REFERENCN_TO_FLAG       = 0,
+               REFERENCN_TO_OFFSET     = #{toOffset, jdbcType=INTEGER},
+               REFERENCN_TO_RELATION   = '&lt;=',
+               APPLY_TYPE              = #{applyType, jdbcType=VARCHAR},
+               EMP_TYPE                = #{empType, jdbcType=VARCHAR},
+               DUTY_NO                 = #{dutyNo, jdbcType=VARCHAR},
+               AFFIRM_LEVEL            = #{affirmLevel, jdbcType=INTEGER},
+               LOW_LEVEL               = #{lowLevel, jdbcType=INTEGER},
+               HIGH_LEVEL              = #{highLevel, jdbcType=INTEGER},
+               UPDATE_DATE             = SYSDATE,
+               UPDATED_BY              = #{adminID, jdbcType=VARCHAR}
+         WHERE APPLY_PARAM_NO = #{applyParamNo, jdbcType=NUMERIC}
+           AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+           AND TYPE = 'ar'
+    </update>
+
+    <delete id="delete">
+        DELETE FROM ESS_LEAVE_APPLY_PARAM
+         WHERE APPLY_PARAM_NO = #{applyParamNo, jdbcType=NUMERIC}
+           AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+           AND TYPE = 'ar'
+    </delete>
+</mapper>

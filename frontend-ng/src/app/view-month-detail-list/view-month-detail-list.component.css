@@ -1,7 +1,76 @@
-table td, table th {
+.vmdl-scroll {
+  overflow-x: auto;
+}
+
+.vmdl-table th,
+.vmdl-table td {
   white-space: nowrap;
 }
 
-.table-scroll-wrapper {
-  overflow-x: auto;
+/* Cột số: rộng 60px như bản gốc, cho phép tiêu đề xuống dòng */
+.vmdl-table thead th.vmdl-num {
+  min-width: 60px;
+  white-space: normal;
+  word-break: break-word;
+}
+
+/* Cột chi tiết theo ngày (Thứ + ngày, 2 dòng) */
+.vmdl-table th.vmdl-day {
+  min-width: 36px;
+  line-height: 1.2;
+}
+
+/* Ngày nghỉ/lễ (AR_CALENDER.TYPEID <> 1440) tô xám như bản gốc */
+.vmdl-table th.vmdl-off,
+.vmdl-table td.vmdl-off {
+  background-color: #cccccc;
+}
+
+/* Sticky 4 cột đầu (STT, Mã NV, Họ tên, Phòng ban) - CSS thủ công thay vì nzScroll/nzLeft (xem HTML) */
+.vmdl-sticky {
+  position: sticky;
+  z-index: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  background-color: #fff;
+}
+.vmdl-table thead .vmdl-sticky {
+  background-color: #fafafa;
+  z-index: 3;
+}
+.vmdl-sticky-group {
+  left: 0;
+  min-width: 430px;
+  max-width: 430px;
+  box-shadow: 6px 0 10px -2px rgba(0, 0, 0, .25);
+}
+.vmdl-sticky-0 {
+  left: 0;
+  min-width: 40px;
+  max-width: 40px;
+}
+.vmdl-sticky-1 {
+  left: 40px;
+  min-width: 80px;
+  max-width: 80px;
+}
+.vmdl-sticky-2 {
+  left: 120px;
+  min-width: 150px;
+  max-width: 150px;
+}
+.vmdl-sticky-3 {
+  left: 270px;
+  min-width: 160px;
+  max-width: 160px;
+  box-shadow: 6px 0 10px -2px rgba(0, 0, 0, .25);
+}
+
+.vmdl-quick-filter {
+  max-width: 200px;
+}
+
+.vmdl-btn-export {
+  color: #52c41a;
+  border-color: #52c41a;
 }

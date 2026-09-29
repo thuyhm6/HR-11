@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+    Chuyển từ sqlRecruitManage.xml (iBatis) của dự án Hanwha_HTSV:
+      recruit.manage.viewResumeList / addResumeInfo / updateResumeInfo / deleteResumeInfo / viewExperienceList
+    #{cpnyId}, #{adminID}, #{adminIP}, #{lang} do LanguageParameterInterceptor tự inject.
+-->
+<mapper namespace="com.ait.hrm.recruitManage.mapper.HrRecruitResumeMapper">
+
+    <!-- ═══════════════════ ResultMaps ═══════════════════ -->
+
+    <resultMap id="RecruitResumeResultMap" type="com.ait.hrm.recruitManage.dto.HrRecruitResumeDto">
+        <id     column="SEQ"                property="seq"              jdbcType="VARCHAR"/>
+        <result column="REGISTER_TYPE"      property="registerType"     jdbcType="VARCHAR"/>
+        <result column="REGISTER_TYPE_NAME" property="registerTypeName" jdbcType="VARCHAR"/>
+        <result column="REGISTER_DATE"      property="registerDate"     jdbcType="VARCHAR"/>
+        <result column="REGISTER_INFO"      property="registerInfo"     jdbcType="VARCHAR"/>
+        <result column="REGISTER_CODE"      property="registerCode"     jdbcType="VARCHAR"/>
+        <result column="ACTIVITY"           property="activity"         jdbcType="VARCHAR"/>
+        <result column="REMARK"             property="remark"           jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <resultMap id="ExperienceListResultMap" type="com.ait.hrm.recruitManage.dto.HrExperienceListDto">
+        <result column="PERSON_ID"           property="personId"          jdbcType="VARCHAR"/>
+        <result column="EMPID"               property="empId"             jdbcType="VARCHAR"/>
+        <result column="LOCAL_NAME"          property="localName"         jdbcType="VARCHAR"/>
+        <result column="ORDER_DATE"          property="orderDate"         jdbcType="VARCHAR"/>
+        <result column="TRANS_CODE_NAME"     property="transCodeName"     jdbcType="VARCHAR"/>
+        <result column="TRANS_RESOURCE_NAME" property="transResourceName" jdbcType="VARCHAR"/>
+        <result column="DEPT_NAME"           property="deptName"          jdbcType="VARCHAR"/>
+        <result column="EMP_TYPE_NAME"       property="empTypeName"       jdbcType="VARCHAR"/>
+        <result column="POST_GRADE_NAME"     property="postGradeName"     jdbcType="VARCHAR"/>
+        <result column="POST_FAMILY_NAME"    property="postFamilyName"    jdbcType="VARCHAR"/>
+        <result column="MAIN_BUSINESS_NAME"  property="mainBusinessName"  jdbcType="VARCHAR"/>
+        <result column="POSITION_NAME"       property="positionName"      jdbcType="VARCHAR"/>
+        <result column="EMP_OFFICE_NAME"     property="empOfficeName"     jdbcType="VARCHAR"/>
+        <result column="DATE_STARTED"        property="dateStarted"       jdbcType="VARCHAR"/>
+        <result column="REMARK"              property="remark"            jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!-- ═══════════════════ HR_RECRUIT_REGISTER_INFO ═══════════════════ -->
+
+    <sql id="resumeColumns">
+        A.SEQ,
+        A.REGISTER_TYPE,
+        GET_GLOBAL_NAME(A.REGISTER_TYPE, #{lang, jdbcType=VARCHAR}) REGISTER_TYPE_NAME,
+        A.REGISTER_DATE,
+        A.REGISTER_INFO,
+        A.REGISTER_CODE,
+        TO_CHAR(A.ACTIVITY) ACTIVITY,
+        A.REMARK
+    </sql>
+
+    <select id="selectResumeList"
+            parameterType="com.ait.hrm.recruitManage.dto.HrRecruitResumeDto"
+            resultMap="RecruitResumeResultMap">
+        SELECT <include refid="resumeColumns"/>
+          FROM HR_RECRUIT_REGISTER_INFO A
+         WHERE A.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+           AND A.ACTIVITY &lt;&gt; 2
+        <if test="searchRegisterType != null and searchRegisterType != ''">
+           AND A.REGISTER_TYPE = #{searchRegisterType, jdbcType=VARCHAR}
+        </if>
+        <if test="searchActivity != null and searchActivity != ''">
+           AND A.ACTIVITY = #{searchActivity, jdbcType=VARCHAR}
+        </if>
+        <if test="searchStartDate != null and searchStartDate != ''">
+           AND TO_DATE(A.REGISTER_INFO, 'DD/MM/YYYY') &gt;= TO_DATE(#{searchStartDate, jdbcType=VARCHAR}, 'DD/MM/YYYY')
+        </if>
+        <if test="searchEndDate != null and searchEndDate != ''">
+           AND TO_DATE(A.REGISTER_INFO, 'DD/MM/YYYY') &lt;= TO_DATE(#{searchEndDate, jdbcType=VARCHAR}, 'DD/MM/YYYY')
+        </if>
+         ORDER BY A.CREATE_DATE DESC
+    </select>
+
+    <select id="selectResumeBySeq" resultMap="RecruitResumeResultMap">
+        SELECT <include refid="resumeColumns"/>
+          FROM HR_RECRUIT_REGISTER_INFO A
+         WHERE A.SEQ = #{seq, jdbcType=VARCHAR}
+           AND A.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+           AND A.ACTIVITY &lt;&gt; 2
+    </select>
+
+    <insert id="insertResume" parameterType="com.ait.hrm.recruitManage.dto.HrRecruitResumeDto">
+        INSERT INTO HR_RECRUIT_REGISTER_INFO (
+            SEQ, REGISTER_TYPE, REGISTER_DATE, REGISTER_INFO, REGISTER_CODE, CPNY_ID,
+            CREATE_DATE, CREATED_BY, CREATED_IP,
+            UPDATE_DATE, UPDATED_BY, UPDATED_IP,
+            ACTIVITY, REMARK
+        ) VALUES (
+            HR_RECRUIT_REGISTER_INFO_SEQ.NEXTVAL,
+            #{registerType, jdbcType=VARCHAR},
+            #{registerDate, jdbcType=VARCHAR},
+            TO_CHAR(SYSDATE, 'DD/MM/YYYY'),
+            'HA' || GET_RESUME_NO(#{cpnyId, jdbcType=VARCHAR}, 'A'),
+            #{cpnyId, jdbcType=VARCHAR},
+            SYSDATE, #{adminID, jdbcType=VARCHAR}, #{adminIP, jdbcType=VARCHAR},
+            SYSDATE, #{adminID, jdbcType=VARCHAR}, #{adminIP, jdbcType=VARCHAR},
+            0,
+            #{remark, jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <update id="updateResume" parameterType="com.ait.hrm.recruitManage.dto.HrRecruitResumeDto">
+        UPDATE HR_RECRUIT_REGISTER_INFO
+           SET REGISTER_TYPE = #{registerType, jdbcType=VARCHAR},
+               REGISTER_DATE = #{registerDate, jdbcType=VARCHAR},
+               REMARK        = #{remark, jdbcType=VARCHAR},
+               UPDATE_DATE   = SYSDATE,
+               UPDATED_BY    = #{adminID, jdbcType=VARCHAR},
+               UPDATED_IP    = #{adminIP, jdbcType=VARCHAR}
+         WHERE SEQ = #{seq, jdbcType=VARCHAR}
+           AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+           AND ACTIVITY = 0
+    </update>
+
+    <!-- Xóa mềm: ACTIVITY = 2 (giữ nguyên hành vi hệ thống cũ) -->
+    <update id="deleteResume">
+        UPDATE HR_RECRUIT_REGISTER_INFO
+           SET ACTIVITY    = 2,
+               UPDATE_DATE = SYSDATE,
+               UPDATED_BY  = #{adminID, jdbcType=VARCHAR},
+               UPDATED_IP  = #{adminIP, jdbcType=VARCHAR}
+         WHERE SEQ = #{seq, jdbcType=VARCHAR}
+           AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+           AND ACTIVITY = 0
+    </update>
+
+    <!-- ═══════════════════ HR_EXPERIENCE_INSIDE (Tra cứu phát lệnh) ═══════════════════ -->
+
+    <select id="selectExperienceList"
+            parameterType="com.ait.hrm.recruitManage.dto.HrExperienceListDto"
+            resultMap="ExperienceListResultMap">
+        SELECT A.PERSON_ID,
+               B.EMPID,
+               B.LOCAL_NAME,
+               A.START_DATE ORDER_DATE,
+               GET_GLOBAL_NAME(A.TRANS_CODE, #{lang, jdbcType=VARCHAR}) TRANS_CODE_NAME,
+               GET_GLOBAL_NAME(A.TRANS_RESOURCE, #{lang, jdbcType=VARCHAR}) TRANS_RESOURCE_NAME,
+               GET_DEPT_NAME(A.DEPTNO, #{lang, jdbcType=VARCHAR}) DEPT_NAME,
+               GET_GLOBAL_NAME(A.EMP_TYPE_CODE, #{lang, jdbcType=VARCHAR}) EMP_TYPE_NAME,
+               GET_GLOBAL_NAME(A.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}) POST_GRADE_NAME,
+               GET_GLOBAL_NAME(A.POST_FAMILY, #{lang, jdbcType=VARCHAR}) POST_FAMILY_NAME,
+               GET_GLOBAL_NAME(A.MAIN_BUSINESS, #{lang, jdbcType=VARCHAR}) MAIN_BUSINESS_NAME,
+               GET_GLOBAL_NAME(A.POSITION_NO, #{lang, jdbcType=VARCHAR}) POSITION_NAME,
+               GET_GLOBAL_NAME(A.EMP_OFFICE, #{lang, jdbcType=VARCHAR}) EMP_OFFICE_NAME,
+               TO_CHAR(B.DATE_STARTED, 'DD/MM/YYYY') DATE_STARTED,
+               A.REMARK
+          FROM HR_EXPERIENCE_INSIDE A,
+               HR_EMPLOYEE B,
+               HR_PERSONAL_INFO C
+         WHERE A.PERSON_ID = B.PERSON_ID
+           AND A.PERSON_ID = C.PERSON_ID
+           AND A.ACTIVITY &lt;&gt; 0
+           AND B.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+           AND B.EMPID NOT LIKE '111111%'
+        <if test="keyword != null and keyword != ''">
+           AND (B.EMPID LIKE '%' || #{keyword, jdbcType=VARCHAR} || '%'
+                OR CONVERTTOUNSIGN(UPPER(B.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{keyword, jdbcType=VARCHAR})) || '%')
+        </if>
+        <if test="startDate != null and startDate != ''">
+           AND TO_DATE(A.START_DATE, 'DD/MM/YYYY') &gt;= TO_DATE(#{startDate, jdbcType=VARCHAR}, 'DD/MM/YYYY')
+        </if>
+        <if test="endDate != null and endDate != ''">
+           AND TO_DATE(A.START_DATE, 'DD/MM/YYYY') &lt;= TO_DATE(#{endDate, jdbcType=VARCHAR}, 'DD/MM/YYYY')
+        </if>
+        <if test="startDateJoin != null and startDateJoin != ''">
+           AND B.DATE_STARTED &gt;= TO_DATE(#{startDateJoin, jdbcType=VARCHAR}, 'DD/MM/YYYY')
+        </if>
+        <if test="endDateJoin != null and endDateJoin != ''">
+           AND B.DATE_STARTED &lt;= TO_DATE(#{endDateJoin, jdbcType=VARCHAR}, 'DD/MM/YYYY')
+        </if>
+        <if test="transCodes != null and transCodes.size() > 0">
+           AND A.TRANS_CODE IN
+            <foreach collection="transCodes" item="c" open="(" separator="," close=")">#{c, jdbcType=VARCHAR}</foreach>
+        </if>
+        <if test="transReasons != null and transReasons.size() > 0">
+           AND A.TRANS_RESOURCE IN
+            <foreach collection="transReasons" item="c" open="(" separator="," close=")">#{c, jdbcType=VARCHAR}</foreach>
+        </if>
+        <if test="postFamilies != null and postFamilies.size() > 0">
+           AND B.POST_FAMILY IN
+            <foreach collection="postFamilies" item="c" open="(" separator="," close=")">#{c, jdbcType=VARCHAR}</foreach>
+        </if>
+        <if test="empTypeCodes != null and empTypeCodes.size() > 0">
+           AND B.EMP_TYPE_CODE IN
+            <foreach collection="empTypeCodes" item="c" open="(" separator="," close=")">#{c, jdbcType=VARCHAR}</foreach>
+        </if>
+        <if test="empOffices != null and empOffices.size() > 0">
+           AND A.EMP_OFFICE IN
+            <foreach collection="empOffices" item="c" open="(" separator="," close=")">#{c, jdbcType=VARCHAR}</foreach>
+        </if>
+        <if test="deptNo != null and deptNo != ''">
+            <choose>
+                <when test="includeSubDept != null and includeSubDept">
+           AND B.DEPTNO IN (SELECT DEPTNO
+                              FROM HR_DEPARTMENT
+                             WHERE CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+                             START WITH DEPTNO = #{deptNo, jdbcType=VARCHAR}
+                           CONNECT BY PRIOR DEPTNO = PARENT_DEPT_NO)
+                </when>
+                <otherwise>
+           AND B.DEPTNO = #{deptNo, jdbcType=VARCHAR}
+                </otherwise>
+            </choose>
+        </if>
+         ORDER BY TO_DATE(A.START_DATE, 'DD/MM/YYYY') DESC, B.EMPID
+    </select>
+
+</mapper>

@@ -1,0 +1,114 @@
+<nz-card [nzBodyStyle]="{ padding: '10px' }">
+  <!-- ════ Điều kiện tìm kiếm ════ -->
+  <form class="row g-2 mb-2" (ngSubmit)="search()">
+    <div class="col-md-3">
+      <label class="form-label small mb-1" for="velKeyword">{{ 'common.search.empIdOrName' | translate:'Mã nhân viên / Họ tên' }}</label>
+      <input nz-input id="velKeyword" name="velKeyword" [(ngModel)]="filter.keyword" nzSize="small">
+    </div>
+    <div class="col-md-3">
+      <label class="form-label small mb-1">{{ 'vel.orderDate' | translate:'Ngày phát lệnh' }}</label>
+      <div class="d-flex align-items-center gap-1">
+        <nz-date-picker class="flex-fill" id="velStartDate" name="velStartDate" nzSize="small" nzFormat="dd/MM/yyyy"
+                        [(ngModel)]="filter.startDate" [nzPlaceHolder]="'common.fromDate' | translate:'Từ ngày'"></nz-date-picker>
+        <span>~</span>
+        <nz-date-picker class="flex-fill" id="velEndDate" name="velEndDate" nzSize="small" nzFormat="dd/MM/yyyy"
+                        [(ngModel)]="filter.endDate" [nzPlaceHolder]="'common.toDate' | translate:'Đến ngày'"></nz-date-picker>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <label class="form-label small mb-1">{{ 'vel.transCode' | translate:'Loại phát lệnh' }}</label>
+      <nz-select class="w-100" id="velTransCodes" name="velTransCodes" nzSize="small" nzMode="multiple"
+                 nzShowSearch nzAllowClear [nzMaxTagCount]="2"
+                 [ngModel]="filter.transCodes" (ngModelChange)="onTransCodesChange($event)">
+        <nz-option *ngFor="let o of transCodeOptions()" [nzValue]="o.codeNo" [nzLabel]="o.codeName"></nz-option>
+      </nz-select>
+    </div>
+    <div class="col-md-3">
+      <label class="form-label small mb-1">{{ 'vel.transReason' | translate:'Lý do phát lệnh' }}</label>
+      <nz-select class="w-100" id="velTransReasons" name="velTransReasons" nzSize="small" nzMode="multiple"
+                 nzShowSearch nzAllowClear [nzMaxTagCount]="2" [(ngModel)]="filter.transReasons"
+                 [nzDisabled]="filter.transCodes.length === 0">
+        <nz-option *ngFor="let o of transReasonOptions()" [nzValue]="o.codeNo" [nzLabel]="o.codeName"></nz-option>
+      </nz-select>
+    </div>
+
+    <div class="col-md-3">
+      <label class="form-label small mb-1">{{ 'common.deptName' | translate:'Phòng ban' }}</label>
+      <nz-tree-select class="w-100" id="velDeptNo" name="velDeptNo" nzSize="small" [nzNodes]="deptNodes()"
+                      [(ngModel)]="filter.deptNo" nzShowSearch nzAllowClear
+                      [nzPlaceHolder]="'common.placeholder.select' | translate:'-- Chọn --'"></nz-tree-select>
+      <label nz-checkbox class="small mt-1" id="velIncludeSubDept" name="velIncludeSubDept"
+             [(ngModel)]="filter.includeSubDept">{{ 'common.includeSubDept' | translate:'Bao gồm phòng ban con' }}</label>
+    </div>
+    <div class="col-md-3">
+      <label class="form-label small mb-1">{{ 'hrSearch.postFamily' | translate:'Nhóm chức' }}</label>
+      <nz-select class="w-100" id="velPostFamilies" name="velPostFamilies" nzSize="small" nzMode="multiple"
+                 nzShowSearch nzAllowClear [nzMaxTagCount]="2" [(ngModel)]="filter.postFamilies">
+        <nz-option *ngFor="let o of postFamilyOptions()" [nzValue]="o.codeNo" [nzLabel]="o.codeName"></nz-option>
+      </nz-select>
+    </div>
+    <div class="col-md-3">
+      <label class="form-label small mb-1">{{ 'common.empType' | translate:'Loại nhân viên' }}</label>
+      <nz-select class="w-100" id="velEmpTypeCodes" name="velEmpTypeCodes" nzSize="small" nzMode="multiple"
+                 nzShowSearch nzAllowClear [nzMaxTagCount]="2" [(ngModel)]="filter.empTypeCodes">
+        <nz-option *ngFor="let o of empTypeOptions()" [nzValue]="o.codeNo" [nzLabel]="o.codeName"></nz-option>
+      </nz-select>
+    </div>
+    <div class="col-md-3">
+      <label class="form-label small mb-1">{{ 'hrSearch.empOffice' | translate:'Tình trạng làm việc' }}</label>
+      <nz-select class="w-100" id="velEmpOffices" name="velEmpOffices" nzSize="small" nzMode="multiple"
+                 nzShowSearch nzAllowClear [nzMaxTagCount]="2" [(ngModel)]="filter.empOffices">
+        <nz-option *ngFor="let o of empOfficeOptions()" [nzValue]="o.codeNo" [nzLabel]="o.codeName"></nz-option>
+      </nz-select>
+    </div>
+    <div class="col-md-3">
+      <label class="form-label small mb-1">{{ 'common.joinDate' | translate:'Ngày vào làm' }}</label>
+      <div class="d-flex align-items-center gap-1">
+        <nz-date-picker class="flex-fill" id="velStartDateJoin" name="velStartDateJoin" nzSize="small" nzFormat="dd/MM/yyyy"
+                        [(ngModel)]="filter.startDateJoin" [nzPlaceHolder]="'common.fromDate' | translate:'Từ ngày'"></nz-date-picker>
+        <span>~</span>
+        <nz-date-picker class="flex-fill" id="velEndDateJoin" name="velEndDateJoin" nzSize="small" nzFormat="dd/MM/yyyy"
+                        [(ngModel)]="filter.endDateJoin" [nzPlaceHolder]="'common.toDate' | translate:'Đến ngày'"></nz-date-picker>
+      </div>
+    </div>
+
+    <div class="col-md-9 d-flex flex-wrap gap-1 justify-content-end align-items-end">
+      <button nz-button nzType="primary" nzSize="small" type="submit" id="velBtnSearch" [nzLoading]="loading()">
+        <i class="bx bx-search"></i> {{ 'common.search' | translate:'Tra cứu' }}
+      </button>
+      <button nz-button nzSize="small" type="button" id="velBtnClear" (click)="clearFilter()">
+        <i class="bx bx-eraser"></i> {{ 'common.clearFilter' | translate:'Xóa bộ lọc' }}
+      </button>
+      <button nz-button nzSize="small" type="button" id="velBtnExport" [disabled]="filteredRows().length === 0"
+              (click)="exportExcel()">
+        <i class="bx bx-export"></i> {{ 'common.exportExcel' | translate:'Xuất Excel' }}
+      </button>
+    </div>
+  </form>
+
+  <div class="d-flex align-items-center justify-content-between mb-1">
+    <span class="small text-muted">{{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ filteredRows().length }}</span>
+    <input nz-input id="velQuickFilter" class="vel-quick-filter" nzSize="small"
+           [ngModel]="quickFilter()" (ngModelChange)="quickFilter.set($event); pageIndex = 1"
+           [placeholder]="'common.quickFilter' | translate:'Lọc nhanh'">
+  </div>
+
+  <nz-table #velTable [nzData]="filteredRows()" [nzLoading]="loading()" nzSize="small" class="table-nowrap"
+            [(nzPageIndex)]="pageIndex" [(nzPageSize)]="pageSize" nzShowSizeChanger [nzPageSizeOptions]="[20, 50, 100, 200]"
+            [nzScroll]="{ x: scrollX, y: 'calc(100vh - 400px)' }">
+    <thead>
+      <tr>
+        <th class="text-center" nzLeft nzWidth="60px">{{ 'common.stt' | translate:'STT' }}</th>
+        <th *ngFor="let c of columns; trackBy: trackColumn" [nzWidth]="c.width" [class.text-center]="c.center">
+          {{ c.labelKey | translate:c.fallback }}
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let row of velTable.data; let i = index">
+        <td class="text-center" nzLeft>{{ (pageIndex - 1) * pageSize + i + 1 }}</td>
+        <td *ngFor="let c of columns; trackBy: trackColumn" [class.text-center]="c.center">{{ row[c.field] }}</td>
+      </tr>
+    </tbody>
+  </nz-table>
+</nz-card>

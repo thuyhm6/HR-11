@@ -58,4 +58,37 @@
         ORDER BY CREATE_DATE
     </select>
 
+    <select id="selectFilesByApply" resultMap="EssFileResultMap">
+        SELECT FILE_NO, APPLY_NO, APPLY_TYPE, FILE_URL, FILE_NAME
+          FROM ESS_FILE
+         WHERE APPLY_TYPE = #{applyType, jdbcType=VARCHAR}
+           AND APPLY_NO = #{applyNo, jdbcType=VARCHAR}
+           AND ACTIVITY = 1
+         ORDER BY CREATE_DATE, FILE_NO
+    </select>
+
+    <select id="selectFilesByApplyType" resultMap="EssFileResultMap">
+        SELECT FILE_NO, APPLY_NO, APPLY_TYPE, FILE_URL, FILE_NAME
+          FROM ESS_FILE
+         WHERE APPLY_TYPE = #{applyType, jdbcType=VARCHAR}
+           AND ACTIVITY = 1
+         ORDER BY APPLY_NO, CREATE_DATE, FILE_NO
+    </select>
+
+    <update id="deactivateFiles">
+        UPDATE ESS_FILE
+           SET ACTIVITY = 0,
+               UPDATE_DATE = SYSDATE,
+               UPDATED_BY = #{adminID, jdbcType=VARCHAR}
+         WHERE APPLY_TYPE = #{applyType, jdbcType=VARCHAR}
+           AND APPLY_NO = #{applyNo, jdbcType=VARCHAR}
+           AND ACTIVITY = 1
+        <if test="fileNos != null and fileNos.size() > 0">
+           AND FILE_NO IN
+            <foreach collection="fileNos" item="fileNo" open="(" separator="," close=")">
+                #{fileNo, jdbcType=VARCHAR}
+            </foreach>
+        </if>
+    </update>
+
 </mapper>

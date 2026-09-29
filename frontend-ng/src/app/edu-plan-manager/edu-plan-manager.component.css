@@ -1,0 +1,29 @@
+.epm-row {
+  cursor: pointer;
+}
+
+/* Dòng đang chọn - đích của nút Sửa/Xóa (thay màu #aaccf6 của xuanzhongPlan() bản JSP) */
+.epm-row.epm-row-selected > td,
+.epm-row.epm-row-selected:hover > td {
+  background: #e6f4ff;
+}
+
+.epm-link {
+  color: #1677ff;
+  cursor: pointer;
+}
+
+.epm-quick-filter {
+  max-width: 260px;
+}
+
+.epm-unit {
+  width: 110px;
+  flex-shrink: 0;
+}
+
+.epm-tags {
+  max-height: 120px;
+  overflow-y: auto;
+}
+

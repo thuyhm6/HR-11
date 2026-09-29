@@ -1,0 +1,13 @@
+.etm-row {
+  cursor: pointer;
+}
+
+/* Dòng đang chọn - đích của nút Sửa/Xóa (thay màu #aaccf6 của xuanzhongTea() bản JSP) */
+.etm-row.etm-row-selected > td,
+.etm-row.etm-row-selected:hover > td {
+  background: #e6f4ff;
+}
+
+.etm-quick-filter {
+  max-width: 260px;
+}

@@ -1,0 +1,64 @@
+<nz-modal [nzVisible]="visible" nzWidth="900px" [nzMaskClosable]="true" (nzOnCancel)="close()"
+          [nzTitle]="(isEdit ? 'ar.viewRetrieveSqlMasterList.BAOBIAOXIUGAI.b' : 'ar.viewRetrieveSqlMasterList.XINJIANBAOBIAO.b') | translate:(isEdit ? 'Sửa bảng' : 'Thêm mới bảng')"
+          [nzFooter]="aeemFooterTpl">
+  <ng-container *nzModalContent>
+    <nz-spin [nzSpinning]="loading()">
+      <div class="row g-3">
+        <div class="col-md-3" *ngIf="isEdit">
+          <label class="form-label fw-semibold" for="aeem-sql-seq">{{ 'disc.autoExcel.SQL_NO.Z' | translate:'STT SQL' }}</label>
+          <input id="aeem-sql-seq" nz-input [value]="sqlSeq" disabled>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label fw-semibold" for="aeem-pgm-nm">
+            {{ 'disc.autoExcel.SQL_MODULE.Z' | translate:'Module SQL' }} <span class="text-danger">*</span>
+          </label>
+          <nz-select id="aeem-pgm-nm" class="w-100" [(ngModel)]="form.pgmNm"
+                     [nzPlaceHolder]="'common.placeholder.select' | translate:'-- Chọn --'">
+            <nz-option *ngFor="let m of moduleOptions" [nzValue]="m" [nzLabel]="m + ' - ' + moduleLabel(m)"></nz-option>
+            <!-- Báo cáo cũ có thể thuộc module ngoài danh sách được chọn của menu hiện tại - vẫn hiển thị để không mất giá trị -->
+            <nz-option *ngIf="form.pgmNm && !moduleOptions.includes(form.pgmNm)" [nzValue]="form.pgmNm"
+                       [nzLabel]="form.pgmNm + ' - ' + moduleLabel(form.pgmNm)"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold" for="aeem-sql-nm">
+            {{ 'disc.autoExcel.SQL_NAME.Z' | translate:'Tên SQL' }} <span class="text-danger">*</span>
+          </label>
+          <input id="aeem-sql-nm" nz-input [(ngModel)]="form.sqlNm" maxlength="100">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label fw-semibold" for="aeem-order">
+            {{ 'ar.viewRetrieveSqlMasterList.PAIXUHAO.b' | translate:'STT' }} <span class="text-danger">*</span>
+          </label>
+          <input id="aeem-order" nz-input [(ngModel)]="form.sqlOrderById" maxlength="10" inputmode="numeric">
+        </div>
+        <div class="col-md-5">
+          <label class="form-label fw-semibold" for="aeem-from">{{ 'autoExcel.col.sqlFrom' | translate:'Nguồn SQL' }}</label>
+          <input id="aeem-from" nz-input [(ngModel)]="form.sqlFromStmt" maxlength="200">
+        </div>
+        <div class="col-md-4 d-flex align-items-end gap-3">
+          <label id="aeem-stat" nz-checkbox [(ngModel)]="form.sqlStat">{{ 'sys.arAffirmPost.title.able' | translate:'Sử dụng' }}</label>
+          <label id="aeem-special" nz-checkbox [(ngModel)]="form.isSpecial">{{ 'autoExcel.col.special' | translate:'Mẫu đặc biệt' }}</label>
+        </div>
+        <div class="col-12">
+          <label class="form-label fw-semibold" for="aeem-desc">{{ 'ar.viewRetrieveSqlMasterList.MIAOSHU.b' | translate:'Miêu tả' }}</label>
+          <input id="aeem-desc" nz-input [(ngModel)]="form.sqlDesc" maxlength="500">
+        </div>
+        <div class="col-12">
+          <label class="form-label fw-semibold" for="aeem-sql">
+            {{ 'disc.autoExcel.SQL_CONTENT.Z' | translate:'Nội dung SQL' }} <span class="text-danger">*</span>
+          </label>
+          <textarea id="aeem-sql" nz-input class="font-monospace" rows="14" spellcheck="false" [(ngModel)]="form.sqlStmt"></textarea>
+          <div class="form-text">{{ 'autoExcel.hint.params' | translate:'Chỉ chấp nhận câu SELECT/WITH. Tham số viết dạng #TEN_THAM_SO# - danh sách tham số tự cập nhật khi lưu.' }}</div>
+        </div>
+      </div>
+    </nz-spin>
+  </ng-container>
+
+  <ng-template #aeemFooterTpl>
+    <button nz-button type="button" (click)="close()">{{ 'common.cancel' | translate:'Hủy' }}</button>
+    <button nz-button nzType="primary" type="button" [nzLoading]="saving()" [disabled]="loading()" (click)="submit()">
+      {{ 'common.save' | translate:'Lưu' }}
+    </button>
+  </ng-template>
+</nz-modal>

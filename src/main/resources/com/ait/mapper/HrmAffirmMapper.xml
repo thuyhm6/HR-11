@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<!-- Quy trình phê duyệt khác (chuyển từ sqlArAffirm.xml / sqlHrmAffirm.xml - iBatis, dự án Hanwha_HTSV, TYPE = 'pa') -->
+<mapper namespace="com.ait.sy.syAffirm.mapper.HrmAffirmMapper">
+
+    <resultMap id="HrmAffirmResultMap" type="com.ait.sy.syAffirm.dto.HrmAffirmDto">
+        <id column="APPLY_PARAM_NO" property="applyParamNo" jdbcType="NUMERIC" />
+        <result column="APPLY_TYPE" property="applyType" jdbcType="VARCHAR" />
+        <result column="APPLY_NAME" property="applyName" jdbcType="VARCHAR" />
+        <result column="EMP_TYPE" property="empType" jdbcType="VARCHAR" />
+        <result column="DUTY_NO" property="dutyNo" jdbcType="VARCHAR" />
+        <result column="DUTY_NAME" property="dutyName" jdbcType="VARCHAR" />
+        <result column="AFFIRM_LEVEL" property="affirmLevel" jdbcType="INTEGER" />
+        <result column="LOW_LEVEL" property="lowLevel" jdbcType="INTEGER" />
+        <result column="LOW_LEVEL_NAME" property="lowLevelName" jdbcType="VARCHAR" />
+        <result column="HIGH_LEVEL" property="highLevel" jdbcType="INTEGER" />
+        <result column="HIGH_LEVEL_NAME" property="highLevelName" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <!-- Cột chung của ESS_LEAVE_APPLY_PARAM (alias ESS) - dùng lại ở ArAffirmMapper.xml (TYPE = 'ar').
+         Bản gốc lấy tên cấp thấp/cao bằng subquery trả 1 dòng -> lỗi ORA-01427 nếu 2 vai trò cùng cấp; ở đây nối tên bằng LISTAGG -->
+    <sql id="applyParamColumns">
+               ESS.APPLY_PARAM_NO,
+               ESS.APPLY_TYPE,
+               GET_CODE_NAME(ESS.APPLY_TYPE, #{lang, jdbcType=VARCHAR}) AS APPLY_NAME,
+               ESS.EMP_TYPE,
+               ESS.DUTY_NO,
+               CASE WHEN ESS.DUTY_NO = 'Q' THEN NULL
+                    ELSE GET_GLOBAL_NAME(ESS.DUTY_NO, #{lang, jdbcType=VARCHAR}) END AS DUTY_NAME,
+               ESS.AFFIRM_LEVEL,
+               ESS.LOW_LEVEL,
+               (SELECT LISTAGG(GET_GLOBAL_NAME(L.DUTY, #{lang, jdbcType=VARCHAR}), ', ') WITHIN GROUP (ORDER BY L.DUTY)
+                  FROM SY_AFFIRM_LEVEL_SETUP L
+                 WHERE L.AFFIRM_LEVEL = ESS.LOW_LEVEL
+                   AND L.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}) AS LOW_LEVEL_NAME,
+               ESS.HIGH_LEVEL,
+               (SELECT LISTAGG(GET_GLOBAL_NAME(H.DUTY, #{lang, jdbcType=VARCHAR}), ', ') WITHIN GROUP (ORDER BY H.DUTY)
+                  FROM SY_AFFIRM_LEVEL_SETUP H
+                 WHERE H.AFFIRM_LEVEL = ESS.HIGH_LEVEL
+                   AND H.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}) AS HIGH_LEVEL_NAME
+    </sql>
+
+    <select id="selectList" resultMap="HrmAffirmResultMap">
+        SELECT <include refid="applyParamColumns"/>
+          FROM ESS_LEAVE_APPLY_PARAM ESS
+         WHERE ESS.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+           AND ESS.TYPE = 'pa'
+        <if test="applyType != null and applyType != ''">
+           AND ESS.APPLY_TYPE = #{applyType, jdbcType=VARCHAR}
+        </if>
+         ORDER BY ESS.APPLY_TYPE, ESS.APPLY_PARAM_NO
+    </select>
+
+    <!-- Giống validateExistsDutyApplyTypeCpnyId bản gốc (không lọc TYPE - loại đơn + loại NV + vai trò là duy nhất trong công ty) -->
+    <select id="countDuplicate" resultType="int">
+        SELECT COUNT(1)
+          FROM ESS_LEAVE_APPLY_PARAM ESS
+         WHERE ESS.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+           AND ESS.APPLY_TYPE = #{applyType, jdbcType=VARCHAR}
+           AND ESS.EMP_TYPE = #{empType, jdbcType=VARCHAR}
+           AND ESS.DUTY_NO = #{dutyNo, jdbcType=VARCHAR}
+        <if test="excludeApplyParamNo != null">
+           AND ESS.APPLY_PARAM_NO &lt;&gt; #{excludeApplyParamNo, jdbcType=NUMERIC}
+        </if>
+    </select>
+
+    <!-- Các cột REFERENCN_* giữ nguyên giá trị hidden input của addHrmAffirmView.jsp bản gốc -->
+    <insert id="insert">
+        INSERT INTO ESS_LEAVE_APPLY_PARAM
+               (APPLY_PARAM_NO,
+                REFERENCN_FROM_FLAG,
+                REFERENCN_FROM_OFFSET,
+                REFERENCN_FROM_RELATION,
+                REFERENCN_TO_OFFSET,
+                APPLY_TYPE,
+                DUTY_NO,
+                AFFIRM_LEVEL,
+                ACTIVITY,
+                CREATE_DATE,
+                CREATED_BY,
+                CPNY_ID,
+                LOW_LEVEL,
+                HIGH_LEVEL,
+                TYPE,
+                EMP_TYPE)
+        VALUES (ESS_LEAVE_APPLY_PARAM_SEQ.NEXTVAL,
+                1,
+                0,
+                '&gt;=',
+                99999,
+                #{applyType, jdbcType=VARCHAR},
+                #{dutyNo, jdbcType=VARCHAR},
+                #{affirmLevel, jdbcType=INTEGER},
+                1,
+                SYSDATE,
+                #{adminID, jdbcType=VARCHAR},
+                #{cpnyId, jdbcType=VARCHAR},
+                #{lowLevel, jdbcType=INTEGER},
+                #{highLevel, jdbcType=INTEGER},
+                'pa',
+                #{empType, jdbcType=VARCHAR})
+    </insert>
+
+    <!-- Các cột REFERENCN_* giữ nguyên giá trị hidden input của updateHrmAffirmView.jsp bản gốc -->
+    <update id="update">
+        UPDATE ESS_LEAVE_APPLY_PARAM
+           SET REFERENCN_FLAG          = 1,
+               REFERENCN_FROM_FLAG     = 1,
+               REFERENCN_FROM_OFFSET   = 0,
+               REFERENCN_FROM_RELATION = '&gt;=',
+               REFERENCN_TO_FLAG       = 1,
+               REFERENCN_TO_OFFSET     = 99,
+               REFERENCN_TO_RELATION   = '&lt;=',
+               APPLY_TYPE              = #{applyType, jdbcType=VARCHAR},
+               EMP_TYPE                = #{empType, jdbcType=VARCHAR},
+               DUTY_NO                 = #{dutyNo, jdbcType=VARCHAR},
+               AFFIRM_LEVEL            = #{affirmLevel, jdbcType=INTEGER},
+               LOW_LEVEL               = #{lowLevel, jdbcType=INTEGER},
+               HIGH_LEVEL              = #{highLevel, jdbcType=INTEGER},
+               UPDATE_DATE             = SYSDATE,
+               UPDATED_BY              = #{adminID, jdbcType=VARCHAR}
+         WHERE APPLY_PARAM_NO = #{applyParamNo, jdbcType=NUMERIC}
+           AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+           AND TYPE = 'pa'
+    </update>
+
+    <delete id="delete">
+        DELETE FROM ESS_LEAVE_APPLY_PARAM
+         WHERE APPLY_PARAM_NO = #{applyParamNo, jdbcType=NUMERIC}
+           AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+           AND TYPE = 'pa'
+    </delete>
+</mapper>

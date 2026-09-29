@@ -1,0 +1,170 @@
+<app-edu-course-list idPrefix="etb" [rows]="rows()" [loading]="loading()" [errorMessage]="errorMessage()"
+                     [selected]="selected()" [showCourseName]="true" [showTrainForm]="true" [courseClickable]="true"
+                     (search)="search($event)" (rowSelect)="selected.set($event)" (rowDblClick)="openEditModal($event)"
+                     (courseClick)="openView($event)">
+  <button nz-button nzType="primary" type="button" id="etbBtnAdd" (click)="openAddModal()">
+    <i class="bx bx-plus"></i> {{ 'common.addNew' | translate:'Thêm mới' }}
+  </button>
+  <button nz-button type="button" id="etbBtnEdit" [disabled]="!selected()" (click)="openEditModal()">
+    <i class="bx bx-edit"></i> {{ 'common.edit' | translate:'Sửa' }}
+  </button>
+  <button nz-button nzDanger type="button" id="etbBtnDelete" [disabled]="!selected()" (click)="confirmDelete()">
+    <i class="bx bx-trash"></i> {{ 'common.delete' | translate:'Xóa' }}
+  </button>
+</app-edu-course-list>
+
+<!-- Modal Thêm mới / Sửa - bấm ra ngoài modal sẽ đóng (nzMaskClosable) -->
+<nz-modal [nzVisible]="modalVisible()" [nzTitle]="modalTitle()" nzWidth="980px" [nzMaskClosable]="true"
+          (nzOnCancel)="closeModal()" (nzOnOk)="saveForm()" [nzOkLoading]="saving()"
+          [nzOkText]="'common.save' | translate:'Lưu'" [nzCancelText]="'common.close' | translate:'Đóng'">
+  <ng-container *nzModalContent>
+    <div class="row g-3">
+      <div class="col-12" *ngIf="isNew()">
+        <label class="form-label fw-semibold" for="etbFormPlan">
+          {{ 'edu.trainBasicInformation.SUOYOUKECHENG.a' | translate:'Chương trình đào tạo' }} <span class="text-danger">*</span>
+        </label>
+        <nz-select id="etbFormPlan" class="w-100" name="etbFormPlan" nzShowSearch nzAllowClear
+                   [ngModel]="form.planNo" (ngModelChange)="onPlanChange($event)"
+                   [nzPlaceHolder]="'common.pleaseSelect' | translate:'Vui lòng chọn'">
+          <nz-option *ngFor="let p of plans()" [nzValue]="p.planNo" [nzLabel]="planLabel(p)"></nz-option>
+        </nz-select>
+      </div>
+
+      <ng-container *ngIf="form.info">
+        <div class="col-md-4">
+          <label class="form-label fw-semibold" for="etbFormCourse">{{ 'empsubject.subjectNm' | translate:'Tên đào tạo' }}</label>
+          <input nz-input id="etbFormCourse" [value]="form.info.courseNameCode ?? ''" readonly>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-semibold" for="etbFormForm">{{ 'edu.trainBasicInformation.PEIXUNFANGSHI.a' | translate:'Hình thức đào tạo' }}</label>
+          <input nz-input id="etbFormForm" [value]="form.info.trainFormCodeName ?? ''" readonly>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-semibold" for="etbFormAddress">{{ 'empsubject.eduRm' | translate:'Địa điểm đào tạo' }}</label>
+          <input nz-input id="etbFormAddress" [value]="form.info.trainAddress ?? ''" readonly>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label fw-semibold" for="etbFormStart">{{ 'edu.trainArchives.SHISHIKAISHIRIQI.a' | translate:'Ngày bắt đầu' }}</label>
+          <nz-date-picker id="etbFormStart" name="etbFormStart" class="w-100" nzFormat="dd/MM/yyyy" [(ngModel)]="form.impleStartDate"></nz-date-picker>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label fw-semibold" for="etbFormEnd">{{ 'edu.trainArchives.SHISHIJIESHURIQI.a' | translate:'Ngày kết thúc' }}</label>
+          <nz-date-picker id="etbFormEnd" name="etbFormEnd" class="w-100" nzFormat="dd/MM/yyyy" [(ngModel)]="form.impleEndDate"></nz-date-picker>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label fw-semibold" for="etbFormHour">{{ 'edu.trainBasicInformation.SHISHIKESHI.a' | translate:'Thời lượng' }}</label>
+          <div class="d-flex gap-2">
+            <input nz-input id="etbFormHour" name="etbFormHour" inputmode="decimal" [(ngModel)]="form.impleClassHour">
+            <nz-select class="etb-unit" name="etbFormUnit" nzAllowClear [(ngModel)]="form.impleClassUnit">
+              <nz-option *ngFor="let u of classUnits" [nzValue]="u.value" [nzLabel]="u.key | translate:u.fallback"></nz-option>
+            </nz-select>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label fw-semibold" for="etbFormApplyEnd">{{ 'edu.trainBasicInformation.BAOMINGJIEZHIRIQII.a' | translate:'Hạn đăng ký' }}</label>
+          <nz-date-picker id="etbFormApplyEnd" name="etbFormApplyEnd" class="w-100" nzFormat="dd/MM/yyyy" [(ngModel)]="form.applyEndDate"></nz-date-picker>
+        </div>
+        <div class="col-12">
+          <label class="form-label fw-semibold" for="etbFormContent">{{ 'edu.planManager.PEIXUNNEIRONG.a' | translate:'Nội dung' }}</label>
+          <textarea nz-input id="etbFormContent" name="etbFormContent" rows="2" maxlength="1000" [(ngModel)]="form.trainContent"></textarea>
+        </div>
+
+        <!-- Giảng viên -->
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">{{ 'edu.trainBasicInformation.YIBANJIANGSHI.a' | translate:'Giáo viên' }}</label>
+          <div class="etb-tags">
+            <nz-tag *ngFor="let t of form.info.comTeachers">{{ t.name }} ({{ t.empId }})</nz-tag>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold" for="etbBtnEva">{{ 'edu.trainBasicInformation.PINGJIAJIANGSHI.a' | translate:'Giáo viên đánh giá' }}</label>
+          <div>
+            <button nz-button nzSize="small" type="button" id="etbBtnEva" (click)="openPersonPicker('eva')">
+              <i class="bx bx-user-check"></i> {{ 'edu.trainBasicInformation.PINGJIAJIANGSHI.a' | translate:'Giáo viên đánh giá' }}
+            </button>
+            <div class="etb-tags mt-1">
+              <nz-tag *ngFor="let t of form.evaTeachers" nzMode="closeable" (nzOnClose)="removePerson('eva', t.empId)">{{ t.name }} ({{ t.empId }})</nz-tag>
+            </div>
+          </div>
+        </div>
+
+        <!-- Học viên -->
+        <div class="col-12">
+          <div class="etb-section-title">
+            {{ 'edu.trainBasicInformation.JIHUAPEIXUNDUIXIANG.a' | translate:'Đối tượng đào tạo theo kế hoạch' }} ({{ plannedCount }})
+            &nbsp;|&nbsp;
+            {{ 'edu.trainBasicInformation.SHIJIPEIXUNDUIXIANG.a' | translate:'Đối tượng đào tạo thực tế' }} ({{ form.finalStudents.length }})
+          </div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold" for="etbFormDept">{{ 'edu.trainBasicInformation.ZIXUANRENYUANBUMENZHIDING.a' | translate:'Phòng ban' }}</label>
+          <nz-tree-select id="etbFormDept" class="w-100" name="etbFormDept" [nzNodes]="deptNodes()" nzCheckable nzShowSearch nzAllowClear
+                          [nzMaxTagCount]="4" [(ngModel)]="form.desDepartments"
+                          [nzPlaceHolder]="'common.pleaseSelect' | translate:'Vui lòng chọn'"
+                          [nzDropdownStyle]="{ 'max-height': '360px' }"></nz-tree-select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold" for="etbBtnFree">{{ 'edu.trainBasicInformation.ZIXUANRENYUAN.a' | translate:'Nhân viên' }}</label>
+          <div>
+            <button nz-button nzSize="small" type="button" id="etbBtnFree" (click)="openFreePicker()">
+              <i class="bx bx-plus"></i> {{ 'edu.trainBasicInformation.ZIXUANRENYUAN.a' | translate:'Nhân viên' }}
+            </button>
+            <div class="etb-tags mt-1">
+              <nz-tag *ngFor="let p of form.freeEmployees" nzMode="closeable" (nzOnClose)="removePerson('free', p.empId)">{{ p.name }} ({{ p.empId }})</nz-tag>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold" for="etbBtnAct">{{ 'edu.planManager.ZHIDINGRENYUAN.a' | translate:'NV chỉ định' }}</label>
+          <div>
+            <button nz-button nzSize="small" type="button" id="etbBtnAct" (click)="openPersonPicker('act')">
+              <i class="bx bx-list-check"></i> {{ 'edu.planManager.ZHIDINGRENYUAN.a' | translate:'NV chỉ định' }}
+            </button>
+            <div class="etb-tags mt-1">
+              <nz-tag *ngFor="let p of form.actEmployees" nzMode="closeable" (nzOnClose)="removePerson('act', p.empId)">{{ p.name }} ({{ p.empId }})</nz-tag>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold" for="etbBtnFinal">{{ 'edu.trainBasicInformation.SHIJIRENYUAN.a' | translate:'Nhân viên thực tế' }}</label>
+          <div>
+            <button nz-button nzSize="small" type="button" id="etbBtnFinal" (click)="openPersonPicker('final')">
+              <i class="bx bx-check-double"></i> {{ 'edu.trainBasicInformation.SHIJIRENYUAN.a' | translate:'Nhân viên thực tế' }}
+            </button>
+            <div class="etb-tags mt-1">
+              <nz-tag *ngFor="let p of form.finalStudents" nzMode="closeable" (nzOnClose)="removePerson('final', p.empId)">{{ p.name }} ({{ p.empId }})</nz-tag>
+            </div>
+          </div>
+        </div>
+        <div class="col-12" *ngIf="!isNew()">
+          <label class="form-label fw-semibold">{{ 'edu.trainBasicInformation.CAIJUETONGGUORENYUAN.a' | translate:'Nhân viên đã được duyệt' }}</label>
+          <div class="etb-tags">
+            <nz-tag *ngFor="let p of form.info.applyEmployees">{{ p.name }} ({{ p.empId }})</nz-tag>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal xem thông tin (bản gốc queryBasicInformation) -->
+<nz-modal [nzVisible]="viewVisible()" [nzTitle]="'pa.salary.title.fullInfo' | translate:'Thông tin chi tiết'" nzWidth="860px"
+          [nzMaskClosable]="true" (nzOnCancel)="viewVisible.set(false)" [nzFooter]="null">
+  <ng-container *nzModalContent>
+    <app-edu-basic-header [basic]="viewBasic()"></app-edu-basic-header>
+    <nz-descriptions *ngIf="viewBasic() as v" nzBordered nzSize="small" [nzColumn]="2">
+      <nz-descriptions-item [nzTitle]="'edu.trainBasicInformation.PEIXUNFANGSHI.a' | translate:'Hình thức đào tạo'">{{ v.trainFormCodeName }}</nz-descriptions-item>
+      <nz-descriptions-item [nzTitle]="'empsubject.eduRm' | translate:'Địa điểm đào tạo'">{{ v.trainAddress }}</nz-descriptions-item>
+      <nz-descriptions-item [nzTitle]="'edu.trainBasicInformation.BAOMINGJIEZHIRIQII.a' | translate:'Hạn đăng ký'">{{ v.applyEndDate }}</nz-descriptions-item>
+      <nz-descriptions-item [nzTitle]="'edu.trainBasicInformation.SHIJIPEIXUNDUIXIANG.a' | translate:'Đối tượng đào tạo thực tế'">{{ v.finalStudents.length }}</nz-descriptions-item>
+    </nz-descriptions>
+  </ng-container>
+</nz-modal>
+
+<!-- Chọn trong danh sách cho sẵn: giảng viên đánh giá / nhân viên chỉ định / đối tượng thực tế -->
+<app-edu-person-picker [(visible)]="personPickerVisible" [title]="personPickerTitle" [options]="personPickerOptions"
+                       [selected]="personPickerSelected" (picked)="onPersonsPicked($event)"></app-edu-person-picker>
+
+<!-- Nhân viên tự chọn: tìm theo phòng ban đã chọn (bản gốc otherPlanEmployee) -->
+<app-edu-employee-picker #etbEmpPicker [(visible)]="empPickerVisible" [multiple]="true" [deptNos]="form.desDepartments"
+                         (picked)="onFreePicked($event)"></app-edu-employee-picker>

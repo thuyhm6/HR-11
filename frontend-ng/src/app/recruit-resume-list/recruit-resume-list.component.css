@@ -1,0 +1,9 @@
+.rrl-row {
+  cursor: pointer;
+}
+
+.rrl-remark {
+  max-width: 420px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

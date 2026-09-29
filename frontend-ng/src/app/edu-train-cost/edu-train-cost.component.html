@@ -1,0 +1,113 @@
+<div class="row">
+  <div class="col-12">
+    <!-- Điều kiện tìm kiếm -->
+    <nz-card class="mb-3 sticky-filter-card">
+      <form class="row g-3" (ngSubmit)="search()">
+        <div class="col-md-3">
+          <label class="form-label" for="etcSearchCourse">{{ 'empsubject.subjectNm' | translate:'Tên đào tạo' }}</label>
+          <input nz-input id="etcSearchCourse" name="etcSearchCourse" [(ngModel)]="searchCourseName">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label" for="etcSearchStart">{{ 'hrm.recruitManage.START_DATE1' | translate:'Ngày bắt đầu' }}</label>
+          <nz-date-picker id="etcSearchStart" class="w-100" name="etcSearchStart" nzFormat="dd/MM/yyyy" [(ngModel)]="searchStart"></nz-date-picker>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label" for="etcSearchEnd">{{ 'hrm.recruitManage.END_DATE1' | translate:'Ngày kết thúc' }}</label>
+          <nz-date-picker id="etcSearchEnd" class="w-100" name="etcSearchEnd" nzFormat="dd/MM/yyyy" [(ngModel)]="searchEnd"></nz-date-picker>
+        </div>
+        <div class="col-md-5 d-flex align-items-end gap-2 flex-wrap">
+          <button nz-button nzType="primary" type="submit" id="etcBtnSearch">
+            <i class="bx bx-search"></i> {{ 'common.search' | translate:'Tìm kiếm' }}
+          </button>
+          <button nz-button type="button" id="etcBtnEdit" [disabled]="!selected()" (click)="openEditModal()">
+            <i class="bx bx-edit"></i> {{ 'common.edit' | translate:'Sửa' }}
+          </button>
+          <button nz-button type="button" id="etcBtnExport" class="etc-btn-export" (click)="exportList()">
+            <i class="bx bx-spreadsheet"></i> {{ 'common.exportExcel' | translate:'Xuất Excel' }}
+          </button>
+        </div>
+      </form>
+    </nz-card>
+
+    <nz-card>
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+      <div class="d-flex justify-content-end mb-2">
+        <input nz-input id="etcQuickFilter" class="etc-quick-filter" name="etcQuickFilter"
+               [ngModel]="quickFilter()" (ngModelChange)="onQuickFilterChange($event)"
+               [placeholder]="'common.quickFilter' | translate:'Lọc nhanh'">
+      </div>
+      <nz-table #etcTable [nzData]="filteredRows()" [nzLoading]="loading()" nzSize="small"
+                [(nzPageIndex)]="pageIndex" [(nzPageSize)]="pageSize" [nzPageSizeOptions]="pageSizeOptions"
+                [nzShowSizeChanger]="true" [nzShowTotal]="etcTotalTpl"
+                [nzScroll]="{ x: '1000px', y: 'calc(100vh - 420px)' }">
+        <thead>
+          <tr>
+            <th class="text-center" nzWidth="60px">{{ 'common.stt' | translate:'STT' }}</th>
+            <th nzWidth="170px">{{ 'edu.systemManager.PEIXUNLEIXING.a' | translate:'Loại hình' }}</th>
+            <th>{{ 'edu.trainCostMANAGER.PEIXUNMINGCHENGQICI.a' | translate:'Tên đào tạo (lần)' }}</th>
+            <th class="text-end" nzWidth="130px">{{ 'edu.trainCostMANAGER.YUJIFEIYONG.a' | translate:'Dự tính chi phí' }}</th>
+            <th class="text-end" nzWidth="130px">{{ 'edu.trainCostMANAGER.FEIYONGHEJI.a' | translate:'Tổng chi phí' }}</th>
+            <th class="text-end" nzWidth="140px">{{ 'edu.trainCostMANAGER.RENJUNFEIYONG.a' | translate:'Bình quân mỗi người' }}</th>
+            <th class="text-center" nzWidth="200px">{{ 'edu.trainBasicInformation.PEIXUNSHISHIQIJIAN.a' | translate:'Thời gian' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!loading() && filteredRows().length === 0">
+            <td colspan="7" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+          </tr>
+          <tr *ngFor="let row of etcTable.data; let i = index" class="etc-row"
+              [class.etc-row-selected]="selected()?.costNo === row.costNo"
+              (click)="selected.set(row)" (dblclick)="openEditModal(row)">
+            <td class="text-center">{{ (pageIndex - 1) * pageSize + i + 1 }}</td>
+            <td>{{ row.trainTypeCodeName }}</td>
+            <td>{{ courseTitle(row) }}</td>
+            <td class="text-end">{{ row.budget }}</td>
+            <td class="text-end">{{ row.allCost }}</td>
+            <td class="text-end">{{ row.avgCost }}</td>
+            <td class="text-center">{{ row.impleStartDate }} ~ {{ row.impleEndDate }}</td>
+          </tr>
+        </tbody>
+        <ng-template #etcTotalTpl let-total>{{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}</ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>
+
+<!-- Modal sửa chi phí - bấm ra ngoài modal sẽ đóng (nzMaskClosable) -->
+<nz-modal [nzVisible]="modalVisible()" nzWidth="860px" [nzMaskClosable]="true" (nzOnCancel)="closeModal()"
+          [nzTitle]="'edu.trainCost.editTitle' | translate:'Sửa chi phí đào tạo'">
+  <ng-container *nzModalContent>
+    <ng-container *ngIf="form">
+      <div class="fw-semibold mb-2">{{ form.trainTypeCodeName }} - {{ courseTitle(form) }}</div>
+      <div class="row g-3">
+        <div class="col-md-4" *ngFor="let c of costFields">
+          <label class="form-label fw-semibold" [attr.for]="'etcForm_' + c.field">{{ c.key | translate:c.fallback }}</label>
+          <input nz-input [id]="'etcForm_' + c.field" [name]="'etcForm_' + c.field" inputmode="decimal" [(ngModel)]="form[c.field]">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-semibold" for="etcFormRemark">{{ 'ar.viewarcardrecord.title.beizhu' | translate:'Ghi chú' }}</label>
+          <input nz-input id="etcFormRemark" name="etcFormRemark" maxlength="500" [(ngModel)]="form.remark">
+        </div>
+        <div class="col-12">
+          <div class="etc-summary">
+            <span>{{ 'edu.trainCostMANAGER.FEIYONGHEJI.a' | translate:'Tổng chi phí' }}: <b>{{ total | number:'1.0-2' }}</b></span>
+            <span>{{ 'edu.trainCostMANAGER.FEIYONGHEJIRENJUN.a' | translate:'Tổng chi phí (đầu người)' }}: <b class="text-danger">{{ perPerson | number }}</b></span>
+            <span>{{ 'edu.trainCostMANAGER.ZHIJIEJINGFEI.a' | translate:'Chi phí trực tiếp' }}: <b class="text-danger">{{ direct | number:'1.0-2' }}</b></span>
+            <span>{{ 'edu.trainCostMANAGER.JIANJIEJINGFEI.a' | translate:'Chi phí gián tiếp' }}: <b class="text-danger">{{ total - direct | number:'1.0-2' }}</b></span>
+          </div>
+        </div>
+        <div class="col-12">
+          <label class="form-label fw-semibold">{{ 'hr.viewBadArchives.title.FILE' | translate:'File' }}</label>
+          <app-edu-file-attach #etcFiles applyType="eduCostManager" [files]="formFiles"></app-edu-file-attach>
+        </div>
+      </div>
+    </ng-container>
+  </ng-container>
+  <ng-template [nzModalFooter]>
+    <button nz-button type="button" class="etc-btn-export" (click)="exportOne()">
+      <i class="bx bx-spreadsheet"></i> {{ 'common.exportExcel' | translate:'Xuất Excel' }}
+    </button>
+    <button nz-button type="button" (click)="closeModal()">{{ 'common.close' | translate:'Đóng' }}</button>
+    <button nz-button nzType="primary" type="button" [nzLoading]="saving()" (click)="saveForm()">{{ 'common.save' | translate:'Lưu' }}</button>
+  </ng-template>
+</nz-modal>

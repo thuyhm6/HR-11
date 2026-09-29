@@ -1,6 +1,8 @@
 package com.ait.ess.tempEmp.service.impl;
 
+import com.ait.ess.tempEmp.dto.MonthDetailDateDto;
 import com.ait.ess.tempEmp.dto.MonthDetailListDto;
+import com.ait.ess.tempEmp.dto.MonthDetailViewDto;
 import com.ait.ess.tempEmp.mapper.MonthDetailListMapper;
 import com.ait.ess.tempEmp.service.MonthDetailListService;
 import com.ait.sy.sys.dto.DataTablesResponse;
@@ -18,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,6 +44,26 @@ public class MonthDetailListServiceImpl implements MonthDetailListService {
             return new DataTablesResponse<>(params.getDraw(), total, total, list);
         } catch (Exception e) {
             log.error("Lỗi khi lấy danh sách chi tiết chấm công tháng: {}", e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    /**
+     * Dữ liệu màn hình viewMonthDetailList (bản gốc TempEmpCtroller.viewMonthDetailList): lịch ngày trong kỳ công
+     * (viewFixedDateList) + danh sách nhân viên (getMonthDetailRealTimeList = selectSalaryReport, dùng chung với
+     * báo cáo 305 để số liệu trên màn hình và file Excel luôn khớp nhau).
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public MonthDetailViewDto getDetailView(MonthDetailListDto params) {
+        log.info("Tra cứu chi tiết chấm công tháng: month={}, year={}, deptNos={}", params.getMonth(), params.getYear(), params.getDeptNos());
+        try {
+            List<MonthDetailDateDto> dates = mapper.selectFixedDateList(params);
+            List<Map<String, Object>> rows = mapper.selectSalaryReport(params);
+            log.info("Tra cứu chi tiết chấm công tháng: {} ngày, {} nhân viên", dates.size(), rows.size());
+            return new MonthDetailViewDto(dates, rows);
+        } catch (Exception e) {
+            log.error("Lỗi khi tra cứu chi tiết chấm công tháng: {}", e.getMessage(), e);
             throw e;
         }
     }

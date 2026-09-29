@@ -1,0 +1,124 @@
+<app-edu-course-list idPrefix="etr" [rows]="rows()" [loading]="loading()" [errorMessage]="errorMessage()"
+                     [selected]="selected()" [highlight]="highlight"
+                     [extraColumnTitle]="'inct.salesman.eval.result' | translate:'Kết quả'" [extraColumnTpl]="etrResultTpl"
+                     (search)="search($event)" (rowSelect)="selected.set($event)" (rowDblClick)="openEvaluate($event)">
+</app-edu-course-list>
+
+<!-- Cột "Kết quả": Chưa/Đã đánh giá (mở trang đánh giá) + Xem (bản gốc trainResult.jsp) -->
+<ng-template #etrResultTpl let-row>
+  <a class="etr-link" [class.etr-done]="(row.resultCount ?? 0) > 0" (click)="openEvaluate(row)">
+    {{ (row.resultCount ?? 0) > 0 ? ('edu.teacherEvaluate.YIKAOPING.a' | translate:'Đã đánh giá') : ('edu.teacherEvaluate.WEIKAOPING.a' | translate:'Chưa đánh giá') }}
+  </a>
+  &nbsp;
+  <a class="etr-link" (click)="openView(row)">{{ 'button.sys.view' | translate:'Xem' }}</a>
+</ng-template>
+
+<!-- Modal đánh giá khóa học - bấm ra ngoài modal sẽ đóng (nzMaskClosable) -->
+<nz-modal [nzVisible]="evaluateVisible()" nzWidth="980px" [nzMaskClosable]="true" (nzOnCancel)="evaluateVisible.set(false)"
+          [nzTitle]="'inct.salesman.eval.result' | translate:'Kết quả'" [nzFooter]="null">
+  <ng-container *nzModalContent>
+    <app-edu-basic-header [basic]="basic()"></app-edu-basic-header>
+    <div class="d-flex gap-2 flex-wrap align-items-center mb-2">
+      <span class="fw-semibold">{{ 'edu.trainResult.KAOPINGRENYUAN.a' | translate:'Nhân viên đánh giá' }}:</span>
+      <a class="etr-link" id="etrBtnDetails" (click)="openDetails()">{{ 'button.sys.view' | translate:'Xem' }}</a>
+      <ng-container *ngIf="manager()">
+        <input #etrImportInput type="file" accept=".xlsx,.xls" class="d-none" (change)="onImportFile($event)">
+        <button nz-button nzSize="small" type="button" id="etrBtnImport" (click)="etrImportInput.click()">
+          <i class="bx bx-upload"></i> {{ 'common.importExcel' | translate:'Import Excel' }}
+        </button>
+        <button nz-button nzSize="small" type="button" id="etrBtnTemplate" (click)="downloadTemplate()">
+          <i class="bx bx-download"></i> {{ 'common.downloadTemplate' | translate:'Tải File Mẫu' }}
+        </button>
+      </ng-container>
+    </div>
+    <nz-table #etrSummaryTable [nzData]="summary()" nzSize="small" [nzShowPagination]="false" nzBordered>
+      <thead>
+        <tr>
+          <th>{{ 'hrm.contract.distinguish' | translate:'Phân loại' }}</th>
+          <th *ngFor="let l of levels" class="text-center" nzWidth="100px">{{ l.key | translate:l.fallback }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let d of etrSummaryTable.data">
+          <td class="fw-semibold">{{ criterionLabel(d.key) }}</td>
+          <td *ngFor="let l of levels" class="text-center">{{ percent(d, l.field) }}</td>
+        </tr>
+      </tbody>
+    </nz-table>
+    <div class="mt-3">
+      <label class="form-label fw-semibold">{{ 'edu.trainResult.PEIXUNBAOGAO.a' | translate:'Báo cáo' }}</label>
+      <app-edu-file-attach #etrFiles applyType="eduTrainResult" [files]="files()" [readonly]="!manager()"></app-edu-file-attach>
+      <button *ngIf="manager()" nz-button nzType="primary" nzSize="small" type="button" id="etrBtnSaveFiles" class="mt-2"
+              [nzLoading]="savingFiles()" (click)="saveFiles()">
+        {{ 'common.save' | translate:'Lưu' }}
+      </button>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal phiếu từng học viên (bản gốc checkTrainResultTSTOInfoPer) -->
+<nz-modal [nzVisible]="detailsVisible()" nzWidth="860px" [nzMaskClosable]="true" (nzOnCancel)="detailsVisible.set(false)"
+          [nzTitle]="'edu.trainResult.KAOPINGRENYUAN.a' | translate:'Nhân viên đánh giá'" [nzFooter]="null">
+  <ng-container *nzModalContent>
+    <ng-container *ngTemplateOutlet="etrDetailTable; context: { $implicit: details(), full: false }"></ng-container>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal xem (bản gốc alreadyTrainResultInfoSingle) -->
+<nz-modal [nzVisible]="viewVisible()" nzWidth="1080px" [nzMaskClosable]="true" (nzOnCancel)="viewVisible.set(false)"
+          [nzTitle]="'pa.salary.title.fullInfo' | translate:'Thông tin chi tiết'" [nzFooter]="null">
+  <ng-container *nzModalContent>
+    <app-edu-basic-header [basic]="basic()"></app-edu-basic-header>
+    <div class="d-flex gap-4 flex-wrap align-items-center mb-2">
+      <span>{{ 'edu.trainResult.PINGJIAJIEGUO.a' | translate:'Kết quả đánh giá (Giá trị TB)' }}: <b class="text-danger">{{ average() }}</b></span>
+      <span>{{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ scoredDetails().length }}</span>
+      <button nz-button nzSize="small" type="button" id="etrBtnExport" class="etr-btn-export" (click)="exportDetails()">
+        <i class="bx bx-spreadsheet"></i> {{ 'common.exportExcel' | translate:'Xuất Excel' }}
+      </button>
+    </div>
+    <ng-container *ngTemplateOutlet="etrDetailTable; context: { $implicit: scoredDetails(), full: true }"></ng-container>
+    <div class="mt-3">
+      <label class="form-label fw-semibold">{{ 'edu.trainResult.PEIXUNBAOGAO.a' | translate:'Báo cáo' }}</label>
+      <div *ngIf="files().length === 0" class="text-muted small">{{ 'common.noData' | translate:'Không có dữ liệu' }}</div>
+      <div *ngFor="let f of files(); let i = index">
+        <a [href]="downloadUrl(f)" target="_blank" rel="noopener">{{ i + 1 }}. {{ f.fileName }}</a>
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Bảng phiếu từng học viên dùng chung cho 2 modal trên -->
+<ng-template #etrDetailTable let-list let-full="full">
+  <nz-table #etrDetails [nzData]="list" nzSize="small" [nzPageSize]="20" [nzShowPagination]="list.length > 20"
+            [nzScroll]="{ x: '800px', y: '360px' }">
+    <thead>
+      <tr>
+        <th class="text-center" nzWidth="50px">{{ 'common.stt' | translate:'STT' }}</th>
+        <th nzWidth="110px">{{ 'alert.pa.pasalarycanshu.shehao' | translate:'Mã nhân viên' }}</th>
+        <th nzWidth="150px">{{ 'edu.trainResult.PINGJIAZHE.a' | translate:'Người đánh giá' }}</th>
+        <th class="text-center">{{ criterionLabel('PRACTICABILITY') }}</th>
+        <th class="text-center">{{ criterionLabel('CONTENT_RICH') }}</th>
+        <th class="text-center">{{ criterionLabel('TIME_MODERATE') }}</th>
+        <th class="text-center">{{ criterionLabel('DIFFICULTY') }}</th>
+        <th *ngIf="full" class="text-center" nzWidth="80px">{{ 'ess.viewpersonalpainfo.heji' | translate:'Tổng' }}</th>
+        <th *ngIf="full">{{ 'hr.viewSuggestion.title.Suggestion' | translate:'Ý kiến' }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let d of etrDetails.data; let i = index">
+        <td class="text-center">{{ i + 1 }}</td>
+        <td>{{ d.stuEmpId }}</td>
+        <td>{{ d.stuLocalName }}</td>
+        <td class="text-center">{{ d.practicability }}</td>
+        <td class="text-center">{{ d.contentRich }}</td>
+        <td class="text-center">{{ d.timeModerate }}</td>
+        <td class="text-center">{{ d.difficulty }}</td>
+        <td *ngIf="full" class="text-center">{{ d.allscore }}</td>
+        <td *ngIf="full">{{ d.otherAdvise }}</td>
+      </tr>
+    </tbody>
+  </nz-table>
+</ng-template>
+
+<app-edu-import-errors [visible]="importErrorVisible()" (visibleChange)="importErrorVisible.set($event)"
+                       [errors]="importErrors()"></app-edu-import-errors>

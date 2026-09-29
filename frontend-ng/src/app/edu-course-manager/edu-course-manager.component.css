@@ -1,0 +1,13 @@
+.ecm-row {
+  cursor: pointer;
+}
+
+/* Dòng đang chọn - đích của nút Sửa (thay màu #aaccf6 của xuanzhongCou() bản JSP) */
+.ecm-row.ecm-row-selected > td,
+.ecm-row.ecm-row-selected:hover > td {
+  background: #e6f4ff;
+}
+
+.ecm-quick-filter {
+  max-width: 260px;
+}

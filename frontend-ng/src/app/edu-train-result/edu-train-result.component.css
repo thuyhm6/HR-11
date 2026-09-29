@@ -1,0 +1,14 @@
+.etr-link {
+  color: #1677ff;
+  cursor: pointer;
+}
+
+/* Bản gốc: khóa đã đánh giá hiển thị màu đỏ */
+.etr-link.etr-done {
+  color: #cf1322;
+}
+
+.etr-btn-export {
+  color: #52c41a;
+  border-color: #52c41a;
+}

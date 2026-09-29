@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ait.ess.viewDept.mapper.UseOfAnnualLeaveMapper">
+
+    <resultMap id="UseOfAnnualLeaveResultMap" type="com.ait.ess.viewDept.dto.UseOfAnnualLeaveDto">
+        <result column="PERSON_ID"     property="personId"    jdbcType="VARCHAR" />
+        <result column="EMPID"         property="empId"       jdbcType="VARCHAR" />
+        <result column="LOCAL_NAME"    property="localName"   jdbcType="VARCHAR" />
+        <result column="DEPTNO"        property="deptNo"      jdbcType="VARCHAR" />
+        <result column="DEPTNAME"      property="deptName"    jdbcType="VARCHAR" />
+        <result column="DATE_STARTED"  property="dateStarted" jdbcType="VARCHAR" />
+        <result column="VAC_ID"        property="vacId"       jdbcType="VARCHAR" />
+        <result column="STRT_DATE"     property="strtDate"    jdbcType="VARCHAR" />
+        <result column="END_DATE"      property="endDate"     jdbcType="VARCHAR" />
+        <result column="TOTAL_VAC"     property="totalVac"    jdbcType="VARCHAR" />
+        <result column="TOT_VAC_CNT"   property="totVacCnt"   jdbcType="VARCHAR" />
+        <result column="ADD_VAC"       property="addVac"      jdbcType="VARCHAR" />
+        <result column="LAST_YEAR_VAC" property="lastYearVac" jdbcType="VARCHAR" />
+        <result column="USED_VAC"      property="usedVac"     jdbcType="VARCHAR" />
+        <result column="REMAIN_VAC"    property="remainVac"   jdbcType="VARCHAR" />
+    </resultMap>
+
+    <!--
+        Tình trạng sử dụng phép năm - chuyển đổi từ sqlDeptPer.xml#viewUseOfAnnualLeaveList (Hanwha_HTSV).
+        Công thức cột giữ NGUYÊN như JSP cũ:
+          TOTAL_VAC  = TOT_VAC_CNT + ADD_VAC + LAST_YEAR_VAC
+          USED_VAC   = USE_VAC(CONFIRM) + AFFIRM_USE_VAC + USE_VAC_CNT
+          REMAIN_VAC = TOTAL_VAC - USED_VAC
+        Tính trong subquery V để AR_USE_VACATION chỉ gọi 1 lần/dòng (bản cũ tính cộng/trừ trên JSP).
+        Phạm vi xem: cây phòng ban quản lý (MANAGER_EMP_ID) + AR_SUPERVISOR_INFO - giống bản cũ và
+        thống nhất với YearUseInfoListMapper / ManageEmpPositionInfoMapper của dự án mới.
+    -->
+    <select id="selectList" parameterType="com.ait.ess.viewDept.dto.UseOfAnnualLeaveDto"
+            resultMap="UseOfAnnualLeaveResultMap">
+        SELECT V.PERSON_ID,
+               V.EMPID,
+               V.LOCAL_NAME,
+               V.DEPTNO,
+               V.DEPTNAME,
+               V.DATE_STARTED,
+               V.VAC_ID,
+               V.STRT_DATE,
+               V.END_DATE,
+               TO_CHAR(V.TOT_VAC_CNT + V.ADD_VAC + V.LAST_YEAR_VAC)                AS TOTAL_VAC,
+               TO_CHAR(V.TOT_VAC_CNT)                                              AS TOT_VAC_CNT,
+               TO_CHAR(V.ADD_VAC)                                                  AS ADD_VAC,
+               TO_CHAR(V.LAST_YEAR_VAC)                                            AS LAST_YEAR_VAC,
+               TO_CHAR(V.USE_VAC + V.AFFIRM_USE_VAC + V.USE_VAC_CNT)               AS USED_VAC,
+               TO_CHAR(V.TOT_VAC_CNT + V.ADD_VAC + V.LAST_YEAR_VAC
+                       - V.USE_VAC - V.AFFIRM_USE_VAC - V.USE_VAC_CNT)             AS REMAIN_VAC
+        FROM (
+            SELECT HR.PERSON_ID,
+                   HR.EMPID,
+                   HR.LOCAL_NAME,
+                   HR.DEPTNO,
+                   GET_DEPT_NAME(HR.DEPTNO, #{lang, jdbcType=VARCHAR})       AS DEPTNAME,
+                   TO_CHAR(HR.DATE_STARTED, 'DD/MM/YYYY')                     AS DATE_STARTED,
+                   VAC.VAC_ID,
+                   TO_CHAR(VAC.STRT_DATE, 'DD/MM/YYYY')                       AS STRT_DATE,
+                   TO_CHAR(VAC.END_DATE,  'DD/MM/YYYY')                       AS END_DATE,
+                   NVL(VAC.TOT_VAC_CNT, 0)                                    AS TOT_VAC_CNT,
+                   NVL(VAC.ADD_VAC, 0)                                        AS ADD_VAC,
+                   NVL(VAC.LAST_YEAR_VAC, 0)                                  AS LAST_YEAR_VAC,
+                   NVL(VAC.USE_VAC_CNT, 0)                                    AS USE_VAC_CNT,
+                   NVL(AR_USE_VACATION(TO_CHAR(VAC.STRT_DATE, 'YYYY/MM/DD'), TO_CHAR(VAC.END_DATE, 'YYYY/MM/DD'),
+                                       HR.CPNY_ID, HR.PERSON_ID, 'CONFIRM'), 0) AS USE_VAC,
+                   NVL(AR_USE_VACATION(TO_CHAR(VAC.STRT_DATE, 'YYYY/MM/DD'), TO_CHAR(VAC.END_DATE, 'YYYY/MM/DD'),
+                                       HR.CPNY_ID, HR.PERSON_ID, 'AFFIRM'), 0)  AS AFFIRM_USE_VAC
+            FROM AR_VAC_EMP VAC
+            INNER JOIN HR_EMPLOYEE HR ON VAC.PERSON_ID = HR.PERSON_ID
+            WHERE VAC.ACTIVITY = 1
+              AND VAC.CPNY_ID  = #{cpnyId, jdbcType=VARCHAR}
+              AND VAC.PERSON_ID NOT LIKE '111111%'
+              AND VAC.VAC_ID   = #{year, jdbcType=VARCHAR}
+              AND EXISTS (
+                  SELECT B1.DEPTID
+                  FROM HR_DEPARTMENT B1
+                  WHERE B1.DEPTNO = HR.DEPTNO
+                  START WITH B1.DEPTNO IN (
+                      SELECT HRD.DEPTID
+                      FROM HR_DEPARTMENT HRD
+                      WHERE HRD.MANAGER_EMP_ID = #{adminID, jdbcType=VARCHAR}
+                  )
+                  CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+                  UNION
+                  SELECT ASI.DEPTNO
+                  FROM AR_SUPERVISOR_INFO ASI
+                  WHERE ASI.DEPTNO = HR.DEPTNO
+                    AND ASI.PERSON_ID = #{adminID, jdbcType=VARCHAR}
+              )
+            <if test="keyword != null and keyword != ''">
+              AND (
+                  HR.EMPID LIKE '%' || #{keyword, jdbcType=VARCHAR} || '%'
+                  OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{keyword, jdbcType=VARCHAR})) || '%'
+                  OR HR.ENGLISH_NAME LIKE '%' || #{keyword, jdbcType=VARCHAR} || '%'
+              )
+            </if>
+            <if test="deptNos != null and deptNos != ''">
+              AND INSTR(',' || #{deptNos, jdbcType=VARCHAR} || ',', ',' || HR.DEPTNO || ',') &gt; 0
+            </if>
+            <if test="empTypeCode != null and empTypeCode != ''">
+              AND HR.EMP_TYPE_CODE = #{empTypeCode, jdbcType=VARCHAR}
+            </if>
+            <if test="empOffice != null and empOffice != ''">
+              AND HR.EMP_OFFICE = #{empOffice, jdbcType=VARCHAR}
+            </if>
+        ) V
+        ORDER BY V.DEPTNO, V.EMPID
+    </select>
+
+</mapper>

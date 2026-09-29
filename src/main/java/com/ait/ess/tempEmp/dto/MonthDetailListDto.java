@@ -31,6 +31,8 @@ public class MonthDetailListDto {
     private String quickFilter;
     private String deptNos;
     private String empTypeCode;
+    private String nationalityCode;
+    private String empOffice;
     private String month;
     private String year;
     private String reportType;

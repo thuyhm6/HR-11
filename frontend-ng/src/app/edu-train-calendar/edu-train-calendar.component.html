@@ -1,0 +1,114 @@
+<div class="etcal-wrap">
+  <!-- Chọn tháng (bản gốc: nút tháng trước / sau + chọn năm, tháng) -->
+  <div class="etcal-toolbar">
+    <div class="etcal-nav">
+      <button nz-button nzShape="circle" type="button" id="etcalBtnPrev"
+              [attr.title]="'cccal.btn.prevMonth' | translate:'Tháng trước'" (click)="prevMonth()">
+        <i class="bx bx-chevron-left"></i>
+      </button>
+      <nz-select id="etcalMonth" class="etcal-month" [(ngModel)]="selectedMonth" (ngModelChange)="search()">
+        <nz-option *ngFor="let m of monthOptions" [nzValue]="m" [nzLabel]="monthKeys[m - 1] | translate:('Tháng ' + m)"></nz-option>
+      </nz-select>
+      <nz-select id="etcalYear" class="etcal-year" [(ngModel)]="selectedYear" (ngModelChange)="search()">
+        <nz-option *ngFor="let y of yearOptions" [nzValue]="y" [nzLabel]="'' + y"></nz-option>
+      </nz-select>
+      <button nz-button nzShape="circle" type="button" id="etcalBtnNext"
+              [attr.title]="'cccal.btn.nextMonth' | translate:'Tháng sau'" (click)="nextMonth()">
+        <i class="bx bx-chevron-right"></i>
+      </button>
+    </div>
+    <button nz-button type="button" id="etcalBtnSearch" (click)="search()">
+      <i class="bx bx-refresh"></i> {{ 'common.search' | translate:'Tìm kiếm' }}
+    </button>
+  </div>
+
+  <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="my-2"></nz-alert>
+
+  <!-- Lưới tháng -->
+  <nz-spin [nzSpinning]="loading()">
+    <div class="etcal-grid">
+      <div class="etcal-hrow">
+        <div *ngFor="let d of weekDays; let i = index" class="etcal-hcell"
+             [class.is-sun]="i === 0" [class.is-sat]="i === 6">{{ d.key | translate:d.fallback }}</div>
+      </div>
+      <div class="etcal-week" *ngFor="let week of weeks()">
+        <div *ngFor="let cell of week" class="etcal-day" [class.is-empty]="!cell.day" [class.is-today]="cell.isToday"
+             [class.has-items]="cell.items.length > 0">
+          <ng-container *ngIf="cell.day">
+            <div class="etcal-day-num" [class.is-sun]="cell.isSunday" [class.is-sat]="cell.isSaturday">{{ cell.day }}</div>
+            <a *ngFor="let it of cell.items" class="etcal-item" [attr.title]="courseTitle(it.courseNameCode, it.periodTime)"
+               (click)="openDetail(it)">
+              <span class="etcal-item-time" *ngIf="it.startTime">{{ it.startTime }}<ng-container *ngIf="it.endTime"> - {{ it.endTime }}</ng-container></span>
+              <span class="etcal-item-name">{{ courseTitle(it.courseNameCode, it.periodTime) }}</span>
+            </a>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+  </nz-spin>
+</div>
+
+<!-- Chi tiết kế hoạch + lịch học (bản gốc trainCalendarDetail.jsp + syllabusInfo.jsp) - bấm ra ngoài modal sẽ đóng -->
+<nz-modal [nzVisible]="detailVisible()" nzWidth="900px" [nzMaskClosable]="true" (nzOnCancel)="closeDetail()"
+          [nzTitle]="'edu.trainCalendar.detailTitle' | translate:'Chi tiết kế hoạch đào tạo'" [nzFooter]="etcalDetailFooter">
+  <ng-container *nzModalContent>
+    <nz-spin [nzSpinning]="detailLoading()">
+      <ng-container *ngIf="detailPlan() as p">
+        <nz-descriptions nzBordered nzSize="small" [nzColumn]="{ xxl: 2, xl: 2, lg: 2, md: 2, sm: 1, xs: 1 }">
+          <nz-descriptions-item [nzTitle]="'edu.trainResult.KECHENGFENLEI.a' | translate:'Loại hình đào tạo'">{{ p.trainTypeCodeName }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'ar.viewarcardrecord.title.beizhu' | translate:'Ghi chú'">{{ p.trainPersonRemark }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'empsubject.subjectNm' | translate:'Tên đào tạo'">{{ courseTitle(p.courseNameCode, p.periodTime) }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'empsubject.eduRm' | translate:'Địa điểm đào tạo'">{{ p.trainAddress }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'edu.planManager.ZHUGUANBUMEN.a' | translate:'Bộ phận quản lý'">{{ p.departManaCodeName || p.departManaCode }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'edu.planManager.PEIXUNRENSHU.a' | translate:'Số người'">{{ p.trainPersonCount }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'edu.trainBasicInformation.PEIXUNFANGSHI.a' | translate:'Hình thức đào tạo'">{{ p.trainFormCodeName }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'edu.planManager.PEIXUNKESHI.a' | translate:'Thời lượng'">{{ classHour(p) }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'edu.planManager.JIANGSHI.a' | translate:'Giảng viên'">{{ p.teacherName }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'edu.planManager.SHIFOUXUYAOKAOSHI.a' | translate:'Kiểm tra'">{{ yesNo(p.isnotTest === 'Y') }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'edu.planManager.YUSUANFEIYONG.a' | translate:'Dự tính chi phí'">{{ p.budget }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'edu.trainResult.SHIFOUXUYAOXUEYUANPINGJIA.a' | translate:'Đánh giá học viên'">{{ yesNo(hasEvaluate(p, '1')) }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'edu.planManager.JIHUAKAISHISHIJIAN.a' | translate:'Ngày bắt đầu'">{{ p.planStartdate }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'edu.trainResult.SHIFOUXUYAOJIANGSHIPINGJIA.a' | translate:'Đánh giá giảng viên'">{{ yesNo(hasEvaluate(p, '2')) }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'edu.planManager.JIHUAJIESHUSHIJIAN.a' | translate:'Ngày kết thúc'">{{ p.planEnddate }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'edu.planManager.SHIFOUXUYAOPEIXUNPINGJIA.a' | translate:'Đánh giá đào tạo'">{{ yesNo(hasEvaluate(p, '3')) }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'edu.planManager.SHIFOUXUYAOPEIXUNBAOGAO.a' | translate:'Báo cáo đào tạo'">{{ yesNo(p.isnotReport === 'Y') }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'edu.planManager.SHIFOUYUNXUSHENQING.a' | translate:'Cho phép đăng ký'">{{ yesNo(p.isnotApply === 'Y') }}</nz-descriptions-item>
+        </nz-descriptions>
+
+        <h6 class="mt-3 mb-2">
+          {{ 'edu.planManager.KECHENGBIAO.a' | translate:'Lịch học' }}
+          <span class="etcal-selected-day">({{ 'edu.trainCalendar.selectedDay' | translate:'Ngày đang xem' }}: {{ detailDate }})</span>
+        </h6>
+        <nz-table #etcalSyllTable [nzData]="detailSyllabus()" nzSize="small" [nzShowPagination]="false"
+                  [nzScroll]="{ y: '260px' }">
+          <thead>
+            <tr>
+              <th class="text-center" nzWidth="60px">{{ 'common.stt' | translate:'STT' }}</th>
+              <th>{{ 'empsubject.subjectNm' | translate:'Tên đào tạo' }}</th>
+              <th class="text-center" nzWidth="120px">{{ 'edu.planManager.KECHENGRIQI.a' | translate:'Ngày học' }}</th>
+              <th class="text-center" nzWidth="100px">{{ 'ess.infoApply.title.startTime' | translate:'Giờ bắt đầu' }}</th>
+              <th class="text-center" nzWidth="100px">{{ 'ess.infoApply.title.endTime' | translate:'Giờ kết thúc' }}</th>
+              <th>{{ 'edu.planManager.XIANGXIDIDIAN.a' | translate:'Địa điểm' }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="etcalSyllTable.data.length === 0">
+              <td colspan="6" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+            </tr>
+            <tr *ngFor="let s of etcalSyllTable.data; let i = index" [class.etcal-syll-current]="s.courseDate === detailDate">
+              <td class="text-center">{{ i + 1 }}</td>
+              <td>{{ s.courseNameCode }}</td>
+              <td class="text-center">{{ s.courseDate }}</td>
+              <td class="text-center">{{ s.courseStartTime }}</td>
+              <td class="text-center">{{ s.courseEndTime }}</td>
+              <td>{{ s.detailAddress }}</td>
+            </tr>
+          </tbody>
+        </nz-table>
+      </ng-container>
+    </nz-spin>
+  </ng-container>
+  <ng-template #etcalDetailFooter>
+    <button nz-button type="button" id="etcalBtnCloseDetail" (click)="closeDetail()">{{ 'common.close' | translate:'Đóng' }}</button>
+  </ng-template>
+</nz-modal>

@@ -1,0 +1,77 @@
+<div class="row">
+  <div class="col-12">
+    <!-- Bộ lọc hiển thị sau lần tải đầu để biết có phải quản lý đào tạo (điều kiện phòng ban / nhân viên - bản gốc) -->
+    <app-edu-apply-filter *ngIf="initialized()" idPrefix="emstSearch" [showPerson]="manager()" [defaultMonth]="true"
+                          [flagOptions]="filterOptions" flagLabelKey="ess.infoApply.confirm_status" flagLabelFallback="Trạng thái"
+                          (search)="search($event)"></app-edu-apply-filter>
+
+    <nz-card>
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+      <div class="d-flex justify-content-end mb-2">
+        <input nz-input id="emstQuickFilter" class="emst-quick-filter" name="emstQuickFilter"
+               [ngModel]="quickFilter()" (ngModelChange)="onQuickFilterChange($event)"
+               [placeholder]="'common.quickFilter' | translate:'Lọc nhanh'">
+      </div>
+      <nz-table #emstTable [nzData]="filteredRows()" [nzLoading]="loading()" nzSize="small"
+                [(nzPageIndex)]="pageIndex" [(nzPageSize)]="pageSize" [nzPageSizeOptions]="pageSizeOptions"
+                [nzShowSizeChanger]="true" [nzShowTotal]="emstTotalTpl"
+                [nzScroll]="{ x: '2050px', y: 'calc(100vh - 460px)' }">
+        <thead>
+          <tr>
+            <th class="text-center" nzWidth="60px" nzLeft>{{ 'common.stt' | translate:'STT' }}</th>
+            <th nzWidth="110px" nzLeft>{{ 'ess.infoApply.EMPID' | translate:'Mã nhân viên' }}</th>
+            <th nzWidth="160px" nzLeft>{{ 'ess.viewApply.title.applyName' | translate:'Người đăng ký' }}</th>
+            <th nzWidth="170px">{{ 'hr.viewPersonalInfo.title.DEPTNAME' | translate:'Phòng ban' }}</th>
+            <th nzWidth="120px">{{ 'hr.viewPersonalInfo.title.POST_GRADE_NAME' | translate:'Chức vụ' }}</th>
+            <th nzWidth="150px">{{ 'edu.systemManager.PEIXUNLEIXING.a' | translate:'Loại hình' }}</th>
+            <th nzWidth="240px">{{ 'edu.trainArchives.KECHENGMINGCHENGQICI.a' | translate:'Tên khóa học (Kỳ)' }}</th>
+            <th class="text-center" nzWidth="190px">{{ 'edu.planManager.SHISHIRIQI.a' | translate:'Ngày thực hiện' }}</th>
+            <th class="text-center" nzWidth="100px">{{ 'edu.planManager.PEIXUNKESHI.a' | translate:'Thời lượng' }}</th>
+            <th class="text-center" nzWidth="90px">{{ 'edu.planManager.KECHENGBIAO.a' | translate:'Lịch học' }}</th>
+            <th class="text-center" nzWidth="115px">{{ 'edu.courseApply.applyDate' | translate:'Ngày đăng ký' }}</th>
+            <th nzWidth="200px">{{ 'pa.salarycode.affirm.reason' | translate:'Lý do' }}</th>
+            <th class="text-center" nzWidth="90px">{{ 'hrm.empinfo.PERSON_NUMBER' | translate:'Số lượng' }}</th>
+            <th nzWidth="200px">{{ 'ess.viewApply.title.affirmCondition' | translate:'Trạng thái duyệt' }}</th>
+            <th class="text-center" nzWidth="140px">{{ 'edu.courseConfirm.QUERENQINGKUANG.a' | translate:'Trạng thái xác nhận' }}</th>
+            <th class="text-center" nzWidth="90px" nzRight>{{ 'ess.affirmApply.title.quxiaoshenqing' | translate:'Hủy bỏ' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!loading() && filteredRows().length === 0">
+            <td colspan="16" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+          </tr>
+          <tr *ngFor="let row of emstTable.data; let i = index">
+            <td class="text-center" nzLeft>{{ (pageIndex - 1) * pageSize + i + 1 }}</td>
+            <td nzLeft>{{ row.empId }}</td>
+            <td nzLeft>{{ row.stuLocalName }}</td>
+            <td>{{ row.deptName }}</td>
+            <td>{{ row.postGradeName }}</td>
+            <td>{{ row.trainTypeCodeName }}</td>
+            <td>{{ courseTitle(row) }}</td>
+            <td class="text-center">{{ row.impleStartDate }} ~ {{ row.impleEndDate }}</td>
+            <td class="text-center">{{ classHour(row) }}</td>
+            <td class="text-center">
+              <a *ngIf="row.syllabusCount" class="emst-link" (click)="showSyllabus(row)">{{ 'edu.planManager.CHAKANKECHENGBIAO.a' | translate:'Xem' }}</a>
+            </td>
+            <td class="text-center">{{ row.applyDate }}</td>
+            <td>{{ row.applyTask }}</td>
+            <td class="text-center">{{ row.applyCount ?? 0 }}/{{ row.planCount ?? 0 }}</td>
+            <td>{{ row.makerLocalName }} <nz-tag [nzColor]="makerColor(row)">{{ makerStatus(row) }}</nz-tag></td>
+            <td class="text-center">
+              <nz-tag *ngIf="row.applyFlag === '2'" [nzColor]="confirmColor(row)">{{ confirmStatus(row) }}</nz-tag>
+            </td>
+            <td class="text-center" nzRight>
+              <button *ngIf="cancelable(row)" nz-button nzType="link" nzDanger nzSize="small" type="button"
+                      [id]="'emstBtnCancel_' + row.applyNo" (click)="cancel(row)">
+                {{ 'inct.salesman.button.cancelImport' | translate:'Hủy bỏ' }}
+              </button>
+            </td>
+          </tr>
+        </tbody>
+        <ng-template #emstTotalTpl let-total>{{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}</ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>
+
+<app-edu-syllabus-view #emstSyllabus></app-edu-syllabus-view>

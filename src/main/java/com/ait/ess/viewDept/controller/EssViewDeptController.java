@@ -19,6 +19,7 @@ import com.ait.ess.viewDept.dto.ManageEmpPositionInfoDto;
 import com.ait.ess.viewDept.dto.ManageEmpPositionInsideDto;
 import com.ait.ess.viewDept.dto.OtApplyPersonalSelfDetailDto;
 import com.ait.ess.viewDept.dto.OtApplyPersonalSelfDto;
+import com.ait.ess.viewDept.dto.UseOfAnnualLeaveDto;
 import com.ait.ess.viewDept.dto.YearUseLeaveUsageDto;
 import com.ait.ess.viewDept.dto.YearUseVacationDto;
 import com.ait.ess.viewDept.service.ArPersonalListService;
@@ -28,6 +29,7 @@ import com.ait.ess.viewDept.service.ManageCountInfoService;
 import com.ait.ess.viewDept.service.ManageEvsResultEmpService;
 import com.ait.ess.viewDept.service.ManageEmpPositionInfoService;
 import com.ait.ess.viewDept.service.OtApplyPersonalSelfService;
+import com.ait.ess.viewDept.service.UseOfAnnualLeaveService;
 import com.ait.ess.viewDept.service.WeeklyHrReportService;
 import com.ait.ess.viewDept.service.YearUseInfoService;
 import com.ait.evs.manage.dto.EvsObjectDto;
@@ -102,6 +104,9 @@ public class EssViewDeptController {
 
     @Autowired
     private YearUseInfoService yearUseInfoService;
+
+    @Autowired
+    private UseOfAnnualLeaveService useOfAnnualLeaveService;
 
     @Autowired
     private ArPersonalListService arPersonalListService;
@@ -283,6 +288,14 @@ public class EssViewDeptController {
     public ResponseEntity<List<YearUseLeaveUsageDto>> getYearUseLeaveUsage(
             @RequestParam(required = false) String year) {
         return ResponseEntity.ok(yearUseInfoService.getLeaveUsageList(year));
+    }
+
+    // Trang JSP viewUseOfAnnualLeaveList (Hanwha_HTSV) được chuyển sang Angular route /view-use-of-annual-leave-list
+
+    @GetMapping("/api/useOfAnnualLeave/list")
+    @ResponseBody
+    public ResponseEntity<List<UseOfAnnualLeaveDto>> getUseOfAnnualLeaveList(UseOfAnnualLeaveDto params) {
+        return ResponseEntity.ok(useOfAnnualLeaveService.getList(params));
     }
 
     // Trang Thymeleaf viewArPersonalList.html đã được thay bằng Angular route /view-ar-personal-list

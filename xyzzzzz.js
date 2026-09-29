@@ -2511,11 +2511,8 @@ hãy chuyển giao diện /ess/infoApply/viewCoordApplyOtInfoList.html này về
 
 hãy chuyển giao diện /evs/manage/viewResumeList.html này về dạng Angular + NG-ZORRO  (Frontend) dữ liệu hiển thị ra không dùng dataTables nữa mà dùng nz-table (tham khảo view-resume-list). sau khi hoàn thành thì có thể xóa file /evs/manage/viewResumeList.html cũ đi.
 
-
-
 hãy chuyển giao diện /sys/menu/viewMenuList.html này về dạng Angular + NG-ZORRO  (Frontend) dữ liệu hiển thị ra không dùng dataTables nữa mà dùng nz-table (tham khảo pa-month-person-info). sau khi hoàn thành thì có thể xóa file /sys/menu/viewMenuList.html cũ đi.
 hãy chuyển giao diện /sys/menu/viewMenuParamList.html này về dạng Angular + NG-ZORRO  (Frontend) dữ liệu hiển thị ra không dùng dataTables nữa mà dùng nz-table (tham khảo view-attendance-keeper). sau khi hoàn thành thì có thể xóa file /sys/menu/viewMenuParamList.html cũ đi.
-
 
 
 hãy chuyển giao diện /sys/rightsManagement/viewLoginUser.html này về dạng Angular + NG-ZORRO  (Frontend) dữ liệu hiển thị ra không dùng dataTables nữa mà dùng nz-table (tham khảo view-attendance-keeper). sau khi hoàn thành thì có thể xóa file /sys/rightsManagement/viewLoginUser.html cũ đi.
@@ -2538,3 +2535,19 @@ tạo mới giao diện /ess/infoApply/viewOverTimeLimtShenPiList - Theo dõi t�
 .
 
 Tạo mới lại cho tôi giao diện /ess/viewDept/viewDeptPersonalInfoManageList - Thông tin nhân sự với dạng Angular + NG-ZORRO  (Frontend). giao diện tham khảo hình ảnh. đây là một cách hiển thị khác của manage-emp-position-info
+
+Tôi đang thực hiện việc chuyển đổi dự án HR ở dự án D:\Java\WorkSpace\Hanwha_HTSV sang dự án này. Tạo mới cho tôi giao diện /sys/affirmSpecial/viewAffirmSpecialList - Phê duyệt đặc biệt với dạng Angular + NG-ZORRO  (Frontend). chức năng giống như /sys/affirmSpecial/viewAffirmSpecialList ở dự án D:\Java\WorkSpace\Hanwha_HTSV. chỉ là giao diện được chuyển sang Angular + NG-ZORRO  (Frontend) và tương thích với dự án mới này.
+
+Tương tự Tạo mới cho tôi giao diện /disc/autoExcel/viewRetrieveSqlMasterList - Tra cứu line phê duyệt với dạng Angular + NG-ZORRO  (Frontend). chức năng giống như /disc/autoExcel/viewRetrieveSqlMasterList ở dự án D:\Java\WorkSpace\Hanwha_HTSV. chỉ là giao diện được chuyển sang Angular + NG-ZORRO  (Frontend) và tương thích với dự án mới này. với modal, khi bấm chuột ra ngoài phạm vi modal thì sẽ đóng modal
+
+
+Tôi đang thực hiện việc chuyển đổi dự án HR ở dự án D:\Java\WorkSpace\Hanwha_HTSV sang dự án này. Tạo mới cho tôi giao diện /ess/viewDept/viewUseOfAnnualLeaveList với dạng Angular + NG-ZORRO  (Frontend). chức năng giống như ở dự án D:\Java\WorkSpace\Hanwha_HTSV. chỉ là giao diện được chuyển sang Angular + NG-ZORRO  (Frontend) và tương thích với dự án mới này.
+
+Tôi đang thực hiện việc chuyển đổi dự án HR ở dự án D:\Java\WorkSpace\Hanwha_HTSV sang dự án này. Chỉnh sửa lại cho tôi giao diện /ess/tempEmp/viewMonthDetailList với dạng Angular + NG-ZORRO  (Frontend). chức năng và giao diện hiển thị giống như ở dự án D:\Java\WorkSpace\Hanwha_HTSV. chỉ là giao diện được chuyển sang Angular + NG-ZORRO  (Frontend) và tương thích với dự án mới này.
+
+
+
+Tương tự Tạo mới cho tôi giao diện /edu/trainfile/trainCalendar, /report/ar/viewTrainReport và /edu/traineducation/trainArchives với dạng Angular + NG-ZORRO  (Frontend). chức năng giống như các giao diện tương ứng ở dự án D:\Java\WorkSpace\Hanwha_HTSV. chỉ là giao diện được chuyển sang Angular + NG-ZORRO  (Frontend) và tương thích với dự án mới này.
+
+
+/hrm/empinfo/viewHTSVCardInfoList.

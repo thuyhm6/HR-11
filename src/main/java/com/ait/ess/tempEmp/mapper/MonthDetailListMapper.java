@@ -1,5 +1,6 @@
 package com.ait.ess.tempEmp.mapper;
 
+import com.ait.ess.tempEmp.dto.MonthDetailDateDto;
 import com.ait.ess.tempEmp.dto.MonthDetailListDto;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -12,6 +13,8 @@ public interface MonthDetailListMapper {
     int countList(MonthDetailListDto params);
 
     List<MonthDetailListDto> selectListPage(MonthDetailListDto params);
+
+    List<MonthDetailDateDto> selectFixedDateList(MonthDetailListDto params);
 
     List<Map<String, Object>> selectSalaryReport(MonthDetailListDto params);
 

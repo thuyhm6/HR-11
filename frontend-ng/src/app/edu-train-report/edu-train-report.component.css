@@ -1,0 +1,34 @@
+.etrp-layout {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.etrp-side {
+  width: 250px;
+  flex-shrink: 0;
+}
+
+.etrp-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.etrp-menu {
+  border-inline-end: none !important;
+}
+
+.etrp-btn-export {
+  color: #52c41a;
+  border-color: #52c41a;
+}
+
+@media (max-width: 768px) {
+  .etrp-layout {
+    flex-direction: column;
+  }
+
+  .etrp-side {
+    width: 100%;
+  }
+}

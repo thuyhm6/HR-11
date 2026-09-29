@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+    Chuyển từ sqlEmpInfo.xml (iBatis) của dự án Hanwha_HTSV:
+      hrm.empinfo.experienceSearch / retireSearch / bidSearch / gradeSearch
+    Khác bản gốc: các điều kiện IN (...) dùng <foreach> + bind param thay cho $...$ (tránh SQL injection),
+    điều kiện phòng ban dùng CONNECT BY với tham số bind thay cho chuỗi SQL ghép ở Java.
+    #{cpnyId}, #{lang} do LanguageParameterInterceptor tự inject.
+-->
+<mapper namespace="com.ait.hrm.empinfo.mapper.HrInfoSearchMapper">
+
+    <!-- ═══════════════════ ResultMaps ═══════════════════ -->
+
+    <resultMap id="BaseInfoSearchResultMap" type="com.ait.hrm.empinfo.dto.HrInfoSearchResultDto">
+        <result column="PERSON_ID"       property="personId"      jdbcType="VARCHAR"/>
+        <result column="EMPID"           property="empId"         jdbcType="VARCHAR"/>
+        <result column="LOCAL_NAME"      property="localName"     jdbcType="VARCHAR"/>
+        <result column="DEPT_NAME"       property="deptName"      jdbcType="VARCHAR"/>
+        <result column="POST_GRADE_NAME" property="postGradeName" jdbcType="VARCHAR"/>
+        <result column="DATE_STARTED"    property="dateStarted"   jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <resultMap id="ExperienceSearchResultMap" type="com.ait.hrm.empinfo.dto.HrInfoSearchResultDto"
+               extends="BaseInfoSearchResultMap">
+        <result column="EXP_START_DATE" property="expStartDate" jdbcType="VARCHAR"/>
+        <result column="EXP_END_DATE"   property="expEndDate"   jdbcType="VARCHAR"/>
+        <result column="CPNY_NAME"      property="companyName"  jdbcType="VARCHAR"/>
+        <result column="POSITION"       property="position"     jdbcType="VARCHAR"/>
+        <result column="PAY_YEAR"       property="payYear"      jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <resultMap id="RetireSearchResultMap" type="com.ait.hrm.empinfo.dto.HrInfoSearchResultDto"
+               extends="BaseInfoSearchResultMap">
+        <result column="DATE_LEFT"          property="dateLeft"         jdbcType="VARCHAR"/>
+        <result column="CELLPHONE"          property="cellphone"        jdbcType="VARCHAR"/>
+        <result column="MAIN_BUSINESS_NAME" property="mainBusinessName" jdbcType="VARCHAR"/>
+        <result column="LEAVE_REASON_NAME"  property="leaveReasonName"  jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <resultMap id="BidSearchResultMap" type="com.ait.hrm.empinfo.dto.HrInfoSearchResultDto"
+               extends="BaseInfoSearchResultMap">
+        <result column="QUAL_NAME"      property="qualName"      jdbcType="VARCHAR"/>
+        <result column="DATE_OBTAINED"  property="dateObtained"  jdbcType="VARCHAR"/>
+        <result column="VALIDITY_DATE"  property="validityDate"  jdbcType="VARCHAR"/>
+        <result column="QUAL_LEVEL"     property="qualLevel"     jdbcType="VARCHAR"/>
+        <result column="QUAL_INSTITUTE" property="qualInstitute" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <resultMap id="GradeSearchResultMap" type="com.ait.hrm.empinfo.dto.HrInfoSearchResultDto"
+               extends="BaseInfoSearchResultMap">
+        <result column="POSITION_NAME" property="positionName" jdbcType="VARCHAR"/>
+        <result column="PROMOTION_DAY" property="promotionDay" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!-- ═══════════════════ SQL dùng chung ═══════════════════ -->
+
+    <sql id="baseColumns">
+        H.PERSON_ID,
+        H.EMPID,
+        H.LOCAL_NAME,
+        GET_DEPT_NAME(H.DEPTNO, #{lang, jdbcType=VARCHAR}) DEPT_NAME,
+        GET_GLOBAL_NAME(H.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}) POST_GRADE_NAME,
+        TO_CHAR(H.DATE_STARTED, 'DD/MM/YYYY') DATE_STARTED
+    </sql>
+
+    <!-- Điều kiện chung trên HR_EMPLOYEE (alias H) -->
+    <sql id="employeeFilters">
+           AND H.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+           AND H.EMPID NOT LIKE '111111%'
+        <if test="keyword != null and keyword != ''">
+           AND (H.EMPID LIKE '%' || #{keyword, jdbcType=VARCHAR} || '%'
+                OR CONVERTTOUNSIGN(UPPER(H.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{keyword, jdbcType=VARCHAR})) || '%')
+        </if>
+        <if test="deptNo != null and deptNo != ''">
+            <choose>
+                <when test="includeSubDept != null and includeSubDept">
+           AND H.DEPTNO IN (SELECT DEPTNO
+                              FROM HR_DEPARTMENT
+                             START WITH DEPTNO = #{deptNo, jdbcType=VARCHAR}
+                           CONNECT BY PRIOR DEPTNO = PARENT_DEPT_NO)
+                </when>
+                <otherwise>
+           AND H.DEPTNO = #{deptNo, jdbcType=VARCHAR}
+                </otherwise>
+            </choose>
+        </if>
+        <if test="postFamilies != null and postFamilies.size() > 0">
+           AND H.POST_FAMILY IN
+            <foreach collection="postFamilies" item="c" open="(" separator="," close=")">#{c, jdbcType=VARCHAR}</foreach>
+        </if>
+        <if test="gradeNos != null and gradeNos.size() > 0">
+           AND H.POST_GRADE_NO IN
+            <foreach collection="gradeNos" item="c" open="(" separator="," close=")">#{c, jdbcType=VARCHAR}</foreach>
+        </if>
+        <if test="mainBusinesses != null and mainBusinesses.size() > 0">
+           AND H.MAIN_BUSINESS IN
+            <foreach collection="mainBusinesses" item="c" open="(" separator="," close=")">#{c, jdbcType=VARCHAR}</foreach>
+        </if>
+        <if test="empTypeCodes != null and empTypeCodes.size() > 0">
+           AND H.EMP_TYPE_CODE IN
+            <foreach collection="empTypeCodes" item="c" open="(" separator="," close=")">#{c, jdbcType=VARCHAR}</foreach>
+        </if>
+        <if test="empOffices != null and empOffices.size() > 0">
+           AND H.EMP_OFFICE IN
+            <foreach collection="empOffices" item="c" open="(" separator="," close=")">#{c, jdbcType=VARCHAR}</foreach>
+        </if>
+        <if test="joinDateFrom != null and joinDateFrom != ''">
+           AND H.DATE_STARTED &gt;= TO_DATE(#{joinDateFrom, jdbcType=VARCHAR}, 'DD/MM/YYYY')
+        </if>
+        <if test="joinDateTo != null and joinDateTo != ''">
+           AND H.DATE_STARTED &lt;= TO_DATE(#{joinDateTo, jdbcType=VARCHAR}, 'DD/MM/YYYY')
+        </if>
+    </sql>
+
+    <!-- ═══════════════════ Tra cứu kinh nghiệm làm việc (experienceSearch) ═══════════════════ -->
+
+    <select id="selectExperienceSearch"
+            parameterType="com.ait.hrm.empinfo.dto.HrInfoSearchCriteriaDto"
+            resultMap="ExperienceSearchResultMap">
+        SELECT <include refid="baseColumns"/>,
+               TO_CHAR(W.START_DATE, 'DD/MM/YYYY') EXP_START_DATE,
+               TO_CHAR(W.END_DATE, 'DD/MM/YYYY') EXP_END_DATE,
+               W.CPNY_NAME,
+               W.POSITION,
+               TO_CHAR(W.PAY_YEAR) PAY_YEAR
+          FROM HR_EMPLOYEE H,
+               HR_WORK_EXPERIENCE W
+         WHERE H.PERSON_ID = W.PERSON_ID
+           AND W.ACTIVITY = '1'
+        <include refid="employeeFilters"/>
+        <if test="periodFrom != null and periodFrom != ''">
+           AND W.START_DATE &gt;= TO_DATE(#{periodFrom, jdbcType=VARCHAR}, 'DD/MM/YYYY')
+        </if>
+        <if test="periodTo != null and periodTo != ''">
+           AND W.END_DATE &lt;= TO_DATE(#{periodTo, jdbcType=VARCHAR}, 'DD/MM/YYYY')
+        </if>
+        <if test="companyName != null and companyName != ''">
+           AND UPPER(W.CPNY_NAME) LIKE '%' || UPPER(#{companyName, jdbcType=VARCHAR}) || '%'
+        </if>
+         ORDER BY H.EMPID, W.START_DATE DESC
+    </select>
+
+    <!-- ═══════════════════ Tra cứu nghỉ việc (retireSearch) ═══════════════════ -->
+
+    <select id="selectRetireSearch"
+            parameterType="com.ait.hrm.empinfo.dto.HrInfoSearchCriteriaDto"
+            resultMap="RetireSearchResultMap">
+        SELECT <include refid="baseColumns"/>,
+               TO_CHAR(H.DATE_LEFT, 'DD/MM/YYYY') DATE_LEFT,
+               P.CELLPHONE,
+               GET_GLOBAL_NAME(H.MAIN_BUSINESS, #{lang, jdbcType=VARCHAR}) MAIN_BUSINESS_NAME,
+               GET_GLOBAL_NAME(H.LIZHIREASON, #{lang, jdbcType=VARCHAR}) LEAVE_REASON_NAME
+          FROM HR_EMPLOYEE H,
+               HR_PERSONAL_INFO P
+         WHERE H.PERSON_ID = P.PERSON_ID(+)
+           AND H.EMP_OFFICE = '15120'
+        <include refid="employeeFilters"/>
+        <if test="periodFrom != null and periodFrom != ''">
+           AND H.DATE_LEFT &gt;= TO_DATE(#{periodFrom, jdbcType=VARCHAR}, 'DD/MM/YYYY')
+        </if>
+        <if test="periodTo != null and periodTo != ''">
+           AND H.DATE_LEFT &lt;= TO_DATE(#{periodTo, jdbcType=VARCHAR}, 'DD/MM/YYYY')
+        </if>
+         ORDER BY H.DATE_LEFT DESC NULLS LAST, H.EMPID
+    </select>
+
+    <!-- ═══════════════════ Tra cứu chứng chỉ (bidSearch) ═══════════════════ -->
+
+    <select id="selectBidSearch"
+            parameterType="com.ait.hrm.empinfo.dto.HrInfoSearchCriteriaDto"
+            resultMap="BidSearchResultMap">
+        SELECT <include refid="baseColumns"/>,
+               Q.QUAL_NAME,
+               TO_CHAR(Q.DATE_OBTAINED, 'DD/MM/YYYY') DATE_OBTAINED,
+               TO_CHAR(Q.VALIDITY_DATE, 'DD/MM/YYYY') VALIDITY_DATE,
+               Q.QUAL_LEVEL,
+               Q.QUAL_INSTITUTE
+          FROM HR_EMPLOYEE H,
+               HR_QUALIFICATION Q
+         WHERE H.PERSON_ID = Q.PERSON_ID
+           AND Q.ACTIVITY = '1'
+        <include refid="employeeFilters"/>
+        <if test="periodFrom != null and periodFrom != ''">
+           AND Q.DATE_OBTAINED &gt;= TO_DATE(#{periodFrom, jdbcType=VARCHAR}, 'DD/MM/YYYY')
+        </if>
+        <if test="periodTo != null and periodTo != ''">
+           AND Q.DATE_OBTAINED &lt;= TO_DATE(#{periodTo, jdbcType=VARCHAR}, 'DD/MM/YYYY')
+        </if>
+        <if test="qualName != null and qualName != ''">
+           AND UPPER(Q.QUAL_NAME) LIKE '%' || UPPER(#{qualName, jdbcType=VARCHAR}) || '%'
+        </if>
+        <if test="qualLevel != null and qualLevel != ''">
+           AND UPPER(Q.QUAL_LEVEL) LIKE '%' || UPPER(#{qualLevel, jdbcType=VARCHAR}) || '%'
+        </if>
+         ORDER BY H.EMPID, Q.DATE_OBTAINED DESC
+    </select>
+
+    <!-- ═══════════════════ Tra cứu chức cấp (gradeSearch) ═══════════════════ -->
+
+    <select id="selectGradeSearch"
+            parameterType="com.ait.hrm.empinfo.dto.HrInfoSearchCriteriaDto"
+            resultMap="GradeSearchResultMap">
+        SELECT <include refid="baseColumns"/>,
+               GET_GLOBAL_NAME(H.POSITION_NO, #{lang, jdbcType=VARCHAR}) POSITION_NAME,
+               SUBSTR(H.PROMOTION_DAY, 0, 7) PROMOTION_DAY
+          FROM HR_EMPLOYEE H
+         WHERE 1 = 1
+        <include refid="employeeFilters"/>
+         ORDER BY H.EMPID
+    </select>
+
+</mapper>

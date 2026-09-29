@@ -1,0 +1,13 @@
+.esm-row {
+  cursor: pointer;
+}
+
+/* Dòng đang chọn - đích của nút Sửa/Xóa (thay màu #aaccf6 của xuanzhong() bản JSP) */
+.esm-row.esm-row-selected > td,
+.esm-row.esm-row-selected:hover > td {
+  background: #e6f4ff;
+}
+
+.esm-quick-filter {
+  max-width: 260px;
+}

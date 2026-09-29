@@ -5,7 +5,6 @@ import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzButtonModule } from 'ng-zorro-antd/button';
-import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzTreeSelectModule } from 'ng-zorro-antd/tree-select';
@@ -41,7 +40,7 @@ const EMP_OFFICE_PARENT_CODE = '15118';
  * tra cứu phiếu lương của NHIỀU nhân viên theo phòng ban/họ tên/trạng thái làm việc, có nút "Tính
  * lại lương"). Phần render phiếu lương dạng "hoá đơn" và kỹ thuật in giữ nguyên như
  * PaMonthPersonInfoComponent (bản ESS chỉ xem phiếu của chính mình) - đổi bảng hạng mục tiêu chuẩn
- * và bảng 3 cột chấm công/lương/khoản trừ sang nz-table (không phân trang). Phần bộ lọc phòng ban
+ * và bảng 3 cột chấm công/lương/khoản trừ sang <table> thuần (CSS màn hình/in đồng nhất với mục Thông tin cơ bản). Phần bộ lọc phòng ban
  * (nz-tree-select) + trạng thái làm việc (nz-select mã 15118) theo đúng pattern của
  * ViewPaEmpAccountComponent - nz-tree-select chỉ trả về key được tick trực tiếp nên cần
  * expandDeptSelection() mở rộng xuống phòng ban con trước khi gửi API, khớp hành vi cascade của
@@ -57,7 +56,6 @@ const EMP_OFFICE_PARENT_CODE = '15118';
     NzInputModule,
     NzSelectModule,
     NzButtonModule,
-    NzTableModule,
     NzSpinModule,
     NzEmptyModule,
     NzTreeSelectModule,
@@ -299,14 +297,14 @@ const VPPS_PRINT_CSS = [
   '.vpps-detail-table td { padding:5px 6px; border:1px solid #c8c8c8; font-size:9px; background:#fff; }',
   '.vpps-detail-table tbody tr:nth-child(even) td { background:#fafafa; }',
   '.vpps-triple-table { width:100%; border-collapse:collapse; margin-top:6px; table-layout:fixed; }',
-  '.vpps-triple-table th, .vpps-triple-table td { padding:5px 6px; border:1px solid #c8c8c8; font-size:9px; overflow:hidden; word-break:break-word; }',
-  '.vpps-att-header { background:#1a5276; color:#fff; font-weight:bold; width:18%; }',
-  '.vpps-sal-header { background:#922b21; color:#fff; font-weight:bold; width:18%; }',
-  '.vpps-ded-header { background:#1a5276; color:#fff; font-weight:bold; width:18%; }',
-  '.vpps-triple-table thead tr:nth-child(2) th { background:#f2e0e0; color:#333; font-weight:bold; text-align:center; }',
-  '.vpps-triple-table tbody td { background:#fff; }',
+  '.vpps-col-name { width:22%; }',
+  '.vpps-col-value { width:11.33%; }',
+  '.vpps-triple-table th { padding:5px 6px; border:1px solid #c8c8c8; font-size:9px; background:#f2e0e0; color:#333; font-weight:bold; text-align:center; overflow:hidden; }',
+  '.vpps-triple-table td { padding:5px 6px; border:1px solid #c8c8c8; font-size:9px; background:#fff; overflow:hidden; word-break:break-word; }',
   '.vpps-triple-table tbody tr:nth-child(even) td { background:#fafafa; }',
-  '.vpps-triple-table tfoot td { background:#ececec; font-weight:bold; border:1px solid #c8c8c8; }',
+  '.vpps-triple-table th.vpps-triple-title { background:#922b21; color:#fff; font-weight:bold; font-size:10px; padding:2px 6px; text-align:left; border:1px solid #922b21; border-left-color:#fff; }',
+  '.vpps-triple-table th.vpps-triple-title:first-child { border-left-color:#922b21; }',
+  '.vpps-triple-title::before { content:"\\25A0 "; }',
   '.vpps-net-table { width:100%; border-collapse:collapse; margin-bottom:6px; }',
   '.vpps-net-table td { padding:5px 8px; border:1.5px solid #999; background:#fef9e7; font-size:12px; font-weight:bold; color:#111; }',
   '.vpps-note { font-size:9px; color:#555; margin-top:8px; font-style:italic; border-top:1px dashed #ccc; padding-top:4px; }',

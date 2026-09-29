@@ -1,0 +1,17 @@
+.etb-unit {
+  width: 110px;
+  flex-shrink: 0;
+}
+
+.etb-tags {
+  max-height: 110px;
+  overflow-y: auto;
+}
+
+.etb-section-title {
+  text-align: center;
+  font-weight: 600;
+  padding: 6px;
+  background: #fafafa;
+  border: 1px solid #f0f0f0;
+}

@@ -1,54 +1,36 @@
-/** Tương ứng với MonthDetailListDto.java (1 dòng chi tiết chấm công tháng của 1 nhân viên). */
-export interface MonthDetailListDto {
-  empId: string;
-  localName: string;
-  deptName: string;
-  dob: string;
-  dutyName: string;
-  dateStarted: string;
-  endProbationDate: string;
-  hcDayOt: number;
-  hcNightOt: number;
-  hcNightOt210: number;
-  restDayOt: number;
-  restNightOt: number;
-  holDayOt: number;
-  holNightOt: number;
-  adminShiftDays: number;
-  nightShiftDays: number;
-  standardWorkDays: number;
+/** Tương ứng với MonthDetailDateDto.java - 1 ngày trong kỳ công (25 tháng trước -> 24 tháng chọn). */
+export interface MonthDetailDate {
+  ddateStr: string;
+  iweek: number;
+  /** 1440 = ngày làm việc, khác 1440 = ngày nghỉ/lễ (tô xám). */
+  typeId: string;
+  iday: string;
+  dateKey: string;
+  dayOtKey: string;
+  nightOtKey: string;
+  weekTitle: string;
 }
 
-/** Tương ứng với response DataTablesResponse<T> (backend vẫn phân trang server-side, xem service). */
-export interface DataTablesResponse<T> {
-  draw: number;
-  recordsTotal: number;
-  recordsFiltered: number;
-  data: T[];
-  error?: string;
+/** 1 dòng nhân viên - giữ nguyên tên cột SQL (selectSalaryReport / getMonthDetailRealTimeList bản gốc). */
+export type MonthDetailRow = Record<string, string | number | null>;
+
+/** Tương ứng với MonthDetailViewDto.java (response GET /ess/tempEmp/api/monthDetailList/detail). */
+export interface MonthDetailView {
+  dates: MonthDetailDate[];
+  rows: MonthDetailRow[];
 }
 
-export interface MonthDetailListSearchParams {
+export interface MonthDetailSearchParams {
   month: string;
   year: string;
   keyword: string;
-  quickFilter: string;
   deptNos: string;
-  empTypeCode: string;
-  draw: number;
-  start: number;
-  length: number;
+  nationalityCode: string;
+  empOffice: string;
 }
 
-export interface MonthDetailListExportParams {
-  month: string;
-  year: string;
-  keyword: string;
-  quickFilter: string;
-  deptNos: string;
-  empTypeCode: string;
+export interface MonthDetailExportParams extends MonthDetailSearchParams {
   reportType: string;
-  reportYear: string;
 }
 
 /** Tương ứng với response GET /ar/attendanceSettings/api/arSupervisor/authorized-departments. */
@@ -56,4 +38,11 @@ export interface AuthDeptNode {
   id: string;
   text: string;
   parent: string;
+}
+
+/** Tương ứng với response GET /sys/api/getCode/list. */
+export interface CodeItem {
+  codeNo: string;
+  codeName: string;
+  codeId: string;
 }

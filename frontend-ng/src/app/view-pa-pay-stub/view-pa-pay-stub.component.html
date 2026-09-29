@@ -105,14 +105,16 @@
           </tbody>
         </table>
 
-        <!-- Hạng mục tiêu chuẩn - chỉ hiển thị nếu có dữ liệu (giống bản gốc). -->
+        <!-- Hạng mục tiêu chuẩn - chỉ hiển thị nếu có dữ liệu (giống bản gốc).
+             Dùng <table> thuần (không dùng nz-table) để CSS scoped và CSS in (copy innerHTML sang cửa sổ mới)
+             áp dụng giống hệt mục Thông tin cơ bản / Tài khoản. -->
         <ng-container *ngIf="stub.standardItems?.length">
           <div class="vpps-section-title">{{ 'pa.payStub.standardItems' | translate:'Hạng mục tiêu chuẩn' }}</div>
-          <nz-table [nzData]="stub.standardItems" [nzShowPagination]="false" nzSize="small" class="vpps-detail-table">
+          <table class="vpps-detail-table">
             <thead>
               <tr>
-                <th>{{ 'pa.payStub.itemName' | translate:'Hạng mục' }}</th>
-                <th class="text-end">{{ 'pa.payStub.amount' | translate:'Số tiền' }}</th>
+                <th class="text-center">{{ 'pa.payStub.itemName' | translate:'Hạng mục' }}</th>
+                <th class="text-center">{{ 'pa.payStub.amount' | translate:'Số tiền' }}</th>
               </tr>
             </thead>
             <tbody>
@@ -121,24 +123,29 @@
                 <td class="text-end">{{ formatNumber(item.itemValue) }}</td>
               </tr>
             </tbody>
-          </nz-table>
+          </table>
         </ng-container>
 
-        <!-- Bảng 3 cột: Chấm công / Lương / Khoản trừ. -->
-        <nz-table [nzData]="tripleRows(stub)" [nzShowPagination]="false" nzSize="small" class="vpps-triple-table">
+        <!-- Bảng 3 cột: Chấm công / Lương / Khoản trừ - tiêu đề nhóm dùng style giống .vpps-section-title. -->
+        <table class="vpps-triple-table">
+          <colgroup>
+            <col class="vpps-col-name"><col class="vpps-col-value">
+            <col class="vpps-col-name"><col class="vpps-col-value">
+            <col class="vpps-col-name"><col class="vpps-col-value">
+          </colgroup>
           <thead>
             <tr>
-              <th colspan="2" class="text-center vpps-att-header">■ {{ 'pa.payStub.attendanceItems' | translate:'Chi tiết chấm công' }}</th>
-              <th colspan="2" class="text-center vpps-sal-header">■ {{ 'pa.payStub.salaryItems' | translate:'Chi tiết lương' }}</th>
-              <th colspan="2" class="text-center vpps-ded-header">■ {{ 'pa.payStub.deductionItems' | translate:'Chi tiết khoản trừ' }}</th>
+              <th colspan="2" class="vpps-triple-title">{{ 'pa.payStub.attendanceItems' | translate:'Chi tiết chấm công' }}</th>
+              <th colspan="2" class="vpps-triple-title">{{ 'pa.payStub.salaryItems' | translate:'Chi tiết lương' }}</th>
+              <th colspan="2" class="vpps-triple-title">{{ 'pa.payStub.deductionItems' | translate:'Chi tiết khoản trừ' }}</th>
             </tr>
             <tr>
               <th>{{ 'pa.payStub.attendanceItem' | translate:'Hạng mục chấm công' }}</th>
-              <th class="text-end">{{ 'pa.payStub.value' | translate:'Giá trị' }}</th>
+              <th>{{ 'pa.payStub.value' | translate:'Giá trị' }}</th>
               <th>{{ 'pa.payStub.salaryItem' | translate:'Hạng mục' }}</th>
-              <th class="text-end">{{ 'pa.payStub.amount' | translate:'Số tiền' }}</th>
+              <th>{{ 'pa.payStub.amount' | translate:'Số tiền' }}</th>
               <th>{{ 'pa.payStub.deductionItem' | translate:'Hạng mục' }}</th>
-              <th class="text-end">{{ 'pa.payStub.amount' | translate:'Số tiền' }}</th>
+              <th>{{ 'pa.payStub.amount' | translate:'Số tiền' }}</th>
             </tr>
           </thead>
           <tbody>
@@ -156,14 +163,14 @@
           </tbody>
           <tfoot>
             <tr>
-              <td colspan="2"></td>
-              <td class="fw-bold">{{ 'pa.payStub.total' | translate:'Tổng' }}</td>
+              <th colspan="2"></th>
+              <th>{{ 'pa.payStub.total' | translate:'Tổng' }}</th>
               <td class="text-end fw-bold">{{ formatNumber(sum(stub.salaryItems)) }}</td>
-              <td class="fw-bold">{{ 'pa.payStub.total' | translate:'Tổng' }}</td>
+              <th>{{ 'pa.payStub.total' | translate:'Tổng' }}</th>
               <td class="text-end fw-bold">{{ formatNumber(sum(stub.deductionItems)) }}</td>
             </tr>
           </tfoot>
-        </nz-table>
+        </table>
 
         <table class="vpps-net-table">
           <tr>

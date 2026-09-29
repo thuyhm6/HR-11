@@ -1,0 +1,12 @@
+.ecmk-quick-filter {
+  max-width: 260px;
+}
+
+.ecmk-row-selected > td {
+  background: #e6f4ff;
+}
+
+.ecmk-link {
+  color: #1677ff;
+  cursor: pointer;
+}

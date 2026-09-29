@@ -1,0 +1,18 @@
+.eto-row {
+  cursor: pointer;
+}
+
+/* Dòng đang chọn - đích của nút Sửa/Xóa (thay màu #aaccf6 của xuanzhongOrg() bản JSP) */
+.eto-row.eto-row-selected > td,
+.eto-row.eto-row-selected:hover > td {
+  background: #e6f4ff;
+}
+
+.eto-link {
+  color: #1677ff;
+  cursor: pointer;
+}
+
+.eto-quick-filter {
+  max-width: 260px;
+}

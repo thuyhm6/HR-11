@@ -1,0 +1,77 @@
+<div class="row">
+  <div class="col-12">
+    <app-edu-apply-filter idPrefix="ecmkSearch" [flagOptions]="filterOptions" (search)="search($event)">
+      <button nz-button nzType="primary" type="button" id="ecmkBtnPass" [nzLoading]="saving()" (click)="updateSelected('2')">
+        <i class="bx bx-check"></i> {{ 'hrm.contractInfo.ADOPT' | translate:'Duyệt' }}
+      </button>
+      <button nz-button nzDanger type="button" id="ecmkBtnReject" [disabled]="saving()" (click)="updateSelected('0')">
+        <i class="bx bx-x"></i> {{ 'ess.trans.title.reject' | translate:'Từ chối' }}
+      </button>
+    </app-edu-apply-filter>
+
+    <nz-card>
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+      <div class="d-flex justify-content-end mb-2">
+        <input nz-input id="ecmkQuickFilter" class="ecmk-quick-filter" name="ecmkQuickFilter"
+               [ngModel]="quickFilter()" (ngModelChange)="onQuickFilterChange($event)"
+               [placeholder]="'common.quickFilter' | translate:'Lọc nhanh'">
+      </div>
+      <nz-table #ecmkTable [nzData]="filteredRows()" [nzLoading]="loading()" nzSize="small"
+                [(nzPageIndex)]="pageIndex" [(nzPageSize)]="pageSize" [nzPageSizeOptions]="pageSizeOptions"
+                [nzShowSizeChanger]="true" [nzShowTotal]="ecmkTotalTpl"
+                [nzScroll]="{ x: '1750px', y: 'calc(100vh - 460px)' }">
+        <thead>
+          <tr>
+            <th nzWidth="45px" class="text-center" nzLeft [nzChecked]="allChecked()" [nzIndeterminate]="someChecked()"
+                (nzCheckedChange)="toggleAll($event)"></th>
+            <th class="text-center" nzWidth="60px" nzLeft>{{ 'common.stt' | translate:'STT' }}</th>
+            <th nzWidth="110px" nzLeft>{{ 'ess.infoApply.EMPID' | translate:'Mã nhân viên' }}</th>
+            <th nzWidth="160px" nzLeft>{{ 'ess.viewApply.title.applyName' | translate:'Người đăng ký' }}</th>
+            <th nzWidth="170px">{{ 'hr.viewPersonalInfo.title.DEPTNAME' | translate:'Phòng ban' }}</th>
+            <th nzWidth="120px">{{ 'hr.viewPersonalInfo.title.POST_GRADE_NAME' | translate:'Chức vụ' }}</th>
+            <th nzWidth="150px">{{ 'edu.systemManager.PEIXUNLEIXING.a' | translate:'Loại hình' }}</th>
+            <th nzWidth="240px">{{ 'edu.trainArchives.KECHENGMINGCHENGQICI.a' | translate:'Tên khóa học (Kỳ)' }}</th>
+            <th class="text-center" nzWidth="190px">{{ 'edu.planManager.SHISHIRIQI.a' | translate:'Ngày thực hiện' }}</th>
+            <th class="text-center" nzWidth="100px">{{ 'edu.planManager.PEIXUNKESHI.a' | translate:'Thời lượng' }}</th>
+            <th class="text-center" nzWidth="90px">{{ 'edu.planManager.KECHENGBIAO.a' | translate:'Lịch học' }}</th>
+            <th class="text-center" nzWidth="115px">{{ 'edu.courseApply.applyDate' | translate:'Ngày đăng ký' }}</th>
+            <th nzWidth="200px">{{ 'pa.salarycode.affirm.reason' | translate:'Lý do' }}</th>
+            <th class="text-center" nzWidth="150px" nzRight>{{ 'ess.viewApply.title.affirmCondition' | translate:'Trạng thái duyệt' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!loading() && filteredRows().length === 0">
+            <td colspan="14" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+          </tr>
+          <tr *ngFor="let row of ecmkTable.data; let i = index" [class.ecmk-row-selected]="checked().has(row.applyNo)">
+            <td class="text-center" nzLeft [nzChecked]="checked().has(row.applyNo)" [nzDisabled]="!editable(row)"
+                (nzCheckedChange)="toggle(row, $event)"></td>
+            <td class="text-center" nzLeft>{{ (pageIndex - 1) * pageSize + i + 1 }}</td>
+            <td nzLeft>{{ row.empId }}</td>
+            <td nzLeft>{{ row.stuLocalName }}</td>
+            <td>{{ row.deptName }}</td>
+            <td>{{ row.postGradeName }}</td>
+            <td>{{ row.trainTypeCodeName }}</td>
+            <td>{{ courseTitle(row) }}</td>
+            <td class="text-center">{{ row.impleStartDate }} ~ {{ row.impleEndDate }}</td>
+            <td class="text-center">{{ classHour(row) }}</td>
+            <td class="text-center">
+              <a *ngIf="row.syllabusCount" class="ecmk-link" (click)="showSyllabus(row)">{{ 'edu.planManager.CHAKANKECHENGBIAO.a' | translate:'Xem' }}</a>
+            </td>
+            <td class="text-center">{{ row.applyDate }}</td>
+            <td>{{ row.applyTask }}</td>
+            <td class="text-center" nzRight>
+              <nz-select class="w-100" nzSize="small" [id]="'ecmkFlag_' + row.makerNo" [ngModel]="row.applyFlag"
+                         [nzDisabled]="!editable(row) || saving()" (ngModelChange)="changeFlag(row, $event)">
+                <nz-option *ngFor="let o of makerOptions" [nzValue]="o.value" [nzLabel]="o.key | translate:o.fallback"></nz-option>
+              </nz-select>
+            </td>
+          </tr>
+        </tbody>
+        <ng-template #ecmkTotalTpl let-total>{{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}</ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>
+
+<app-edu-syllabus-view #ecmkSyllabus></app-edu-syllabus-view>

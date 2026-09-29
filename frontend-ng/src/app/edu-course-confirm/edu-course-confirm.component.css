@@ -1,0 +1,12 @@
+.eccf-quick-filter {
+  max-width: 260px;
+}
+
+.eccf-row-selected > td {
+  background: #e6f4ff;
+}
+
+.eccf-link {
+  color: #1677ff;
+  cursor: pointer;
+}

@@ -1,0 +1,108 @@
+<div class="row">
+  <div class="col-12">
+    <!-- Điều kiện tìm kiếm -->
+    <nz-card class="mb-3 sticky-filter-card">
+      <form class="row g-3" (ngSubmit)="search()">
+        <div class="col-md-3">
+          <label class="form-label" for="etarSearchKeyword">{{ 'hr.viewContractByInsert.title.EMPIDANDLOCALNAME' | translate:'Mã NV/Họ tên' }}</label>
+          <input nz-input id="etarSearchKeyword" name="etarSearchKeyword" [(ngModel)]="searchKeyword">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label" for="etarSearchDept">{{ 'hr.viewPersonalInfo.title.DEPTNAME' | translate:'Phòng ban' }}</label>
+          <nz-tree-select id="etarSearchDept" class="w-100" name="etarSearchDept" [nzNodes]="deptNodes()" nzShowSearch nzAllowClear
+                          [(ngModel)]="searchDeptNo" [nzPlaceHolder]="'common.all' | translate:'Tất cả'"
+                          [nzDropdownStyle]="{ 'max-height': '360px' }"></nz-tree-select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label" for="etarSearchCourse">{{ 'empsubject.subjectNm' | translate:'Tên đào tạo' }}</label>
+          <input nz-input id="etarSearchCourse" name="etarSearchCourse" [(ngModel)]="searchCourseName">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label" for="etarSearchContent">{{ 'edu.trainArchives.PEIXUNNEIRONG.a' | translate:'Nội dung' }}</label>
+          <input nz-input id="etarSearchContent" name="etarSearchContent" [(ngModel)]="searchTrainContent">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label" for="etarSearchStart">{{ 'edu.trainArchives.SHISHIKAISHIRIQI.a' | translate:'Ngày bắt đầu' }}</label>
+          <nz-date-picker id="etarSearchStart" class="w-100" name="etarSearchStart" nzFormat="dd/MM/yyyy" [(ngModel)]="searchStart"></nz-date-picker>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label" for="etarSearchEnd">{{ 'edu.trainArchives.SHISHIJIESHURIQI.a' | translate:'Ngày kết thúc' }}</label>
+          <nz-date-picker id="etarSearchEnd" class="w-100" name="etarSearchEnd" nzFormat="dd/MM/yyyy" [(ngModel)]="searchEnd"></nz-date-picker>
+        </div>
+        <div class="col-md-6 d-flex align-items-end gap-2 flex-wrap">
+          <button nz-button nzType="primary" type="submit" id="etarBtnSearch">
+            <i class="bx bx-search"></i> {{ 'common.search' | translate:'Tìm kiếm' }}
+          </button>
+          <button nz-button type="button" id="etarBtnExport" class="etar-btn-export" (click)="exportExcel()">
+            <i class="bx bx-spreadsheet"></i> {{ 'common.exportExcel' | translate:'Xuất Excel' }}
+          </button>
+        </div>
+      </form>
+    </nz-card>
+
+    <nz-card>
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+      <div class="d-flex justify-content-end mb-2">
+        <input nz-input id="etarQuickFilter" class="etar-quick-filter" name="etarQuickFilter"
+               [ngModel]="quickFilter()" (ngModelChange)="onQuickFilterChange($event)"
+               [placeholder]="'common.quickFilter' | translate:'Lọc nhanh'">
+      </div>
+      <nz-table #etarTable [nzData]="filteredRows()" [nzLoading]="loading()" nzSize="small" nzBordered
+                [(nzPageIndex)]="pageIndex" [(nzPageSize)]="pageSize" [nzPageSizeOptions]="pageSizeOptions"
+                [nzShowSizeChanger]="true" [nzShowTotal]="etarTotalTpl"
+                [nzScroll]="{ x: '2000px', y: 'calc(100vh - 460px)' }">
+        <thead>
+          <tr>
+            <th class="text-center" nzWidth="60px" nzLeft>{{ 'common.stt' | translate:'STT' }}</th>
+            <th nzWidth="100px" nzLeft>{{ 'inct.salesman.empNo' | translate:'Mã nhân viên' }}</th>
+            <th nzWidth="160px" nzLeft>{{ 'pa.title.message.empHrmName' | translate:'Họ tên' }}</th>
+            <th class="text-center" nzWidth="80px">{{ 'empsubject.sexName' | translate:'Giới tính' }}</th>
+            <th nzWidth="180px">{{ 'hrm.empinfo.ORG_NAME_LOCAL' | translate:'Phòng ban' }}</th>
+            <th nzWidth="120px">{{ 'hrm.contract.Rank' | translate:'Chức vụ' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'ess.empInfo.date_of_agency' | translate:'Ngày vào công ty' }}</th>
+            <th nzWidth="240px">{{ 'edu.trainArchives.KECHENGMINGCHENGQICI.a' | translate:'Tên khóa học (Kỳ)' }}</th>
+            <th nzWidth="200px">{{ 'edu.planManager.PEIXUNNEIRONG.a' | translate:'Nội dung' }}</th>
+            <th class="text-center" nzWidth="190px">{{ 'edu.trainArchives.SHISHIQIJIAN.a' | translate:'Thời gian' }}</th>
+            <th class="text-center" nzWidth="100px">{{ 'edu.planManager.PEIXUNKESHI.a' | translate:'Thời lượng' }}</th>
+            <th nzWidth="160px">{{ 'edu.planManager.ZHUGUANBUMEN.a' | translate:'Bộ phận quản lý' }}</th>
+            <th nzWidth="150px">{{ 'empsubject.eduRm' | translate:'Địa điểm đào tạo' }}</th>
+            <th class="text-end" nzWidth="100px">{{ 'edu.trainArchives.ZONGHECHENGJI.a' | translate:'Điểm tổng hợp' }}</th>
+            <th class="text-end" nzWidth="110px">{{ 'edu.trainArchives.PEIXUNFEI.a' | translate:'Phí đào tạo' }}</th>
+            <th nzWidth="200px">{{ 'edu.trainArchives.BAOGAOSHU.a' | translate:'Báo cáo' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!loading() && filteredRows().length === 0">
+            <td colspan="16" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+          </tr>
+          <tr *ngFor="let row of etarTable.data; let i = index">
+            <td class="text-center" nzLeft>{{ (pageIndex - 1) * pageSize + i + 1 }}</td>
+            <td nzLeft>{{ row.empId }}</td>
+            <td nzLeft>{{ row.localName }}</td>
+            <td class="text-center">{{ row.sexName }}</td>
+            <td>{{ row.deptName }}</td>
+            <td>{{ row.postGradeName }}</td>
+            <td class="text-center">{{ row.dateStarted }}</td>
+            <td>
+              {{ courseTitle(row) }}
+              <nz-tag *ngIf="row.history" nzColor="default" class="ms-1">{{ 'edu.trainArchives.history' | translate:'Dữ liệu cũ' }}</nz-tag>
+            </td>
+            <td>{{ row.trainContent }}</td>
+            <td class="text-center">{{ period(row) }}</td>
+            <td class="text-center">{{ classHour(row) }}</td>
+            <td>{{ row.departManaCodeName }}</td>
+            <td>{{ row.trainAddress }}</td>
+            <td class="text-end">{{ row.evaResult }}</td>
+            <td class="text-end">{{ row.allCost }}</td>
+            <td>
+              <div *ngFor="let f of row.files; let fi = index">
+                <a [href]="downloadUrl(f)" target="_blank" rel="noopener">{{ fi + 1 }}. {{ f.fileName }}</a>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+        <ng-template #etarTotalTpl let-total>{{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}</ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>

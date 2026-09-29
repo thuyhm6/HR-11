@@ -1,0 +1,197 @@
+<div class="row">
+  <div class="col-12">
+    <!-- Điều kiện tìm kiếm -->
+    <nz-card class="mb-3 sticky-filter-card">
+      <form class="row g-3" (ngSubmit)="search()">
+        <div class="col-md-2">
+          <label class="form-label" for="etmSearchKeyword">{{ 'ess.infoApply.NAME_EMPID' | translate:'Mã nhân viên/Họ tên' }}</label>
+          <input nz-input id="etmSearchKeyword" name="etmSearchKeyword" [(ngModel)]="searchKeyword">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label" for="etmSearchField">{{ 'edu.teacherManager.JIANGKELINGYU.a' | translate:'Lĩnh vực' }}</label>
+          <nz-select id="etmSearchField" class="w-100" name="etmSearchField" nzAllowClear [(ngModel)]="searchField"
+                     [nzPlaceHolder]="'common.all' | translate:'Tất cả'">
+            <nz-option *ngFor="let c of fieldOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label" for="etmSearchLevel">{{ 'edu.teacherManager.JIANGSHIJIBIE.a' | translate:'Cấp độ' }}</label>
+          <nz-select id="etmSearchLevel" class="w-100" name="etmSearchLevel" nzAllowClear [(ngModel)]="searchLevel"
+                     [nzPlaceHolder]="'common.all' | translate:'Tất cả'">
+            <nz-option *ngFor="let c of levelOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label" for="etmSearchStatus">{{ 'ar.attendanceView.viewNoSwipingCard.status' | translate:'Trạng thái' }}</label>
+          <nz-select id="etmSearchStatus" class="w-100" name="etmSearchStatus" nzAllowClear [(ngModel)]="searchStatus"
+                     [nzPlaceHolder]="'common.all' | translate:'Tất cả'">
+            <nz-option *ngFor="let c of statusOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-4 d-flex align-items-end gap-2 flex-wrap">
+          <button nz-button nzType="primary" type="submit" id="etmBtnSearch">
+            <i class="bx bx-search"></i> {{ 'common.search' | translate:'Tìm kiếm' }}
+          </button>
+          <button nz-button nzType="primary" type="button" id="etmBtnAdd" (click)="openAddModal()">
+            <i class="bx bx-plus"></i> {{ 'common.addNew' | translate:'Thêm mới' }}
+          </button>
+          <button nz-button type="button" id="etmBtnEdit" [disabled]="!selected()" (click)="openEditModal()">
+            <i class="bx bx-edit"></i> {{ 'common.edit' | translate:'Sửa' }}
+          </button>
+          <button nz-button nzDanger type="button" id="etmBtnDelete" [disabled]="!selected()" (click)="confirmDelete()">
+            <i class="bx bx-trash"></i> {{ 'common.delete' | translate:'Xóa' }}
+          </button>
+        </div>
+      </form>
+    </nz-card>
+
+    <nz-card>
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+      <div class="d-flex justify-content-end mb-2">
+        <input nz-input id="etmQuickFilter" class="etm-quick-filter" name="etmQuickFilter"
+               [ngModel]="quickFilter()" (ngModelChange)="onQuickFilterChange($event)"
+               [placeholder]="'common.quickFilter' | translate:'Lọc nhanh'">
+      </div>
+
+      <nz-table #etmTable [nzData]="filteredRows()" [nzLoading]="loading()"
+                [(nzPageIndex)]="pageIndex" [(nzPageSize)]="pageSize" [nzPageSizeOptions]="pageSizeOptions"
+                [nzShowSizeChanger]="true" [nzShowTotal]="etmTotalTpl" nzSize="small"
+                [nzScroll]="{ x: '1100px', y: 'calc(100vh - 420px)' }">
+        <thead>
+          <tr>
+            <th class="text-center" nzWidth="60px">{{ 'common.stt' | translate:'STT' }}</th>
+            <th nzWidth="120px" [nzSortFn]="sortEmpId">{{ 'edu.teacherManager.JIANGSHISHEHAO.a' | translate:'Mã nhân viên' }}</th>
+            <th nzWidth="160px" [nzSortFn]="sortName">{{ 'empsubject.tcrNm' | translate:'Họ tên giảng viên' }}</th>
+            <th [nzSortFn]="sortDept">{{ 'hrm.empinfo.ORG_NAME_LOCAL' | translate:'Phòng ban' }}</th>
+            <th nzWidth="150px" [nzSortFn]="sortField">{{ 'edu.teacherManager.JIANGKELINGYU.a' | translate:'Lĩnh vực' }}</th>
+            <th nzWidth="120px" [nzSortFn]="sortLevel">{{ 'edu.teacherManager.JIANGSHIJIBIE.a' | translate:'Cấp độ' }}</th>
+            <th class="text-center" nzWidth="120px">{{ 'edu.teacherManager.PINYONGSHIJIAN.a' | translate:'Ngày làm việc' }}</th>
+            <th class="text-center" nzWidth="120px">{{ 'edu.teacherManager.JIEPINSHIJIAN.a' | translate:'Ngày kết thúc' }}</th>
+            <th nzWidth="120px" [nzSortFn]="sortStatus">{{ 'ar.attendanceView.viewNoSwipingCard.status' | translate:'Trạng thái' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!loading() && filteredRows().length === 0">
+            <td colspan="9" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+          </tr>
+          <tr *ngFor="let row of etmTable.data; let i = index" class="etm-row"
+              [class.etm-row-selected]="isSelected(row)"
+              (click)="selectRow(row)" (dblclick)="openEditModal(row)">
+            <td class="text-center">{{ (pageIndex - 1) * pageSize + i + 1 }}</td>
+            <td>{{ row.empId }}</td>
+            <td>{{ row.teacherName }}</td>
+            <td>{{ row.deptName }}</td>
+            <td>{{ row.teachFieldCodeName }}</td>
+            <td>{{ row.teachLevelCodeName }}</td>
+            <td class="text-center">{{ row.hireTime }}</td>
+            <td class="text-center">{{ row.firingTime }}</td>
+            <td>{{ row.teachStatusCodeName }}</td>
+          </tr>
+        </tbody>
+        <ng-template #etmTotalTpl let-total>
+          {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+        </ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>
+
+<!-- Modal Thêm mới / Sửa - bấm ra ngoài modal sẽ đóng (nzMaskClosable) -->
+<nz-modal [nzVisible]="modalVisible()" [nzTitle]="modalTitle()" nzWidth="720px" [nzMaskClosable]="true"
+          (nzOnCancel)="closeModal()" (nzOnOk)="saveForm()" [nzOkLoading]="saving()"
+          [nzOkText]="'common.save' | translate:'Lưu'" [nzCancelText]="'common.close' | translate:'Đóng'">
+  <ng-container *nzModalContent>
+    <div class="row g-3">
+      <!-- Chọn giảng viên: chỉ khi thêm mới -->
+      <ng-container *ngIf="isNew()">
+        <div class="col-12">
+          <nz-radio-group name="etmFormExternal" [ngModel]="form.external" (ngModelChange)="onExternalChange($event)">
+            <label nz-radio [nzValue]="false">{{ 'edu.teacherManager.SHENEIRENYUAN.a' | translate:'Nội bộ' }}</label>
+            <label nz-radio [nzValue]="true">{{ 'edu.teacherManager.SHEWAIRENYUAN.a' | translate:'Bên ngoài' }}</label>
+          </nz-radio-group>
+        </div>
+        <div class="col-12" *ngIf="!form.external">
+          <label class="form-label fw-semibold" for="etmFormSearch">{{ 'edu.teacherManager.QINGSHURUXINGMING.a' | translate:'Xin nhập họ tên:' }}</label>
+          <div class="d-flex gap-2">
+            <input nz-input id="etmFormSearch" name="etmFormSearch" [(ngModel)]="form.searchKeyword" (keyup.enter)="openPicker()">
+            <button nz-button type="button" id="etmBtnPick" (click)="openPicker()">
+              <i class="bx bx-search"></i> {{ 'edu.teacherManager.CHAZHAO.a' | translate:'Tìm kiếm' }}
+            </button>
+          </div>
+        </div>
+      </ng-container>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold" for="etmFormName">
+          {{ 'empsubject.tcrNm' | translate:'Họ tên giảng viên' }} <span class="text-danger" *ngIf="isNew()">*</span>
+        </label>
+        <input nz-input id="etmFormName" name="etmFormName" maxlength="100" [(ngModel)]="form.teacherName"
+               [readonly]="!isNew() || !form.external">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold" for="etmFormEmpId">{{ 'alert.pa.pasalarycanshu.shehao' | translate:'Mã nhân viên' }}</label>
+        <input nz-input id="etmFormEmpId" [value]="form.empId ?? ''" readonly>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-semibold" for="etmFormDept">{{ 'hrm.empinfo.ORG_NAME_LOCAL' | translate:'Phòng ban' }}</label>
+        <input nz-input id="etmFormDept" [value]="form.deptName" readonly>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-semibold" for="etmFormGrade">{{ 'ess.trans.title.postGradeName' | translate:'Chức vụ' }}</label>
+        <input nz-input id="etmFormGrade" [value]="form.postGradeName" readonly>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-semibold" for="etmFormPosition">{{ 'inct.salesman.position' | translate:'Chức vụ' }}</label>
+        <input nz-input id="etmFormPosition" [value]="form.positionName" readonly>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold" for="etmFormLevel">{{ 'edu.teacherManager.JIANGSHIJIBIE.a' | translate:'Cấp độ' }}</label>
+        <nz-select id="etmFormLevel" class="w-100" name="etmFormLevel" nzAllowClear [(ngModel)]="form.teachLevelCode"
+                   [nzPlaceHolder]="'common.pleaseSelect' | translate:'Vui lòng chọn'">
+          <nz-option *ngFor="let c of levelOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold" for="etmFormField">{{ 'edu.teacherManager.JIANGKELINGYU.a' | translate:'Lĩnh vực' }}</label>
+        <nz-select id="etmFormField" class="w-100" name="etmFormField" nzAllowClear [(ngModel)]="form.teachFieldCode"
+                   [nzPlaceHolder]="'common.pleaseSelect' | translate:'Vui lòng chọn'">
+          <nz-option *ngFor="let c of fieldOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold" for="etmFormExpYear">{{ 'edu.teacherManager.YEWUDANDANGSHIJIAN.a' | translate:'Kinh nghiệm' }}</label>
+        <div *ngIf="isNew(); else etmExpReadonly" class="d-flex align-items-center gap-2">
+          <nz-input-number id="etmFormExpYear" name="etmFormExpYear" [nzMin]="0" [nzMax]="80" [nzStep]="1" [(ngModel)]="form.expYear"></nz-input-number>
+          <span>{{ 'inct.salesman.year' | translate:'Năm' }}</span>
+          <nz-input-number id="etmFormExpMonth" name="etmFormExpMonth" [nzMin]="0" [nzMax]="11" [nzStep]="1" [(ngModel)]="form.expMonth"></nz-input-number>
+          <span>{{ 'hr.viewPersonalInfo.title.WORKINFO_MONTH' | translate:'Tháng' }}</span>
+        </div>
+        <ng-template #etmExpReadonly>
+          <input nz-input id="etmFormExpYear" [value]="experienceText(form.allTime)" readonly>
+        </ng-template>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold" for="etmFormStatus">{{ 'ar.attendanceView.viewNoSwipingCard.status' | translate:'Trạng thái' }}</label>
+        <nz-select id="etmFormStatus" class="w-100" name="etmFormStatus" nzAllowClear [(ngModel)]="form.teachStatusCode"
+                   [nzPlaceHolder]="'common.pleaseSelect' | translate:'Vui lòng chọn'">
+          <nz-option *ngFor="let c of statusOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold" for="etmFormHire">{{ 'edu.teacherManager.PINYONGSHIJIAN.a' | translate:'Ngày làm việc' }}</label>
+        <nz-date-picker id="etmFormHire" class="w-100" name="etmFormHire" nzFormat="dd/MM/yyyy" [(ngModel)]="form.hireTime"></nz-date-picker>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold" for="etmFormFiring">{{ 'edu.teacherManager.JIEPINSHIJIAN.a' | translate:'Ngày kết thúc' }}</label>
+        <nz-date-picker id="etmFormFiring" class="w-100" name="etmFormFiring" nzFormat="dd/MM/yyyy" [(ngModel)]="form.firingTime"></nz-date-picker>
+      </div>
+      <div class="col-12">
+        <label class="form-label fw-semibold" for="etmFormRemark">{{ 'pa.salary.canShu.beiZhu' | translate:'Ghi chú' }}</label>
+        <textarea nz-input id="etmFormRemark" name="etmFormRemark" rows="3" maxlength="500" [(ngModel)]="form.remark"></textarea>
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal chọn nhân viên nội bộ (bản gốc queryTeacher) -->
+<app-edu-employee-picker #etmPicker [(visible)]="pickerVisible" (picked)="onPicked($event)"></app-edu-employee-picker>

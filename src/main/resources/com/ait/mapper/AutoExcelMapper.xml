@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<!-- Báo cáo SQL tự xuất Excel (chuyển từ sqlAutoExcel.xml - iBatis, dự án Hanwha_HTSV) -->
+<mapper namespace="com.ait.disc.autoExcel.mapper.AutoExcelMapper">
+
+    <resultMap id="MasterResultMap" type="com.ait.disc.autoExcel.dto.AutoExcelMasterDto">
+        <id column="SQL_SEQ" property="sqlSeq" jdbcType="VARCHAR" />
+        <result column="CPNY_ID" property="cpnyId" jdbcType="VARCHAR" />
+        <result column="PGM_NM" property="pgmNm" jdbcType="VARCHAR" />
+        <result column="SQL_NM" property="sqlNm" jdbcType="VARCHAR" />
+        <result column="SQL_FROM_STMT" property="sqlFromStmt" jdbcType="VARCHAR" />
+        <result column="SQL_ORDER_BY_ID" property="sqlOrderById" jdbcType="VARCHAR" />
+        <result column="SQL_DESC" property="sqlDesc" jdbcType="VARCHAR" />
+        <result column="SQL_STAT" property="sqlStat" jdbcType="VARCHAR" />
+        <result column="IS_SPECIAL" property="isSpecial" jdbcType="VARCHAR" />
+        <result column="SQL_STMT" property="sqlStmt" jdbcType="CLOB" javaType="java.lang.String" />
+        <result column="RGST_DTIME" property="rgstDtime" jdbcType="VARCHAR" />
+        <result column="UPDT_DTIME" property="updtDtime" jdbcType="VARCHAR" />
+        <result column="UPDT_USER" property="updtUser" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <resultMap id="ParamResultMap" type="com.ait.disc.autoExcel.dto.AutoExcelParamDto">
+        <result column="SQL_SEQ" property="sqlSeq" jdbcType="VARCHAR" />
+        <result column="SQL_PARAM_NO" property="sqlParamNo" jdbcType="VARCHAR" />
+        <result column="PARAM" property="param" jdbcType="VARCHAR" />
+        <result column="EN_SQL_PARAM_DESC" property="enSqlParamDesc" jdbcType="VARCHAR" />
+        <result column="CN_SQL_PARAM_DESC" property="cnSqlParamDesc" jdbcType="VARCHAR" />
+        <result column="SQL_PARAM_TP" property="sqlParamTp" jdbcType="VARCHAR" />
+        <result column="DEFAULT_VAL" property="defaultVal" jdbcType="VARCHAR" />
+        <result column="SORT_CD" property="sortCd" jdbcType="VARCHAR" />
+        <result column="USE_YN" property="useYn" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <!-- Điều kiện công ty giống RetrieveSqlMasterList bản gốc: CPNY_ID LIKE '%<công ty>%' (1 báo cáo có thể gán nhiều
+         công ty, vd 'SPC_BJ,SPC_SH') hoặc báo cáo dùng chung 'SPC' -->
+    <sql id="visibleCpny">
+        (M.CPNY_ID LIKE '%' || #{cpnyId, jdbcType=VARCHAR} || '%' OR M.CPNY_ID = 'SPC')
+    </sql>
+
+    <!-- Bản gốc tìm tên bằng LIKE '%$SQL_NMLIKE$%' (chèn chuỗi thẳng vào SQL) - ở đây bind tham số -->
+    <select id="selectList" resultMap="MasterResultMap">
+        SELECT M.SQL_SEQ,
+               M.CPNY_ID,
+               NVL(M.PGM_NM, 'PAY') AS PGM_NM,
+               M.SQL_NM,
+               M.SQL_FROM_STMT,
+               M.SQL_ORDER_BY_ID,
+               M.SQL_DESC,
+               NVL(M.SQL_STAT, 'N') AS SQL_STAT,
+               NVL(M.IS_SPECIAL, 'N') AS IS_SPECIAL,
+               TO_CHAR(M.RGST_DTIME, 'DD/MM/YYYY HH24:MI') AS RGST_DTIME,
+               TO_CHAR(M.UPDT_DTIME, 'DD/MM/YYYY HH24:MI') AS UPDT_DTIME,
+               M.UPDT_USER
+          FROM SYS_SQL_MASTER M
+         WHERE <include refid="visibleCpny"/>
+        <if test="pgmNm != null and pgmNm != ''">
+           AND M.PGM_NM = #{pgmNm, jdbcType=VARCHAR}
+        </if>
+        <if test="sqlSeq != null and sqlSeq != ''">
+           AND M.SQL_SEQ = #{sqlSeq, jdbcType=VARCHAR}
+        </if>
+        <if test="sqlNm != null and sqlNm != ''">
+           AND UPPER(M.SQL_NM) LIKE '%' || UPPER(#{sqlNm, jdbcType=VARCHAR}) || '%'
+        </if>
+         ORDER BY TO_NUMBER(M.SQL_SEQ)
+    </select>
+
+    <select id="selectDetail" resultMap="MasterResultMap">
+        SELECT M.SQL_SEQ,
+               M.CPNY_ID,
+               M.PGM_NM,
+               M.SQL_NM,
+               M.SQL_FROM_STMT,
+               M.SQL_ORDER_BY_ID,
+               M.SQL_DESC,
+               NVL(M.SQL_STAT, 'N') AS SQL_STAT,
+               NVL(M.IS_SPECIAL, 'N') AS IS_SPECIAL,
+               M.SQL_STMT,
+               TO_CHAR(M.RGST_DTIME, 'DD/MM/YYYY HH24:MI') AS RGST_DTIME,
+               TO_CHAR(M.UPDT_DTIME, 'DD/MM/YYYY HH24:MI') AS UPDT_DTIME,
+               M.UPDT_USER
+          FROM SYS_SQL_MASTER M
+         WHERE M.SQL_SEQ = #{sqlSeq, jdbcType=VARCHAR}
+           AND <include refid="visibleCpny"/>
+    </select>
+
+    <!-- Giống selectKey của CreateSqlMasterDetail bản gốc (bảng không có sequence) -->
+    <select id="selectNextSqlSeq" resultType="string">
+        SELECT TO_CHAR(NVL(MAX(TO_NUMBER(SQL_SEQ)), 0) + 1) FROM SYS_SQL_MASTER
+    </select>
+
+    <!-- UPDT_USER là VARCHAR2(10) nên cắt mã người dùng cho an toàn -->
+    <insert id="insertMaster">
+        INSERT INTO SYS_SQL_MASTER
+               (SQL_SEQ,
+                CPNY_ID,
+                PGM_NM,
+                SQL_NM,
+                SQL_STMT,
+                SQL_FROM_STMT,
+                SQL_ORDER_BY_ID,
+                SQL_DESC,
+                SQL_STAT,
+                RGST_DTIME,
+                UPDT_DTIME,
+                UPDT_USER,
+                USE_YN,
+                IS_SPECIAL)
+        VALUES (#{sqlSeq, jdbcType=VARCHAR},
+                #{cpnyId, jdbcType=VARCHAR},
+                #{pgmNm, jdbcType=VARCHAR},
+                #{sqlNm, jdbcType=VARCHAR},
+                #{sqlStmt, jdbcType=CLOB},
+                #{sqlFromStmt, jdbcType=VARCHAR},
+                #{sqlOrderById, jdbcType=VARCHAR},
+                #{sqlDesc, jdbcType=VARCHAR},
+                NVL(#{sqlStat, jdbcType=VARCHAR}, 'N'),
+                SYSDATE,
+                SYSDATE,
+                SUBSTR(#{adminID, jdbcType=VARCHAR}, 1, 10),
+                'Y',
+                NVL(#{isSpecial, jdbcType=VARCHAR}, 'N'))
+    </insert>
+
+    <!-- Bản gốc cho sửa cả CPNY_ID; ở đây giữ nguyên công ty của báo cáo và chỉ sửa được báo cáo công ty mình được xem -->
+    <update id="updateMaster">
+        UPDATE SYS_SQL_MASTER M
+           SET M.PGM_NM          = #{pgmNm, jdbcType=VARCHAR},
+               M.SQL_NM          = #{sqlNm, jdbcType=VARCHAR},
+               M.SQL_STMT        = #{sqlStmt, jdbcType=CLOB},
+               M.SQL_FROM_STMT   = #{sqlFromStmt, jdbcType=VARCHAR},
+               M.SQL_ORDER_BY_ID = #{sqlOrderById, jdbcType=VARCHAR},
+               M.SQL_DESC        = #{sqlDesc, jdbcType=VARCHAR},
+               M.SQL_STAT        = NVL(#{sqlStat, jdbcType=VARCHAR}, 'N'),
+               M.IS_SPECIAL      = NVL(#{isSpecial, jdbcType=VARCHAR}, 'N'),
+               M.UPDT_USER       = SUBSTR(#{adminID, jdbcType=VARCHAR}, 1, 10),
+               M.UPDT_DTIME      = SYSDATE
+         WHERE M.SQL_SEQ = #{sqlSeq, jdbcType=VARCHAR}
+           AND <include refid="visibleCpny"/>
+    </update>
+
+    <delete id="deleteMaster">
+        DELETE FROM SYS_SQL_MASTER M
+         WHERE M.SQL_SEQ = #{sqlSeq, jdbcType=VARCHAR}
+           AND <include refid="visibleCpny"/>
+    </delete>
+
+    <select id="selectParamList" resultMap="ParamResultMap">
+        SELECT P.SQL_SEQ,
+               P.SQL_PARAM_NO,
+               P.PARAM,
+               P.EN_SQL_PARAM_DESC,
+               P.CN_SQL_PARAM_DESC,
+               P.SQL_PARAM_TP,
+               P.DEFAULT_VAL,
+               P.SORT_CD,
+               P.USE_YN
+          FROM SYS_PARAM_BY_SQL P
+         WHERE P.SQL_SEQ = #{sqlSeq, jdbcType=VARCHAR}
+        <if test="onlyUsed">
+           AND P.USE_YN = 'Y'
+        </if>
+         ORDER BY TO_NUMBER(REGEXP_SUBSTR(P.SORT_CD, '^\d+$')) NULLS LAST, TO_NUMBER(P.SQL_PARAM_NO)
+    </select>
+
+    <update id="disableParams">
+        UPDATE SYS_PARAM_BY_SQL
+           SET USE_YN = 'N'
+         WHERE SQL_SEQ = #{sqlSeq, jdbcType=VARCHAR}
+    </update>
+
+    <update id="enableParam">
+        UPDATE SYS_PARAM_BY_SQL
+           SET USE_YN = 'Y'
+        <if test="system and sqlParamTp != null">
+             , EN_SQL_PARAM_DESC = #{enSqlParamDesc, jdbcType=VARCHAR}
+             , CN_SQL_PARAM_DESC = #{cnSqlParamDesc, jdbcType=VARCHAR}
+             , SQL_PARAM_TP      = #{sqlParamTp, jdbcType=VARCHAR}
+             , SORT_CD           = #{sortCd, jdbcType=VARCHAR}
+        </if>
+         WHERE SQL_SEQ = #{sqlSeq, jdbcType=VARCHAR}
+           AND PARAM = #{param, jdbcType=VARCHAR}
+    </update>
+
+    <!-- Giống CreateSqlParam bản gốc: SQL_PARAM_NO = MAX + 1 trong cùng báo cáo (bắt đầu từ 0) -->
+    <insert id="insertParam">
+        INSERT INTO SYS_PARAM_BY_SQL
+               (SQL_SEQ,
+                SQL_PARAM_NO,
+                PARAM,
+                EN_SQL_PARAM_DESC,
+                CN_SQL_PARAM_DESC,
+                SQL_PARAM_TP,
+                SORT_CD,
+                RGST_DTIME,
+                USE_YN)
+        SELECT #{sqlSeq, jdbcType=VARCHAR},
+               TO_CHAR(NVL((SELECT MAX(TO_NUMBER(SQL_PARAM_NO)) + 1
+                              FROM SYS_PARAM_BY_SQL
+                             WHERE SQL_SEQ = #{sqlSeq, jdbcType=VARCHAR}), 0)),
+               #{param, jdbcType=VARCHAR},
+               #{enSqlParamDesc, jdbcType=VARCHAR},
+               #{cnSqlParamDesc, jdbcType=VARCHAR},
+               #{sqlParamTp, jdbcType=VARCHAR},
+               #{sortCd, jdbcType=VARCHAR},
+               SYSDATE,
+               'Y'
+          FROM DUAL
+    </insert>
+
+    <!-- Không ghi SQL_PARAM_TP_DESC (mẫu HTML dùng sinh file JSP ở bản gốc, bản Angular không dùng) -->
+    <update id="updateParam">
+        UPDATE SYS_PARAM_BY_SQL
+           SET EN_SQL_PARAM_DESC = #{enSqlParamDesc, jdbcType=VARCHAR},
+               CN_SQL_PARAM_DESC = #{cnSqlParamDesc, jdbcType=VARCHAR},
+               SQL_PARAM_TP      = #{sqlParamTp, jdbcType=VARCHAR},
+               SORT_CD           = #{sortCd, jdbcType=VARCHAR},
+               UPDT_DTIME        = SYSDATE,
+               UPDT_USER         = SUBSTR(#{adminID, jdbcType=VARCHAR}, 1, 10)
+         WHERE SQL_SEQ = #{sqlSeq, jdbcType=VARCHAR}
+           AND PARAM = #{param, jdbcType=VARCHAR}
+    </update>
+
+    <delete id="deleteParams">
+        DELETE FROM SYS_PARAM_BY_SQL
+         WHERE SQL_SEQ = #{sqlSeq, jdbcType=VARCHAR}
+    </delete>
+</mapper>

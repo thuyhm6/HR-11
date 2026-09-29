@@ -1,0 +1,85 @@
+<div class="row">
+  <div class="col-12">
+    <nz-card>
+      <div class="d-flex align-items-center gap-2 flex-wrap mb-3">
+        <button id="vaap-btn-add" nz-button nzType="primary" type="button" (click)="openAdd()">
+          <i class="bx bx-plus"></i> {{ 'common.addNew' | translate:'Thêm mới' }}
+        </button>
+        <button id="vaap-btn-refresh" nz-button type="button" (click)="load()">
+          <i class="bx bx-refresh"></i> {{ 'common.refresh' | translate:'Làm mới' }}
+        </button>
+      </div>
+
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+      <nz-table [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="25" [nzShowSizeChanger]="true"
+                [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="vaapTotalTpl" nzBordered nzSize="small"
+                #vaapTable>
+        <thead>
+          <tr>
+            <th class="text-center" nzWidth="70px">{{ 'common.stt' | translate:'STT' }}</th>
+            <th>{{ 'vaap.col.duty' | translate:'Vai trò' }}</th>
+            <th class="text-center" nzWidth="120px">{{ 'sys.affirm.title.affirmGradeLevel' | translate:'Cấp duyệt' }}</th>
+            <th nzWidth="200px">{{ 'common.updater' | translate:'Người sửa' }}</th>
+            <th class="text-center" nzWidth="140px">{{ 'vaap.col.updateDate' | translate:'Ngày cập nhật' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'common.action' | translate:'Thao tác' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of vaapTable.data; let i = index">
+            <td class="text-center">{{ (vaapTable.nzPageIndex - 1) * vaapTable.nzPageSize + i + 1 }}</td>
+            <td [attr.title]="row.duty">{{ row.dutyName || row.duty }}</td>
+            <td class="text-center">{{ row.affirmLevel }}</td>
+            <td>{{ row.updatedByName }}</td>
+            <td class="text-center">{{ row.updateDate }}</td>
+            <td class="text-center text-nowrap">
+              <button nz-button nzType="text" nzSize="small" type="button" (click)="openEdit(row)"
+                      [attr.title]="'common.edit' | translate:'Sửa'"><i class="bx bx-edit"></i></button>
+              <button nz-button nzType="text" nzSize="small" nzDanger type="button" (click)="confirmDelete(row)"
+                      [attr.title]="'common.delete' | translate:'Xóa'"><i class="bx bx-trash"></i></button>
+            </td>
+          </tr>
+        </tbody>
+        <ng-template #vaapTotalTpl let-total>
+          {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+        </ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>
+
+<nz-modal [nzVisible]="modalVisible()" nzWidth="480px" [nzMaskClosable]="true" (nzOnCancel)="closeModal()"
+          [nzTitle]="(editing() ? 'vaap.modal.editTitle' : 'vaap.modal.addTitle') | translate:(editing() ? 'Cập nhật vai trò người duyệt' : 'Thêm vai trò người duyệt')"
+          [nzFooter]="vaapFooterTpl">
+  <ng-container *nzModalContent>
+    <div class="mb-3">
+      <label class="form-label fw-semibold" for="vaap-form-duty">
+        {{ 'vaap.col.duty' | translate:'Vai trò' }} <span class="text-danger">*</span>
+      </label>
+      <!-- Sửa: vai trò là khóa (CPNY_ID + DUTY) nên chỉ hiển thị, không cho đổi - giống updateArAffirmPostView.jsp -->
+      <div *ngIf="editing() as row; else vaapDutySelectTpl" id="vaap-form-duty" class="form-control-plaintext">
+        {{ row.dutyName || row.duty }}
+      </div>
+      <ng-template #vaapDutySelectTpl>
+        <nz-select id="vaap-form-duty" class="w-100" [(ngModel)]="formDuty" nzShowSearch nzAllowClear
+                   [nzPlaceHolder]="'common.placeholder.select' | translate:'-- Chọn --'">
+          <nz-option *ngFor="let c of availableDutyOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+        </nz-select>
+      </ng-template>
+    </div>
+    <div>
+      <label class="form-label fw-semibold" for="vaap-form-level">
+        {{ 'sys.affirm.title.affirmGradeLevel' | translate:'Cấp duyệt' }} <span class="text-danger">*</span>
+      </label>
+      <nz-input-number id="vaap-form-level" class="w-100" [(ngModel)]="formLevel" [nzMin]="0" [nzMax]="999"
+                       [nzStep]="1" [nzPrecision]="0"></nz-input-number>
+    </div>
+  </ng-container>
+
+  <ng-template #vaapFooterTpl>
+    <button nz-button type="button" (click)="closeModal()">{{ 'common.cancel' | translate:'Hủy' }}</button>
+    <button nz-button nzType="primary" type="button" [nzLoading]="saving()" (click)="save()">
+      {{ 'common.save' | translate:'Lưu' }}
+    </button>
+  </ng-template>
+</nz-modal>

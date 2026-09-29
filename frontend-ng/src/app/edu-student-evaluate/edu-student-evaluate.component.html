@@ -1,0 +1,72 @@
+<app-edu-course-list idPrefix="ese" [rows]="rows()" [loading]="loading()" [errorMessage]="errorMessage()"
+                     [selected]="selected()" [highlight]="highlight"
+                     [extraColumnTitle]="'inct.salesman.eval.result' | translate:'Kết quả'" [extraColumnTpl]="eseResultTpl"
+                     (search)="search($event)" (rowSelect)="selected.set($event)" (rowDblClick)="openEvaluate($event)">
+  <button nz-button nzType="primary" type="button" id="eseBtnEvaluate" [disabled]="!selected()" (click)="openEvaluate()">
+    <i class="bx bx-edit"></i> {{ 'edu.studentEvaluate.KAOPING.a' | translate:'Đánh giá' }}
+  </button>
+</app-edu-course-list>
+
+<!-- Cột "Kết quả": chỉ hiện "Xem" khi khóa đã có điểm (bản gốc PINGJIACOUNT != 0) -->
+<ng-template #eseResultTpl let-row>
+  <a *ngIf="(row.studentEvalCount ?? 0) > 0" class="ese-link" (click)="openView(row)">{{ 'button.sys.view' | translate:'Xem' }}</a>
+</ng-template>
+
+<!-- Modal đánh giá / xem - bấm ra ngoài modal sẽ đóng (nzMaskClosable) -->
+<nz-modal [nzVisible]="modalVisible()" nzWidth="900px" [nzMaskClosable]="true" (nzOnCancel)="closeModal()"
+          [nzTitle]="readonly() ? ('pa.salary.title.fullInfo' | translate:'Thông tin chi tiết') : ('edu.studentEvaluate.KAOPING.a' | translate:'Đánh giá')">
+  <ng-container *nzModalContent>
+    <app-edu-basic-header [basic]="basic()"></app-edu-basic-header>
+    <div class="d-flex gap-2 flex-wrap mb-2">
+      <ng-container *ngIf="!readonly()">
+        <input #eseImportInput type="file" accept=".xlsx,.xls" class="d-none" (change)="onImportFile($event)">
+        <button nz-button nzSize="small" type="button" id="eseBtnImport" (click)="eseImportInput.click()">
+          <i class="bx bx-upload"></i> {{ 'common.importExcel' | translate:'Import Excel' }}
+        </button>
+        <button nz-button nzSize="small" type="button" id="eseBtnTemplate" (click)="downloadTemplate()">
+          <i class="bx bx-download"></i> {{ 'common.downloadTemplate' | translate:'Tải File Mẫu' }}
+        </button>
+      </ng-container>
+      <button nz-button nzSize="small" type="button" id="eseBtnExport" class="ese-btn-export" (click)="exportExcel()">
+        <i class="bx bx-spreadsheet"></i> {{ 'common.exportExcel' | translate:'Xuất Excel' }}
+      </button>
+    </div>
+    <nz-table #eseTable [nzData]="students()" nzSize="small" [nzPageSize]="50" [nzShowPagination]="students().length > 50"
+              [nzScroll]="{ y: '380px' }">
+      <thead>
+        <tr>
+          <th class="text-center" nzWidth="60px">{{ 'common.stt' | translate:'STT' }}</th>
+          <th nzWidth="120px">{{ 'alert.pa.pasalarycanshu.shehao' | translate:'Mã nhân viên' }}</th>
+          <th nzWidth="160px">{{ 'alert.pa.pasalarycanshu.xingming' | translate:'Họ tên' }}</th>
+          <th>{{ 'ar.attendanceView.viewNoSwipingCard.deptName' | translate:'Phòng ban' }}</th>
+          <th nzWidth="140px">{{ 'ess.trans.title.postGradeName' | translate:'Chức vụ' }}</th>
+          <th class="text-center" nzWidth="130px">{{ 'edu.studentEvaluate.KAOSHICHENGJI.a' | translate:'Điểm số' }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let s of eseTable.data; let i = index">
+          <td class="text-center">{{ i + 1 }}</td>
+          <td>{{ s.empId }}</td>
+          <td>{{ s.localName }}</td>
+          <td>{{ s.deptName }}</td>
+          <td>{{ s.postGradeName }}</td>
+          <td class="text-center">
+            <input *ngIf="!readonly(); else eseScoreText" nz-input nzSize="small" class="ese-score" inputmode="decimal"
+                   [id]="'eseScore_' + s.freeNo" [name]="'eseScore_' + s.freeNo" [(ngModel)]="scores[s.freeNo]">
+            <ng-template #eseScoreText>{{ scores[s.freeNo] }}</ng-template>
+          </td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </ng-container>
+  <ng-template [nzModalFooter]>
+    <button nz-button type="button" (click)="closeModal()">{{ 'common.close' | translate:'Đóng' }}</button>
+    <button *ngIf="!readonly()" nz-button nzType="primary" type="button" [nzLoading]="saving()" (click)="save()">
+      {{ 'common.save' | translate:'Lưu' }}
+    </button>
+  </ng-template>
+</nz-modal>
+
+<!-- Lỗi import theo dòng -->
+<app-edu-import-errors [visible]="importErrorVisible()" (visibleChange)="importErrorVisible.set($event)"
+                       [errors]="importErrors()"></app-edu-import-errors>

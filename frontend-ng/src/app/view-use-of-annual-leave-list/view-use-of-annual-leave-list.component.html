@@ -1,0 +1,107 @@
+<div class="row">
+  <div class="col-12">
+    <!-- Điều kiện tìm kiếm - đứng im khi cuộn (xem .sticky-filter-card trong styles.css) -->
+    <nz-card class="mb-3 sticky-filter-card">
+      <form id="vuoalSearchForm" class="row g-3 align-items-end" (ngSubmit)="search()">
+        <div class="col-md-3">
+          <label class="form-label" for="vuoalKeyword">{{ 'essDept.keyword' | translate:'Mã nhân viên / Họ tên' }}</label>
+          <input nz-input id="vuoalKeyword" [(ngModel)]="keyword" name="keyword"
+                 [placeholder]="'vdp.search.empKeyword.placeholder' | translate:'Nhập mã hoặc họ tên'">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'essDept.dept' | translate:'Phòng ban' }}</label>
+          <nz-tree-select id="vuoalDeptNos" class="w-100" [nzNodes]="deptNodes()" [(ngModel)]="deptNos" name="deptNos"
+                          nzCheckable nzShowSearch nzAllowClear
+                          [nzPlaceHolder]="'vdp.search.dept.placeholder' | translate:'Chọn phòng ban'"></nz-tree-select>
+          <div *ngIf="deptTreeErrorMessage()" class="text-danger small mt-1">{{ deptTreeErrorMessage() }}</div>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'pa.payear.title.payear' | translate:'Năm' }}</label>
+          <nz-select id="vuoalYear" class="w-100" [(ngModel)]="year" name="year">
+            <nz-option *ngFor="let y of yearOptions" [nzValue]="y" [nzLabel]="y"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'org.title.EMP_TYPE' | translate:'Loại nhân viên' }}</label>
+          <nz-select id="vuoalEmpType" class="w-100" [(ngModel)]="empTypeCode" name="empTypeCode" nzAllowClear
+                     [nzPlaceHolder]="'common.selectAll' | translate:'Lựa chọn'">
+            <nz-option *ngFor="let o of empTypeOptions()" [nzValue]="o.codeNo" [nzLabel]="o.codeName"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'ess.infoApply.renzhizhuangtai' | translate:'Trạng thái' }}</label>
+          <nz-select id="vuoalEmpOffice" class="w-100" [(ngModel)]="empOffice" name="empOffice" nzAllowClear
+                     [nzPlaceHolder]="'common.selectAll' | translate:'Lựa chọn'">
+            <nz-option *ngFor="let o of empOfficeOptions()" [nzValue]="o.codeNo" [nzLabel]="o.codeName"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-12 d-flex align-items-end gap-2 flex-wrap justify-content-end">
+          <button id="vuoalBtnSearch" nz-button nzType="primary" type="submit">
+            <i class="bx bx-search"></i> {{ 'essDept.search' | translate:'Tra cứu' }}
+          </button>
+          <button id="vuoalBtnClear" nz-button type="button" (click)="clearSearch()">
+            <i class="bx bx-x"></i> {{ 'essDept.clearFilter' | translate:'Xóa lọc' }}
+          </button>
+          <button id="vuoalBtnExport" nz-button nzType="default" type="button" (click)="exportExcel()">
+            <i class="bx bx-export"></i> {{ 'essDept.exportExcel' | translate:'Xuất Excel' }}
+          </button>
+        </div>
+      </form>
+    </nz-card>
+
+    <nz-card>
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+      <div class="d-flex align-items-center gap-2 mb-2 flex-wrap justify-content-end">
+        <span class="small">{{ 'common.quickFilter' | translate:'Lọc nhanh' }}</span>
+        <input nz-input id="vuoalQuickFilter" [ngModel]="quickFilter()" (ngModelChange)="quickFilter.set($event)"
+               [placeholder]="'common.quickFilter' | translate:'Lọc nhanh'" style="max-width:200px;">
+      </div>
+
+      <nz-table [nzData]="filteredRows()" [nzLoading]="loading()" [nzPageSize]="50" [nzShowSizeChanger]="true"
+                [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="vuoalTotalTpl"
+                [nzScroll]="{ x: '1500px', y: 'calc(100vh - 420px)' }"
+                class="table-nowrap" #vuoalTable>
+        <thead>
+          <tr>
+            <th class="text-center" nzWidth="60px">{{ 'common.stt' | translate:'STT' }}</th>
+            <th nzWidth="160px">{{ 'common.deptName' | translate:'Phòng ban' }}</th>
+            <th class="text-center" nzWidth="100px">{{ 'common.empId' | translate:'Mã nhân viên' }}</th>
+            <th nzWidth="160px">{{ 'common.empName' | translate:'Họ tên' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'common.dateJoined' | translate:'Ngày vào làm' }}</th>
+            <th class="text-center" nzWidth="70px">{{ 'pa.payear.title.payear' | translate:'Năm' }}</th>
+            <th class="text-center" nzWidth="120px">{{ 'ess.infoApply.title.startTime' | translate:'Thời gian bắt đầu' }}</th>
+            <th class="text-center" nzWidth="120px">{{ 'ess.infoApply.end_time' | translate:'Thời gian kết thúc' }}</th>
+            <th class="text-end" nzWidth="110px">{{ 'ess.infoApply.sum_year_leave_days' | translate:'Tổng phép năm' }}</th>
+            <th class="text-end" nzWidth="110px">{{ 'ar.viewVacEmpList.SHENGCHENGNIANJIA.b' | translate:'Tạo phép năm' }}</th>
+            <th class="text-end" nzWidth="90px">{{ 'ar.viewVacEmpList.TESHUNIANJIA.b' | translate:'Đặc biệt' }}</th>
+            <th class="text-end" nzWidth="130px">{{ 'ar.viewVacEmpList.YINIANNIANJIA.b' | translate:'Còn lại năm ngoái' }}</th>
+            <th class="text-end" nzWidth="90px">{{ 'ess.infoApply.nianjiashiyong' | translate:'Đã nghỉ' }}</th>
+            <th class="text-end" nzWidth="90px">{{ 'ess.infoApply.nianjiashengyu' | translate:'Còn lại' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of vuoalTable.data; let i = index">
+            <td class="text-center">{{ (vuoalTable.nzPageIndex - 1) * vuoalTable.nzPageSize + i + 1 }}</td>
+            <td [attr.title]="row.deptName || null">{{ row.deptName }}</td>
+            <td class="text-center">{{ row.empId }}</td>
+            <td [attr.title]="row.localName || null">{{ row.localName }}</td>
+            <td class="text-center">{{ row.dateStarted }}</td>
+            <td class="text-center">{{ row.vacId }}</td>
+            <td class="text-center">{{ row.strtDate }}</td>
+            <td class="text-center">{{ row.endDate }}</td>
+            <td class="text-end">{{ row.totalVac }}</td>
+            <td class="text-end">{{ row.totVacCnt }}</td>
+            <td class="text-end">{{ row.addVac }}</td>
+            <td class="text-end">{{ row.lastYearVac }}</td>
+            <td class="text-end">{{ row.usedVac }}</td>
+            <td class="text-end">{{ row.remainVac }}</td>
+          </tr>
+        </tbody>
+        <ng-template #vuoalTotalTpl let-total>
+          {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+        </ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>

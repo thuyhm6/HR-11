@@ -1,0 +1,85 @@
+<div class="row">
+  <div class="col-12">
+    <!-- Điều kiện tìm kiếm - đứng im khi cuộn (xem .sticky-filter-card trong styles.css) -->
+    <nz-card class="mb-3 sticky-filter-card">
+      <form class="row g-3" (ngSubmit)="search()">
+        <div class="col-md-4">
+          <label class="form-label" for="vasl-keyword">
+            {{ 'sys.viewAffirmSpecialList.BEICAIJUEDUIXIANG.b' | translate:'Người được duyệt' }}
+          </label>
+          <input id="vasl-keyword" nz-input [(ngModel)]="keyword" name="keyword"
+                 [placeholder]="'vasl.search.placeholder' | translate:'Nhập mã / tên nhân viên hoặc phòng ban'">
+        </div>
+        <div class="col-md-8 d-flex align-items-end gap-2 flex-wrap">
+          <button nz-button nzType="primary" type="submit">
+            <i class="bx bx-search"></i> {{ 'common.search' | translate:'Tìm kiếm' }}
+          </button>
+          <button nz-button type="button" (click)="clearSearch()">
+            <i class="bx bx-x"></i> {{ 'common.clearFilter' | translate:'Xóa lọc' }}
+          </button>
+          <button nz-button type="button" class="vasl-btn-export" (click)="exportExcel()">
+            <i class="bx bx-export"></i> {{ 'common.exportExcel' | translate:'Xuất Excel' }}
+          </button>
+        </div>
+      </form>
+    </nz-card>
+
+    <nz-card>
+      <div class="d-flex align-items-center gap-2 flex-wrap mb-3">
+        <button id="vasl-btn-add" nz-button nzType="primary" type="button" (click)="openAdd()">
+          <i class="bx bx-plus"></i> {{ 'ar.viewArNavigationPage.SHEZHI.b' | translate:'Thiết lập' }}
+        </button>
+        <button id="vasl-btn-edit" nz-button type="button" [disabled]="!selected()" (click)="openEdit()">
+          <i class="bx bx-edit"></i> {{ 'common.edit' | translate:'Sửa' }}
+        </button>
+        <button id="vasl-btn-delete" nz-button nzDanger type="button" [disabled]="!selected()" (click)="confirmDelete()">
+          <i class="bx bx-trash"></i> {{ 'common.delete' | translate:'Xóa' }}
+        </button>
+        <span class="text-muted small ms-2">
+          {{ 'vasl.hint.cellClick' | translate:'Chọn 1 ô loại phê duyệt để Sửa/Xóa (nhấp đúp để sửa nhanh).' }}
+        </span>
+      </div>
+
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+      <nz-table [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="25" [nzShowSizeChanger]="true"
+                [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="vaslTotalTpl" nzBordered nzSize="small"
+                [nzScroll]="{ x: scrollX(), y: 'calc(100vh - 420px)' }" #vaslTable>
+        <thead>
+          <tr>
+            <th class="text-center" nzWidth="60px" nzLeft>{{ 'common.stt' | translate:'STT' }}</th>
+            <th nzWidth="240px" nzLeft>
+              {{ 'common.deptName' | translate:'Phòng ban' }} / {{ 'sys.affirm.title.personName' | translate:'Tên nhân viên' }}
+            </th>
+            <th *ngFor="let type of types()" class="text-center" nzWidth="170px">{{ type.content }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of vaslTable.data; let i = index">
+            <td class="text-center" nzLeft (click)="clearSelection()">
+              {{ (vaslTable.nzPageIndex - 1) * vaslTable.nzPageSize + i + 1 }}
+            </td>
+            <td nzLeft (click)="clearSelection()" [attr.title]="row.objectCode">
+              <nz-tag [nzColor]="row.objectType === 'D' ? 'blue' : 'green'">
+                {{ (row.objectType === 'D' ? 'vasl.objectType.D' : 'vasl.objectType.E') | translate:(row.objectType === 'D' ? 'Phòng ban' : 'Nhân viên') }}
+              </nz-tag>
+              {{ row.objectName }}
+            </td>
+            <td *ngFor="let type of types()" class="vasl-cell" [class.vasl-cell-selected]="isSelected(row, type)"
+                (click)="selectCell(row, type)" (dblclick)="openEdit({ row: row, type: type })">
+              <div *ngFor="let d of cellDetails(row, type)" class="vasl-affirmor" [attr.title]="d.empId + ' - ' + d.deptName">
+                {{ d.affirmLevel }}. {{ d.localName }}
+              </div>
+            </td>
+          </tr>
+        </tbody>
+        <ng-template #vaslTotalTpl let-total>
+          {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+        </ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>
+
+<app-affirm-special-edit-modal [visible]="modalVisible()" [mode]="modalMode()" [types]="types()" [cell]="modalCell()"
+                               (closed)="closeModal()" (saved)="onSaved()"></app-affirm-special-edit-modal>

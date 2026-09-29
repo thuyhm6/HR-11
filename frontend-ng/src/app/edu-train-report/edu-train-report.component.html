@@ -1,0 +1,106 @@
+<div class="etrp-layout">
+  <!-- Loại báo cáo (bản gốc: cây bên trái viewTrainReport.jsp) -->
+  <nz-card class="etrp-side" [nzTitle]="'rp.report.title.reporttype' | translate:'Loại bảng biểu'" nzSize="small">
+    <ul nz-menu nzMode="inline" id="etrpMenu" class="etrp-menu">
+      <li nz-menu-item *ngFor="let t of reportTypes()" [nzSelected]="current()?.codeNo === t.codeNo" (click)="selectReport(t)">
+        <i class="bx bx-bar-chart-alt-2 me-2"></i>{{ t.reportName }}
+      </li>
+    </ul>
+    <div *ngIf="reportTypes().length === 0" class="text-muted small p-2">{{ 'common.noData' | translate:'Không có dữ liệu' }}</div>
+  </nz-card>
+
+  <div class="etrp-main">
+    <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+    <nz-alert *ngIf="!current() && reportTypes().length" nzType="info" class="mb-3"
+              [nzMessage]="'edu.trainReport.selectReport' | translate:'Vui lòng chọn loại báo cáo'"></nz-alert>
+
+    <ng-container *ngIf="current() as cur">
+      <!-- Điều kiện báo cáo - theo từng trang JSP gốc -->
+      <nz-card class="mb-3" [nzTitle]="cur.reportName">
+        <form class="row g-3" (ngSubmit)="search()">
+          <ng-container [ngSwitch]="cur.reportKey">
+            <ng-container *ngSwitchCase="'course'">
+              <div class="col-md-3">
+                <label class="form-label" for="etrpTrainDiff">{{ 'liang.hr.viewTraining.title.TRAINING_DIFFERENTIATE' | translate:'Chương trình đào tạo' }}</label>
+                <nz-select id="etrpTrainDiff" class="w-100" name="etrpTrainDiff" nzAllowClear nzShowSearch
+                           [(ngModel)]="searchTrainDiffCode" (ngModelChange)="onTrainDiffChange($event)"
+                           [nzPlaceHolder]="'common.all' | translate:'Tất cả'">
+                  <nz-option *ngFor="let c of trainDiffOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+                </nz-select>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label" for="etrpTrainType">{{ 'edu.systemManager.PEIXUNLEIXING.a' | translate:'Loại hình' }}</label>
+                <nz-select id="etrpTrainType" class="w-100" name="etrpTrainType" nzAllowClear nzShowSearch
+                           [(ngModel)]="searchTrainTypeCode" [nzPlaceHolder]="'common.all' | translate:'Tất cả'">
+                  <nz-option *ngFor="let c of trainTypeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+                </nz-select>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label" for="etrpCourseName">{{ 'empsubject.subjectNm' | translate:'Tên đào tạo' }}</label>
+                <input nz-input id="etrpCourseName" name="etrpCourseName" [(ngModel)]="searchCourseName">
+              </div>
+            </ng-container>
+            <div class="col-md-3" *ngSwitchCase="'postGrade'">
+              <label class="form-label" for="etrpPostGrade">{{ 'pa.insurance.title.postGrade' | translate:'Chức vụ' }}</label>
+              <input nz-input id="etrpPostGrade" name="etrpPostGrade" [(ngModel)]="searchPostGradeName">
+            </div>
+            <div class="col-md-4" *ngSwitchCase="'dept'">
+              <label class="form-label" for="etrpDept">{{ 'ar.attendanceView.viewNoSwipingCard.deptName' | translate:'Phòng ban' }}</label>
+              <nz-tree-select id="etrpDept" class="w-100" name="etrpDept" [nzNodes]="deptNodes()" nzShowSearch nzAllowClear
+                              [(ngModel)]="searchDeptNo" [nzPlaceHolder]="'common.all' | translate:'Tất cả'"
+                              [nzDropdownStyle]="{ 'max-height': '360px' }"></nz-tree-select>
+            </div>
+            <div class="col-md-3" *ngSwitchCase="'year'">
+              <label class="form-label" for="etrpYear">{{ 'pa.salary.canShu.nianDu' | translate:'Năm' }}</label>
+              <nz-date-picker id="etrpYear" class="w-100" name="etrpYear" nzMode="year" nzFormat="yyyy" [(ngModel)]="searchYear"></nz-date-picker>
+            </div>
+            <div class="col-md-3" *ngSwitchCase="'month'">
+              <label class="form-label" for="etrpMonth">{{ 'ar.excelexport.title.month' | translate:'Tháng' }}</label>
+              <nz-date-picker id="etrpMonth" class="w-100" name="etrpMonth" nzMode="month" nzFormat="MM/yyyy" [(ngModel)]="searchMonth"></nz-date-picker>
+            </div>
+            <div class="col-md-3" *ngSwitchCase="'form'">
+              <label class="form-label" for="etrpTrainForm">{{ 'edu.trainreport.KECHENGXINGSHI.a' | translate:'Hình thức khóa học' }}</label>
+              <nz-select id="etrpTrainForm" class="w-100" name="etrpTrainForm" nzAllowClear nzShowSearch
+                         [(ngModel)]="searchTrainFormCode" [nzPlaceHolder]="'common.all' | translate:'Tất cả'">
+                <nz-option *ngFor="let c of trainFormOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+              </nz-select>
+            </div>
+          </ng-container>
+          <div class="col d-flex align-items-end gap-2 flex-wrap">
+            <button nz-button nzType="primary" type="submit" id="etrpBtnSearch">
+              <i class="bx bx-search"></i> {{ 'common.search' | translate:'Tìm kiếm' }}
+            </button>
+            <button nz-button type="button" id="etrpBtnExport" class="etrp-btn-export" (click)="exportExcel()">
+              <i class="bx bx-spreadsheet"></i> {{ 'common.exportExcel' | translate:'Xuất Excel' }}
+            </button>
+          </div>
+        </form>
+      </nz-card>
+
+      <nz-card>
+        <div class="text-muted small mb-2">{{ 'edu.trainReport.hourNote' | translate:'Thời gian tính theo giờ (1 ngày = 8 giờ, 1 tháng = 30 ngày).' }}</div>
+        <nz-table #etrpTable [nzData]="rows()" [nzLoading]="loading()" nzSize="small" nzBordered
+                  [(nzPageIndex)]="pageIndex" [(nzPageSize)]="pageSize" [nzPageSizeOptions]="pageSizeOptions"
+                  [nzShowSizeChanger]="true" [nzShowTotal]="etrpTotalTpl"
+                  [nzScroll]="{ x: '1700px', y: 'calc(100vh - 480px)' }">
+          <thead>
+            <tr>
+              <th class="text-center" nzWidth="60px">{{ 'common.stt' | translate:'STT' }}</th>
+              <th *ngFor="let c of columns()" [class.text-end]="isNumber(c)" [nzWidth]="isNumber(c) ? '110px' : '170px'">{{ columnTitle(c) }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="!loading() && rows().length === 0">
+              <td [attr.colspan]="columns().length + 1" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+            </tr>
+            <tr *ngFor="let row of etrpTable.data; let i = index">
+              <td class="text-center">{{ (pageIndex - 1) * pageSize + i + 1 }}</td>
+              <td *ngFor="let c of columns()" [class.text-end]="isNumber(c)">{{ cell(row, c) }}</td>
+            </tr>
+          </tbody>
+          <ng-template #etrpTotalTpl let-total>{{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}</ng-template>
+        </nz-table>
+      </nz-card>
+    </ng-container>
+  </div>
+</div>

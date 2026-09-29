@@ -1,0 +1,127 @@
+<div class="row">
+  <div class="col-12">
+    <!-- Điều kiện tìm kiếm -->
+    <nz-card class="mb-3 sticky-filter-card">
+      <form class="row g-3" (ngSubmit)="search()">
+        <div class="col-md-3">
+          <label class="form-label" for="ecapSearchCourse">{{ 'empsubject.subjectNm' | translate:'Tên đào tạo' }}</label>
+          <input nz-input id="ecapSearchCourse" name="ecapSearchCourse" [(ngModel)]="searchCourseName">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label" for="ecapSearchStart">{{ 'hrm.recruitManage.START_DATE1' | translate:'Ngày bắt đầu' }}</label>
+          <nz-date-picker id="ecapSearchStart" class="w-100" name="ecapSearchStart" nzFormat="dd/MM/yyyy" [(ngModel)]="searchStart"></nz-date-picker>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label" for="ecapSearchEnd">{{ 'hrm.recruitManage.END_DATE1' | translate:'Ngày kết thúc' }}</label>
+          <nz-date-picker id="ecapSearchEnd" class="w-100" name="ecapSearchEnd" nzFormat="dd/MM/yyyy" [(ngModel)]="searchEnd"></nz-date-picker>
+        </div>
+        <div class="col-md-5 d-flex align-items-end gap-2 flex-wrap">
+          <button nz-button nzType="primary" type="submit" id="ecapBtnSearch">
+            <i class="bx bx-search"></i> {{ 'common.search' | translate:'Tìm kiếm' }}
+          </button>
+          <button nz-button nzType="primary" type="button" id="ecapBtnApply" class="ecap-btn-apply" [nzLoading]="submitting()"
+                  (click)="submit()">
+            <i class="bx bx-send"></i> {{ 'ess.infoApply.title.apply' | translate:'Đăng ký' }}
+          </button>
+        </div>
+      </form>
+    </nz-card>
+
+    <!-- Người phê duyệt (bản gốc bảng addMaker + queryMaker) -->
+    <nz-card class="mb-3" nzSize="small" [nzTitle]="'ess.infoApply.title.affirmor' | translate:'Người duyệt'" [nzExtra]="ecapMakerExtra">
+      <nz-alert *ngIf="defaultMakerCount() === 0 && makers().length === 0" nzType="warning" class="mb-2" nzShowIcon
+                [nzMessage]="'edu.courseApply.msg.noDefaultMaker' | translate:'Không tìm thấy trưởng phòng ban - vui lòng thêm người phê duyệt.'"></nz-alert>
+      <nz-table #ecapMakerTable [nzData]="makers()" nzSize="small" [nzShowPagination]="false" nzBordered>
+        <thead>
+          <tr>
+            <th class="text-center" nzWidth="120px">{{ 'ess.infoApply.title.affirmor' | translate:'Người duyệt' }}</th>
+            <th nzWidth="130px">{{ 'hr.enpinfo.title.EMP.EMPNUMBER' | translate:'Mã nhân viên' }}</th>
+            <th nzWidth="180px">{{ 'alert.pa.pasalarycanshu.xingming' | translate:'Họ tên' }}</th>
+            <th>{{ 'edu.teacherManager.BUMEN.a' | translate:'Phòng ban' }}</th>
+            <th nzWidth="150px">{{ 'org.title.POST_GRADE_NAME' | translate:'Chức vụ' }}</th>
+            <th class="text-center" nzWidth="90px">{{ 'common.delete' | translate:'Xóa' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let m of ecapMakerTable.data; let i = index">
+            <td class="text-center">
+              {{ levelText(i) }}
+              <span *ngIf="i === makers().length - 1" class="ecap-last-maker" [attr.title]="'edu.courseApply.lastMaker' | translate:'Người phê duyệt cuối'">★</span>
+            </td>
+            <td>{{ m.empId }}</td>
+            <td>{{ m.localName }}</td>
+            <td>{{ m.deptName }}</td>
+            <td>{{ m.postGradeName }}</td>
+            <td class="text-center">
+              <button *ngIf="i >= defaultMakerCount()" nz-button nzType="link" nzDanger type="button" [id]="'ecapBtnRemoveMaker_' + i"
+                      (click)="removeMaker(i)">
+                <i class="bx bx-trash"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </nz-table>
+      <ng-template #ecapMakerExtra>
+        <button nz-button nzSize="small" type="button" id="ecapBtnAddMaker" (click)="openPicker()">
+          <i class="bx bx-user-plus"></i> {{ 'edu.courseApply.XINZENGJUECAIZHE.a' | translate:'Thêm người duyệt' }}
+        </button>
+      </ng-template>
+    </nz-card>
+
+    <!-- Khóa được đăng ký -->
+    <nz-card>
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+      <div class="d-flex justify-content-end mb-2">
+        <input nz-input id="ecapQuickFilter" class="ecap-quick-filter" name="ecapQuickFilter"
+               [ngModel]="quickFilter()" (ngModelChange)="onQuickFilterChange($event)"
+               [placeholder]="'common.quickFilter' | translate:'Lọc nhanh'">
+      </div>
+      <nz-table #ecapTable [nzData]="filteredRows()" [nzLoading]="loading()" nzSize="small"
+                [(nzPageIndex)]="pageIndex" [(nzPageSize)]="pageSize" [nzPageSizeOptions]="pageSizeOptions"
+                [nzShowSizeChanger]="true" [nzShowTotal]="ecapTotalTpl"
+                [nzScroll]="{ x: '1300px', y: 'calc(100vh - 560px)' }">
+        <thead>
+          <tr>
+            <th nzWidth="45px" class="text-center" [nzChecked]="allChecked()" [nzIndeterminate]="someChecked()"
+                (nzCheckedChange)="toggleAll($event)"></th>
+            <th class="text-center" nzWidth="60px">{{ 'common.stt' | translate:'STT' }}</th>
+            <th nzWidth="160px">{{ 'edu.systemManager.PEIXUNLEIXING.a' | translate:'Loại hình' }}</th>
+            <th>{{ 'edu.trainArchives.KECHENGMINGCHENGQICI.a' | translate:'Tên khóa học (Kỳ)' }}</th>
+            <th class="text-center" nzWidth="190px">{{ 'edu.trainBasicInformation.PEIXUNSHISHIQIJIAN.a' | translate:'Thời gian' }}</th>
+            <th class="text-center" nzWidth="100px">{{ 'edu.planManager.PEIXUNKESHI.a' | translate:'Thời lượng' }}</th>
+            <th class="text-center" nzWidth="115px">{{ 'edu.courseApply.applyEndDate' | translate:'Hạn đăng ký' }}</th>
+            <th class="text-center" nzWidth="90px">{{ 'edu.planManager.KECHENGBIAO.a' | translate:'Lịch học' }}</th>
+            <th nzWidth="240px">{{ 'pa.salarycode.affirm.reason' | translate:'Lý do' }}</th>
+            <th class="text-center" nzWidth="100px">{{ 'edu.courseApply.SHENQINGZHUANGTAI.a' | translate:'Trạng thái' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!loading() && filteredRows().length === 0">
+            <td colspan="10" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+          </tr>
+          <tr *ngFor="let row of ecapTable.data; let i = index" class="ecap-row" [class.ecap-row-selected]="isChecked(row)">
+            <td class="text-center" [nzChecked]="isChecked(row)" (nzCheckedChange)="toggle(row, $event)"></td>
+            <td class="text-center">{{ (pageIndex - 1) * pageSize + i + 1 }}</td>
+            <td>{{ row.trainTypeCodeName }}</td>
+            <td>{{ courseTitle(row) }}</td>
+            <td class="text-center">{{ row.impleStartDate }} ~ {{ row.impleEndDate }}</td>
+            <td class="text-center">{{ classHour(row) }}</td>
+            <td class="text-center">{{ row.applyEndDate }}</td>
+            <td class="text-center">
+              <a *ngIf="row.syllabusCount" class="ecap-link" (click)="showSyllabus(row)">{{ 'edu.planManager.CHAKANKECHENGBIAO.a' | translate:'Xem' }}</a>
+            </td>
+            <td>
+              <input nz-input nzSize="small" maxlength="1000" [id]="'ecapTask_' + row.basicNo" [name]="'ecapTask_' + row.basicNo"
+                     [(ngModel)]="tasks[row.basicNo]">
+            </td>
+            <td class="text-center">{{ row.applyCount ?? 0 }}/{{ row.planCount ?? 0 }}</td>
+          </tr>
+        </tbody>
+        <ng-template #ecapTotalTpl let-total>{{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}</ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>
+
+<app-edu-employee-picker #ecapPicker [(visible)]="pickerVisible" (picked)="onPicked($event)"></app-edu-employee-picker>
+<app-edu-syllabus-view #ecapSyllabus></app-edu-syllabus-view>

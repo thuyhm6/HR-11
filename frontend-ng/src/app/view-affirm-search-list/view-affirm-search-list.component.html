@@ -1,0 +1,89 @@
+<div class="row">
+  <div class="col-12">
+    <!-- Điều kiện tìm kiếm - đứng im khi cuộn (xem .sticky-filter-card trong styles.css) -->
+    <nz-card class="mb-3 sticky-filter-card">
+      <form class="row g-3" (ngSubmit)="search()">
+        <div class="col-md-3">
+          <label class="form-label" for="vasr-emp-keyword">
+            {{ 'common.empId' | translate:'Mã nhân viên' }} <span class="text-danger">*</span>
+          </label>
+          <input id="vasr-emp-keyword" nz-input name="empKeyword" autocomplete="off"
+                 [ngModel]="empKeyword" (ngModelChange)="onEmpKeywordChange($event)" [nzAutocomplete]="vasrEmpAuto"
+                 [placeholder]="'vasl.placeholder.searchEmp' | translate:'Nhập mã hoặc tên nhân viên để tìm'">
+          <nz-autocomplete #vasrEmpAuto>
+            <nz-auto-option *ngFor="let opt of empOptions()" [nzValue]="opt.empId + ' - ' + opt.localName"
+                            (selectionChange)="$event.isUserInput && selectEmp(opt)">
+              {{ opt.empId }} - {{ opt.localName }} <small class="text-muted">({{ opt.deptName }})</small>
+            </nz-auto-option>
+          </nz-autocomplete>
+          <div *ngIf="selectedEmp() as emp" class="form-text">{{ emp.deptName }}</div>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label" for="vasr-apply-type-no">
+            {{ 'sys.viewAffirmSearchList.XINXISHENQINGLEIXING.b' | translate:'Loại thông tin' }} <span class="text-danger">*</span>
+          </label>
+          <nz-select id="vasr-apply-type-no" class="w-100" name="applyTypeNo" nzShowSearch nzAllowClear
+                     [ngModel]="applyTypeNo" (ngModelChange)="onApplyTypeNoChange($event)"
+                     [nzPlaceHolder]="'common.placeholder.select' | translate:'-- Chọn --'">
+            <nz-option *ngFor="let c of applyTypeNoOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label" for="vasr-apply-type-code">{{ 'sys.affirm.title.applyType' | translate:'Loại xin phép' }}</label>
+          <nz-select id="vasr-apply-type-code" class="w-100" name="applyTypeCode" nzShowSearch nzAllowClear
+                     [(ngModel)]="applyTypeCode" [nzDisabled]="!applyTypeNo"
+                     [nzPlaceHolder]="'common.placeholder.select' | translate:'-- Chọn --'">
+            <nz-option *ngFor="let c of applyTypeCodeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label" for="vasr-apply-length">{{ 'sys.viewAffirmSearchList.SHENQINGCHANGDU.b' | translate:'Thời gian xin phép' }}</label>
+          <nz-input-number id="vasr-apply-length" class="w-100" name="applyLength" [(ngModel)]="applyLength"
+                           [nzMin]="0" [nzMax]="99999" [nzDisabled]="!applyTypeCode"></nz-input-number>
+        </div>
+        <div class="col-12 d-flex align-items-center gap-2 flex-wrap">
+          <button nz-button nzType="primary" type="submit">
+            <i class="bx bx-search"></i> {{ 'common.search' | translate:'Tìm kiếm' }}
+          </button>
+          <button nz-button type="button" (click)="clearSearch()">
+            <i class="bx bx-x"></i> {{ 'common.clearFilter' | translate:'Xóa lọc' }}
+          </button>
+          <span class="text-muted small ms-2">
+            {{ 'vasr.hint.search' | translate:'Không chọn loại xin phép thì hệ thống tra cứu theo loại mặc định với thời gian 0.' }}
+          </span>
+        </div>
+      </form>
+    </nz-card>
+
+    <nz-card>
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+      <nz-table [nzData]="rows()" [nzLoading]="loading()" [nzShowPagination]="false" [nzFrontPagination]="false"
+                nzBordered nzSize="small" [nzNoResult]="vasrNoResultTpl" #vasrTable>
+        <thead>
+          <tr>
+            <th class="text-center" nzWidth="140px">{{ 'sys.viewAffirmSearchList.JUECAIZHEDENGJI.b' | translate:'Cấp người duyệt' }}</th>
+            <th class="text-center" nzWidth="140px">{{ 'common.empId' | translate:'Mã nhân viên' }}</th>
+            <th>{{ 'common.empName' | translate:'Họ tên' }}</th>
+            <th>{{ 'common.deptName' | translate:'Phòng ban' }}</th>
+            <th>{{ 'sys.affirm.title.duty' | translate:'Chức danh' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of vasrTable.data; let i = index">
+            <td class="text-center">{{ i + 1 }}</td>
+            <td class="text-center">{{ item.empId }}</td>
+            <td>{{ item.localName }}</td>
+            <td>{{ item.deptName }}</td>
+            <td>{{ positionLabel(item) }}</td>
+          </tr>
+        </tbody>
+      </nz-table>
+      <ng-template #vasrNoResultTpl>
+        <span class="text-muted">
+          {{ searched() ? ('common.noData' | translate:'Không có dữ liệu') : ('vasr.msg.chooseEmp' | translate:'Vui lòng chọn nhân viên!') }}
+        </span>
+      </ng-template>
+    </nz-card>
+  </div>
+</div>

@@ -1,0 +1,78 @@
+<div class="row">
+  <div class="col-12">
+    <app-edu-apply-filter idPrefix="eccfSearch" [defaultMonth]="true" [flagOptions]="confirmOptions"
+                          flagLabelKey="ess.humanConfirm.title.confirmStatus" flagLabelFallback="Trạng thái xác nhận"
+                          (search)="search($event)">
+      <button nz-button nzType="primary" type="button" id="eccfBtnConfirm" [nzLoading]="saving()" (click)="confirmSelected()">
+        <i class="bx bx-check-double"></i> {{ 'hr.viewPersonalInfo.title.AFFIRM' | translate:'Xác nhận' }}
+      </button>
+    </app-edu-apply-filter>
+
+    <nz-card>
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+      <div class="d-flex justify-content-end mb-2">
+        <input nz-input id="eccfQuickFilter" class="eccf-quick-filter" name="eccfQuickFilter"
+               [ngModel]="quickFilter()" (ngModelChange)="onQuickFilterChange($event)"
+               [placeholder]="'common.quickFilter' | translate:'Lọc nhanh'">
+      </div>
+      <nz-table #eccfTable [nzData]="filteredRows()" [nzLoading]="loading()" nzSize="small"
+                [(nzPageIndex)]="pageIndex" [(nzPageSize)]="pageSize" [nzPageSizeOptions]="pageSizeOptions"
+                [nzShowSizeChanger]="true" [nzShowTotal]="eccfTotalTpl"
+                [nzScroll]="{ x: '1900px', y: 'calc(100vh - 500px)' }">
+        <thead>
+          <tr>
+            <th nzWidth="45px" class="text-center" nzLeft [nzChecked]="allChecked()" [nzIndeterminate]="someChecked()"
+                (nzCheckedChange)="toggleAll($event)"></th>
+            <th class="text-center" nzWidth="60px" nzLeft>{{ 'common.stt' | translate:'STT' }}</th>
+            <th nzWidth="110px" nzLeft>{{ 'ess.infoApply.EMPID' | translate:'Mã nhân viên' }}</th>
+            <th nzWidth="160px" nzLeft>{{ 'ess.viewApply.title.applyName' | translate:'Người đăng ký' }}</th>
+            <th nzWidth="170px">{{ 'hr.viewPersonalInfo.title.DEPTNAME' | translate:'Phòng ban' }}</th>
+            <th nzWidth="120px">{{ 'hr.viewPersonalInfo.title.POST_GRADE_NAME' | translate:'Chức vụ' }}</th>
+            <th nzWidth="150px">{{ 'edu.systemManager.PEIXUNLEIXING.a' | translate:'Loại hình' }}</th>
+            <th nzWidth="240px">{{ 'edu.trainArchives.KECHENGMINGCHENGQICI.a' | translate:'Tên khóa học (Kỳ)' }}</th>
+            <th class="text-center" nzWidth="190px">{{ 'edu.planManager.SHISHIRIQI.a' | translate:'Ngày thực hiện' }}</th>
+            <th class="text-center" nzWidth="100px">{{ 'edu.planManager.PEIXUNKESHI.a' | translate:'Thời lượng' }}</th>
+            <th class="text-center" nzWidth="90px">{{ 'edu.planManager.KECHENGBIAO.a' | translate:'Lịch học' }}</th>
+            <th class="text-center" nzWidth="115px">{{ 'edu.courseApply.applyDate' | translate:'Ngày đăng ký' }}</th>
+            <th nzWidth="200px">{{ 'pa.salarycode.affirm.reason' | translate:'Lý do' }}</th>
+            <th nzWidth="200px">{{ 'ess.viewApply.title.affirmCondition' | translate:'Trạng thái duyệt' }}</th>
+            <th class="text-center" nzWidth="150px" nzRight>{{ 'edu.courseConfirm.QUERENQINGKUANG.a' | translate:'Trạng thái xác nhận' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!loading() && filteredRows().length === 0">
+            <td colspan="15" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+          </tr>
+          <tr *ngFor="let row of eccfTable.data; let i = index" [class.eccf-row-selected]="checked().has(row.applyNo)">
+            <td class="text-center" nzLeft [nzChecked]="checked().has(row.applyNo)" [nzDisabled]="!checkable(row)"
+                (nzCheckedChange)="toggle(row, $event)"></td>
+            <td class="text-center" nzLeft>{{ (pageIndex - 1) * pageSize + i + 1 }}</td>
+            <td nzLeft>{{ row.empId }}</td>
+            <td nzLeft>{{ row.stuLocalName }}</td>
+            <td>{{ row.deptName }}</td>
+            <td>{{ row.postGradeName }}</td>
+            <td>{{ row.trainTypeCodeName }}</td>
+            <td>{{ courseTitle(row) }}</td>
+            <td class="text-center">{{ row.impleStartDate }} ~ {{ row.impleEndDate }}</td>
+            <td class="text-center">{{ classHour(row) }}</td>
+            <td class="text-center">
+              <a *ngIf="row.syllabusCount" class="eccf-link" (click)="showSyllabus(row)">{{ 'edu.planManager.CHAKANKECHENGBIAO.a' | translate:'Xem' }}</a>
+            </td>
+            <td class="text-center">{{ row.applyDate }}</td>
+            <td>{{ row.applyTask }}</td>
+            <td>{{ row.makerLocalName }} <nz-tag [nzColor]="makerColor(row)">{{ makerStatus(row) }}</nz-tag></td>
+            <td class="text-center" nzRight>
+              <nz-select *ngIf="approved(row)" class="w-100" nzSize="small" [id]="'eccfFlag_' + row.makerNo"
+                         [ngModel]="row.confirmFlag" [nzDisabled]="saving()" (ngModelChange)="changeFlag(row, $event)">
+                <nz-option *ngFor="let o of confirmOptions" [nzValue]="o.value" [nzLabel]="o.key | translate:o.fallback"></nz-option>
+              </nz-select>
+            </td>
+          </tr>
+        </tbody>
+        <ng-template #eccfTotalTpl let-total>{{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}</ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>
+
+<app-edu-syllabus-view #eccfSyllabus></app-edu-syllabus-view>

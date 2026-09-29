@@ -1,0 +1,96 @@
+<app-edu-course-list idPrefix="ete" [rows]="rows()" [loading]="loading()" [errorMessage]="errorMessage()"
+                     [selected]="selected()" [highlight]="highlight"
+                     [extraColumnTitle]="'inct.salesman.eval.result' | translate:'Kết quả'" [extraColumnTpl]="eteResultTpl"
+                     (search)="search($event)" (rowSelect)="selected.set($event)" (rowDblClick)="openEvaluate($event)">
+  <button nz-button nzType="primary" type="button" id="eteBtnEvaluate" [disabled]="!selected()" (click)="openEvaluate()">
+    <i class="bx bx-edit"></i> {{ 'edu.studentEvaluate.KAOPING.a' | translate:'Đánh giá' }}
+  </button>
+</app-edu-course-list>
+
+<ng-template #eteResultTpl let-row>
+  <a class="ete-link" (click)="openView(row)">{{ 'button.sys.view' | translate:'Xem' }}</a>
+</ng-template>
+
+<!-- Modal đánh giá / xem (bản gốc teacherEvaluateTSTOInfo / teacherEvaluateTSTOSingle) - bấm ra ngoài modal sẽ đóng -->
+<nz-modal [nzVisible]="modalVisible()" nzWidth="1100px" [nzMaskClosable]="true" (nzOnCancel)="modalVisible.set(false)"
+          [nzTitle]="readonly() ? ('pa.salary.title.fullInfo' | translate:'Thông tin chi tiết') : ('edu.studentEvaluate.KAOPING.a' | translate:'Đánh giá')"
+          [nzFooter]="null">
+  <ng-container *nzModalContent>
+    <app-edu-basic-header [basic]="basic()"></app-edu-basic-header>
+    <div class="d-flex gap-2 flex-wrap mb-2">
+      <button nz-button nzSize="small" type="button" id="eteBtnExport" class="ete-btn-export" (click)="exportExcel()">
+        <i class="bx bx-spreadsheet"></i> {{ 'common.exportExcel' | translate:'Xuất Excel' }}
+      </button>
+      <button *ngIf="!readonly() && manager()" nz-button nzSize="small" type="button" id="eteBtnTemplate" (click)="downloadTemplate()">
+        <i class="bx bx-download"></i> {{ 'common.downloadTemplate' | translate:'Tải File Mẫu' }}
+      </button>
+      <!-- input file ẩn dùng chung cho nút "Nhập" của từng giảng viên -->
+      <input #eteImportInput type="file" accept=".xlsx,.xls" class="d-none" (change)="onImportFile($event)">
+    </div>
+    <nz-table #eteTable [nzData]="summary()" nzSize="small" [nzShowPagination]="false" nzBordered [nzScroll]="{ x: '1000px' }">
+      <thead>
+        <tr>
+          <th rowspan="2" nzWidth="110px">{{ 'alert.pa.pasalarycanshu.shehao' | translate:'Mã nhân viên' }}</th>
+          <th rowspan="2" nzWidth="150px">{{ 'alert.pa.pasalarycanshu.xingming' | translate:'Họ tên' }}</th>
+          <th rowspan="2" nzWidth="120px">{{ 'ess.trans.title.postGradeName' | translate:'Chức vụ' }}</th>
+          <th rowspan="2">{{ 'hr.viewPersonalInfo.title.DEPTNAME' | translate:'Phòng ban' }}</th>
+          <th rowspan="2" class="text-center" nzWidth="100px">{{ 'edu.teacherEvaluate.KAOPINGXUEYUAN.a' | translate:'Học viên đánh giá' }}</th>
+          <th [attr.colspan]="levels.length" class="text-center">{{ 'inct.salesman.eval.result' | translate:'Kết quả' }}</th>
+          <th *ngIf="!readonly() && manager()" rowspan="2" class="text-center" nzWidth="80px">{{ 'edu.teacherEvaluate.DAORU.a' | translate:'Nhập' }}</th>
+        </tr>
+        <tr>
+          <th *ngFor="let l of levels" class="text-center" nzWidth="90px">{{ l.key | translate:l.fallback }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngIf="summary().length === 0">
+          <td [attr.colspan]="levels.length + 6" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+        </tr>
+        <tr *ngFor="let d of eteTable.data">
+          <td>{{ d.key }}</td>
+          <td>{{ d.name }}</td>
+          <td [attr.title]="d.postGradeName || null">{{ d.postGradeName }}</td>
+          <td [attr.title]="d.deptName || null">{{ d.deptName }}</td>
+          <td class="text-center"><a class="ete-link" (click)="openScores(d)">{{ 'button.sys.view' | translate:'Xem' }} ({{ d.count }})</a></td>
+          <td *ngFor="let l of levels" class="text-center">{{ percent(d, l.field) }}</td>
+          <td *ngIf="!readonly() && manager()" class="text-center">
+            <a class="ete-link" (click)="startImport(d.key, eteImportInput)">{{ 'edu.teacherEvaluate.DAORU.a' | translate:'Nhập' }}</a>
+          </td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal điểm từng học viên cho 1 giảng viên (bản gốc teacherTSTOChakan) -->
+<nz-modal [nzVisible]="scoresVisible()" nzWidth="680px" [nzMaskClosable]="true" (nzOnCancel)="scoresVisible.set(false)"
+          [nzTitle]="'edu.teacherEvaluate.KAOPINGXUEYUAN.a' | translate:'Học viên đánh giá'" [nzFooter]="null">
+  <ng-container *nzModalContent>
+    <div class="d-flex gap-4 flex-wrap mb-2">
+      <span>{{ 'edu.teacherEvaluate.JIANGSHISHEHAO.a' | translate:'Mã nhân viên:' }} <b>{{ scoresTeacher()?.key }}</b></span>
+      <span>{{ 'edu.teacherEvaluate.JIANGSHIXINGMING.a' | translate:'Họ tên:' }} <b>{{ scoresTeacher()?.name }}</b></span>
+      <span class="text-danger">{{ 'edu.teacherEvaluate.PINGJUNFEN.a' | translate:'Điểm TB:' }} <b>{{ average() }}</b></span>
+    </div>
+    <nz-table #eteScoreTable [nzData]="scores()" nzSize="small" [nzPageSize]="20" [nzShowPagination]="scores().length > 20">
+      <thead>
+        <tr>
+          <th class="text-center" nzWidth="60px">{{ 'common.stt' | translate:'STT' }}</th>
+          <th>{{ 'edu.teacherEvaluate.PINGJIAZHESHEHAO.a' | translate:'Mã nhân viên đánh giá' }}</th>
+          <th>{{ 'edu.teacherEvaluate.PINGJIAZHEXINGMING.a' | translate:'Họ tên' }}</th>
+          <th class="text-center" nzWidth="100px">{{ 'hr.viewCompetence.title.MARK' | translate:'Điểm số' }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let s of eteScoreTable.data; let i = index">
+          <td class="text-center">{{ i + 1 }}</td>
+          <td>{{ s.stuEmpId }}</td>
+          <td>{{ s.stuLocalName }}</td>
+          <td class="text-center">{{ s.grooming }}</td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </ng-container>
+</nz-modal>
+
+<app-edu-import-errors [visible]="importErrorVisible()" (visibleChange)="importErrorVisible.set($event)"
+                       [errors]="importErrors()"></app-edu-import-errors>

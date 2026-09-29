@@ -1,0 +1,102 @@
+<div class="row">
+  <div class="col-12">
+    <!-- Điều kiện tìm kiếm - đứng im khi cuộn (xem .sticky-filter-card trong styles.css) -->
+    <nz-card class="mb-3 sticky-filter-card">
+      <form class="row g-3" (ngSubmit)="search()">
+        <div class="col-md-2" *ngIf="pgmNm() as m">
+          <label class="form-label">{{ 'disc.autoExcel.SQL_MODULE.Z' | translate:'Module SQL' }}</label>
+          <div id="vrsm-module" class="form-control-plaintext fw-semibold">{{ m }} - {{ moduleLabel(m) }}</div>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label" for="vrsm-sql-seq">{{ 'disc.autoExcel.SQL_NO.Z' | translate:'STT SQL' }}</label>
+          <input id="vrsm-sql-seq" nz-input name="searchSqlSeq" [(ngModel)]="searchSqlSeq" inputmode="numeric">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label" for="vrsm-sql-nm">{{ 'hrm.empinfo.REPORT_NAME.Z' | translate:'Tên bảng biểu' }}</label>
+          <input id="vrsm-sql-nm" nz-input name="searchSqlNm" [(ngModel)]="searchSqlNm"
+                 [placeholder]="'autoExcel.search.namePlaceholder' | translate:'Nhập 1 phần tên báo cáo'">
+        </div>
+        <div class="col d-flex align-items-end gap-2 flex-wrap">
+          <button nz-button nzType="primary" type="submit">
+            <i class="bx bx-search"></i> {{ 'common.search' | translate:'Tìm kiếm' }}
+          </button>
+          <button nz-button type="button" (click)="clearSearch()">
+            <i class="bx bx-x"></i> {{ 'common.clearFilter' | translate:'Xóa lọc' }}
+          </button>
+          <button *ngIf="canEdit()" id="vrsm-btn-add" nz-button type="button" (click)="openAdd()">
+            <i class="bx bx-plus"></i> {{ 'ar.viewRetrieveSqlMasterList.XINJIANBAOBIAO.b' | translate:'Thêm mới bảng' }}
+          </button>
+        </div>
+      </form>
+    </nz-card>
+
+    <nz-card>
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+      <nz-table [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="25" [nzShowSizeChanger]="true"
+                [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="vrsmTotalTpl" nzBordered nzSize="small"
+                [nzScroll]="{ x: '1250px', y: 'calc(100vh - 400px)' }" #vrsmTable>
+        <thead>
+          <tr>
+            <th class="text-center" nzWidth="80px" nzLeft>{{ 'disc.autoExcel.SQL_NO.Z' | translate:'STT SQL' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'pa.salary.canShu.faRen' | translate:'Pháp nhân' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'disc.autoExcel.SQL_MODULE.Z' | translate:'Module SQL' }}</th>
+            <th nzWidth="260px">{{ 'disc.autoExcel.SQL_NAME.Z' | translate:'Tên SQL' }}</th>
+            <th class="text-center" nzWidth="80px">{{ 'ar.viewRetrieveSqlMasterList.PAIXUHAO.b' | translate:'STT' }}</th>
+            <th>{{ 'ar.viewRetrieveSqlMasterList.MIAOSHU.b' | translate:'Miêu tả' }}</th>
+            <th class="text-center" nzWidth="140px">{{ 'common.status' | translate:'Trạng thái' }}</th>
+            <th class="text-center" nzWidth="150px" nzRight>{{ 'common.action' | translate:'Thao tác' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of vrsmTable.data">
+            <td class="text-center" nzLeft>{{ row.sqlSeq }}</td>
+            <td class="text-center" [attr.title]="row.cpnyId">{{ row.cpnyId }}</td>
+            <td class="text-center" [attr.title]="moduleLabel(row.pgmNm)">{{ row.pgmNm }}</td>
+            <td [attr.title]="row.sqlNm">
+              {{ row.sqlNm }}
+              <nz-tag *ngIf="row.isSpecial === 'Y'" nzColor="purple" class="ms-1">{{ 'autoExcel.col.special' | translate:'Mẫu đặc biệt' }}</nz-tag>
+            </td>
+            <td class="text-center">{{ row.sqlOrderById }}</td>
+            <td [attr.title]="row.sqlDesc">{{ row.sqlDesc }}</td>
+            <td class="text-center">
+              <nz-tag [nzColor]="row.sqlStat === 'Y' ? 'green' : 'red'">
+                {{ (row.sqlStat === 'Y' ? 'sys.arAffirmPost.title.able' : 'sys.arAffirmPost.title.enable') | translate:(row.sqlStat === 'Y' ? 'Sử dụng' : 'Chưa bắt đầu sử dụng') }}
+              </nz-tag>
+            </td>
+            <td class="text-center text-nowrap" nzRight>
+              <button nz-button nzType="text" nzSize="small" type="button" (click)="openRun(row)"
+                      [attr.title]="'ar.viewRetrieveSqlMasterList.SHUJUDAOCHU.b' | translate:'Xuất dữ liệu'">
+                <i class="bx bx-export text-success"></i>
+              </button>
+              <ng-container *ngIf="canEdit()">
+                <button nz-button nzType="text" nzSize="small" type="button" (click)="openEdit(row)"
+                        [attr.title]="'ar.viewRetrieveSqlMasterList.BAOBIAOXIUGAI.b' | translate:'Sửa bảng'">
+                  <i class="bx bx-edit"></i>
+                </button>
+                <button nz-button nzType="text" nzSize="small" type="button" (click)="openParams(row)"
+                        [attr.title]="'ar.viewRetrieveSqlMasterList.BAOBIAOCANSHUXIUGAI.b' | translate:'Sửa tham số bảng biểu'">
+                  <i class="bx bx-slider-alt"></i>
+                </button>
+                <button nz-button nzType="text" nzSize="small" nzDanger type="button" (click)="confirmDelete(row)"
+                        [attr.title]="'common.delete' | translate:'Xóa'">
+                  <i class="bx bx-trash"></i>
+                </button>
+              </ng-container>
+            </td>
+          </tr>
+        </tbody>
+        <ng-template #vrsmTotalTpl let-total>
+          {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+        </ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>
+
+<app-auto-excel-edit-modal [visible]="editVisible()" [sqlSeq]="editSqlSeq()" [moduleOptions]="moduleOptions()"
+                           (closed)="editVisible.set(false)" (saved)="onEditSaved()"></app-auto-excel-edit-modal>
+<app-auto-excel-param-modal [visible]="paramVisible()" [sqlSeq]="targetSqlSeq()"
+                            (closed)="paramVisible.set(false)" (saved)="onParamSaved()"></app-auto-excel-param-modal>
+<app-auto-excel-run-modal [visible]="runVisible()" [sqlSeq]="targetSqlSeq()"
+                          (closed)="runVisible.set(false)"></app-auto-excel-run-modal>

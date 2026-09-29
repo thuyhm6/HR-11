@@ -4,47 +4,42 @@
     <nz-card class="mb-3 sticky-filter-card">
       <form class="row g-3 align-items-end" (ngSubmit)="search()">
         <div class="col-md-2">
-          <label class="form-label">{{ 'common.month' | translate:'Tháng' }}</label>
-          <nz-date-picker class="w-100" [(ngModel)]="monthValue" name="month" nzMode="month" nzFormat="MM/yyyy"
-                          [nzAllowClear]="false"></nz-date-picker>
+          <label class="form-label" for="vmdl-month">{{ 'ar.excelexport.title.month' | translate:'Tháng' }}</label>
+          <nz-date-picker id="vmdl-month" class="w-100" [(ngModel)]="monthValue" name="month" nzMode="month"
+                          nzFormat="MM/yyyy" [nzAllowClear]="false"></nz-date-picker>
         </div>
         <div class="col-md-2">
-          <label class="form-label">{{ 'common.year' | translate:'Năm' }}</label>
-          <nz-select class="w-100" [(ngModel)]="reportYear" name="reportYear">
-            <nz-option *ngFor="let y of yearOptions" [nzValue]="y" [nzLabel]="y"></nz-option>
-          </nz-select>
-        </div>
-        <div class="col-md-3">
-          <label class="form-label">{{ 'essDept.keyword' | translate:'Mã nhân viên / Họ tên' }}</label>
-          <input nz-input [(ngModel)]="keyword" name="keyword"
+          <label class="form-label" for="vmdl-keyword">{{ 'hrm.empinfo.nameAndEmpid' | translate:'Mã nhân viên/Họ tên' }}</label>
+          <input id="vmdl-keyword" nz-input [(ngModel)]="keyword" name="keyword"
                  [placeholder]="'vdp.search.empKeyword.placeholder' | translate:'Nhập mã hoặc họ tên'">
         </div>
         <div class="col-md-3">
-          <label class="form-label">{{ 'common.deptName' | translate:'Phòng ban' }}</label>
+          <label class="form-label">{{ 'ess.infoApply.DEPT' | translate:'Phòng ban' }}</label>
           <nz-tree-select class="w-100" [nzNodes]="deptNodes()" [(ngModel)]="deptNos" name="deptNos"
-                           nzCheckable nzShowSearch nzAllowClear
-                           [nzPlaceHolder]="'vdp.search.dept.placeholder' | translate:'Chọn phòng ban'"></nz-tree-select>
+                          nzCheckable nzShowSearch nzAllowClear
+                          [nzPlaceHolder]="'vdp.search.dept.placeholder' | translate:'Chọn phòng ban'"></nz-tree-select>
           <div *ngIf="deptTreeErrorMessage()" class="text-danger small mt-1">{{ deptTreeErrorMessage() }}</div>
         </div>
         <div class="col-md-2">
-          <label class="form-label">{{ 'common.type' | translate:'Loại' }}</label>
-          <nz-select class="w-100" [(ngModel)]="empTypeCode" name="empTypeCode" nzAllowClear
+          <label class="form-label">{{ 'hrm.empinfo.NATIONALITY_CODE' | translate:'Quốc tịch' }}</label>
+          <nz-select class="w-100" [(ngModel)]="nationalityCode" name="nationalityCode" nzAllowClear nzShowSearch
                      [nzPlaceHolder]="'common.all' | translate:'Tất cả'">
-            <nz-option *ngFor="let o of empTypeOptions" [nzValue]="o.value" [nzLabel]="o.labelKey | translate:o.fallback"></nz-option>
+            <nz-option *ngFor="let c of nationalityOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
           </nz-select>
         </div>
-        <div class="col-md-3">
-          <label class="form-label">{{ 'ess.viewMonthDetailList.reportType' | translate:'Loại báo cáo' }}</label>
-          <nz-select class="w-100" [(ngModel)]="reportType" name="reportType">
-            <nz-option *ngFor="let o of reportTypeOptions" [nzValue]="o.value" [nzLabel]="o.labelKey | translate:o.fallback"></nz-option>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'hrm.empinfo.EMP_OFFICE_NAME' | translate:'Trạng thái' }}</label>
+          <nz-select class="w-100" [(ngModel)]="empOffice" name="empOffice" nzAllowClear
+                     [nzPlaceHolder]="'common.all' | translate:'Tất cả'">
+            <nz-option *ngFor="let c of empOfficeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
           </nz-select>
         </div>
         <div class="col-12 d-flex align-items-end gap-2 flex-wrap">
-          <button nz-button nzType="primary" type="submit">
-            <i class="bx bx-search"></i> {{ 'essDept.search' | translate:'Tra cứu' }}
+          <button nz-button nzType="primary" type="submit" [nzLoading]="loading()">
+            <i class="bx bx-search"></i> {{ 'org.title.SELECT' | translate:'Tra cứu' }}
           </button>
-          <button nz-button nzType="default" type="button" (click)="exportReport()">
-            <i class="bx bx-export"></i> {{ 'ess.viewMonthDetailList.btnExport' | translate:'XUẤT BÁO CÁO' }}
+          <button nz-button nzType="default" type="button" class="vmdl-btn-export" (click)="exportExcel()">
+            <i class="bx bx-export"></i> {{ 'ess.infoApply.EXCEL_OUT' | translate:'Xuất Excel' }}
           </button>
         </div>
       </form>
@@ -54,75 +49,86 @@
       <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
 
       <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
-        <span class="fw-bold">{{ 'common.total' | translate:'Tổng' }}: {{ recordsTotal() }}</span>
+        <span class="fw-bold">{{ 'common.total' | translate:'Tổng' }}: {{ rows().length }}</span>
         <div class="ms-auto d-flex align-items-center gap-2">
           <span class="small">{{ 'common.quickFilter' | translate:'Lọc nhanh' }}</span>
-          <input nz-input [(ngModel)]="quickFilter" (ngModelChange)="onQuickFilterChange()" name="quickFilter"
-                 [placeholder]="'common.quickFilter' | translate:'Lọc nhanh'" style="max-width:200px;">
+          <input nz-input [ngModel]="quickFilter()" (ngModelChange)="onQuickFilterChange($event)" name="vmdlQuickFilter"
+                 [placeholder]="'common.quickFilter' | translate:'Lọc nhanh'" class="vmdl-quick-filter">
         </div>
       </div>
 
-      <!-- Bọc div cuộn ngang thủ công (không dùng nzScroll) vì nz-table chỉ đồng bộ độ rộng cột
-           theo HÀNG ĐẦU TIÊN của thead khi header có rowspan/colspan (xem giải thích đầy đủ ở
-           dept-ot-apply-info.component.html). -->
-      <div class="table-scroll-wrapper">
-        <nz-table [nzData]="rows()" [nzFrontPagination]="false" [nzLoading]="loading()"
-                  [nzTotal]="recordsTotal()" [nzPageIndex]="pageIndex" [nzPageSize]="pageSize"
-                  [nzPageSizeOptions]="pageSizeOptions" nzShowSizeChanger
-                  (nzPageIndexChange)="onPageIndexChange($event)" (nzPageSizeChange)="onPageSizeChange($event)"
-                  class="table-nowrap">
+      <!-- Bọc div cuộn ngang thủ công (không dùng nzScroll/nzLeft) vì header 2 hàng rowspan/colspan + số cột
+           theo ngày thay đổi theo kỳ công (xem giải thích ở dept-ot-apply-info.component.html). 4 cột đầu cố
+           định bằng CSS sticky như fixedColumns leftColumns: 4 của bản gốc. -->
+      <div class="vmdl-scroll">
+        <nz-table #vmdlTable [nzData]="rows()" [nzLoading]="loading()" [(nzPageIndex)]="pageIndex"
+                  [(nzPageSize)]="pageSize" [nzPageSizeOptions]="pageSizeOptions" nzShowSizeChanger nzSize="small"
+                  [nzNoResult]="'ess.viewMonthDetailList.msg.noData' | translate:'Không có dữ liệu'"
+                  class="vmdl-table">
           <thead>
             <tr>
-              <th rowspan="2" class="text-center">{{ 'common.stt' | translate:'NO.' }}</th>
-              <th [attr.colspan]="7" class="text-center">{{ 'ess.viewMonthDetailList.BASIC_INFO.b' | translate:'Thông tin cơ bản' }}</th>
-              <th [attr.colspan]="3" class="text-center">{{ 'ess.viewMonthDetailList.OT_ON_WEEKDAY.b' | translate:'HÀNH CHÍNH' }}</th>
-              <th [attr.colspan]="2" class="text-center">{{ 'ess.viewMonthDetailList.OT_ON_WEEKEND.b' | translate:'NGÀY NGHỈ' }}</th>
-              <th [attr.colspan]="2" class="text-center">{{ 'ess.viewMonthDetailList.OT_ON_HOLIDAY.b' | translate:'LỄ TẾT' }}</th>
-              <th [attr.colspan]="3" class="text-center">{{ 'ess.viewMonthDetailList.WORK_DAYS.b' | translate:'Số ngày làm việc' }}</th>
+              <th colspan="4" class="vmdl-sticky vmdl-sticky-group text-center">
+                {{ 'ess.empInfo.essential_information' | translate:'Thông tin cơ bản' }}
+              </th>
+              <th colspan="5"></th>
+              <ng-container *ngFor="let g of numGroups">
+                <th *ngIf="g.single" rowspan="2" class="text-center vmdl-num">{{ labelText(g.label) }}</th>
+                <th *ngIf="!g.single" [attr.colspan]="g.cols.length" class="text-center">{{ labelText(g.label) }}</th>
+              </ng-container>
+              <th *ngIf="dates().length" [attr.colspan]="dates().length" class="text-center">
+                {{ 'ess.viewMonthDetailList.DAY_LEAVE_DETAIL.b' | translate:'HÀNH CHÍNH' }}
+              </th>
+              <th *ngIf="dates().length" [attr.colspan]="dates().length" class="text-center">
+                {{ 'ess.viewMonthDetailList.DAY_OT_DETAIL.b' | translate:'TĂNG CA NGÀY' }}
+              </th>
+              <th *ngIf="dates().length" [attr.colspan]="dates().length" class="text-center">
+                {{ 'ess.viewMonthDetailList.NIGHT_OT_DETAIL.b' | translate:'TĂNG CA ĐÊM' }}
+              </th>
             </tr>
             <tr>
-              <th class="text-center">{{ 'common.empId' | translate:'Mã nhân viên' }}</th>
-              <th class="text-center">{{ 'common.empName' | translate:'Họ tên' }}</th>
-              <th class="text-center">{{ 'common.deptName' | translate:'Phòng ban' }}</th>
-              <th class="text-center">{{ 'epi.field.dob' | translate:'Ngày sinh' }}</th>
-              <th class="text-center">{{ 'common.duty' | translate:'Chức vụ' }}</th>
-              <th class="text-center">{{ 'common.dateJoined' | translate:'Ngày vào làm' }}</th>
-              <th class="text-center">{{ 'hr.enpinfo.title.EMP.PROBATION_END_DATE' | translate:'Ngày kết thúc thử việc' }}</th>
-              <th class="text-center">{{ 'ess.viewMonthDetailList.DAY_OT.b' | translate:'TC NGÀY' }}</th>
-              <th class="text-center">{{ 'ess.viewMonthDetailList.NIGHT_OT.b' | translate:'TC ĐÊM' }}</th>
-              <th class="text-center">{{ 'ess.viewMonthDetailList.NIGHT_OT_210.b' | translate:'TC ĐÊM(210%)' }}</th>
-              <th class="text-center">{{ 'ess.viewMonthDetailList.DAY_OT.b' | translate:'TC NGÀY' }}</th>
-              <th class="text-center">{{ 'ess.viewMonthDetailList.NIGHT_OT.b' | translate:'TC ĐÊM' }}</th>
-              <th class="text-center">{{ 'ess.viewMonthDetailList.DAY_OT.b' | translate:'TC NGÀY' }}</th>
-              <th class="text-center">{{ 'ess.viewMonthDetailList.NIGHT_OT.b' | translate:'TC ĐÊM' }}</th>
-              <th class="text-center">{{ 'ar.viewArShiftMonthCheckList.ZHENGCHANGBAN.b' | translate:'Ca hành chính' }}</th>
-              <th class="text-center">{{ 'ess.viewMonthDetailList.NIGHT_SHIFT.b' | translate:'CA ĐÊM' }}</th>
-              <th class="text-center">{{ 'ar.viewSearchOtInfo.YINGCHUQIN.b' | translate:'Ngày công chuẩn' }}</th>
+              <th class="vmdl-sticky vmdl-sticky-0 text-center">{{ 'common.stt' | translate:'STT' }}</th>
+              <th class="vmdl-sticky vmdl-sticky-1 text-center" [nzSortFn]="sortEmpId">
+                {{ 'ess.infoApply.EMPID' | translate:'Mã nhân viên' }}
+              </th>
+              <th class="vmdl-sticky vmdl-sticky-2 text-center" [nzSortFn]="sortName">
+                {{ 'ess.infoApply.NAME' | translate:'Họ tên' }}
+              </th>
+              <th class="vmdl-sticky vmdl-sticky-3 text-center" [nzSortFn]="sortDept">
+                {{ 'ess.infoApply.DEPT' | translate:'Phòng ban' }}
+              </th>
+              <th class="text-center">{{ 'ess.trans.title.postGradeName' | translate:'Chức vụ' }}</th>
+              <th class="text-center">{{ 'sys.affirm.title.duty' | translate:'Chức danh' }}</th>
+              <th class="text-center">{{ 'ess.infoApply.employee_type' | translate:'Loại nhân viên' }}</th>
+              <th class="text-center">{{ 'ess.trans.title.entryJobDate' | translate:'Ngày vào làm' }}</th>
+              <th class="text-center">{{ 'hrm.recruitManage.LEAVE_DATE' | translate:'Ngày thôi việc' }}</th>
+              <ng-container *ngFor="let g of numGroups">
+                <ng-container *ngIf="!g.single">
+                  <th *ngFor="let c of g.cols" class="text-center vmdl-num">{{ labelText(c.label) }}</th>
+                </ng-container>
+              </ng-container>
+              <ng-container *ngFor="let _ of [0, 1, 2]">
+                <th *ngFor="let d of dates()" class="text-center vmdl-day" [class.vmdl-off]="isOffDay(d)"
+                    [attr.title]="d.ddateStr">
+                  {{ d.weekTitle }}<br>{{ d.iday }}
+                </th>
+              </ng-container>
             </tr>
           </thead>
           <tbody>
-            <tr *ngIf="!loading() && rows().length === 0">
-              <td [attr.colspan]="18" class="text-center text-muted">{{ 'ess.viewMonthDetailList.msg.noData' | translate:'Không có dữ liệu' }}</td>
-            </tr>
-            <tr *ngFor="let row of rows(); let i = index">
-              <td class="text-center">{{ (pageIndex - 1) * pageSize + i + 1 }}</td>
-              <td class="text-center" [attr.title]="row.empId || null">{{ row.empId }}</td>
-              <td [attr.title]="row.localName || null">{{ row.localName }}</td>
-              <td [attr.title]="row.deptName || null">{{ row.deptName }}</td>
-              <td class="text-center">{{ row.dob }}</td>
-              <td class="text-center" [attr.title]="row.dutyName || null">{{ row.dutyName }}</td>
-              <td class="text-center">{{ row.dateStarted }}</td>
-              <td class="text-center">{{ row.endProbationDate }}</td>
-              <td class="text-end">{{ row.hcDayOt }}</td>
-              <td class="text-end">{{ row.hcNightOt }}</td>
-              <td class="text-end">{{ row.hcNightOt210 }}</td>
-              <td class="text-end">{{ row.restDayOt }}</td>
-              <td class="text-end">{{ row.restNightOt }}</td>
-              <td class="text-end">{{ row.holDayOt }}</td>
-              <td class="text-end">{{ row.holNightOt }}</td>
-              <td class="text-end">{{ row.adminShiftDays }}</td>
-              <td class="text-end">{{ row.nightShiftDays }}</td>
-              <td class="text-end">{{ row.standardWorkDays }}</td>
+            <tr *ngFor="let row of vmdlTable.data; let i = index">
+              <td class="vmdl-sticky vmdl-sticky-0 text-center">{{ (pageIndex - 1) * pageSize + i + 1 }}</td>
+              <td class="vmdl-sticky vmdl-sticky-1 text-center">{{ row.raw['EMPID'] }}</td>
+              <td class="vmdl-sticky vmdl-sticky-2" [attr.title]="row.raw['LOCAL_NAME'] || null">{{ row.raw['LOCAL_NAME'] }}</td>
+              <td class="vmdl-sticky vmdl-sticky-3" [attr.title]="row.raw['DEPT_NAME'] || null">{{ row.raw['DEPT_NAME'] }}</td>
+              <td>{{ row.raw['POST_GRADE_NAME'] }}</td>
+              <td>{{ row.raw['POSITION_NAME'] }}</td>
+              <td>{{ row.raw['EMP_TYPE_NAME'] }}</td>
+              <td class="text-center">{{ row.raw['DATE_STARTED'] }}</td>
+              <td class="text-center">{{ row.raw['DATE_LEFT'] }}</td>
+              <td *ngFor="let v of row.nums" class="text-center">{{ v }}</td>
+              <td *ngFor="let d of dates()" class="text-center" [class.vmdl-off]="isOffDay(d)">{{ row.raw[d.dateKey] }}</td>
+              <td *ngFor="let d of dates()" class="text-center" [class.vmdl-off]="isOffDay(d)">{{ row.raw[d.dayOtKey] }}</td>
+              <td *ngFor="let d of dates()" class="text-center" [class.vmdl-off]="isOffDay(d)">{{ row.raw[d.nightOtKey] }}</td>
             </tr>
           </tbody>
         </nz-table>

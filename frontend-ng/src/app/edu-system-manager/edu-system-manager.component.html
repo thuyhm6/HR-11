@@ -1,0 +1,128 @@
+<div class="row">
+  <div class="col-12">
+    <!-- Điều kiện tìm kiếm -->
+    <nz-card class="mb-3 sticky-filter-card">
+      <form class="row g-3" (ngSubmit)="search()">
+        <div class="col-md-3">
+          <label class="form-label" for="esmSearchTrainDiff">{{ 'liang.hr.viewTraining.title.TRAINING_DIFFERENTIATE' | translate:'Chương trình đào tạo' }}</label>
+          <nz-select id="esmSearchTrainDiff" class="w-100" name="esmSearchTrainDiff" nzAllowClear nzShowSearch
+                     [(ngModel)]="searchTrainDiffCode" (ngModelChange)="onSearchDiffChange($event)"
+                     [nzPlaceHolder]="'common.all' | translate:'Tất cả'">
+            <nz-option *ngFor="let c of trainDiffOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label" for="esmSearchTrainType">{{ 'edu.systemManager.PEIXUNLEIXING.a' | translate:'Loại hình' }}</label>
+          <nz-select id="esmSearchTrainType" class="w-100" name="esmSearchTrainType" nzAllowClear nzShowSearch
+                     [(ngModel)]="searchTrainTypeCode" [nzPlaceHolder]="'common.all' | translate:'Tất cả'">
+            <nz-option *ngFor="let c of searchTypeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-6 d-flex align-items-end gap-2 flex-wrap">
+          <button nz-button nzType="primary" type="submit" id="esmBtnSearch">
+            <i class="bx bx-search"></i> {{ 'common.search' | translate:'Tìm kiếm' }}
+          </button>
+          <button nz-button nzType="primary" type="button" id="esmBtnAdd" (click)="openAddModal()">
+            <i class="bx bx-plus"></i> {{ 'common.addNew' | translate:'Thêm mới' }}
+          </button>
+          <button nz-button type="button" id="esmBtnEdit" [disabled]="!selected()" (click)="openEditModal()">
+            <i class="bx bx-edit"></i> {{ 'common.edit' | translate:'Sửa' }}
+          </button>
+          <button nz-button nzDanger type="button" id="esmBtnDelete" [disabled]="!selected()" (click)="confirmDelete()">
+            <i class="bx bx-trash"></i> {{ 'common.delete' | translate:'Xóa' }}
+          </button>
+        </div>
+      </form>
+    </nz-card>
+
+    <nz-card>
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+      <div class="d-flex justify-content-end mb-2">
+        <input nz-input id="esmQuickFilter" class="esm-quick-filter" name="esmQuickFilter"
+               [ngModel]="quickFilter()" (ngModelChange)="onQuickFilterChange($event)"
+               [placeholder]="'common.quickFilter' | translate:'Lọc nhanh'">
+      </div>
+
+      <!-- Phân trang + lọc nhanh + sắp xếp phía client (thay jQuery DataTables của bản gốc). -->
+      <nz-table #esmTable [nzData]="filteredRows()" [nzLoading]="loading()"
+                [(nzPageIndex)]="pageIndex" [(nzPageSize)]="pageSize" [nzPageSizeOptions]="pageSizeOptions"
+                [nzShowSizeChanger]="true" [nzShowTotal]="esmTotalTpl" nzSize="small"
+                [nzScroll]="{ x: '900px', y: 'calc(100vh - 420px)' }">
+        <thead>
+          <tr>
+            <th class="text-center" nzWidth="60px">{{ 'common.stt' | translate:'STT' }}</th>
+            <th nzWidth="220px" [nzSortFn]="sortDiff">{{ 'liang.hr.viewTraining.title.TRAINING_DIFFERENTIATE' | translate:'Chương trình đào tạo' }}</th>
+            <th nzWidth="220px" [nzSortFn]="sortType">{{ 'edu.systemManager.PEIXUNLEIXING.a' | translate:'Loại hình' }}</th>
+            <th class="text-center" nzWidth="150px" [nzSortFn]="sortTypeNo">{{ 'edu.systemManager.LEIXINGBIANHAO.a' | translate:'Mã loại hình' }}</th>
+            <th [nzSortFn]="sortRemark">{{ 'org.title.REMARK' | translate:'Ghi chú' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!loading() && filteredRows().length === 0">
+            <td colspan="5" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+          </tr>
+          <tr *ngFor="let row of esmTable.data; let i = index" class="esm-row"
+              [class.esm-row-selected]="isSelected(row)"
+              (click)="selectRow(row)" (dblclick)="openEditModal(row)">
+            <td class="text-center">{{ (pageIndex - 1) * pageSize + i + 1 }}</td>
+            <td>{{ row.trainDiffCodeName }}</td>
+            <td>{{ row.trainTypeCodeName }}</td>
+            <td class="text-center">{{ row.trainTypeNo }}</td>
+            <td [attr.title]="row.remark || null">{{ row.remark }}</td>
+          </tr>
+        </tbody>
+        <ng-template #esmTotalTpl let-total>
+          {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+        </ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>
+
+<!-- Modal Thêm mới / Sửa - bấm ra ngoài modal sẽ đóng (nzMaskClosable) -->
+<nz-modal [nzVisible]="modalVisible()" [nzTitle]="modalTitle()" nzWidth="640px" [nzMaskClosable]="true"
+          (nzOnCancel)="closeModal()" (nzOnOk)="saveForm()" [nzOkLoading]="saving()"
+          [nzOkText]="'common.save' | translate:'Lưu'" [nzCancelText]="'common.close' | translate:'Đóng'">
+  <ng-container *nzModalContent>
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label fw-semibold" for="esmFormTrainDiff">
+          {{ 'liang.hr.viewTraining.title.TRAINING_DIFFERENTIATE' | translate:'Chương trình đào tạo' }}
+          <span class="text-danger" *ngIf="isNew()">*</span>
+        </label>
+        <nz-select *ngIf="isNew(); else esmDiffReadonly" id="esmFormTrainDiff" class="w-100" name="esmFormTrainDiff"
+                   nzShowSearch [(ngModel)]="form.trainDiffCode" (ngModelChange)="onFormDiffChange($event)"
+                   [nzPlaceHolder]="'common.pleaseSelect' | translate:'Vui lòng chọn'">
+          <nz-option *ngFor="let c of trainDiffOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+        </nz-select>
+        <ng-template #esmDiffReadonly>
+          <input nz-input id="esmFormTrainDiff" [value]="form.trainDiffCodeName" readonly>
+        </ng-template>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold" for="esmFormTrainType">
+          {{ 'edu.systemManager.PEIXUNLEIXING.a' | translate:'Loại hình' }}
+          <span class="text-danger" *ngIf="isNew()">*</span>
+        </label>
+        <nz-select *ngIf="isNew(); else esmTypeReadonly" id="esmFormTrainType" class="w-100" name="esmFormTrainType"
+                   nzShowSearch [(ngModel)]="form.trainTypeCode"
+                   [nzPlaceHolder]="'common.pleaseSelect' | translate:'Vui lòng chọn'">
+          <nz-option *ngFor="let c of formTypeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+        </nz-select>
+        <ng-template #esmTypeReadonly>
+          <input nz-input id="esmFormTrainType" [value]="form.trainTypeCodeName" readonly>
+        </ng-template>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold" for="esmFormTypeNo">{{ 'edu.systemManager.LEIXINGBIANHAO.a' | translate:'Mã loại hình' }}</label>
+        <input nz-input id="esmFormTypeNo" readonly [value]="form.trainTypeNo"
+               [placeholder]="'edu.systemManager.typeNoAuto' | translate:'Tự động sinh khi lưu'">
+      </div>
+      <div class="col-12">
+        <label class="form-label fw-semibold" for="esmFormRemark">{{ 'org.title.REMARK' | translate:'Ghi chú' }}</label>
+        <textarea nz-input id="esmFormRemark" name="esmFormRemark" rows="3" maxlength="200" [(ngModel)]="form.remark"></textarea>
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>

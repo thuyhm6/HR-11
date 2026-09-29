@@ -1,6 +1,7 @@
 package com.ait.ess.tempEmp.controller;
 
 import com.ait.ess.tempEmp.dto.MonthDetailListDto;
+import com.ait.ess.tempEmp.dto.MonthDetailViewDto;
 import com.ait.ess.tempEmp.dto.YearUseInfoListDto;
 import com.ait.ess.tempEmp.service.MonthDetailListService;
 import com.ait.ess.tempEmp.service.YearUseInfoListService;
@@ -32,6 +33,12 @@ public class EssTempEmpController {
     @ResponseBody
     public DataTablesResponse<MonthDetailListDto> getMonthDetailList(MonthDetailListDto params) {
         return monthDetailListService.getPageList(params);
+    }
+
+    @GetMapping("/api/monthDetailList/detail")
+    @ResponseBody
+    public MonthDetailViewDto getMonthDetailView(MonthDetailListDto params) {
+        return monthDetailListService.getDetailView(params);
     }
 
     @GetMapping("/api/monthDetailList/export")

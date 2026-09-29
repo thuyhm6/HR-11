@@ -1,0 +1,17 @@
+.ecap-quick-filter {
+  max-width: 260px;
+}
+
+.ecap-row.ecap-row-selected > td {
+  background: #e6f4ff;
+}
+
+.ecap-link {
+  color: #1677ff;
+  cursor: pointer;
+}
+
+.ecap-last-maker {
+  color: #faad14;
+  margin-left: 4px;
+}

@@ -10,7 +10,7 @@ import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import { NzTreeSelectModule } from 'ng-zorro-antd/tree-select';
 import { NzTreeNodeOptions } from 'ng-zorro-antd/tree';
-import { NzModalService } from 'ng-zorro-antd/modal';
+import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { AuthService } from '../auth/auth.service';
 import { I18nService } from '../i18n/i18n.service';
@@ -86,6 +86,7 @@ function emptyForm(personId: string): DecisionForm {
     NzCheckboxModule,
     NzDatePickerModule,
     NzTreeSelectModule,
+    NzModalModule,
     TranslatePipe,
   ],
   templateUrl: './view-start-point.component.html',

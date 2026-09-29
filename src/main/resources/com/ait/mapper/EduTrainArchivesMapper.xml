@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<!-- Hồ sơ đào tạo (chuyển từ sqlTrainEducation.xml trainArchives / trainArchiveshistory - iBatis, dự án Hanwha_HTSV) -->
+<mapper namespace="com.ait.edu.trainEducation.mapper.EduTrainArchivesMapper">
+
+    <resultMap id="EduTrainArchiveResultMap" type="com.ait.edu.trainEducation.dto.EduTrainArchiveDto">
+        <result column="EMPID" property="empId" jdbcType="VARCHAR" />
+        <result column="LOCAL_NAME" property="localName" jdbcType="VARCHAR" />
+        <result column="SEX_NAME" property="sexName" jdbcType="VARCHAR" />
+        <result column="DEPT_NAME" property="deptName" jdbcType="VARCHAR" />
+        <result column="POST_GRADE_NAME" property="postGradeName" jdbcType="VARCHAR" />
+        <result column="DATE_STARTED" property="dateStarted" jdbcType="VARCHAR" />
+        <result column="COURSE_NAME_CODE" property="courseNameCode" jdbcType="VARCHAR" />
+        <result column="PERIOD_TIME" property="periodTime" jdbcType="VARCHAR" />
+        <result column="TRAIN_CONTENT" property="trainContent" jdbcType="VARCHAR" />
+        <result column="IMPLE_CLASS_HOUR" property="impleClassHour" jdbcType="VARCHAR" />
+        <result column="IMPLE_CLASS_UNIT" property="impleClassUnit" jdbcType="VARCHAR" />
+        <result column="IMPLE_START_DATE" property="impleStartDate" jdbcType="VARCHAR" />
+        <result column="IMPLE_END_DATE" property="impleEndDate" jdbcType="VARCHAR" />
+        <result column="TRAIN_ADDRESS" property="trainAddress" jdbcType="VARCHAR" />
+        <result column="DEPART_MANA_CODE_NAME" property="departManaCodeName" jdbcType="VARCHAR" />
+        <result column="ALL_COST" property="allCost" jdbcType="VARCHAR" />
+        <result column="EVA_RESULT" property="evaResult" jdbcType="VARCHAR" />
+        <result column="BASIC_NO" property="basicNo" jdbcType="VARCHAR" />
+        <result column="RESULT_NO" property="resultNo" jdbcType="VARCHAR" />
+        <result column="HISTORY_FLAG" property="history" jdbcType="NUMERIC" />
+    </resultMap>
+
+    <!-- Chuyển chuỗi số (các cột điểm / chi phí kiểu VARCHAR2) sang NUMBER, giá trị không phải số -> NULL
+         (Oracle 11g chưa có TO_NUMBER ... DEFAULT NULL ON CONVERSION ERROR). -->
+    <sql id="num">
+        CASE WHEN REGEXP_LIKE(${col}, '^\s*[0-9]+(\.[0-9]+)?\s*$') THEN TO_NUMBER(TRIM(${col})) END
+    </sql>
+
+    <!--
+      Khác bản gốc:
+      - Bản gốc join EDU_TRAIN_RESULT bằng "e.basic_no = r.basic_no and e.empid = r.stu_empid(+)" (điều kiện basic_no không
+        outer) -> học viên bị nhân dòng theo số phiếu kết quả của cả lớp và khóa chưa có kết quả bị loại; ở đây lấy RESULT_NO
+        bằng subquery theo đúng học viên.
+      - Bỏ học viên / khóa đã xóa (ACTIVITY), chi phí NVL từng khoản.
+      - Dữ liệu cũ: bản gốc so sánh ngày dạng chuỗi DD/MM/YYYY, lọc H.CPNY_ID (mất dòng của nhân viên đã không còn trong
+        HR_EMPLOYEE) và chọn cột imple_class_unit không tồn tại; ở đây so sánh theo DATE, lọc T.CPNY_ID, tên / phòng ban /
+        chức vụ lấy từ bảng lịch sử khi không còn nhân viên, thời lượng EDU_TIME_LENGTH tính theo giờ.
+    -->
+    <select id="selectList" resultMap="EduTrainArchiveResultMap">
+        SELECT A.EMPID, A.LOCAL_NAME, A.SEX_NAME, A.DEPT_NAME, A.POST_GRADE_NAME, A.DATE_STARTED, A.COURSE_NAME_CODE,
+               A.PERIOD_TIME, A.TRAIN_CONTENT, A.IMPLE_CLASS_HOUR, A.IMPLE_CLASS_UNIT,
+               TO_CHAR(A.START_D, 'DD/MM/YYYY') AS IMPLE_START_DATE,
+               TO_CHAR(A.END_D, 'DD/MM/YYYY') AS IMPLE_END_DATE,
+               A.TRAIN_ADDRESS, A.DEPART_MANA_CODE_NAME, A.ALL_COST, A.EVA_RESULT, A.BASIC_NO, A.RESULT_NO, A.HISTORY_FLAG
+          FROM (
+        <if test="includeCurrent">
+                SELECT E.EMPID,
+                       NVL(H.LOCAL_NAME, E.LOCAL_NAME) AS LOCAL_NAME,
+                       GET_GLOBAL_NAME(PI.SEXCODE, #{lang, jdbcType=VARCHAR}) AS SEX_NAME,
+                       H.DEPTNO,
+                       GET_DEPT_NAME(H.DEPTNO, #{lang, jdbcType=VARCHAR}) AS DEPT_NAME,
+                       GET_GLOBAL_NAME(H.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}) AS POST_GRADE_NAME,
+                       TO_CHAR(H.DATE_STARTED, 'DD/MM/YYYY') AS DATE_STARTED,
+                       B.COURSE_NAME_CODE,
+                       TO_CHAR(B.PERIOD_TIME) AS PERIOD_TIME,
+                       TO_CHAR(B.TRAIN_CONTENT) AS TRAIN_CONTENT,
+                       B.IMPLE_CLASS_HOUR,
+                       B.IMPLE_CLASS_UNIT,
+                       B.IMPLE_START_DATE AS START_D,
+                       B.IMPLE_END_DATE AS END_D,
+                       B.TRAIN_ADDRESS,
+                       NVL(GET_DEPT_NAME(P.DEPART_MANA_CODE, #{lang, jdbcType=VARCHAR}), P.DEPART_MANA_CODE) AS DEPART_MANA_CODE_NAME,
+                       TO_CHAR(NVL(M.TEACHER_COST, 0) + NVL(M.MATERIAL_COST, 0) + NVL(M.FIELD_COST, 0) + NVL(M.FOOD_COST, 0)
+                               + NVL(M.STAY_COST, 0) + NVL(M.TRAFFIC_COST, 0) + NVL(M.VISA_COST, 0) + NVL(M.OTHER_COST, 0)) AS ALL_COST,
+                       TO_CHAR(ROUND(<include refid="num"><property name="col" value="E.TEST_SCORE" /></include> * 0.6
+                             + (SELECT AVG(<include refid="num"><property name="col" value="S.ALLSCORE" /></include>)
+                                  FROM EDU_STUDENT_CHECK S
+                                 WHERE S.BASIC_NO = E.BASIC_NO AND S.STU_EMPID = E.EMPID AND S.ACTIVITY = 1) * 0.4)) AS EVA_RESULT,
+                       TO_CHAR(B.BASIC_NO) AS BASIC_NO,
+                       (SELECT TO_CHAR(MAX(R.RESULT_NO)) FROM EDU_TRAIN_RESULT R
+                         WHERE R.BASIC_NO = E.BASIC_NO AND R.STU_EMPID = E.EMPID AND R.ACTIVITY = 1) AS RESULT_NO,
+                       0 AS HISTORY_FLAG
+                  FROM EDU_FREE_EMPLOYEE E
+                  JOIN EDU_BASIC_INFORMATION B ON B.BASIC_NO = E.BASIC_NO AND B.ACTIVITY = '1'
+                  LEFT JOIN EDU_PLAN_MANAGER P ON P.PLAN_NO = B.PLAN_NO
+                  LEFT JOIN EDU_COST_MANAGER M ON M.BASIC_NO = B.BASIC_NO AND M.ACTIVITY = 1
+                  LEFT JOIN HR_EMPLOYEE H ON H.EMPID = E.EMPID
+                  LEFT JOIN HR_PERSONAL_INFO PI ON PI.PERSON_ID = H.PERSON_ID
+                 WHERE E.ACTIVITY = '1'
+                   AND B.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+        </if>
+        <if test="includeCurrent and includeHistory">
+                UNION ALL
+        </if>
+        <if test="includeHistory">
+                SELECT T.EMPID,
+                       NVL(H.LOCAL_NAME, T.LOCAL_NAME) AS LOCAL_NAME,
+                       GET_GLOBAL_NAME(PI.SEXCODE, #{lang, jdbcType=VARCHAR}) AS SEX_NAME,
+                       H.DEPTNO,
+                       NVL(GET_DEPT_NAME(H.DEPTNO, #{lang, jdbcType=VARCHAR}), T.DEPT_NAME) AS DEPT_NAME,
+                       NVL(GET_GLOBAL_NAME(H.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}), T.POST_GRADE_NAME) AS POST_GRADE_NAME,
+                       TO_CHAR(H.DATE_STARTED, 'DD/MM/YYYY') AS DATE_STARTED,
+                       T.EDU_CLASS AS COURSE_NAME_CODE,
+                       T.EDU_TIMES AS PERIOD_TIME,
+                       NULL AS TRAIN_CONTENT,
+                       TO_CHAR(T.EDU_TIME_LENGTH) AS IMPLE_CLASS_HOUR,
+                       '2' AS IMPLE_CLASS_UNIT,
+                       T.START_D,
+                       T.END_D,
+                       T.EDU_LOCATION AS TRAIN_ADDRESS,
+                       NULL AS DEPART_MANA_CODE_NAME,
+                       TO_CHAR(NVL(T.EDU_COST, 0)) AS ALL_COST,
+                       TO_CHAR(T.PASS_SCORE) AS EVA_RESULT,
+                       NULL AS BASIC_NO,
+                       NULL AS RESULT_NO,
+                       1 AS HISTORY_FLAG
+                  FROM (SELECT X.PERSON_ID AS EMPID, X.LOCAL_NAME, X.DEPT_NAME, X.POST_GRADE_NAME, X.EDU_CLASS, X.EDU_TIMES,
+                               X.EDU_TIME_LENGTH, X.EDU_LOCATION, X.EDU_COST, X.PASS_SCORE,
+                               CASE WHEN REGEXP_LIKE(X.EDU_BEGIN_DATE, '^[0-9]{8}$') THEN TO_DATE(X.EDU_BEGIN_DATE, 'YYYYMMDD') END AS START_D,
+                               CASE WHEN REGEXP_LIKE(X.EDU_END_DATE, '^[0-9]{8}$') THEN TO_DATE(X.EDU_END_DATE, 'YYYYMMDD') END AS END_D
+                          FROM EDU_TRAIN_BASIC_HISTORY X
+                         WHERE X.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}) T
+                  LEFT JOIN HR_EMPLOYEE H ON H.EMPID = T.EMPID
+                  LEFT JOIN HR_PERSONAL_INFO PI ON PI.PERSON_ID = H.PERSON_ID
+        </if>
+               ) A
+         WHERE A.START_D &gt;= TO_DATE(#{startDate, jdbcType=VARCHAR}, 'DD/MM/YYYY')
+           AND A.END_D &lt;= TO_DATE(#{endDate, jdbcType=VARCHAR}, 'DD/MM/YYYY')
+        <if test="keyword != null">
+           AND (A.EMPID = #{keyword, jdbcType=VARCHAR}
+                OR CONVERTTOUNSIGN(UPPER(A.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{keyword, jdbcType=VARCHAR})) || '%')
+        </if>
+        <if test="deptNo != null">
+           AND A.DEPTNO IN (SELECT D.DEPTNO FROM HR_DEPARTMENT D
+                             START WITH D.DEPTNO = #{deptNo, jdbcType=VARCHAR}
+                           CONNECT BY PRIOR D.DEPTNO = D.PARENT_DEPT_NO)
+        </if>
+        <if test="courseName != null">
+           AND UPPER(A.COURSE_NAME_CODE) LIKE '%' || UPPER(#{courseName, jdbcType=VARCHAR}) || '%'
+        </if>
+        <if test="trainContent != null">
+           AND UPPER(A.TRAIN_CONTENT) LIKE '%' || UPPER(#{trainContent, jdbcType=VARCHAR}) || '%'
+        </if>
+         ORDER BY A.HISTORY_FLAG, A.COURSE_NAME_CODE, A.PERIOD_TIME, A.EMPID
+    </select>
+
+</mapper>

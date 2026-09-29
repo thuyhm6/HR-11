@@ -1,0 +1,128 @@
+<nz-card [nzBodyStyle]="{ padding: '10px' }">
+  <!-- ════ Điều kiện tìm kiếm ════ -->
+  <form class="row g-2 mb-2" (ngSubmit)="search()">
+    <div class="col-md-3">
+      <label class="form-label small mb-1" for="hisKeyword">{{ 'common.search.empIdOrName' | translate:'Mã nhân viên / Họ tên' }}</label>
+      <input nz-input id="hisKeyword" name="hisKeyword" [(ngModel)]="filter.keyword" nzSize="small">
+    </div>
+    <div class="col-md-3">
+      <label class="form-label small mb-1">{{ 'common.deptName' | translate:'Phòng ban' }}</label>
+      <nz-tree-select class="w-100" id="hisDeptNo" name="hisDeptNo" nzSize="small" [nzNodes]="deptNodes()"
+                      [(ngModel)]="filter.deptNo" nzShowSearch nzAllowClear
+                      [nzPlaceHolder]="'common.placeholder.select' | translate:'-- Chọn --'"></nz-tree-select>
+      <label nz-checkbox class="small mt-1" id="hisIncludeSubDept" name="hisIncludeSubDept"
+             [(ngModel)]="filter.includeSubDept">{{ 'common.includeSubDept' | translate:'Bao gồm phòng ban con' }}</label>
+    </div>
+    <div class="col-md-3">
+      <label class="form-label small mb-1">{{ 'common.joinDate' | translate:'Ngày vào làm' }}</label>
+      <div class="d-flex align-items-center gap-1">
+        <nz-date-picker class="flex-fill" id="hisJoinDateFrom" name="hisJoinDateFrom" nzSize="small" nzFormat="dd/MM/yyyy"
+                        [(ngModel)]="filter.joinDateFrom" [nzPlaceHolder]="'common.fromDate' | translate:'Từ ngày'"></nz-date-picker>
+        <span>~</span>
+        <nz-date-picker class="flex-fill" id="hisJoinDateTo" name="hisJoinDateTo" nzSize="small" nzFormat="dd/MM/yyyy"
+                        [(ngModel)]="filter.joinDateTo" [nzPlaceHolder]="'common.toDate' | translate:'Đến ngày'"></nz-date-picker>
+      </div>
+    </div>
+    <div class="col-md-3" *ngIf="has('period') && config.periodLabelKey">
+      <label class="form-label small mb-1">{{ config.periodLabelKey | translate:config.periodFallback }}</label>
+      <div class="d-flex align-items-center gap-1">
+        <nz-date-picker class="flex-fill" id="hisPeriodFrom" name="hisPeriodFrom" nzSize="small" nzFormat="dd/MM/yyyy"
+                        [(ngModel)]="filter.periodFrom" [nzPlaceHolder]="'common.fromDate' | translate:'Từ ngày'"></nz-date-picker>
+        <span>~</span>
+        <nz-date-picker class="flex-fill" id="hisPeriodTo" name="hisPeriodTo" nzSize="small" nzFormat="dd/MM/yyyy"
+                        [(ngModel)]="filter.periodTo" [nzPlaceHolder]="'common.toDate' | translate:'Đến ngày'"></nz-date-picker>
+      </div>
+    </div>
+
+    <div class="col-md-3" *ngIf="has('companyName')">
+      <label class="form-label small mb-1" for="hisCompanyName">{{ 'his.companyName' | translate:'Tên công ty' }}</label>
+      <input nz-input id="hisCompanyName" name="hisCompanyName" [(ngModel)]="filter.companyName" nzSize="small">
+    </div>
+    <div class="col-md-3" *ngIf="has('qualName')">
+      <label class="form-label small mb-1" for="hisQualName">{{ 'his.qualName' | translate:'Chứng chỉ' }}</label>
+      <input nz-input id="hisQualName" name="hisQualName" [(ngModel)]="filter.qualName" nzSize="small">
+    </div>
+    <div class="col-md-3" *ngIf="has('qualLevel')">
+      <label class="form-label small mb-1" for="hisQualLevel">{{ 'his.qualLevel' | translate:'Cấp độ chứng chỉ' }}</label>
+      <input nz-input id="hisQualLevel" name="hisQualLevel" [(ngModel)]="filter.qualLevel" nzSize="small">
+    </div>
+    <div class="col-md-3" *ngIf="has('postFamily')">
+      <label class="form-label small mb-1">{{ 'hrSearch.postFamily' | translate:'Nhóm chức' }}</label>
+      <nz-select class="w-100" id="hisPostFamilies" name="hisPostFamilies" nzSize="small" nzMode="multiple"
+                 nzShowSearch nzAllowClear [nzMaxTagCount]="2"
+                 [ngModel]="filter.postFamilies" (ngModelChange)="onPostFamiliesChange($event)">
+        <nz-option *ngFor="let o of postFamilyOptions()" [nzValue]="o.codeNo" [nzLabel]="o.codeName"></nz-option>
+      </nz-select>
+    </div>
+    <div class="col-md-3" *ngIf="has('grade')">
+      <label class="form-label small mb-1">{{ 'hrSearch.grade' | translate:'Chức cấp' }}</label>
+      <nz-select class="w-100" id="hisGradeNos" name="hisGradeNos" nzSize="small" nzMode="multiple"
+                 nzShowSearch nzAllowClear [nzMaxTagCount]="2" [(ngModel)]="filter.gradeNos">
+        <nz-option *ngFor="let o of gradeOptions()" [nzValue]="o.codeNo" [nzLabel]="o.codeName"></nz-option>
+      </nz-select>
+    </div>
+    <div class="col-md-3" *ngIf="has('mainBusiness')">
+      <label class="form-label small mb-1">{{ 'hrSearch.mainBusiness' | translate:'Nghiệp vụ chính' }}</label>
+      <nz-select class="w-100" id="hisMainBusinesses" name="hisMainBusinesses" nzSize="small" nzMode="multiple"
+                 nzShowSearch nzAllowClear [nzMaxTagCount]="2" [(ngModel)]="filter.mainBusinesses">
+        <nz-option *ngFor="let o of mainBusinessOptions()" [nzValue]="o.codeNo" [nzLabel]="o.codeName"></nz-option>
+      </nz-select>
+    </div>
+    <div class="col-md-3" *ngIf="has('empType')">
+      <label class="form-label small mb-1">{{ 'common.empType' | translate:'Loại nhân viên' }}</label>
+      <nz-select class="w-100" id="hisEmpTypeCodes" name="hisEmpTypeCodes" nzSize="small" nzMode="multiple"
+                 nzShowSearch nzAllowClear [nzMaxTagCount]="2" [(ngModel)]="filter.empTypeCodes">
+        <nz-option *ngFor="let o of empTypeOptions()" [nzValue]="o.codeNo" [nzLabel]="o.codeName"></nz-option>
+      </nz-select>
+    </div>
+    <div class="col-md-3" *ngIf="has('empOffice')">
+      <label class="form-label small mb-1">{{ 'hrSearch.empOffice' | translate:'Tình trạng làm việc' }}</label>
+      <nz-select class="w-100" id="hisEmpOffices" name="hisEmpOffices" nzSize="small" nzMode="multiple"
+                 nzShowSearch nzAllowClear [nzMaxTagCount]="2" [(ngModel)]="filter.empOffices">
+        <nz-option *ngFor="let o of empOfficeOptions()" [nzValue]="o.codeNo" [nzLabel]="o.codeName"></nz-option>
+      </nz-select>
+    </div>
+
+    <div class="col-12 d-flex flex-wrap gap-1 justify-content-end">
+      <button nz-button nzType="primary" nzSize="small" type="submit" id="hisBtnSearch" [nzLoading]="loading()">
+        <i class="bx bx-search"></i> {{ 'common.search' | translate:'Tra cứu' }}
+      </button>
+      <button nz-button nzSize="small" type="button" id="hisBtnClear" (click)="clearFilter()">
+        <i class="bx bx-eraser"></i> {{ 'common.clearFilter' | translate:'Xóa bộ lọc' }}
+      </button>
+      <button nz-button nzSize="small" type="button" id="hisBtnExport" [disabled]="filteredRows().length === 0"
+              (click)="exportExcel()">
+        <i class="bx bx-export"></i> {{ 'common.exportExcel' | translate:'Xuất Excel' }}
+      </button>
+    </div>
+  </form>
+
+  <div class="d-flex align-items-center justify-content-between mb-1">
+    <span class="small text-muted">{{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ filteredRows().length }}</span>
+    <input nz-input id="hisQuickFilter" class="his-quick-filter" nzSize="small"
+           [ngModel]="quickFilter()" (ngModelChange)="quickFilter.set($event); pageIndex = 1"
+           [placeholder]="'common.quickFilter' | translate:'Lọc nhanh'">
+  </div>
+
+  <!-- ════ Bảng dữ liệu (phân trang client-side giống DataTables ở JSP gốc) ════ -->
+  <nz-table #hisTable [nzData]="filteredRows()" [nzLoading]="loading()" nzSize="small" class="table-nowrap"
+            [(nzPageIndex)]="pageIndex" [(nzPageSize)]="pageSize" nzShowSizeChanger [nzPageSizeOptions]="[15, 20, 35, 50, 100]"
+            [nzScroll]="{ x: scrollX, y: 'calc(100vh - 380px)' }">
+    <thead>
+      <tr>
+        <th class="text-center" nzLeft nzWidth="60px">{{ 'common.stt' | translate:'STT' }}</th>
+        <th *ngFor="let c of config.columns; trackBy: trackColumn" [nzWidth]="c.width"
+            [class.text-center]="c.align === 'center'" [class.text-end]="c.align === 'right'">
+          {{ c.labelKey | translate:c.fallback }}
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let row of hisTable.data; let i = index">
+        <td class="text-center" nzLeft>{{ (pageIndex - 1) * pageSize + i + 1 }}</td>
+        <td *ngFor="let c of config.columns; trackBy: trackColumn"
+            [class.text-center]="c.align === 'center'" [class.text-end]="c.align === 'right'">{{ row[c.field] }}</td>
+      </tr>
+    </tbody>
+  </nz-table>
+</nz-card>

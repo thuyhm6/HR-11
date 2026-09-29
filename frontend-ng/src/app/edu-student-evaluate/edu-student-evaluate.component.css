@@ -1,0 +1,15 @@
+.ese-link {
+  color: #1677ff;
+  cursor: pointer;
+}
+
+.ese-score {
+  width: 100px;
+  text-align: right;
+}
+
+.ese-btn-export {
+  color: #52c41a;
+  border-color: #52c41a;
+}
+

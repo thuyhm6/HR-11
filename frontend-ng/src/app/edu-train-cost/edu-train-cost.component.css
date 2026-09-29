@@ -1,0 +1,27 @@
+.etc-row {
+  cursor: pointer;
+}
+
+/* Dòng đang chọn - đích của nút Sửa (thay màu #aaccf6 của xuanzhongCos() bản JSP) */
+.etc-row.etc-row-selected > td,
+.etc-row.etc-row-selected:hover > td {
+  background: #e6f4ff;
+}
+
+.etc-quick-filter {
+  max-width: 260px;
+}
+
+.etc-btn-export {
+  color: #52c41a;
+  border-color: #52c41a;
+}
+
+.etc-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  padding: 8px 12px;
+  background: #fafafa;
+  border: 1px solid #f0f0f0;
+}

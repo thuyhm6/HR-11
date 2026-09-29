@@ -1,0 +1,151 @@
+<nz-modal [nzVisible]="visible" nzWidth="960px" [nzMaskClosable]="true" (nzOnCancel)="close()"
+          [nzTitle]="(isEdit ? 'vasl.modal.editTitle' : 'vasl.modal.addTitle') | translate:(isEdit ? 'Cập nhật phê duyệt đặc biệt' : 'Thiết lập phê duyệt đặc biệt')"
+          [nzFooter]="asemFooterTpl">
+  <ng-container *nzModalContent>
+    <div class="row g-3">
+      <!-- ===== Cập nhật: loại phê duyệt + đối tượng cố định theo ô đang chọn ===== -->
+      <ng-container *ngIf="isEdit && cell">
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">{{ 'sys.affirm.title.affirmTypeNames' | translate:'Loại phê duyệt' }}</label>
+          <div id="asem-edit-type" class="form-control-plaintext">{{ cell.type.content }}</div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">{{ 'sys.viewAffirmSpecialView.JUECAIDUIXIANG.b' | translate:'Người được duyệt' }}</label>
+          <div id="asem-edit-object" class="form-control-plaintext">
+            [{{ cell.row.objectCode }}] {{ cell.row.objectName }}
+            <small class="text-muted">
+              ({{ (cell.row.objectType === 'D' ? 'vasl.objectType.D' : 'vasl.objectType.E') | translate:(cell.row.objectType === 'D' ? 'Phòng ban' : 'Nhân viên') }})
+            </small>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- ===== Thiết lập: chọn nhiều loại phê duyệt ===== -->
+      <div class="col-12" *ngIf="!isEdit">
+        <label class="form-label fw-semibold">
+          {{ 'sys.affirm.title.affirmTypeNames' | translate:'Loại phê duyệt' }} <span class="text-danger">*</span>
+        </label>
+        <div class="mb-2">
+          <label id="asem-type-all" nz-checkbox [ngModel]="allTypesChecked" [nzIndeterminate]="someTypesChecked"
+                 (ngModelChange)="toggleAllTypes($event)">
+            {{ 'pa.salary.title.allChecked' | translate:'Chọn tất cả' }}
+          </label>
+        </div>
+        <div class="row g-1">
+          <div class="col-md-3 col-sm-6" *ngFor="let type of types">
+            <label nz-checkbox [ngModel]="selectedTypes.has(type.codeNo)" (ngModelChange)="toggleType(type.codeNo, $event)">
+              {{ type.content }}
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== Người duyệt theo cấp ===== -->
+      <div class="col-12">
+        <label class="form-label fw-semibold" for="asem-affirmor-keyword">
+          {{ 'sys.affirm.title.affirmPerson' | translate:'Người duyệt' }}
+          <span class="text-danger" *ngIf="!isEdit">*</span>
+        </label>
+        <input id="asem-affirmor-keyword" nz-input [ngModel]="affirmorKeyword" (ngModelChange)="onAffirmorKeywordChange($event)"
+               [nzAutocomplete]="asemAffirmorAuto"
+               [placeholder]="'vasl.placeholder.searchEmp' | translate:'Nhập mã hoặc tên nhân viên để tìm'">
+        <nz-autocomplete #asemAffirmorAuto>
+          <nz-auto-option *ngFor="let opt of affirmorOptions()" [nzValue]="opt.empId + ' - ' + opt.localName"
+                          (selectionChange)="$event.isUserInput && addAffirmor(opt)">
+            {{ opt.empId }} - {{ opt.localName }} <small class="text-muted">({{ opt.deptName }})</small>
+          </nz-auto-option>
+        </nz-autocomplete>
+
+        <nz-table class="mt-2" [nzData]="affirmors()" [nzLoading]="loadingAffirmors()" nzSize="small"
+                  [nzShowPagination]="false" [nzFrontPagination]="false"
+                  [nzNoResult]="'vasl.msg.noAffirmor' | translate:'Chưa có người duyệt'">
+          <thead>
+            <tr>
+              <th class="text-center" nzWidth="70px">{{ 'sys.affirm.title.affirmLevel' | translate:'Cấp' }}</th>
+              <th class="text-center" nzWidth="120px">{{ 'common.empId' | translate:'Mã nhân viên' }}</th>
+              <th>{{ 'common.empName' | translate:'Họ tên' }}</th>
+              <th>{{ 'common.deptName' | translate:'Phòng ban' }}</th>
+              <th class="text-center" nzWidth="130px">{{ 'common.action' | translate:'Thao tác' }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let a of affirmors(); let i = index; let first = first; let last = last">
+              <td class="text-center">{{ i + 1 }}</td>
+              <td class="text-center">{{ a.empId }}</td>
+              <td>{{ a.localName }}</td>
+              <td>{{ a.deptName }}</td>
+              <td class="text-center text-nowrap">
+                <button nz-button nzType="text" nzSize="small" type="button" [disabled]="first" (click)="moveAffirmor(i, -1)"
+                        [attr.title]="'vasl.moveUp' | translate:'Chuyển lên'"><i class="bx bx-up-arrow-alt"></i></button>
+                <button nz-button nzType="text" nzSize="small" type="button" [disabled]="last" (click)="moveAffirmor(i, 1)"
+                        [attr.title]="'vasl.moveDown' | translate:'Chuyển xuống'"><i class="bx bx-down-arrow-alt"></i></button>
+                <button nz-button nzType="text" nzSize="small" nzDanger type="button" (click)="removeAffirmor(i)"
+                        [attr.title]="'common.delete' | translate:'Xóa'"><i class="bx bx-trash"></i></button>
+              </td>
+            </tr>
+          </tbody>
+        </nz-table>
+        <nz-alert *ngIf="isEdit && !loadingAffirmors() && affirmors().length === 0" class="mt-2" nzType="warning" nzShowIcon
+                  [nzMessage]="'vasl.msg.emptyAffirmorWarn' | translate:'Danh sách người duyệt trống - khi lưu, thiết lập của ô này sẽ bị xóa.'"></nz-alert>
+      </div>
+
+      <!-- ===== Thiết lập: đối tượng được duyệt (nhân viên + phòng ban) ===== -->
+      <ng-container *ngIf="!isEdit">
+        <div class="col-md-6">
+          <label class="form-label fw-semibold" for="asem-object-keyword">
+            {{ 'vasl.field.objectPerson' | translate:'Nhân viên được duyệt' }}
+          </label>
+          <input id="asem-object-keyword" nz-input [ngModel]="objectKeyword" (ngModelChange)="onObjectKeywordChange($event)"
+                 [nzAutocomplete]="asemObjectAuto"
+                 [placeholder]="'vasl.placeholder.searchEmp' | translate:'Nhập mã hoặc tên nhân viên để tìm'">
+          <nz-autocomplete #asemObjectAuto>
+            <nz-auto-option *ngFor="let opt of objectOptions()" [nzValue]="opt.empId + ' - ' + opt.localName"
+                            (selectionChange)="$event.isUserInput && addObjectPerson(opt)">
+              {{ opt.empId }} - {{ opt.localName }} <small class="text-muted">({{ opt.deptName }})</small>
+            </nz-auto-option>
+          </nz-autocomplete>
+
+          <nz-table class="mt-2" [nzData]="objectPersons()" nzSize="small"
+                    [nzShowPagination]="false" [nzFrontPagination]="false"
+                    [nzNoResult]="'common.noData' | translate:'Không có dữ liệu'">
+            <thead>
+              <tr>
+                <th class="text-center" nzWidth="110px">{{ 'common.empId' | translate:'Mã nhân viên' }}</th>
+                <th>{{ 'common.empName' | translate:'Họ tên' }}</th>
+                <th>{{ 'common.deptName' | translate:'Phòng ban' }}</th>
+                <th class="text-center" nzWidth="60px"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let p of objectPersons(); let i = index">
+                <td class="text-center">{{ p.empId }}</td>
+                <td>{{ p.localName }}</td>
+                <td>{{ p.deptName }}</td>
+                <td class="text-center">
+                  <button nz-button nzType="text" nzSize="small" nzDanger type="button" (click)="removeObjectPerson(i)"
+                          [attr.title]="'common.delete' | translate:'Xóa'"><i class="bx bx-trash"></i></button>
+                </td>
+              </tr>
+            </tbody>
+          </nz-table>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold" for="asem-dept-tree">
+            {{ 'vasl.field.objectDept' | translate:'Phòng ban được duyệt' }}
+          </label>
+          <nz-tree-select id="asem-dept-tree" class="w-100" [nzNodes]="deptNodes()" [(ngModel)]="deptNos" name="asemDeptNos"
+                          nzCheckable nzShowSearch nzAllowClear [nzMaxTagCount]="8"
+                          [nzPlaceHolder]="'vasl.placeholder.chooseDept' | translate:'Chọn phòng ban'"></nz-tree-select>
+          <div class="form-text">{{ 'vasl.hint.deptCascade' | translate:'Chọn phòng ban cha sẽ áp dụng cho toàn bộ phòng ban con.' }}</div>
+        </div>
+      </ng-container>
+    </div>
+  </ng-container>
+
+  <ng-template #asemFooterTpl>
+    <button nz-button type="button" (click)="close()">{{ 'common.cancel' | translate:'Hủy' }}</button>
+    <button nz-button nzType="primary" type="button" [nzLoading]="saving()" (click)="submit()">
+      {{ 'common.save' | translate:'Lưu' }}
+    </button>
+  </ng-template>
+</nz-modal>

@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<!-- Báo cáo đào tạo (chuyển từ sqlArReport.xml getreportList + sqlTrainReport.xml - iBatis, dự án Hanwha_HTSV) -->
+<mapper namespace="com.ait.edu.trainEducation.mapper.EduTrainReportMapper">
+
+    <resultMap id="EduTrainReportTypeResultMap" type="com.ait.edu.trainEducation.dto.EduTrainReportTypeDto">
+        <id column="CODE_NO" property="codeNo" jdbcType="VARCHAR" />
+        <result column="REPORT_NAME" property="reportName" jdbcType="VARCHAR" />
+        <result column="URL_JSP" property="urlJsp" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <resultMap id="EduTrainReportRowResultMap" type="com.ait.edu.trainEducation.dto.EduTrainReportRowDto">
+        <result column="DIM_KEY" property="dimKey" jdbcType="VARCHAR" />
+        <result column="DIM_NAME" property="dimName" jdbcType="VARCHAR" />
+        <result column="TRAIN_DIFF_NAME" property="trainDiffName" jdbcType="VARCHAR" />
+        <result column="COURSE_NAME_CODE" property="courseNameCode" jdbcType="VARCHAR" />
+        <result column="TRAIN_FORM_NAME" property="trainFormName" jdbcType="VARCHAR" />
+        <result column="COURSE_COUNT" property="courseCount" jdbcType="NUMERIC" />
+        <result column="CLASS_COUNT" property="classCount" jdbcType="NUMERIC" />
+        <result column="NUMB" property="numb" jdbcType="NUMERIC" />
+        <result column="PERSON_COUNT" property="personCount" jdbcType="NUMERIC" />
+        <result column="AVG_COUNT" property="avgCount" jdbcType="NUMERIC" />
+        <result column="ALL_TIME" property="allTime" jdbcType="NUMERIC" />
+        <result column="TOTAL_PT" property="totalPt" jdbcType="NUMERIC" />
+        <result column="AVG_TIME" property="avgTime" jdbcType="NUMERIC" />
+        <result column="ALL_COST" property="allCost" jdbcType="NUMERIC" />
+        <result column="DIRECT_COST" property="directCost" jdbcType="NUMERIC" />
+        <result column="INDIRECT_COST" property="indirectCost" jdbcType="NUMERIC" />
+        <result column="AVG_COST" property="avgCost" jdbcType="NUMERIC" />
+    </resultMap>
+
+    <!-- Loại báo cáo (mã con của 14015405 - "Báo cáo đào tạo") đang dùng của công ty. -->
+    <select id="selectReportTypes" resultMap="EduTrainReportTypeResultMap">
+        SELECT C.REPORT_TYPE_NO AS CODE_NO,
+               NVL(GET_GLOBAL_NAME(C.REPORT_NO, #{lang, jdbcType=VARCHAR}), C.REPORT_NO) AS REPORT_NAME,
+               C.URL_JSP
+          FROM REPORT_CENTER C, SY_CODE T
+         WHERE T.CODE_NO = C.REPORT_TYPE_NO
+           AND T.PARENT_CODE_NO = 14015405
+           AND T.ACTIVITY = 1
+           AND C.ACTIVITY = 1
+           AND C.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+         ORDER BY T.ORDERNO, C.ORDERNO, C.REPORT_TYPE_NO
+    </select>
+
+    <!-- Chuỗi số (các cột VARCHAR2) -> NUMBER, không phải số -> NULL (Oracle 11g chưa có DEFAULT ... ON CONVERSION ERROR). -->
+    <sql id="num">
+        CASE WHEN REGEXP_LIKE(${col}, '^\s*[0-9]+(\.[0-9]+)?\s*$') THEN TO_NUMBER(TRIM(${col})) ELSE 0 END
+    </sql>
+
+    <!--
+      Thống kê theo chiều "type" (+ hình thức đào tạo, trừ khi chính chiều là hình thức), qua 3 tầng:
+        X/T: 1 dòng / (khóa đào tạo, học viên) - khóa chưa có học viên vẫn giữ 1 dòng EMPID NULL (chiều theo khóa học);
+             chi phí khóa chia đều cho học viên để cộng theo chức vụ / phòng ban không bị nhân lên.
+        C  : 1 dòng / (nhóm, khóa đào tạo) - giờ học của khóa tính 1 lần cho mỗi nhóm.
+        G  : 1 dòng / nhóm.
+      Khác bản gốc (6 câu SQL riêng): bản gốc TOTALPT = SUM(số người) * SUM(giờ) (nhân 2 tổng), quy đổi ngày = 24 giờ (báo
+      cáo khóa học lại dùng 8), báo cáo chức vụ / phòng ban cộng chi phí cả khóa cho từng học viên, chia cho số người = 0 gây
+      lỗi, tên mã cố định tiếng Trung ('zh'), không bỏ khóa / học viên đã xóa và lọc chương trình đào tạo bằng
+      P.TRAIN_DIFF_CODE (không khớp dữ liệu - xem EduPlanManagerMapper.selectList).
+    -->
+    <select id="selectReport" resultMap="EduTrainReportRowResultMap">
+        SELECT G.DIM1 AS DIM_KEY,
+        <choose>
+            <when test="type == 'course'">
+               GET_GLOBAL_NAME(G.DIM1, #{lang, jdbcType=VARCHAR}) AS DIM_NAME,
+               GET_GLOBAL_NAME((SELECT SC.PARENT_CODE_NO FROM SY_CODE SC WHERE SC.CODE_NO = G.DIM1 AND ROWNUM = 1),
+                               #{lang, jdbcType=VARCHAR}) AS TRAIN_DIFF_NAME,
+            </when>
+            <when test="type == 'postGrade' or type == 'form'">
+               GET_GLOBAL_NAME(G.DIM1, #{lang, jdbcType=VARCHAR}) AS DIM_NAME,
+               NULL AS TRAIN_DIFF_NAME,
+            </when>
+            <when test="type == 'dept'">
+               GET_DEPT_NAME(G.DIM1, #{lang, jdbcType=VARCHAR}) AS DIM_NAME,
+               NULL AS TRAIN_DIFF_NAME,
+            </when>
+            <when test="type == 'month'">
+               SUBSTR(G.DIM1, 5, 2) || '/' || SUBSTR(G.DIM1, 1, 4) AS DIM_NAME,
+               NULL AS TRAIN_DIFF_NAME,
+            </when>
+            <otherwise>
+               G.DIM1 AS DIM_NAME,
+               NULL AS TRAIN_DIFF_NAME,
+            </otherwise>
+        </choose>
+               G.DIM2 AS COURSE_NAME_CODE,
+               GET_GLOBAL_NAME(G.FORM_KEY, #{lang, jdbcType=VARCHAR}) AS TRAIN_FORM_NAME,
+               G.COURSE_COUNT,
+               G.CLASS_COUNT,
+               G.NUMB,
+               G.PERSON_COUNT,
+               ROUND(G.NUMB / NULLIF(G.PERSON_COUNT, 0), 2) AS AVG_COUNT,
+               ROUND(G.ALL_TIME, 2) AS ALL_TIME,
+               ROUND(G.TOTAL_PT, 2) AS TOTAL_PT,
+               ROUND(G.TOTAL_PT / NULLIF(G.NUMB, 0), 2) AS AVG_TIME,
+               ROUND(G.DIRECT_COST + G.INDIRECT_COST, 2) AS ALL_COST,
+               ROUND(G.DIRECT_COST, 2) AS DIRECT_COST,
+               ROUND(G.INDIRECT_COST, 2) AS INDIRECT_COST,
+               ROUND((G.DIRECT_COST + G.INDIRECT_COST) / NULLIF(G.NUMB, 0), 2) AS AVG_COST
+          FROM (SELECT C.DIM1, C.DIM2, C.FORM_KEY,
+                       COUNT(DISTINCT C.COURSE_NO) AS COURSE_COUNT,
+                       COUNT(1) AS CLASS_COUNT,
+                       SUM(C.CNT) AS NUMB,
+                       SUM(C.PERSONS) AS PERSON_COUNT,
+                       SUM(C.HOURS) AS ALL_TIME,
+                       SUM(C.HOURS * C.CNT) AS TOTAL_PT,
+                       SUM(C.DIRECT_COST) AS DIRECT_COST,
+                       SUM(C.INDIRECT_COST) AS INDIRECT_COST
+                  FROM (SELECT T.DIM1, T.DIM2, T.FORM_KEY, T.BASIC_NO,
+                               MAX(T.COURSE_NO) AS COURSE_NO,
+                               MAX(T.HOURS) AS HOURS,
+                               COUNT(T.EMPID) AS CNT,
+                               SUM(CASE WHEN T.RN = 1 AND T.EMPID IS NOT NULL THEN 1 ELSE 0 END) AS PERSONS,
+                               SUM(T.DIRECT_COST / GREATEST(T.BS_NUMB, 1)) AS DIRECT_COST,
+                               SUM(T.INDIRECT_COST / GREATEST(T.BS_NUMB, 1)) AS INDIRECT_COST
+                          FROM (SELECT X.*,
+                                       ROW_NUMBER() OVER (PARTITION BY X.DIM1, X.DIM2, X.FORM_KEY, X.EMPID ORDER BY X.BASIC_NO) AS RN
+                                  FROM (SELECT BS.BASIC_NO, BS.COURSE_NO, BS.HOURS, BS.DIRECT_COST, BS.INDIRECT_COST, BS.BS_NUMB,
+                                               F.EMPID,
+        <choose>
+            <when test="type == 'course'">BS.TRAIN_TYPE_CODE AS DIM1, BS.COURSE_NAME_CODE AS DIM2, BS.TRAIN_FORM_CODE AS FORM_KEY</when>
+            <when test="type == 'postGrade'">H.POST_GRADE_NO AS DIM1, NULL AS DIM2, BS.TRAIN_FORM_CODE AS FORM_KEY</when>
+            <when test="type == 'dept'">H.DEPTNO AS DIM1, NULL AS DIM2, BS.TRAIN_FORM_CODE AS FORM_KEY</when>
+            <when test="type == 'year'">TO_CHAR(BS.IMPLE_START_DATE, 'YYYY') AS DIM1, NULL AS DIM2, BS.TRAIN_FORM_CODE AS FORM_KEY</when>
+            <when test="type == 'month'">TO_CHAR(BS.IMPLE_START_DATE, 'YYYYMM') AS DIM1, NULL AS DIM2, BS.TRAIN_FORM_CODE AS FORM_KEY</when>
+            <otherwise>BS.TRAIN_FORM_CODE AS DIM1, NULL AS DIM2, NULL AS FORM_KEY</otherwise>
+        </choose>
+                                          FROM (SELECT B.BASIC_NO, P.COURSE_NO, P.TRAIN_TYPE_CODE, P.COURSE_NAME_CODE,
+                                                       P.TRAIN_FORM_CODE, B.IMPLE_START_DATE,
+                                                       <include refid="num"><property name="col" value="B.IMPLE_CLASS_HOUR" /></include>
+                                                       * CASE B.IMPLE_CLASS_UNIT WHEN '2' THEN 1 WHEN '1' THEN 8 WHEN '0' THEN 240 ELSE 0 END AS HOURS,
+                                                       <include refid="num"><property name="col" value="M.TEACHER_COST" /></include>
+                                                       + <include refid="num"><property name="col" value="M.MATERIAL_COST" /></include>
+                                                       + <include refid="num"><property name="col" value="M.FIELD_COST" /></include> AS DIRECT_COST,
+                                                       <include refid="num"><property name="col" value="M.FOOD_COST" /></include>
+                                                       + <include refid="num"><property name="col" value="M.STAY_COST" /></include>
+                                                       + <include refid="num"><property name="col" value="M.TRAFFIC_COST" /></include>
+                                                       + <include refid="num"><property name="col" value="M.VISA_COST" /></include>
+                                                       + <include refid="num"><property name="col" value="M.OTHER_COST" /></include> AS INDIRECT_COST,
+                                                       (SELECT COUNT(1) FROM EDU_FREE_EMPLOYEE F2
+                                                         WHERE F2.BASIC_NO = B.BASIC_NO AND F2.ACTIVITY = '1') AS BS_NUMB
+                                                  FROM EDU_BASIC_INFORMATION B
+                                                  JOIN EDU_PLAN_MANAGER P ON P.PLAN_NO = B.PLAN_NO
+                                                  LEFT JOIN EDU_COST_MANAGER M ON M.BASIC_NO = B.BASIC_NO AND M.ACTIVITY = 1
+                                                 WHERE B.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+                                                   AND B.ACTIVITY = '1'
+        <if test="trainDiffCode != null">
+                                                   AND P.TRAIN_TYPE_CODE IN (SELECT SC.CODE_NO FROM SY_CODE SC
+                                                                              WHERE SC.PARENT_CODE_NO = #{trainDiffCode, jdbcType=VARCHAR})
+        </if>
+        <if test="trainTypeCode != null">
+                                                   AND P.TRAIN_TYPE_CODE = #{trainTypeCode, jdbcType=VARCHAR}
+        </if>
+        <if test="courseName != null">
+                                                   AND UPPER(P.COURSE_NAME_CODE) LIKE '%' || UPPER(#{courseName, jdbcType=VARCHAR}) || '%'
+        </if>
+        <if test="year != null">
+                                                   AND TO_CHAR(B.IMPLE_START_DATE, 'YYYY') = #{year, jdbcType=VARCHAR}
+        </if>
+        <if test="month != null">
+                                                   AND TO_CHAR(B.IMPLE_START_DATE, 'YYYYMM') = #{month, jdbcType=VARCHAR}
+        </if>
+        <if test="trainFormCode != null">
+                                                   AND P.TRAIN_FORM_CODE = #{trainFormCode, jdbcType=VARCHAR}
+        </if>
+                                               ) BS
+                                          LEFT JOIN EDU_FREE_EMPLOYEE F ON F.BASIC_NO = BS.BASIC_NO AND F.ACTIVITY = '1'
+                                          LEFT JOIN HR_EMPLOYEE H ON H.EMPID = F.EMPID
+                                         WHERE 1 = 1
+        <if test="type == 'postGrade' or type == 'dept'">
+                                           AND F.EMPID IS NOT NULL
+        </if>
+        <if test="postGradeName != null">
+                                           AND UPPER(GET_GLOBAL_NAME(H.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}))
+                                               LIKE '%' || UPPER(#{postGradeName, jdbcType=VARCHAR}) || '%'
+        </if>
+        <if test="deptNo != null">
+                                           AND H.DEPTNO IN (SELECT D.DEPTNO FROM HR_DEPARTMENT D
+                                                             START WITH D.DEPTNO = #{deptNo, jdbcType=VARCHAR}
+                                                           CONNECT BY PRIOR D.DEPTNO = D.PARENT_DEPT_NO)
+        </if>
+                                       ) X
+                               ) T
+                         GROUP BY T.DIM1, T.DIM2, T.FORM_KEY, T.BASIC_NO
+                       ) C
+                 GROUP BY C.DIM1, C.DIM2, C.FORM_KEY
+               ) G
+         ORDER BY G.DIM1, G.DIM2, TRAIN_FORM_NAME
+    </select>
+
+</mapper>

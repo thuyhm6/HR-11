@@ -1,0 +1,19 @@
+.eta-row {
+  cursor: pointer;
+}
+
+/* Dòng đang chọn - đích của nút Sửa/Xóa (thay màu #aaccf6 của xuanzhongAGR() bản JSP) */
+.eta-row.eta-row-selected > td,
+.eta-row.eta-row-selected:hover > td {
+  background: #e6f4ff;
+}
+
+.eta-quick-filter {
+  max-width: 260px;
+}
+
+.eta-btn-export {
+  color: #52c41a;
+  border-color: #52c41a;
+}
+

@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<!-- Đánh giá học viên / đánh giá giảng viên / kết quả đào tạo (chuyển từ sqlTrainEducation.xml, sqlExcelUtil.xml - iBatis) -->
+<mapper namespace="com.ait.edu.trainEducation.mapper.EduTrainEvaluateMapper">
+
+    <resultMap id="EduStudentResultMap" type="com.ait.edu.trainEducation.dto.EduFreeEmployeeDto">
+        <id column="FREE_NO" property="freeNo" jdbcType="VARCHAR" />
+        <result column="BASIC_NO" property="basicNo" jdbcType="VARCHAR" />
+        <result column="EMPID" property="empId" jdbcType="VARCHAR" />
+        <result column="LOCAL_NAME" property="localName" jdbcType="VARCHAR" />
+        <result column="FLAG" property="flag" jdbcType="VARCHAR" />
+        <result column="DEPT_NAME" property="deptName" jdbcType="VARCHAR" />
+        <result column="POST_GRADE_NAME" property="postGradeName" jdbcType="VARCHAR" />
+        <result column="EVA_RESULT" property="evaResult" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <resultMap id="EduTeacherCheckResultMap" type="com.ait.edu.trainEducation.dto.EduTeacherCheckDto">
+        <id column="CHECK_NO" property="checkNo" jdbcType="VARCHAR" />
+        <result column="BASIC_NO" property="basicNo" jdbcType="VARCHAR" />
+        <result column="TEA_EMPID" property="teaEmpId" jdbcType="VARCHAR" />
+        <result column="TEA_LOCAL_NAME" property="teaLocalName" jdbcType="VARCHAR" />
+        <result column="TEA_POST_GRADE_NAME" property="teaPostGradeName" jdbcType="VARCHAR" />
+        <result column="TEA_DEPT_NAME" property="teaDeptName" jdbcType="VARCHAR" />
+        <result column="STU_EMPID" property="stuEmpId" jdbcType="VARCHAR" />
+        <result column="STU_LOCAL_NAME" property="stuLocalName" jdbcType="VARCHAR" />
+        <result column="GROOMING" property="grooming" jdbcType="NUMERIC" />
+        <result column="ALLSCORE" property="allscore" jdbcType="VARCHAR" />
+        <result column="OTHER_ADVISE" property="otherAdvise" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <resultMap id="EduTrainResultResultMap" type="com.ait.edu.trainEducation.dto.EduTrainResultDto">
+        <id column="RESULT_NO" property="resultNo" jdbcType="VARCHAR" />
+        <result column="BASIC_NO" property="basicNo" jdbcType="VARCHAR" />
+        <result column="STU_EMPID" property="stuEmpId" jdbcType="VARCHAR" />
+        <result column="STU_LOCAL_NAME" property="stuLocalName" jdbcType="VARCHAR" />
+        <result column="DIFFICULTY" property="difficulty" jdbcType="NUMERIC" />
+        <result column="CONTENT_RICH" property="contentRich" jdbcType="NUMERIC" />
+        <result column="PRACTICABILITY" property="practicability" jdbcType="NUMERIC" />
+        <result column="TIME_MODERATE" property="timeModerate" jdbcType="NUMERIC" />
+        <result column="ALLSCORE" property="allscore" jdbcType="VARCHAR" />
+        <result column="OTHER_ADVISE" property="otherAdvise" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <sql id="currentEmpId">
+        (SELECT H.EMPID FROM HR_EMPLOYEE H WHERE H.PERSON_ID = #{adminID, jdbcType=VARCHAR} AND ROWNUM = 1)
+    </sql>
+
+    <!-- Điểm 1-5 lưu dạng chuỗi: chỉ đọc giá trị hợp lệ để không lỗi chuyển kiểu với dữ liệu cũ -->
+    <sql id="score15">CASE WHEN REGEXP_LIKE(TO_CHAR(${col}), '^[1-5]$') THEN TO_NUMBER(${col}) END</sql>
+
+    <select id="countEvaTeacher" resultType="int">
+        SELECT COUNT(1) FROM EDU_BASIC_INFORMATION E
+         WHERE E.BASIC_NO = #{basicNo, jdbcType=VARCHAR}
+           AND E.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+           AND DBMS_LOB.INSTR(',' || E.EVA_TEACHER_EMPID || ',', ',' || <include refid="currentEmpId" /> || ',') &gt; 0
+    </select>
+
+    <select id="countStudent" resultType="int">
+        SELECT COUNT(1) FROM EDU_FREE_EMPLOYEE F
+         WHERE F.BASIC_NO = #{basicNo, jdbcType=NUMERIC}
+           AND F.ACTIVITY = '1'
+           AND F.EMPID = <include refid="currentEmpId" />
+    </select>
+
+    <!-- ===================== Đánh giá học viên (bản gốc queryEvaAllemployee) ===================== -->
+
+    <select id="selectStudents" resultMap="EduStudentResultMap">
+        SELECT TO_CHAR(F.FREE_NO) AS FREE_NO,
+               TO_CHAR(F.BASIC_NO) AS BASIC_NO,
+               F.EMPID,
+               F.LOCAL_NAME,
+               F.FLAG,
+               GET_DEPT_NAME(H.DEPTNO, #{lang, jdbcType=VARCHAR}) AS DEPT_NAME,
+               GET_GLOBAL_NAME(H.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}) AS POST_GRADE_NAME,
+               TO_CHAR(F.EVA_RESULT) AS EVA_RESULT
+          FROM EDU_FREE_EMPLOYEE F
+          LEFT JOIN HR_EMPLOYEE H ON H.EMPID = F.EMPID
+         WHERE F.BASIC_NO = #{basicNo, jdbcType=NUMERIC}
+           AND F.ACTIVITY = '1'
+           AND F.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+         ORDER BY F.FREE_NO
+    </select>
+
+    <update id="updateEvaResult">
+        UPDATE EDU_FREE_EMPLOYEE
+           SET EVA_RESULT = #{evaResult, jdbcType=VARCHAR},
+               UPDATE_DATE = SYSDATE,
+               UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+               UPDATED_IP = #{adminIP, jdbcType=VARCHAR}
+         WHERE FREE_NO = #{freeNo, jdbcType=VARCHAR}
+           AND BASIC_NO = #{basicNo, jdbcType=NUMERIC}
+           AND ACTIVITY = '1'
+    </update>
+
+    <!-- Bản gốc import: EDU_FREE_EMPLOYEE_TEMP -> cập nhật EVA_RESULT theo (BASIC_NO, EMPID) -->
+    <update id="updateEvaResultByEmp">
+        UPDATE EDU_FREE_EMPLOYEE
+           SET EVA_RESULT = #{evaResult, jdbcType=VARCHAR},
+               UPDATE_DATE = SYSDATE,
+               UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+               UPDATED_IP = #{adminIP, jdbcType=VARCHAR}
+         WHERE BASIC_NO = #{basicNo, jdbcType=NUMERIC}
+           AND EMPID = #{empId, jdbcType=VARCHAR}
+           AND ACTIVITY = '1'
+    </update>
+
+    <!-- ===================== Đánh giá giảng viên (bản gốc queryEvaAllTSTOTeacher / teacherChakan) ===================== -->
+
+    <select id="selectTeacherChecks" resultMap="EduTeacherCheckResultMap">
+        SELECT TO_CHAR(T.CHECK_NO) AS CHECK_NO,
+               TO_CHAR(T.BASIC_NO) AS BASIC_NO,
+               T.TEA_EMPID,
+               T.TEA_LOCAL_NAME,
+               GET_GLOBAL_NAME(H.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}) AS TEA_POST_GRADE_NAME,
+               GET_DEPT_NAME(H.DEPTNO, #{lang, jdbcType=VARCHAR}) AS TEA_DEPT_NAME,
+               T.STU_EMPID,
+               T.STU_LOCAL_NAME,
+               <include refid="score15"><property name="col" value="T.GROOMING"/></include> AS GROOMING,
+               TO_CHAR(T.ALLSCORE) AS ALLSCORE,
+               T.OTHER_ADVISE
+          FROM EDU_TEACHER_CHECK T
+          LEFT JOIN HR_EMPLOYEE H ON H.EMPID = T.TEA_EMPID
+         WHERE T.BASIC_NO = #{basicNo, jdbcType=NUMERIC}
+           AND T.ACTIVITY = 1
+           AND T.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+        <if test="teaEmpId != null and teaEmpId != ''">
+           AND T.TEA_EMPID = #{teaEmpId, jdbcType=VARCHAR}
+        </if>
+         ORDER BY T.TEA_EMPID, T.STU_EMPID
+    </select>
+
+    <!-- Bản gốc import: EDU_TEACHER_CHECK_TEMP -> cập nhật GROOMING theo (BASIC_NO, TEA_EMPID, STU_EMPID) -->
+    <update id="updateGrooming">
+        UPDATE EDU_TEACHER_CHECK
+           SET GROOMING = #{grooming, jdbcType=NUMERIC},
+               UPDATE_DATE = SYSDATE,
+               UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+               UPDATED_IP = #{adminIP, jdbcType=VARCHAR}
+         WHERE BASIC_NO = #{basicNo, jdbcType=NUMERIC}
+           AND TEA_EMPID = #{teaEmpId, jdbcType=VARCHAR}
+           AND STU_EMPID = #{stuEmpId, jdbcType=VARCHAR}
+           AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+    </update>
+
+    <!-- ===================== Kết quả đào tạo (bản gốc alreadyTrainResultList / checkTrainResultTSTOInfoPer) ===================== -->
+
+    <select id="selectTrainResults" resultMap="EduTrainResultResultMap">
+        SELECT TO_CHAR(R.RESULT_NO) AS RESULT_NO,
+               TO_CHAR(R.BASIC_NO) AS BASIC_NO,
+               R.STU_EMPID,
+               R.STU_LOCAL_NAME,
+               <include refid="score15"><property name="col" value="R.DIFFICULTY"/></include> AS DIFFICULTY,
+               <include refid="score15"><property name="col" value="R.CONTENT_RICH"/></include> AS CONTENT_RICH,
+               <include refid="score15"><property name="col" value="R.PRACTICABILITY"/></include> AS PRACTICABILITY,
+               <include refid="score15"><property name="col" value="R.TIME_MODERATE"/></include> AS TIME_MODERATE,
+               TO_CHAR(R.ALLSCORE) AS ALLSCORE,
+               R.OTHER_ADVISE
+          FROM EDU_TRAIN_RESULT R
+         WHERE R.BASIC_NO = #{basicNo, jdbcType=NUMERIC}
+           AND R.ACTIVITY = 1
+           AND R.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+         ORDER BY R.STU_EMPID
+    </select>
+
+    <!-- Bản gốc import: EDU_TRAIN_RESULT_TEMP -> cập nhật 4 tiêu chí theo (BASIC_NO, STU_EMPID); tính luôn ALLSCORE -->
+    <update id="updateTrainResultScores" parameterType="com.ait.edu.trainEducation.dto.EduTrainResultDto">
+        UPDATE EDU_TRAIN_RESULT
+           SET DIFFICULTY = #{difficulty, jdbcType=NUMERIC},
+               CONTENT_RICH = #{contentRich, jdbcType=NUMERIC},
+               TIME_MODERATE = #{timeModerate, jdbcType=NUMERIC},
+               PRACTICABILITY = #{practicability, jdbcType=NUMERIC},
+               ALLSCORE = #{allscore, jdbcType=VARCHAR},
+               UPDATE_DATE = SYSDATE,
+               UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+               UPDATED_IP = #{adminIP, jdbcType=VARCHAR}
+         WHERE BASIC_NO = #{basicNo, jdbcType=NUMERIC}
+           AND STU_EMPID = #{stuEmpId, jdbcType=VARCHAR}
+           AND ACTIVITY = 1
+    </update>
+</mapper>

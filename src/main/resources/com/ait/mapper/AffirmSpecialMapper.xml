@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<!-- Phê duyệt đặc biệt (chuyển từ sqlAffirmSpecial.xml - iBatis, dự án Hanwha_HTSV) -->
+<mapper namespace="com.ait.sy.syAffirm.mapper.AffirmSpecialMapper">
+
+    <resultMap id="AffirmSpecialTypeResultMap" type="com.ait.sy.syAffirm.dto.AffirmSpecialTypeDto">
+        <id column="CODE_NO" property="codeNo" jdbcType="VARCHAR" />
+        <result column="CONTENT" property="content" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <resultMap id="AffirmSpecialObjectResultMap" type="com.ait.sy.syAffirm.dto.AffirmSpecialDto">
+        <id column="AFFIRM_OBJECT" property="affirmObject" jdbcType="VARCHAR" />
+        <result column="OBJECT_CODE" property="objectCode" jdbcType="VARCHAR" />
+        <result column="OBJECT_NAME" property="objectName" jdbcType="VARCHAR" />
+        <result column="OBJECT_TYPE" property="objectType" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <resultMap id="AffirmSpecialDetailResultMap" type="com.ait.sy.syAffirm.dto.AffirmSpecialDetailDto">
+        <result column="AFFIRM_OBJECT" property="affirmObject" jdbcType="VARCHAR" />
+        <result column="AFFIRM_TYPE_ID" property="affirmTypeId" jdbcType="VARCHAR" />
+        <result column="AFFIRM_LEVEL" property="affirmLevel" jdbcType="INTEGER" />
+        <result column="AFFIRMOR_ID" property="affirmorId" jdbcType="VARCHAR" />
+        <result column="EMPID" property="empId" jdbcType="VARCHAR" />
+        <result column="LOCAL_NAME" property="localName" jdbcType="VARCHAR" />
+        <result column="DEPT_NAME" property="deptName" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <!-- Loại phê duyệt (cột động): mã con của 21/31 đứng trước, sau đó mã con của parentCodeNo
+         (bản gốc getCodeListByParentCode dùng UNION + ROWNUM để đạt đúng thứ tự này) -->
+    <select id="selectTypeList" resultMap="AffirmSpecialTypeResultMap">
+        SELECT A.CODE_NO,
+               S.CONTENT
+          FROM SY_CODE A
+          JOIN SY_CODE_PARAM P
+            ON P.CODE_NO = A.CODE_NO
+           AND P.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+          LEFT JOIN SY_GLOBAL_NAME S
+            ON S.NO = A.CODE_NO
+           AND S.LANGUAGE = #{lang, jdbcType=VARCHAR}
+         WHERE A.ACTIVITY = 1
+           AND (A.PARENT_CODE_NO IN (21, 31)
+                OR (A.PARENT_CODE_NO = #{parentCodeNo, jdbcType=VARCHAR}
+                    AND P.ACTIVITY = 1
+                    AND A.CODE_NO NOT IN (21, 31)))
+         ORDER BY CASE WHEN A.PARENT_CODE_NO IN (21, 31) THEN 0 ELSE 1 END,
+                  A.PARENT_CODE_NO,
+                  A.ORDERNO
+    </select>
+
+    <!-- Đối tượng được duyệt đã có thiết lập: nhân viên (AFFIRM_OBJECT = PERSON_ID) và phòng ban (AFFIRM_OBJECT = DEPTNO) -->
+    <select id="selectObjectList" resultMap="AffirmSpecialObjectResultMap">
+        SELECT C.AFFIRM_OBJECT,
+               C.OBJECT_CODE,
+               C.OBJECT_NAME,
+               C.OBJECT_TYPE
+          FROM (SELECT E.PERSON_ID  AS AFFIRM_OBJECT,
+                       E.EMPID      AS OBJECT_CODE,
+                       E.LOCAL_NAME AS OBJECT_NAME,
+                       'E'          AS OBJECT_TYPE
+                  FROM HR_EMPLOYEE E
+                  JOIN SY_AFFIRM_RELATION_SPECIAL T
+                    ON T.AFFIRM_OBJECT = E.PERSON_ID
+                 WHERE T.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+                UNION
+                SELECT D.DEPTNO AS AFFIRM_OBJECT,
+                       D.DEPTID AS OBJECT_CODE,
+                       GET_DEPT_NAME(D.DEPTNO, #{lang, jdbcType=VARCHAR}) AS OBJECT_NAME,
+                       'D'      AS OBJECT_TYPE
+                  FROM HR_DEPARTMENT D
+                  JOIN SY_AFFIRM_RELATION_SPECIAL T
+                    ON T.AFFIRM_OBJECT = D.DEPTNO
+                 WHERE D.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+                   AND T.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}) C
+        <where>
+            <if test="keyword != null and keyword != ''">
+                (UPPER(C.OBJECT_CODE) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%'
+                 OR C.AFFIRM_OBJECT LIKE '%' || #{keyword, jdbcType=VARCHAR} || '%'
+                 OR CONVERTTOUNSIGN(UPPER(C.OBJECT_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{keyword, jdbcType=VARCHAR})) || '%')
+            </if>
+        </where>
+         ORDER BY C.OBJECT_TYPE DESC, C.OBJECT_CODE
+    </select>
+
+    <!-- Người duyệt theo cấp - lọc thêm theo đối tượng/loại khi mở màn hình cập nhật 1 ô -->
+    <select id="selectDetailList" resultMap="AffirmSpecialDetailResultMap">
+        SELECT T.AFFIRM_OBJECT,
+               T.AFFIRM_TYPE_ID,
+               T.AFFIRM_LEVEL,
+               T.AFFIRMOR_ID,
+               HR.EMPID,
+               HR.LOCAL_NAME,
+               GET_DEPT_NAME(HR.DEPTNO, #{lang, jdbcType=VARCHAR}) AS DEPT_NAME
+          FROM SY_AFFIRM_RELATION_SPECIAL T
+          LEFT JOIN HR_EMPLOYEE HR
+            ON HR.PERSON_ID = T.AFFIRMOR_ID
+         WHERE T.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+        <if test="affirmObject != null and affirmObject != ''">
+           AND T.AFFIRM_OBJECT = #{affirmObject, jdbcType=VARCHAR}
+        </if>
+        <if test="affirmTypeNo != null and affirmTypeNo != ''">
+           AND T.AFFIRM_TYPE_ID = #{affirmTypeNo, jdbcType=VARCHAR}
+        </if>
+         ORDER BY T.AFFIRM_OBJECT, T.AFFIRM_TYPE_ID, T.AFFIRM_LEVEL
+    </select>
+
+    <delete id="deleteByObjectAndType">
+        DELETE FROM SY_AFFIRM_RELATION_SPECIAL T
+         WHERE T.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+           AND T.AFFIRM_OBJECT = #{affirmObject, jdbcType=VARCHAR}
+           AND T.AFFIRM_TYPE_ID = #{affirmTypeNo, jdbcType=VARCHAR}
+    </delete>
+
+    <insert id="insertAffirmor">
+        INSERT INTO SY_AFFIRM_RELATION_SPECIAL
+               (AFFIRM_RELATION_NO,
+                CPNY_ID,
+                AFFIRMOR_ID,
+                AFFIRM_TYPE_ID,
+                AFFIRM_LEVEL,
+                AFFIRM_OBJECT,
+                ACTIVITY,
+                CREATE_DATE,
+                CREATED_BY)
+        VALUES (SY_AFFIRM_RELATION_SPECIAL_SEQ.NEXTVAL,
+                #{cpnyId, jdbcType=VARCHAR},
+                #{affirmorId, jdbcType=VARCHAR},
+                #{affirmTypeNo, jdbcType=VARCHAR},
+                #{affirmLevel, jdbcType=INTEGER},
+                #{affirmObject, jdbcType=VARCHAR},
+                1,
+                SYSDATE,
+                #{adminID, jdbcType=VARCHAR})
+    </insert>
+</mapper>
