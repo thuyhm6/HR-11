@@ -60,7 +60,7 @@ const EMPTY_FORM: MenuForm = {
 };
 
 /**
- * Bản Angular của sys/basicMaintenance/viewMenuList.html (Thymeleaf + jQuery DataTables) - quản lý
+ * Bản Angular của sys/menu/viewMenuList.html (Thymeleaf + jQuery DataTables) - quản lý
  * menu hệ thống (bảng sy_menu). Gọi lại nguyên API JSON đã có sẵn ở SyMenuController (xem
  * ViewMenuListService) - không đổi backend. Dùng nz-table (phân trang client-side, đúng hành vi
  * DataTables gốc: BE trả toàn bộ danh sách theo bộ lọc, không phân trang server, tham khảo

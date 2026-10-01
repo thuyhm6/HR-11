@@ -60,7 +60,7 @@ interface ParamEditForm {
 const EMPTY_EDIT_FORM: ParamEditForm = { menuNo: '', orderNo: 0, activity: true, isCanBeBuild: false };
 
 /**
- * Bản Angular của sys/basicMaintenance/viewMenuParamList.html (Thymeleaf + jQuery DataTables + jsTree)
+ * Bản Angular của sys/menu/viewMenuParamList.html (Thymeleaf + jQuery DataTables + jsTree)
  * - cấu hình menu nào được gán (SY_MENU_PARAM) cho từng công ty (HR_COMPANY). Gọi lại nguyên API JSON
  * đã có sẵn ở SyMenuParamController/SyMenuController/HrCompanyController (xem
  * ViewMenuParamListService) - không đổi backend. jsTree (jQuery) được thay bằng nz-tree - khác

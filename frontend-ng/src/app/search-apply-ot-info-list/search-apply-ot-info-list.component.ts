@@ -22,8 +22,8 @@ const I18N_KEYS = [
   'common.fromDate', 'common.toDate', 'attSearch.empGroup', 'attSearch.shiftType', 'applyOt.otType',
   'attSearch.all', 'common.search', 'common.clearFilter', 'common.exportExcel', 'common.stt',
   'attSearch.workDate', 'attSearch.dateTypeReal', 'common.empId', 'common.empName', 'attSearch.position',
-  'attSearch.fromTime', 'attSearch.toTime', 'attSearch.quantity', 'attSearch.unit', 'common.status',
-  'common.remark', 'applyOt.updater', 'applyOt.updateTime', 'common.totalRows', 'common.loadFail',
+  'essOt.otStart2', 'essOt.otEnd2', 'attSearch.quantity', 'attSearch.unit', 'common.status',
+  'common.totalRows', 'common.loadFail',
   'mep.msg.loadDeptFailed',
 ];
 
@@ -145,19 +145,16 @@ export class SearchApplyOtInfoListComponent implements OnInit {
       this.i18n.t('attSearch.empGroup', 'Nhóm nhân viên'),
       this.i18n.t('attSearch.shiftType', 'Ca làm việc'),
       this.i18n.t('applyOt.otType', 'Loại tăng ca'),
-      this.i18n.t('attSearch.fromTime', 'Từ thời gian'),
-      this.i18n.t('attSearch.toTime', 'Đến thời gian'),
+      this.i18n.t('essOt.otStart2', 'Bắt đầu'),
+      this.i18n.t('essOt.otEnd2', 'Kết thúc'),
       this.i18n.t('attSearch.quantity', 'Số lượng'),
       this.i18n.t('attSearch.unit', 'Đơn vị'),
       this.i18n.t('common.status', 'Trạng thái'),
-      this.i18n.t('common.remark', 'Ghi chú'),
-      this.i18n.t('applyOt.updater', 'Người cập nhật'),
-      this.i18n.t('applyOt.updateTime', 'Thời gian cập nhật'),
     ];
     const dataRows = this.rows().map((r, i) => [
       i + 1, r.arDateStr, r.dateTypeRealName, r.empId, r.localName, r.deptName, r.postGradeName,
       r.postFamilyName, r.shiftName, r.itemName, r.fromTime, r.toTime, r.quantity, r.unit,
-      r.statusName, r.remark, r.updatedBy, r.updateDate,
+      r.statusName,
     ]);
 
     const worksheet = XLSX.utils.aoa_to_sheet([headers, ...dataRows]);

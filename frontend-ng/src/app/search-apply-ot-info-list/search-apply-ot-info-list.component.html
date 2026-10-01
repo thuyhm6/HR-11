@@ -64,7 +64,7 @@
 
       <nz-table [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="25" [nzShowSizeChanger]="true"
                 [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="sotTotalTpl"
-                [nzScroll]="{ x: '2000px', y: 'calc(100vh - 420px)' }"
+                [nzScroll]="{ x: '1800px', y: 'calc(100vh - 420px)' }"
                 class="table-nowrap" #sotTable>
         <!-- nzWidth khai báo cho từng cột để đồng bộ độ rộng header/body khi dùng nzScroll. -->
         <thead>
@@ -79,14 +79,11 @@
             <th nzWidth="130px">{{ 'attSearch.empGroup' | translate:'Nhóm nhân viên' }}</th>
             <th class="text-center" nzWidth="110px">{{ 'attSearch.shiftType' | translate:'Ca làm việc' }}</th>
             <th nzWidth="140px">{{ 'applyOt.otType' | translate:'Loại tăng ca' }}</th>
-            <th class="text-center" nzWidth="100px">{{ 'attSearch.fromTime' | translate:'Từ thời gian' }}</th>
-            <th class="text-center" nzWidth="100px">{{ 'attSearch.toTime' | translate:'Đến thời gian' }}</th>
+            <th class="text-center" nzWidth="150px">{{ 'essOt.otStart2' | translate:'Bắt đầu' }}</th>
+            <th class="text-center" nzWidth="150px">{{ 'essOt.otEnd2' | translate:'Kết thúc' }}</th>
             <th class="text-end" nzWidth="90px">{{ 'attSearch.quantity' | translate:'Số lượng' }}</th>
             <th class="text-center" nzWidth="80px">{{ 'attSearch.unit' | translate:'Đơn vị' }}</th>
             <th class="text-center" nzWidth="110px">{{ 'common.status' | translate:'Trạng thái' }}</th>
-            <th nzWidth="180px">{{ 'common.remark' | translate:'Ghi chú' }}</th>
-            <th nzWidth="140px">{{ 'applyOt.updater' | translate:'Người cập nhật' }}</th>
-            <th class="text-center" nzWidth="150px">{{ 'applyOt.updateTime' | translate:'Thời gian cập nhật' }}</th>
           </tr>
         </thead>
         <tbody>
@@ -106,9 +103,6 @@
             <td class="text-end">{{ row.quantity }}</td>
             <td class="text-center">{{ row.unit }}</td>
             <td class="text-center" [attr.title]="row.statusName || null">{{ row.statusName }}</td>
-            <td [attr.title]="row.remark || null">{{ row.remark }}</td>
-            <td [attr.title]="row.updatedBy || null">{{ row.updatedBy }}</td>
-            <td class="text-center">{{ row.updateDate }}</td>
           </tr>
         </tbody>
         <ng-template #sotTotalTpl let-total>
