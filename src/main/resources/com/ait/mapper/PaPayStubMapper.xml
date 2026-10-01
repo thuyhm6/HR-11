@@ -24,6 +24,7 @@
         <result column="EMP_TYPE_NAME"   property="empTypeName"    jdbcType="VARCHAR"/>
         <result column="EMP_OFFICE"      property="empOffice"      jdbcType="VARCHAR"/>
         <result column="EMP_OFFICE_NAME" property="empOfficeName"  jdbcType="VARCHAR"/>
+        <result column="WORK_POSITION_NAME" property="workPositionName" jdbcType="VARCHAR"/>
         <result column="ACCOUNT_NO"      property="accountNo"      jdbcType="VARCHAR"/>
         <result column="DEPENDENT_COUNT" property="dependentCount" jdbcType="NUMERIC"/>
         <result column="BANK_NAME"       property="bankName"       jdbcType="VARCHAR"/>
@@ -53,6 +54,13 @@
           AND T.PAY_SCHEDULE_NO = #{payScheduleNo, jdbcType=VARCHAR}
         <if test="empOfficeCond != null and empOfficeCond != ''">
             AND T.EMP_OFFICE = #{empOfficeCond, jdbcType=VARCHAR}
+        </if>
+        <!-- Loại nhân viên: 1 = Công nhân (POST_GRADE_NO = 90000325), 0 = Nhân viên (khác 90000325) -->
+        <if test='workerFlag != null and workerFlag == "1"'>
+            AND T.POST_GRADE_NO = '90000325'
+        </if>
+        <if test='workerFlag != null and workerFlag == "0"'>
+            AND (T.POST_GRADE_NO IS NULL OR T.POST_GRADE_NO &lt;&gt; '90000325')
         </if>
         <if test="deptNoList != null and deptNoList.size() > 0">
             AND T.DEPTNO IN
@@ -89,6 +97,7 @@
                T.EMP_TYPE_NAME,
                T.EMP_OFFICE,
                T.EMP_OFFICE_NAME,
+               GET_GLOBAL_NAME(T.POSITION, #{lang, jdbcType=VARCHAR}) AS WORK_POSITION_NAME,
                T.ACCOUNT_NO,
                T.P_TAX_FAMILY_DEDUCT_COUNT AS DEPENDENT_COUNT,
                T.BANK_NAME AS BANK_NAME,
@@ -123,6 +132,7 @@
                T.EMP_TYPE_NAME,
                T.EMP_OFFICE,
                T.EMP_OFFICE_NAME,
+               GET_GLOBAL_NAME(T.POSITION, #{lang, jdbcType=VARCHAR}) AS WORK_POSITION_NAME,
                T.ACCOUNT_NO,
                T.P_TAX_FAMILY_DEDUCT_COUNT AS DEPENDENT_COUNT,
                T.BANK_NAME                 AS BANK_NAME,

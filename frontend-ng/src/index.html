@@ -23,9 +23,9 @@
        <iconify-icon> dùng để render icon menu (menuImg dạng "solar:xxx-bold") -->
   <script src="/assets/js/vendor.js"></script>
 
-  <!-- Nạp sẵn (offline) dữ liệu các icon "solar:xxx" đang dùng cho menu/sidebar/topbar vào Iconify -
-       mặc định <iconify-icon> gọi ra Internet (api.iconify.design...) để lấy icon, khiến icon menu bị
-       trống khi máy không có mạng. Xem chi tiết trong file iconify-offline.js. -->
+  <!-- Trỏ <iconify-icon> về API icon nội bộ (/assets/iconify/...) thay vì api.iconify.design trên
+       Internet - để icon menu/sidebar/topbar hiển thị được khi server không có mạng.
+       Xem chi tiết trong file iconify-offline.js. -->
   <script src="/assets/js/iconify-offline.js"></script>
 
   <!-- jQuery + daterangepicker: dùng lại nguyên bản plugin từ layout/master.html (Thymeleaf) cho

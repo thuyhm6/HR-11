@@ -1,34 +1,31 @@
 /**
- * Nạp sẵn (offline) bộ icon "solar" đang dùng cho menu/sidebar/topbar vào Iconify - tránh việc
- * <iconify-icon> phải gọi ra Internet (api.iconify.design/api.simplesvg.com/api.unisvg.com) để lấy
- * dữ liệu SVG mỗi khi tải trang, giúp icon hiển thị đúng cả khi máy không có mạng.
+ * Chạy <iconify-icon> hoàn toàn offline: mặc định custom element này gọi ra Internet
+ * (api.iconify.design/api.simplesvg.com/api.unisvg.com) để lấy dữ liệu SVG, nên khi server/máy client
+ * không có mạng thì icon menu/sidebar/topbar bị trống.
  *
- * File iconify-offline-icons.json chỉ chứa các icon "solar:xxx" đang được dùng trong code (menu
- * sidebar, topbar, thông báo, khoá màn hình...) - nếu sau này thêm icon "solar:" mới (vd khi tạo menu
- * mới ở màn "Quản lý Menu") mà icon đó chưa có trong file này, <iconify-icon> vẫn tự động gọi API
- * online như cũ (không bị lỗi), chỉ là sẽ cần Internet cho riêng icon mới đó. Muốn icon mới cũng chạy
- * offline thì tải bổ sung icon đó từ https://api.iconify.design/solar.json?icons=ten-icon-moi và gộp
- * vào key "icons" trong iconify-offline-icons.json.
+ * Ở đây ghi đè API provider mặc định ("") trỏ về API nội bộ của chính server
+ * (IconifyController: GET /assets/iconify/{prefix}.json?icons=...), dữ liệu lấy từ bộ icon đầy đủ
+ * đóng gói sẵn trong src/main/resources/iconify/ - nên MỌI icon "solar:xxx" (kể cả icon mới nhập ở
+ * màn "Quản lý Menu") đều hiển thị được mà không cần Internet.
  *
- * Phải nạp SAU khi vendor.js đã chạy (để customElements.get('iconify-icon') tồn tại) và TRƯỚC khi
- * Angular render icon lên DOM.
+ * Phải nạp SAU vendor.js (để customElements.get('iconify-icon') tồn tại) và TRƯỚC khi Angular render
+ * icon lên DOM - script chạy đồng bộ nên thứ tự này được đảm bảo (không dùng XHR bất đồng bộ như
+ * trước, tránh trường hợp icon đã render và gọi API online trước khi dữ liệu offline kịp nạp xong).
  */
 (function () {
-  var xhr = new XMLHttpRequest();
-  xhr.open('GET', '/assets/js/iconify-offline-icons.json', true);
-  xhr.onload = function () {
-    if (xhr.status !== 200) return;
-    try {
-      var data = JSON.parse(xhr.responseText);
-      // vendor.js (gói iconify-icon) không lộ global window.Iconify - API (addCollection, addIcon...)
-      // được gắn thẳng vào class của custom element, lấy qua customElements.get('iconify-icon').
-      var IconifyIcon = window.customElements && window.customElements.get('iconify-icon');
-      if (IconifyIcon && typeof IconifyIcon.addCollection === 'function') {
-        IconifyIcon.addCollection(data);
-      }
-    } catch (e) {
-      // Bỏ qua - iconify-icon sẽ tự fallback gọi API online như hành vi mặc định trước đây.
+  try {
+    // vendor.js (gói iconify-icon) không lộ global window.Iconify - API (addAPIProvider...) được gắn
+    // thẳng vào class của custom element, lấy qua customElements.get('iconify-icon').
+    var IconifyIcon = window.customElements && window.customElements.get('iconify-icon');
+    if (IconifyIcon && typeof IconifyIcon.addAPIProvider === 'function') {
+      // Lấy base từ <base href> để vẫn đúng nếu app được deploy dưới context-path
+      var base = document.baseURI.replace(/\/+$/, '');
+      IconifyIcon.addAPIProvider('', {
+        resources: [base],
+        path: '/assets/iconify/'
+      });
     }
-  };
-  xhr.send();
+  } catch (e) {
+    // Bỏ qua - iconify-icon sẽ dùng API online như hành vi mặc định.
+  }
 })();

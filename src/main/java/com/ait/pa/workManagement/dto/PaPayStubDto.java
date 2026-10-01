@@ -33,6 +33,7 @@ public class PaPayStubDto {
     private String empTypeName;
     private String empOffice;
     private String empOfficeName;
+    private String workPositionName;   // GET_GLOBAL_NAME(POSITION)
     private String accountNo;
     private Integer dependentCount;
 
@@ -46,6 +47,7 @@ public class PaPayStubDto {
     private String deptNos;
     private List<String> deptNoList;
     private String empOfficeCond;
+    private String workerFlag;         // 1 = Công nhân, 0 = Nhân viên
 
     // Params for recalculate
     private List<String> personIds;

@@ -27,8 +27,8 @@ public class PaPayStubServiceImpl implements PaPayStubService {
     @Override
     @Transactional
     public List<PaPayStubDto> loadPayStubs(PaPayStubDto params, String lang) {
-        log.info("Bắt đầu tải phiếu lương payScheduleNo={}, empSearch={}, deptNos={}, empOfficeCond={}",
-                params.getPayScheduleNo(), params.getEmpSearch(), params.getDeptNos(), params.getEmpOfficeCond());
+        log.info("Bắt đầu tải phiếu lương payScheduleNo={}, empSearch={}, deptNos={}, empOfficeCond={}, workerFlag={}",
+                params.getPayScheduleNo(), params.getEmpSearch(), params.getDeptNos(), params.getEmpOfficeCond(), params.getWorkerFlag());
         try {
             if (StringUtils.hasText(params.getDeptNos())) {
                 List<String> deptNoList = Arrays.stream(params.getDeptNos().split(","))

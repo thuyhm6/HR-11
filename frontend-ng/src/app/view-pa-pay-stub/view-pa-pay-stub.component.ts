@@ -30,7 +30,8 @@ const I18N_KEYS = [
   'pa.payStub.deductionItems', 'pa.payStub.attendanceItem', 'pa.payStub.value', 'pa.payStub.salaryItem',
   'pa.payStub.deductionItem', 'pa.payStub.total', 'pa.payStub.netSalary', 'pa.payStub.otherItems',
   'pa.payStub.note', 'pa.payStub.msgSelectSchedule', 'pa.payStub.msgNoDataToPrint', 'pa.payStub.msgRecalcNoEmp',
-  'pa.payStub.msgRecalcSuccess', 'common.loadFail', 'common.selectAll', 'mep.msg.loadDeptFailed',
+  'pa.payStub.msgRecalcSuccess', 'pa.payStub.workPosition', 'pa.payStub.workerFlagStaff', 'pa.payStub.workerFlagWorker',
+  'common.loadFail', 'common.selectAll', 'mep.msg.loadDeptFailed',
 ];
 
 const EMP_OFFICE_PARENT_CODE = '15118';
@@ -82,6 +83,7 @@ export class ViewPaPayStubComponent implements OnInit {
   deptNos: string[] = [];
   empSearch = '';
   empOfficeSearch: string | null = null;
+  workerFlagSearch: string | null = null;
 
   private currentPersonIds: string[] = [];
 
@@ -181,6 +183,7 @@ export class ViewPaPayStubComponent implements OnInit {
       deptNos: this.expandDeptSelection(this.deptNos).join(','),
       empSearch: this.empSearch.trim(),
       empOffice: this.empOfficeSearch,
+      workerFlag: this.workerFlagSearch,
       lang,
     }).subscribe({
       next: (list) => {

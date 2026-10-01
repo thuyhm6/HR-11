@@ -26,6 +26,7 @@ export class ViewPaPayStubService {
     if (params.deptNos) httpParams = httpParams.set('deptNos', params.deptNos);
     if (params.empSearch) httpParams = httpParams.set('empSearch', params.empSearch);
     if (params.empOffice) httpParams = httpParams.set('empOffice', params.empOffice);
+    if (params.workerFlag) httpParams = httpParams.set('workerFlag', params.workerFlag);
     return this.http.get<PaPayStubDto[]>(`${API_BASE}/payStub/load`, { params: httpParams, withCredentials: true });
   }
 

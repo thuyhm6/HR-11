@@ -1,0 +1,8 @@
+.vpasm-row-clickable {
+  cursor: pointer;
+}
+
+/* Dòng đã chọn (class "selected" của DataTables bản gốc). */
+.vpasm-row-selected > td {
+  background-color: #e6f4ff;
+}

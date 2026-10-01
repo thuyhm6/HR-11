@@ -1,24 +1,37 @@
 package com.ait.pa.workManagement.controller;
 
+import com.ait.exception.BusinessException;
+import com.ait.pa.workManagement.dto.PaArSummaryManageSaveDto;
+import com.ait.pa.workManagement.dto.PaArSummaryManageSearchDto;
 import com.ait.pa.workManagement.dto.PaEmpAccountDto;
 import com.ait.pa.workManagement.dto.PaPayObjDto;
 import com.ait.pa.workManagement.dto.PaPayScheduleDto;
 import com.ait.pa.workManagement.dto.PaPayStubDto;
 import com.ait.pa.workManagement.dto.PaWorkFlowDto;
 import com.ait.pa.workManagement.dto.PaWorkFlowRecordsDto;
+import com.ait.pa.workManagement.service.PaArSummaryManageService;
 import com.ait.pa.workManagement.service.PaEmpAccountService;
 import com.ait.pa.workManagement.service.PaPayObjService;
 import com.ait.pa.workManagement.service.PaPayScheduleService;
 import com.ait.pa.workManagement.service.PaPayStubService;
 import com.ait.pa.workManagement.service.PaWorkFlowService;
 import com.ait.sy.sys.dto.DataTablesResponse;
+import com.ait.util.I18nUtil;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -42,6 +55,9 @@ public class PaWorkManagementController {
 
     @Autowired
     private PaPayStubService paPayStubService;
+
+    @Autowired
+    private PaArSummaryManageService paArSummaryManageService;
 
     // Trang Thymeleaf viewPaWorkFlow.html đã được thay bằng Angular route /view-pa-work-flow
     // Trang Thymeleaf viewPaEmpAccount.html đã được thay bằng Angular route /view-pa-emp-account
@@ -76,6 +92,7 @@ public class PaWorkManagementController {
             @RequestParam(required = false) String deptNos,
             @RequestParam(required = false) String empSearch,
             @RequestParam(required = false) String empOffice,
+            @RequestParam(required = false) String workerFlag,
             @RequestParam(required = false) String lang) {
         try {
             if (payScheduleNo == null || payScheduleNo.trim().isEmpty()) {
@@ -86,6 +103,7 @@ public class PaWorkManagementController {
             params.setDeptNos(deptNos);
             params.setEmpSearch(empSearch);
             params.setEmpOfficeCond(empOffice);
+            params.setWorkerFlag(workerFlag);
             List<PaPayStubDto> result = paPayStubService.loadPayStubs(params, lang);
             return ResponseEntity.ok(result);
         } catch (Exception e) {
@@ -285,6 +303,110 @@ public class PaWorkManagementController {
             log.error("Lỗi khi xóa kế hoạch trả lương {}: {}", payScheduleNo, e.getMessage(), e);
             return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
         }
+    }
+
+    // ── API Quản lý tổng hợp chấm công (thay JSP viewPaArSummaryForManageList - Angular route /view-pa-ar-summary-manage) ──
+
+    @GetMapping("/api/arSummaryManage/paySchedules")
+    @ResponseBody
+    public ResponseEntity<?> getArSummaryPaySchedules() {
+        try {
+            return ResponseEntity.ok(paArSummaryManageService.getPayScheduleList());
+        } catch (Exception e) {
+            log.error("Lỗi khi lấy kế hoạch trả lương (tổng hợp chấm công): {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError().body(Map.of("error", I18nUtil.getMessage("common.loadFail")));
+        }
+    }
+
+    @GetMapping("/api/arSummaryManage/items")
+    @ResponseBody
+    public ResponseEntity<?> getArSummaryItems() {
+        try {
+            return ResponseEntity.ok(paArSummaryManageService.getSummaryItemList());
+        } catch (Exception e) {
+            log.error("Lỗi khi lấy hạng mục tổng hợp chấm công: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError().body(Map.of("error", I18nUtil.getMessage("common.loadFail")));
+        }
+    }
+
+    @GetMapping("/api/arSummaryManage/list")
+    @ResponseBody
+    public ResponseEntity<?> getArSummaryManageList(
+            @RequestParam(required = false) String payScheduleNo,
+            @RequestParam(required = false) String key,
+            @RequestParam(required = false) String deptNo,
+            @RequestParam(required = false) String itemNos,
+            @RequestParam(required = false) String isSpecialFlag) {
+        try {
+            return ResponseEntity.ok(paArSummaryManageService.getList(
+                    buildArSummarySearch(payScheduleNo, key, deptNo, itemNos, isSpecialFlag)));
+        } catch (BusinessException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getUserMessage()));
+        } catch (Exception e) {
+            log.error("Lỗi khi tra cứu quản lý tổng hợp chấm công payScheduleNo={}: {}", payScheduleNo, e.getMessage(), e);
+            return ResponseEntity.internalServerError().body(Map.of("error", I18nUtil.getMessage("common.loadFail")));
+        }
+    }
+
+    @PostMapping("/api/arSummaryManage/save")
+    @ResponseBody
+    public ResponseEntity<?> saveArSummaryManage(@Valid @RequestBody PaArSummaryManageSaveDto dto) {
+        try {
+            int count = paArSummaryManageService.save(dto);
+            return ResponseEntity.ok(Map.of("success", true, "count", count,
+                    "message", I18nUtil.getMessage("alert.message.update_success")));
+        } catch (BusinessException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getUserMessage()));
+        } catch (Exception e) {
+            log.error("Lỗi khi lưu ngoại lệ tổng hợp chấm công payScheduleNo={}: {}", dto.getPayScheduleNo(), e.getMessage(), e);
+            return ResponseEntity.internalServerError().body(Map.of("error", I18nUtil.getMessage("alert.message.update_fail")));
+        }
+    }
+
+    @GetMapping("/api/arSummaryManage/exportExcel")
+    public ResponseEntity<byte[]> exportArSummaryManage(
+            @RequestParam(required = false) String payScheduleNo,
+            @RequestParam(required = false) String key,
+            @RequestParam(required = false) String deptNo) {
+        try {
+            byte[] data = paArSummaryManageService.exportExcel(
+                    buildArSummarySearch(payScheduleNo, key, deptNo, null, null));
+            ContentDisposition disposition = ContentDisposition.attachment()
+                    .filename("ArSummary.xlsx", StandardCharsets.UTF_8)
+                    .build();
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, disposition.toString())
+                    .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                    .body(data);
+        } catch (BusinessException e) {
+            return ResponseEntity.badRequest().build();
+        } catch (Exception e) {
+            log.error("Lỗi khi xuất Excel tổng hợp chấm công payScheduleNo={}: {}", payScheduleNo, e.getMessage(), e);
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    private PaArSummaryManageSearchDto buildArSummarySearch(String payScheduleNo, String key, String deptNo,
+                                                            String itemNos, String isSpecialFlag) {
+        PaArSummaryManageSearchDto params = new PaArSummaryManageSearchDto();
+        params.setPayScheduleNo(payScheduleNo);
+        params.setKey(key != null ? key.trim() : null);
+        params.setDeptNo(deptNo);
+        if (itemNos != null && !itemNos.isBlank()) {
+            params.setItemNos(Arrays.stream(itemNos.split(",")).map(String::trim).filter(s -> !s.isEmpty()).toList());
+        }
+        params.setIsSpecialFlag(isSpecialFlag);
+        return params;
+    }
+
+    /** Lỗi @Valid (PaArSummaryManageSaveDto) - message là key messages.properties, dịch rồi trả về {error}. */
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> handleValidation(MethodArgumentNotValidException ex) {
+        FieldError error = ex.getBindingResult().getFieldError();
+        String key = error != null ? error.getDefaultMessage() : "alert.message.update_fail";
+        log.warn("PaWorkManagement validation failed: {}", key);
+        return ResponseEntity.badRequest().body(Map.of("error", I18nUtil.getMessage(key)));
     }
 
     // ── API Đối tượng nhận lương ────────────────────────────────────────────

@@ -31,7 +31,7 @@ export class LockScreenOverlayComponent {
     const normalized = photoUrl?.trim();
     if (!normalized) return fallback;
     if (/^(https?:)?\/\//i.test(normalized) || normalized.startsWith('data:')) return normalized;
-    return 'D:/source/VHR/HTSV_HR/' + normalized.replace(/^\/+/, '');
+    return '/' + normalized.replace(/^\/+/, '');
   }
 
   togglePasswordVisibility(): void {

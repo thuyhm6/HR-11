@@ -141,6 +141,7 @@ export const routes: Routes = [
       { path: 'attendance-ex-confirm', loadComponent: () => import('./attendance-ex-confirm/attendance-ex-confirm.component').then(m => m.AttendanceExConfirmComponent) },
       { path: 'leave-confirm', loadComponent: () => import('./leave-confirm/leave-confirm.component').then(m => m.LeaveConfirmComponent) },
       { path: 'view-pa-work-flow', loadComponent: () => import('./view-pa-work-flow/view-pa-work-flow.component').then(m => m.ViewPaWorkFlowComponent) },
+      { path: 'view-pa-ar-summary-manage', loadComponent: () => import('./view-pa-ar-summary-manage/view-pa-ar-summary-manage.component').then(m => m.ViewPaArSummaryManageComponent) },
       { path: 'view-resume-list', loadComponent: () => import('./view-resume-list/view-resume-list.component').then(m => m.ViewResumeListComponent) },
       { path: 'view-resume-process', loadComponent: () => import('./view-resume-process/view-resume-process.component').then(m => m.ViewResumeProcessComponent) },
       { path: 'view-compose-org', loadComponent: () => import('./view-compose-org/view-compose-org.component').then(m => m.ViewComposeOrgComponent) },

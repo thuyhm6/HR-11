@@ -38,6 +38,19 @@ public class FrontendConfig implements WebMvcConfigurer {
                                 .addResourceLocations("file:" + uploadDirPath, "/assets/images/users/")
                                 .setCacheControl(CacheControl.maxAge(Duration.ofHours(1)));
 
+                // Ảnh nhân viên của hệ thống cũ: PHOTO_PATH lưu dạng "resources/photo/HTSV/xxx.jpg" (tương đối
+                // so với D:/source/VHR/HTSV_HR/), nằm NGOÀI webapp (Tomcat ROOT) nên trình duyệt không truy
+                // cập trực tiếp được. Map URL /resources/photo/** vào thư mục cha của app.photo.upload.path
+                // (.../resources/photo/) để phục vụ được ảnh của mọi công ty (HTSV, ...).
+                File photoRootDir = uploadDir.getAbsoluteFile().getParentFile();
+                if (photoRootDir != null) {
+                        String photoRootPath = photoRootDir.getAbsolutePath().replace("\\", "/");
+                        if (!photoRootPath.endsWith("/")) photoRootPath += "/";
+                        registry.addResourceHandler("/resources/photo/**")
+                                        .addResourceLocations("file:" + photoRootPath)
+                                        .setCacheControl(CacheControl.maxAge(Duration.ofHours(1)));
+                }
+
                 // Alias cho font Font Awesome - /assets/css/all.min.css tham chiếu font tương đối
                 // dạng url(../webfonts/fa-solid-900.woff2) (tức /assets/webfonts/...), nhưng file thật
                 // nằm ở /assets/plugins/fontawesome-free/webfonts/. Đăng ký trước /assets/** để ưu tiên

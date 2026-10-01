@@ -37,6 +37,7 @@ export interface PaPayStubDto {
   positionName: string;
   postGrade: string;
   empOfficeName: string;
+  workPositionName: string;
   dependentCount: number;
   socialInsuranceNo: string;
   bankName: string;
@@ -55,5 +56,7 @@ export interface PaPayStubSearchParams {
   deptNos: string;
   empSearch: string;
   empOffice: string | null;
+  /** 1 = Công nhân (POST_GRADE_NO = 90000325), 0 = Nhân viên. */
+  workerFlag: string | null;
   lang: string;
 }

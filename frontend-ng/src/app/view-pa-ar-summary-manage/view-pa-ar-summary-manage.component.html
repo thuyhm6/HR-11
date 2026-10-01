@@ -1,0 +1,198 @@
+<!-- ── Điều kiện tìm kiếm (searchViewPaArSummaryForManageForm bản gốc) ─────────────────────── -->
+<nz-card class="mb-3 sticky-filter-card">
+  <form class="row g-3" (ngSubmit)="search()">
+    <div class="col-md-4">
+      <label class="form-label">{{ 'hr.viewContractByInsert.title.EMPIDANDLOCALNAME' | translate:'Mã nhân viên/Họ tên' }}</label>
+      <div class="d-flex gap-2">
+        <input nz-input [(ngModel)]="searchKey" name="vpasmSearchKey" (ngModelChange)="onKeyChange()"
+               (keydown.enter)="$event.preventDefault(); openPicker()">
+        <button nz-button type="button" (click)="openPicker()" [attr.title]="'empSearch.title' | translate:'Tìm kiếm nhân viên'">
+          <i class="bx bx-search"></i>
+        </button>
+      </div>
+    </div>
+    <div class="col-md-8">
+      <label class="form-label">&nbsp;</label>
+      <input nz-input [ngModel]="empInfo" name="vpasmEmpInfo" readonly>
+    </div>
+
+    <div class="col-md-4">
+      <label class="form-label">{{ 'ess.empInfo.pay_plan' | translate:'Kế hoạch trả lương' }}</label>
+      <nz-select class="w-100" [(ngModel)]="payScheduleNo" name="vpasmPayScheduleNo" nzShowSearch>
+        <nz-option *ngFor="let s of schedules()" [nzValue]="s.code" [nzLabel]="s.name"></nz-option>
+      </nz-select>
+    </div>
+    <div class="col-md-8">
+      <label class="form-label">{{ 'ar.viewPaArSummaryForManageList.KAOQINHUIZONGXIANGMU.b' | translate:'Tổng hợp chấm công' }}</label>
+      <nz-select class="w-100" [(ngModel)]="searchItemNos" name="vpasmItemNos" nzMode="multiple"
+                 nzShowSearch nzAllowClear [nzMaxTagCount]="6">
+        <nz-option *ngFor="let it of summaryItems()" [nzValue]="it.code" [nzLabel]="it.name"></nz-option>
+      </nz-select>
+    </div>
+
+    <div class="col-md-4">
+      <label class="form-label">{{ 'ess.infoApply.DEPT' | translate:'Phòng ban' }}</label>
+      <nz-tree-select class="w-100" [nzNodes]="deptNodes()" [(ngModel)]="searchDeptNo" name="vpasmDeptNo"
+                       nzShowSearch nzAllowClear
+                       [nzPlaceHolder]="'vdp.search.dept.placeholder' | translate:'Chọn phòng ban'"></nz-tree-select>
+      <div *ngIf="deptTreeErrorMessage()" class="text-danger small mt-1">{{ deptTreeErrorMessage() }}</div>
+    </div>
+    <div class="col-md-2">
+      <label class="form-label">{{ 'ar.viewPaArSummaryForManageList.SHIFOULIWAI.b' | translate:'Ngoại lệ' }}</label>
+      <nz-select class="w-100" [(ngModel)]="isSpecialFlag" name="vpasmIsSpecialFlag">
+        <nz-option nzValue="" [nzLabel]="'org.title.ALL' | translate:'Tất cả'"></nz-option>
+        <nz-option nzValue="Y" [nzLabel]="'ar.viewPaArSummaryForManageList.LIWAI.b' | translate:'Ngoại lệ'"></nz-option>
+      </nz-select>
+    </div>
+
+    <div class="col-12 d-flex gap-2 flex-wrap">
+      <button nz-button nzType="primary" type="submit" [nzLoading]="loading()">
+        <i class="bx bx-search"></i> {{ 'ar.viewPaArSummaryForManageList.JIANSUO.b' | translate:'Tìm kiếm' }}
+      </button>
+      <button nz-button nzType="primary" type="button" [nzLoading]="saving()" (click)="save()">
+        <i class="bx bx-save"></i> {{ 'ess.message.save' | translate:'Lưu' }}
+      </button>
+      <button nz-button type="button" [nzLoading]="calculating()" (click)="calculate()">
+        <i class="bx bx-calculator"></i> {{ 'ar.viewPaArSummaryForManageList.KAOQINHUIZONGJISUAN.b' | translate:'Tổng hợp chấm công' }}
+      </button>
+      <button nz-button type="button" (click)="exportExcel()">
+        <i class="bx bx-download"></i> {{ 'ess.infoApply.export_to_Excel' | translate:'Xuất Excel' }}
+      </button>
+      <button nz-button type="button" [nzLoading]="exportingException()" (click)="exportException()">
+        <i class="bx bx-export"></i> {{ 'ar.viewPaArSummaryForManageList.DAOCHULIWAISHUJU.b' | translate:'Xuất dữ liệu ngoại lệ' }}
+      </button>
+    </div>
+  </form>
+</nz-card>
+
+<!-- ── Danh sách (ViewPaArSummaryForManageTable bản gốc) ─────────────────────────────────── -->
+<nz-card>
+  <div class="d-flex justify-content-end align-items-center mb-2 gap-2 flex-wrap">
+    <span class="text-muted small me-auto" *ngIf="selectedCount > 0">
+      <i class="bx bx-check-square"></i> {{ selectedCount }}
+    </span>
+    <button nz-button nzSize="small" type="button" [nzType]="onlyChecked() ? 'primary' : 'default'" (click)="showOnlyChecked()">
+      {{ 'ar.viewPaArSummaryForManageList.CHAKANXUANZHONG.b' | translate:'Xem đã chọn' }}
+    </button>
+    <button nz-button nzSize="small" type="button" [nzType]="onlyChecked() ? 'default' : 'primary'" (click)="showAll()">
+      {{ 'hr.viewPersonalInfo.title.chakanquanbu' | translate:'Xem tất cả' }}
+    </button>
+  </div>
+
+  <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+  <nz-table #vpasmTable [nzData]="displayRows()" [nzLoading]="loading()" nzSize="small" nzBordered
+            [(nzPageIndex)]="pageIndex" [(nzPageSize)]="pageSize" [nzPageSizeOptions]="pageSizeOptions"
+            [nzShowSizeChanger]="true" [nzShowTotal]="vpasmTotalTpl"
+            [nzScroll]="{ x: '1500px', y: 'calc(100vh - 470px)' }">
+    <thead>
+      <tr>
+        <th class="text-center" nzWidth="40px" nzLeft>
+          <label nz-checkbox [ngModel]="allChecked" [nzIndeterminate]="someChecked" (ngModelChange)="toggleAllChecked($event)"></label>
+        </th>
+        <th class="text-center" nzWidth="55px" nzLeft [nzSortFn]="sortNo">No.</th>
+        <th class="text-center" nzWidth="100px" nzLeft [nzSortFn]="sortEmpId">{{ 'ess.infoApply.EMP_ID' | translate:'Mã nhân viên' }}</th>
+        <th class="text-center" nzWidth="150px" nzLeft [nzSortFn]="sortName">{{ 'ess.infoApply.NAME' | translate:'Họ tên' }}</th>
+        <th class="text-center" nzWidth="180px" [nzSortFn]="sortDept"
+            [nzFilters]="deptFilters()" [nzFilterFn]="filterDept" [nzFilterMultiple]="true">{{ 'ess.infoApply.DEPT' | translate:'Phòng ban' }}</th>
+        <th class="text-center" nzWidth="140px" [nzSortFn]="sortPostGrade"
+            [nzFilters]="postGradeFilters()" [nzFilterFn]="filterPostGrade" [nzFilterMultiple]="true">{{ 'ess.infoApply.Rank' | translate:'Chức vụ' }}</th>
+        <th class="text-center" nzWidth="105px" [nzSortFn]="sortDateStarted">{{ 'ess.empInfo.date_of_agency' | translate:'Ngày vào làm' }}</th>
+        <th class="text-center" nzWidth="180px" [nzSortFn]="sortItem"
+            [nzFilters]="itemFilters()" [nzFilterFn]="filterItem" [nzFilterMultiple]="true">{{ 'ar.viewPaArSummaryForManageList.KAOQINHUIZONGXIANGMU.b' | translate:'Tổng hợp chấm công' }}</th>
+        <th class="text-center" nzWidth="105px" [nzSortFn]="sortArStart">{{ 'ar.viewcycleparameter.title.kaishiriqi' | translate:'Ngày bắt đầu' }}</th>
+        <th class="text-center" nzWidth="90px" [nzSortFn]="sortCalValue">{{ 'ar.viewPaArSummaryForManageList.XITONGZHI.b' | translate:'Hệ thống' }}</th>
+        <th class="text-center" nzWidth="110px" [nzSortFn]="sortFinalValue">{{ 'ar.viewPaArSummaryForManageList.LIWAIZHI.b' | translate:'Ngoại lệ' }}</th>
+        <th class="text-center" nzWidth="180px" [nzSortFn]="sortRemark">{{ 'ess.empInfo.remarks' | translate:'Ghi chú' }}</th>
+        <th class="text-center" nzWidth="170px" [nzSortFn]="sortUpdatedBy">{{ 'org.title.UPDATED_IP' | translate:'Người thay đổi' }}</th>
+        <th class="text-center" nzWidth="130px" [nzSortFn]="sortUpdateDate">{{ 'org.title.UPDATE_DATE' | translate:'Thời gian thay đổi' }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let row of vpasmTable.data" [class.vpasm-row-selected]="isChecked(row)">
+        <td class="text-center" nzLeft>
+          <label nz-checkbox [ngModel]="isChecked(row)" (ngModelChange)="toggleChecked(row, $event)"></label>
+        </td>
+        <td class="text-center" nzLeft>{{ row.no }}</td>
+        <td class="text-center" nzLeft>{{ row.empId }}</td>
+        <td class="text-center" nzLeft [attr.title]="row.localName || null">{{ row.localName }}</td>
+        <td class="text-center" [attr.title]="row.deptName || null">{{ row.deptName }}</td>
+        <td class="text-center" [attr.title]="row.postGrade || null">{{ row.postGrade }}</td>
+        <td class="text-center">{{ row.dateStarted }}</td>
+        <td class="text-center" [attr.title]="row.itemName || null">{{ row.itemName }}</td>
+        <td class="text-center">{{ row.arStartDate }}</td>
+        <td class="text-center">{{ row.calValue }}</td>
+        <td class="text-center">
+          <nz-input-number class="w-100" nzSize="small" [nzMin]="-9999" [nzStep]="1"
+                           [(ngModel)]="row.editFinalValue" (ngModelChange)="onRowEdited(row)"></nz-input-number>
+        </td>
+        <td class="text-center">
+          <input nz-input nzSize="small" [(ngModel)]="row.editRemark" (ngModelChange)="onRowEdited(row)">
+        </td>
+        <td class="text-center" [attr.title]="row.updatedBy || null">{{ row.updatedBy }}</td>
+        <td class="text-center">{{ row.updateDate }}</td>
+      </tr>
+    </tbody>
+    <ng-template #vpasmTotalTpl let-total>
+      {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+    </ng-template>
+  </nz-table>
+</nz-card>
+
+<!-- Popup tìm kiếm nhân viên - tái dùng pattern ViewPaInputItemDataComponent (thay viewEmpForPopList.jsp) -->
+<nz-modal [nzVisible]="pickerVisible()" [nzTitle]="'empSearch.title' | translate:'Tìm kiếm nhân viên'"
+          nzWidth="900px" (nzOnCancel)="closePicker()" [nzFooter]="null">
+  <ng-container *nzModalContent>
+    <form class="row g-2 align-items-end mb-3" (ngSubmit)="pickerSearch()">
+      <div class="col-md-5">
+        <label class="form-label">{{ 'empSearch.field.keyword' | translate:'Mã nhân viên / Họ tên' }}</label>
+        <input nz-input [(ngModel)]="pickerKeyword" name="vpasmPickerKeyword"
+               [placeholder]="'empSearch.placeholder.keyword' | translate:'Nhập mã hoặc họ tên'">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">{{ 'empSearch.field.dept' | translate:'Phòng ban' }}</label>
+        <nz-tree-select class="w-100" [nzNodes]="deptNodes()" [(ngModel)]="pickerDeptNos" name="vpasmPickerDeptNos"
+                         nzCheckable nzShowSearch nzAllowClear
+                         [nzPlaceHolder]="'vdp.search.dept.placeholder' | translate:'Chọn phòng ban'"></nz-tree-select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">{{ 'empSearch.field.empOffice' | translate:'Trạng thái làm việc' }}</label>
+        <nz-select class="w-100" [(ngModel)]="pickerEmpOffice" name="vpasmPickerEmpOffice" nzAllowClear
+                   [nzPlaceHolder]="'common.selectAll' | translate:'-- Tất cả --'">
+          <nz-option *ngFor="let c of empOfficeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-12 d-flex gap-2">
+        <button nz-button nzType="primary" type="submit">
+          <i class="bx bx-search"></i> {{ 'common.search' | translate:'Tìm kiếm' }}
+        </button>
+        <button nz-button type="button" (click)="pickerClear()">
+          <i class="bx bx-x"></i> {{ 'empSearch.btn.clearFilter' | translate:'Xóa bộ lọc' }}
+        </button>
+      </div>
+    </form>
+
+    <nz-alert *ngIf="pickerErrorMessage()" nzType="error" [nzMessage]="pickerErrorMessage() ?? ''" class="mb-2"></nz-alert>
+
+    <nz-table #vpasmPickerTable [nzData]="pickerRows()" [nzLoading]="pickerLoading()" [nzPageSize]="10" nzSize="small">
+      <thead>
+        <tr>
+          <th class="text-center" nzWidth="60px">{{ 'empSearch.col.no' | translate:'STT' }}</th>
+          <th nzWidth="110px">{{ 'ess.infoApply.EMP_ID' | translate:'Mã nhân viên' }}</th>
+          <th>{{ 'ess.infoApply.NAME' | translate:'Họ tên' }}</th>
+          <th>{{ 'ess.infoApply.DEPT' | translate:'Phòng ban' }}</th>
+          <th>{{ 'epi.field.position' | translate:'Chức vụ' }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of vpasmPickerTable.data; let i = index" class="vpasm-row-clickable" (click)="selectEmployee(row)">
+          <td class="text-center">{{ i + 1 }}</td>
+          <td>{{ row.empId }}</td>
+          <td>{{ row.localName }}</td>
+          <td>{{ row.deptName || row.deptNo }}</td>
+          <td>{{ row.position }}</td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </ng-container>
+</nz-modal>

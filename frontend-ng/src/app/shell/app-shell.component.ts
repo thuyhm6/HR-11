@@ -69,7 +69,9 @@ export class AppShellComponent implements OnInit, OnDestroy {
   @ViewChild(ThemeSettingsComponent) themeSettings!: ThemeSettingsComponent;
   @ViewChild(ChangePasswordModalComponent) changePasswordModal!: ChangePasswordModalComponent;
 
-  private readonly photoBasePath = 'D:/source/VHR/HTSV_HR/';
+  // PHOTO_PATH là đường dẫn tương đối (vd: resources/photo/HTSV/xxx.jpg) - backend FrontendConfig map
+  // URL này sang thư mục ảnh thật trên server, KHÔNG dùng đường dẫn ổ đĩa (D:/...) vì trình duyệt không đọc được.
+  private readonly photoBasePath = '/';
 
   readonly user = signal<CurrentUser | null>(null);
   readonly menu = signal<MenuItem[]>([]);
@@ -141,6 +143,7 @@ export class AppShellComponent implements OnInit, OnDestroy {
     '/pa/workManagement/viewPaPaySchedule': '/view-pa-pay-schedule',
     '/pa/salarycode/viewSalaryCodeList': '/view-salary-code',
     '/pa/workManagement/viewPaWorkFlow': '/view-pa-work-flow',
+    '/pa/workManagement/viewPaArSummaryForManageList': '/view-pa-ar-summary-manage',
     '/pa/workManagement/viewPaPayObj': '/view-pa-pay-obj',
     '/pa/workManagement/viewPaEmpAccount': '/view-pa-emp-account',
     '/pa/workManagement/payStub': '/view-pa-pay-stub',

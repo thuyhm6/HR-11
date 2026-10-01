@@ -2,7 +2,7 @@
   <div class="col-12">
     <nz-card class="mb-2">
       <form class="row g-2 align-items-end" (ngSubmit)="search()">
-        <div class="col-md-3">
+        <div class="col-md-2">
           <label class="form-label mb-1 small fw-semibold">{{ 'pa.payStub.paySchedule' | translate:'Kế hoạch trả lương' }}</label>
           <nz-select class="w-100" [(ngModel)]="payScheduleNo" name="vppsPayScheduleNo" nzAllowClear nzShowSearch>
             <nz-option *ngFor="let s of schedules()" [nzValue]="s.payScheduleNo"
@@ -10,7 +10,7 @@
           </nz-select>
         </div>
 
-        <div class="col-md-3">
+        <div class="col-md-2">
           <label class="form-label mb-1 small fw-semibold">{{ 'pa.payStub.dept' | translate:'Phòng ban' }}</label>
           <nz-tree-select class="w-100" [nzNodes]="deptNodes()" [(ngModel)]="deptNos" name="vppsDeptNos"
                            nzCheckable nzShowSearch nzAllowClear
@@ -29,6 +29,15 @@
           <nz-select class="w-100" [(ngModel)]="empOfficeSearch" name="vppsEmpOfficeSearch" nzAllowClear
                      [nzPlaceHolder]="'common.selectAll' | translate:'-- Tất cả --'">
             <nz-option *ngFor="let c of empOfficeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+          </nz-select>
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label mb-1 small fw-semibold">{{ 'pa.payStub.empType' | translate:'Loại nhân viên' }}</label>
+          <nz-select class="w-100" [(ngModel)]="workerFlagSearch" name="vppsWorkerFlagSearch" nzAllowClear
+                     [nzPlaceHolder]="'common.selectAll' | translate:'-- Tất cả --'">
+            <nz-option nzValue="0" [nzLabel]="'pa.payStub.workerFlagStaff' | translate:'Nhân viên'"></nz-option>
+            <nz-option nzValue="1" [nzLabel]="'pa.payStub.workerFlagWorker' | translate:'Công nhân'"></nz-option>
           </nz-select>
         </div>
 
@@ -77,7 +86,7 @@
             <th>{{ 'pa.payStub.empGroup' | translate:'Nhóm nhân viên' }}</th><td>{{ stub.postFamily }}</td>
             <th>{{ 'pa.payStub.position' | translate:'Chức vụ' }}</th><td>{{ stub.positionName }}</td>
             <th>{{ 'pa.payStub.grade' | translate:'Chức danh' }}</th><td>{{ stub.postGrade }}</td>
-            <th>{{ 'pa.payStub.workStatus' | translate:'Loại hợp đồng' }}</th><td>{{ stub.empOfficeName }}</td>
+            <th>{{ 'pa.payStub.workPosition' | translate:'Vị trí' }}</th><td>{{ stub.workPositionName }}</td>
           </tr>
           <tr>
             <th colspan="2">{{ 'pa.payStub.dependent' | translate:'Số người phụ thuộc' }}</th>

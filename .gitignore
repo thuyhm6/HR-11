@@ -32,3 +32,6 @@ build/
 ### VS Code ###
 .vscode/
 src/main/webapp/WEB-INF/classes/
+
+### Angular build output (sinh ra bởi ng build) ###
+src/main/resources/static/ng-app/
