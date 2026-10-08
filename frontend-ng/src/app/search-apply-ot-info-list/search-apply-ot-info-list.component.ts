@@ -15,6 +15,7 @@ import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { AuthDeptNode, CodeItem, ItemOption, SearchApplyOtRow, ShiftOption } from './search-apply-ot-info-list.model';
 import { SearchApplyOtInfoListService } from './search-apply-ot-info-list.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - tải trước 1 lần ở ngOnInit (xem I18nService). */
 const I18N_KEYS = [
@@ -26,8 +27,6 @@ const I18N_KEYS = [
   'common.totalRows', 'common.loadFail',
   'mep.msg.loadDeptFailed',
 ];
-
-const PAGE_SIZE_OPTIONS = [25, 50, 100, 200, 500];
 
 /**
  * Bản Angular của ar/attendanceMintenance/viewSearchApplyOtInfoList.html (Thymeleaf + DataTables),

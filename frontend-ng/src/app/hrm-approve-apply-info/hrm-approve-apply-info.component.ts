@@ -14,6 +14,7 @@ import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { ApplyDetail, CompareRow, EssFileDto, HrmApproveApplyDto } from './hrm-approve-apply-info.model';
 import { HrmApproveApplyInfoService } from './hrm-approve-apply-info.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - tải trước 1 lần ở ngOnInit (xem I18nService). */
 const I18N_KEYS = [
@@ -44,8 +45,6 @@ const I18N_KEYS = [
   'qi.field.qualCardNo', 'qi.field.qualInstitute', 'qi.field.validityDate', 'qi.field.qualLevel',
   'wi.field.companyName', 'hrm.empinfo.educ.siteCountry',
 ];
-
-const PAGE_SIZE_OPTIONS = [20, 50, 100, 200];
 
 const TYPE_LABEL_KEYS: Record<string, [string, string]> = {
   PERSONAL: ['hmai.type.personal', 'Thông tin cá nhân'],

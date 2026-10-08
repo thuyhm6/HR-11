@@ -1,0 +1,65 @@
+<nz-card class="mb-3">
+  <form class="row g-3" (ngSubmit)="search()">
+    <div class="col-md-4">
+      <label class="form-label" for="dyciEmp">{{ 'hr.viewContractByInsert.title.EMPIDANDLOCALNAME' | translate:'Mã nhân viên/Họ tên' }} <span class="text-danger">*</span></label>
+      <input nz-input id="dyciEmp" name="dyciEmp" autocomplete="off" [ngModel]="empKeyword" (ngModelChange)="onEmpKeywordChange($event)"
+             [nzAutocomplete]="dyciEmpAuto" [placeholder]="'hrm.empinfo.workexp.selectEmp' | translate:'Chọn nhân viên...'">
+      <nz-autocomplete #dyciEmpAuto>
+        <nz-auto-option *ngFor="let opt of empOptions()" [nzValue]="empLabel(opt)" [nzLabel]="empLabel(opt)"
+                        (selectionChange)="$event.isUserInput && onEmpSelected(opt)">
+          {{ opt.empId }} - {{ opt.localName }} <small class="text-muted">({{ opt.deptName }})</small>
+        </nz-auto-option>
+      </nz-autocomplete>
+    </div>
+    <div class="col-md-4">
+      <label class="form-label" for="dyciStartMonth">{{ 'pa.detailYearCountInfoLeft.GONGZIQIJIAN.b' | translate:'Thời gian' }} <span class="text-danger">*</span></label>
+      <div class="d-flex gap-2 align-items-center">
+        <nz-date-picker id="dyciStartMonth" class="flex-fill" name="dyciStartMonth" nzMode="month" nzFormat="MM/yyyy"
+                        [(ngModel)]="startMonth"></nz-date-picker>
+        <span>~</span>
+        <nz-date-picker id="dyciEndMonth" class="flex-fill" name="dyciEndMonth" nzMode="month" nzFormat="MM/yyyy"
+                        [(ngModel)]="endMonth"></nz-date-picker>
+      </div>
+    </div>
+    <div class="col d-flex align-items-end">
+      <button nz-button nzType="primary" type="submit" id="dyciBtnSearch" [nzLoading]="loading()">
+        <i class="bx bx-search"></i> {{ 'public.title.search' | translate:'Tra cứu' }}
+      </button>
+    </div>
+  </form>
+</nz-card>
+
+<div class="row g-3">
+  <div class="col-xl-8">
+    <nz-card>
+      <nz-table #dyciTable id="dyciTable" [nzData]="rows()" [nzLoading]="loading()" nzSize="small" nzBordered
+                [(nzPageIndex)]="pageIndex" [(nzPageSize)]="pageSize" [nzPageSizeOptions]="pageSizeOptions"
+                [nzShowSizeChanger]="true" [nzShowTotal]="dyciTotalTpl"
+                [nzScroll]="{ x: '1360px', y: 'calc(100vh - 420px)' }">
+        <thead>
+          <tr>
+            <th class="text-center" nzWidth="60px" nzLeft>{{ 'common.stt' | translate:'STT' }}</th>
+            <th *ngFor="let c of columns" [nzWidth]="c.width" [class.text-end]="c.number"
+                [nzSortFn]="sortFns.get(c.field) ?? null">{{ title(c) }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of dyciTable.data; let i = index" class="dyci-row" [class.dyci-row-selected]="isSelected(row)"
+              (click)="selectRow(row)">
+            <td class="text-center" nzLeft>{{ (pageIndex - 1) * pageSize + i + 1 }}</td>
+            <td *ngFor="let c of columns" [class.text-end]="c.number">
+              <ng-container *ngIf="c.number; else dyciText">{{ $any(row[c.field]) | number:'1.0-0' }}</ng-container>
+              <ng-template #dyciText>{{ row[c.field] }}</ng-template>
+            </td>
+          </tr>
+        </tbody>
+        <ng-template #dyciTotalTpl let-total>{{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}</ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+  <div class="col-xl-4">
+    <nz-card>
+      <app-pa-salary-detail-items [query]="detailQuery()"></app-pa-salary-detail-items>
+    </nz-card>
+  </div>
+</div>

@@ -15,6 +15,7 @@ import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { AuthDeptNode, CodeItem, ManageCountInfoEmpDto, ManageCountInfoSummaryDto } from './manage-count-info.model';
 import { ManageCountInfoService } from './manage-count-info.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 declare var ApexCharts: any;
 
@@ -31,8 +32,6 @@ const I18N_KEYS = [
   'mci.msg.noData', 'mci.msg.loadFailed', 'mci.msg.chartNoData',
   'mep.msg.loadDeptFailed', 'common.totalRows',
 ];
-
-const PAGE_SIZE_OPTIONS = [25, 50, 100, 200, 500];
 
 const DEFAULT_EMP_OFFICE = '15119';
 

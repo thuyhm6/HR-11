@@ -13,6 +13,10 @@ export interface PaItemInputDto {
   orderNo: number | null;
   isUse: number | null;
   itemType: number | null;
+  /** '1' = tick sẵn (GET_ITEM_GLAG) - chỉ có ở hạng mục chấm công / hạng mục tính. */
+  itemFlag?: string | null;
+  /** Thứ tự mặc định (GET_ITEM_NUMBER), 0 = không có. */
+  itemNumber?: number | null;
 }
 
 /** Tương ứng với response Map<String, List<PaItemInputDto>> của GET /pa/salary/result/api/sectionItems. */
@@ -21,6 +25,8 @@ export interface PaSectionItemsDto {
   attendanceItems: PaItemInputDto[];
   inputItems: PaItemInputDto[];
   computeItems: PaItemInputDto[];
+  /** adminID hiện tại thuộc 11111111-11111116 (điều kiện hiện nút Lưu của JSP gốc) - backend tự kiểm tra. */
+  canSave: boolean;
 }
 
 /** 1 dòng hạng mục đã gắn thêm state chọn/thứ tự để hiển thị & chỉnh sửa trên UI (không có ở backend). */
@@ -47,9 +53,9 @@ export interface PaItemInputSaveReqDto {
   items: PaItemInputSaveItem[];
 }
 
-/** Tham số GET /pa/salary/result/api/exportExcel. */
-export interface PaResultExportExcelParams {
+/** Body POST /pa/salary/result/api/exportExcel - tương ứng PaResultExportReqDto.java. */
+export interface PaResultExportReqDto {
   payScheduleNo: string;
-  deptNos: string;
-  itemIds: string;
+  deptNos: string[];
+  items: { itemId: string; itemName: string }[];
 }

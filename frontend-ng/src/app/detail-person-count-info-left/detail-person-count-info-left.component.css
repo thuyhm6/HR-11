@@ -1,0 +1,7 @@
+.dpcil-row {
+  cursor: pointer;
+}
+
+.dpcil-row-selected > td {
+  background: #e6f4ff !important;
+}

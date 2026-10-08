@@ -13,6 +13,7 @@ import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { CurrentOrgEmployeeDto, HrDepartmentDto } from './view-current-org-info.model';
 import { ViewCurrentOrgInfoService } from './view-current-org-info.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - toàn bộ đều tái dùng key đã có sẵn (không cần tạo
  *  namespace riêng): "org.orgManage.title.orgHorizView" (Sơ đồ tổ chức - tiêu đề cây), "orgCompose.*"
@@ -127,7 +128,7 @@ export class ViewCurrentOrgInfoComponent implements OnInit {
 
   readonly employees = signal<CurrentOrgEmployeeDto[]>([]);
   readonly loadingEmployees = signal(false);
-  readonly pageSizeOptions = [20, 50, 100];
+  readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
 
   constructor(
     private readonly api: ViewCurrentOrgInfoService,

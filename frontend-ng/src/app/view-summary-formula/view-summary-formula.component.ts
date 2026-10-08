@@ -23,6 +23,7 @@ import {
   ArStaFormulaTreeItem,
 } from './view-summary-formula.model';
 import { ViewSummaryFormulaService } from './view-summary-formula.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - phần lớn tái dùng nguyên namespace pa.formula.*
  *  (trang chị em pa/salary/viewPaFormula.html - cùng khái niệm điều kiện/công thức/công cụ chèn, xem
@@ -42,8 +43,6 @@ const I18N_KEYS = [
   'staFormula.pageTitle', 'staFormula.saveSuccess', 'staFormula.saveFail', 'staFormula.deleteSuccess',
   'staFormula.deleteFail', 'staFormula.loadFail',
 ];
-
-const PAGE_SIZE_OPTIONS = [25, 50, 100, 200];
 
 interface ArStaFormulaForm {
   formularNo: number | null;

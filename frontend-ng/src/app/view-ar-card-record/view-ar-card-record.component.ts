@@ -28,6 +28,7 @@ import {
   ImportDeviceResult,
   ShiftOption,
 } from './view-ar-card-record.model';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Toàn bộ key bên dưới đã có sẵn trong message.properties (namespace "acr" dùng riêng cho trang này,
  *  "common"/"attSearch"/"empSearch" dùng chung với các trang khác) - chỉ bổ sung 5 key còn thiếu
@@ -98,7 +99,7 @@ const EMPTY_FORM: ArCardRecordForm = {
   styleUrl: './view-ar-card-record.component.css',
 })
 export class ViewArCardRecordComponent implements OnInit {
-  readonly pageSizeOptions = [25, 50, 100, 200];
+  readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
   readonly hrmMode = true;
 
   readonly rows = signal<ArCardRecordDto[]>([]);

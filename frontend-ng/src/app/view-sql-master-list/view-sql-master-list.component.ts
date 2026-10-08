@@ -21,6 +21,7 @@ import {
   SqlParamRow,
 } from './view-sql-master-list.model';
 import { ViewSqlMasterListService } from './view-sql-master-list.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - tải trước 1 lần ở ngOnInit (xem I18nService). */
 const I18N_KEYS = [
@@ -47,8 +48,6 @@ const I18N_KEYS = [
   'sys.basic.viewSqlMasterList.param.col.useYn',
   'sys.basic.viewSqlMasterList.export.title', 'sys.basic.viewSqlMasterList.export.noParams',
 ];
-
-const PAGE_SIZE_OPTIONS = [25, 50, 100];
 
 interface SqlMasterForm {
   sqlSeq: string | null;

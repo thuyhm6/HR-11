@@ -5,10 +5,7 @@ import { PaWorkFlowDto, PaWorkFlowPayScheduleDto, PaWorkFlowRecordDto, PaWorkFlo
 
 const API_BASE = '/pa/workManagement/api';
 
-/**
- * Gọi lại nguyên các API JSON đã có sẵn ở backend mà viewPaWorkFlow.html (Thymeleaf) đang dùng -
- * không đổi backend (PaWorkManagementController).
- */
+/** Gọi các API JSON quy trình tính lương ở PaWorkManagementController. */
 @Injectable({ providedIn: 'root' })
 export class ViewPaWorkFlowService {
   constructor(private readonly http: HttpClient) {}
@@ -22,9 +19,11 @@ export class ViewPaWorkFlowService {
     return this.http.get<PaWorkFlowDto | null>(`${API_BASE}/workFlow`, { params, withCredentials: true });
   }
 
-  getRecords(payScheduleNo: string, flowStep?: number): Observable<PaWorkFlowRecordDto[]> {
+  /** flowSteps: lọc theo nhiều bước cùng lúc (vd [4, 6] = Chốt lương + Hủy chốt lương, giống
+   *  FLOW_STEP=4,6 ở bản gốc) - rỗng/không truyền = lấy toàn bộ lịch sử. */
+  getRecords(payScheduleNo: string, flowSteps?: number[]): Observable<PaWorkFlowRecordDto[]> {
     let params = new HttpParams().set('payScheduleNo', payScheduleNo);
-    if (flowStep != null) params = params.set('flowStep', flowStep);
+    if (flowSteps?.length) params = params.set('flowStep', flowSteps.join(','));
     return this.http.get<PaWorkFlowRecordDto[]>(`${API_BASE}/workFlow/records`, { params, withCredentials: true });
   }
 

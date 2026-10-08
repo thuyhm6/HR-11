@@ -40,6 +40,7 @@ import {
   SYLLABUS_EXCEL_SAMPLE,
 } from './edu-plan-manager.model';
 import { EduPlanManagerService } from './edu-plan-manager.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Key message.properties dùng trong trang - hầu hết dùng lại key sẵn có của bản JSP gốc (edu.planManager.*). */
 const I18N_KEYS = [
@@ -71,8 +72,6 @@ const I18N_KEYS = [
 /** Mã cha SY_CODE (bản gốc SelectSyCodeByCpnyID parentNo). */
 const TRAIN_DIFF_PARENT_CODE = '14014478';
 const TRAIN_FORM_PARENT_CODE = '14014493';
-
-const PAGE_SIZE_OPTIONS = [50, 100, 200, 500, 1000];
 
 type ModalMode = 'add' | 'edit' | 'view';
 
@@ -153,7 +152,7 @@ export class EduPlanManagerComponent implements OnInit {
   });
 
   pageIndex = 1;
-  pageSize = PAGE_SIZE_OPTIONS[0];
+  pageSize = 50;
 
   readonly trainDiffOptions = signal<EduCodeItem[]>([]);
   readonly searchTypeOptions = signal<EduCodeItem[]>([]);

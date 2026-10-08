@@ -22,6 +22,7 @@ import { ViewRetrieveSqlMasterListService } from './view-retrieve-sql-master-lis
 import { AutoExcelEditModalComponent } from './auto-excel-edit-modal.component';
 import { AutoExcelParamModalComponent } from './auto-excel-param-modal.component';
 import { AutoExcelRunModalComponent } from './auto-excel-run-modal.component';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Key message.properties của trang này + 3 modal con - tải trước 1 lần ở ngOnInit (xem I18nService). */
 const I18N_KEYS = [
@@ -43,8 +44,6 @@ const I18N_KEYS = [
   'autoExcel.msg.chooseModule', 'autoExcel.msg.enterName', 'autoExcel.msg.invalidOrder', 'autoExcel.msg.enterSql',
   'autoExcel.msg.saveFail', 'autoExcel.msg.deleteFail', 'autoExcel.msg.noData', 'autoExcel.msg.executeFail',
 ];
-
-const PAGE_SIZE_OPTIONS = [25, 50, 100, 200];
 
 /**
  * Bản Angular của /disc/autoExcel/viewRetrieveSqlMasterList (JSP + DWZ, dự án Hanwha_HTSV) - Báo cáo SQL tự xuất Excel

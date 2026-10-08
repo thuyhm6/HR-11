@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- Port từ Hanwha_HAE: com/ait/sys/dao/sql/sqlSendEmail.xml (namespace sys.endEmail) -
+     phần lấy đơn chờ gửi sang hộp phê duyệt Cleverse và đánh dấu đã gửi (SEND_EMAIL_FLAG). -->
+<mapper namespace="com.ait.cleverse.mapper.CleverseApprovalMapper">
+
+    <resultMap id="CleverseApprovalApplyResultMap" type="com.ait.cleverse.dto.CleverseApprovalApplyDto">
+        <id property="applyNo" column="APPLY_NO"/>
+        <result property="personId" column="PERSON_ID"/>
+        <result property="localName" column="LOCAL_NAME"/>
+        <result property="englishName" column="ENGLISH_NAME"/>
+        <result property="empId" column="EMPID"/>
+        <result property="deptName" column="DEPT_NAME"/>
+        <result property="positionName" column="POSITION_NAME"/>
+        <result property="applyTypeNo" column="APPLY_TYPE_NO"/>
+        <result property="applyTypeCode" column="APPLY_TYPE_CODE"/>
+        <result property="applyTypeName" column="APPLY_TYPE_NAME"/>
+        <result property="applyTypeNameKo" column="APPLY_TYPE_NAME_KO"/>
+        <result property="applyTypeNameVi" column="APPLY_TYPE_NAME_VI"/>
+        <result property="applyTime" column="APPLY_TIME"/>
+        <result property="fromTime" column="FROM_TIME"/>
+        <result property="toTime" column="TO_TIME"/>
+        <result property="applyLength" column="APPLY_LENGTH"/>
+        <result property="attLength" column="ATT_LENGTH"/>
+        <result property="otLength" column="OT_LENGTH"/>
+        <result property="otTotalMonth" column="OT_TOTAIL_MONTH"/>
+        <result property="remark" column="REMARK"/>
+        <result property="misDocId" column="MISDOCID"/>
+    </resultMap>
+
+    <resultMap id="CleverseApprovalSignerResultMap" type="com.ait.cleverse.dto.CleverseApprovalSignerDto">
+        <id property="seq" column="SEQ"/>
+        <result property="affirmType" column="AFFIRM_TYPE"/>
+        <result property="assignType" column="ASSIGN_TYPE"/>
+        <result property="receiverType" column="RECEIVER_TYPE"/>
+        <result property="affirmEmpId" column="AFFIRM_EMPID"/>
+        <result property="affirmPersonId" column="AFFIRM_PERSON_ID"/>
+        <result property="affirmLevel" column="AFFIRM_LEVEL"/>
+    </resultMap>
+
+    <!-- Port sys.endEmail.getWaitSendApplyInfoList: interLanguage -> #{lang}, interCpnyID / 'HAE' -> #{cpnyId} -->
+    <select id="selectWaitSendApplyList" resultMap="CleverseApprovalApplyResultMap">
+        <![CDATA[
+        SELECT APPLY_DATA.*,
+               (GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(APPLY_DATA.FROM_TIME, 'DD/MM/YYYY HH24:MI'), 'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, APPLY_DATA.PERSON_ID, '30')
+              + GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(APPLY_DATA.FROM_TIME, 'DD/MM/YYYY HH24:MI'), 'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, APPLY_DATA.PERSON_ID, '301')) OT_TOTAIL_MONTH
+          FROM (SELECT HR.LOCAL_NAME,
+                       HR.ENGLISH_NAME,
+                       HR.EMPID,
+                       HR.PERSON_ID,
+                       GET_DEPT_NAME(HR.DEPTNO, #{lang, jdbcType=VARCHAR}) DEPT_NAME,
+                       GET_GLOBAL_NAME(HR.POSITION_NO, #{lang, jdbcType=VARCHAR}) POSITION_NAME,
+                       A.APPLY_NO,
+                       A.APPLY_TYPE_NO,
+                       A.APPLY_TYPE_CODE,
+                       GET_GLOBAL_NAME(A.APPLY_TYPE_CODE, 'ko') APPLY_TYPE_NAME_KO,
+                       GET_GLOBAL_NAME(A.APPLY_TYPE_CODE, 'vi') APPLY_TYPE_NAME_VI,
+                       A.APPLY_TYPE_NAME,
+                       A.APPLY_TIME,
+                       A.ORDER_TIME,
+                       A.FROM_TIME,
+                       A.TO_TIME,
+                       A.APPLY_LENGTH,
+                       CASE WHEN A.APPLY_TYPE_CODE = '141474' THEN
+                                 GET_AR_LEAVE_LENGTH(HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR},
+                                                     TO_DATE(A.FROM_TIME, 'DD/MM/YYYY HH24:MI'),
+                                                     TO_DATE(A.TO_TIME, 'DD/MM/YYYY HH24:MI'), '141474') || ' minutes'
+                            ELSE
+                                 CASE WHEN A.APPLY_LENGTH >= AR_GET_DAY_HOURS(HR.PERSON_ID, A.ORDER_TIME) THEN
+                                           TO_CHAR(TRUNC(A.APPLY_LENGTH / AR_GET_DAY_HOURS(HR.PERSON_ID, A.ORDER_TIME)))
+                                           || CASE WHEN ROUND(A.APPLY_LENGTH / AR_GET_DAY_HOURS(HR.PERSON_ID, A.ORDER_TIME)) > 1 THEN ' days ' ELSE ' day ' END
+                                           || CASE WHEN MOD(A.APPLY_LENGTH, AR_GET_DAY_HOURS(HR.PERSON_ID, A.ORDER_TIME)) > 1
+                                                        THEN TO_CHAR(MOD(A.APPLY_LENGTH, AR_GET_DAY_HOURS(HR.PERSON_ID, A.ORDER_TIME))) || ' hours'
+                                                   WHEN MOD(A.APPLY_LENGTH, AR_GET_DAY_HOURS(HR.PERSON_ID, A.ORDER_TIME)) > 0
+                                                        THEN TO_CHAR(MOD(A.APPLY_LENGTH, AR_GET_DAY_HOURS(HR.PERSON_ID, A.ORDER_TIME))) || ' hour'
+                                                   ELSE NULL END
+                                      ELSE
+                                           CASE WHEN MOD(A.APPLY_LENGTH, AR_GET_DAY_HOURS(HR.PERSON_ID, A.ORDER_TIME)) > 1
+                                                     THEN TO_CHAR(MOD(A.APPLY_LENGTH, AR_GET_DAY_HOURS(HR.PERSON_ID, A.ORDER_TIME))) || ' hours'
+                                                WHEN MOD(A.APPLY_LENGTH, AR_GET_DAY_HOURS(HR.PERSON_ID, A.ORDER_TIME)) > 0
+                                                     THEN TO_CHAR(MOD(A.APPLY_LENGTH, AR_GET_DAY_HOURS(HR.PERSON_ID, A.ORDER_TIME))) || ' hour'
+                                                ELSE '0 hour' END
+                                 END
+                       END ATT_LENGTH,
+                       CASE WHEN A.APPLY_LENGTH > 1 THEN A.APPLY_LENGTH || ' hours' ELSE A.APPLY_LENGTH || ' hour' END OT_LENGTH,
+                       A.REMARK,
+                       A.MISDOCID
+                  FROM (SELECT ATT.APPLY_NO,
+                               ATT.PERSON_ID,
+                               ATT.LEAVE_TYPE_NO APPLY_TYPE_NO,
+                               ATT.LEAVE_TYPE_CODE APPLY_TYPE_CODE,
+                               GET_GLOBAL_NAME(ATT.LEAVE_TYPE_CODE, #{lang, jdbcType=VARCHAR}) APPLY_TYPE_NAME,
+                               TO_CHAR(ATT.APPLY_TIME, 'DD/MM/YYYY') APPLY_TIME,
+                               TO_CHAR(ATT.APPLY_TIME, 'YYYY/MM/DD') ORDER_TIME,
+                               TO_CHAR(ATT.LEAVE_FROM_TIME, 'DD/MM/YYYY HH24:MI') FROM_TIME,
+                               TO_CHAR(ATT.LEAVE_TO_TIME, 'DD/MM/YYYY HH24:MI') TO_TIME,
+                               ATT.APPLY_LENGTH,
+                               ATT.LEAVE_REASON REMARK,
+                               ATT.MISDOCID
+                          FROM ESS_LEAVE_APPLY_TB ATT
+                         WHERE ATT.AFFIRM_FLAG IN ('14014306', '14014307')
+                           AND ATT.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+                           AND ATT.PERSON_ID IS NOT NULL
+                           AND ATT.LEAVE_TYPE_CODE IS NOT NULL
+                           AND ATT.APPLY_LENGTH > 0
+                           AND ATT.ACTIVITY = 1
+                           AND ATT.CREATED_BY NOT LIKE '111111%'
+                           AND ATT.SEND_EMAIL_FLAG = 0
+                        UNION ALL
+                        SELECT OT.APPLY_NO,
+                               OT.PERSON_ID,
+                               OT.OT_TYPE_NO APPLY_TYPE_NO,
+                               OT.OT_TYPE_CODE APPLY_TYPE_CODE,
+                               GET_GLOBAL_NAME(OT.OT_TYPE_CODE, #{lang, jdbcType=VARCHAR}) APPLY_TYPE_NAME,
+                               TO_CHAR(OT.APPLY_TIME, 'DD/MM/YYYY') APPLY_TIME,
+                               TO_CHAR(OT.APPLY_TIME, 'YYYY/MM/DD') ORDER_TIME,
+                               TO_CHAR(OT.OT_FROM_TIME, 'DD/MM/YYYY HH24:MI') FROM_TIME,
+                               TO_CHAR(OT.OT_TO_TIME, 'DD/MM/YYYY HH24:MI') TO_TIME,
+                               OT.OT_APPLY_HOUR APPLY_LENGTH,
+                               OT.APPLY_OT_REMARK REMARK,
+                               OT.MISDOCID
+                          FROM ESS_APPLY_OT OT
+                         WHERE OT.AFFIRM_FLAG IN ('14014306', '14014307')
+                           AND OT.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+                           AND OT.PERSON_ID IS NOT NULL
+                           AND OT.OT_TYPE_NO IS NOT NULL
+                           AND OT.OT_APPLY_HOUR > 0
+                           AND OT.ACTIVITY = 1
+                           AND OT.CREATED_BY NOT LIKE '111111%'
+                           AND OT.SEND_EMAIL_FLAG = 0
+                        UNION ALL
+                        SELECT OTO.APPLY_NO,
+                               OTO.PERSON_ID,
+                               OTO.OT_TYPE_NO APPLY_TYPE_NO,
+                               OTO.OT_TYPE_CODE APPLY_TYPE_CODE,
+                               GET_GLOBAL_NAME(OTO.OT_TYPE_CODE, #{lang, jdbcType=VARCHAR}) APPLY_TYPE_NAME,
+                               TO_CHAR(OTO.APPLY_TIME, 'DD/MM/YYYY') APPLY_TIME,
+                               TO_CHAR(OTO.APPLY_TIME, 'YYYY/MM/DD') ORDER_TIME,
+                               TO_CHAR(OTO.OT_FROM_TIME, 'DD/MM/YYYY HH24:MI') FROM_TIME,
+                               TO_CHAR(OTO.OT_TO_TIME, 'DD/MM/YYYY HH24:MI') TO_TIME,
+                               OTO.OT_APPLY_HOUR APPLY_LENGTH,
+                               OTO.APPLY_OT_REMARK REMARK,
+                               OTO.MISDOCID
+                          FROM ESS_APPLY_OT_OVER OTO
+                         WHERE OTO.AFFIRM_FLAG IN ('14014306', '14014307')
+                           AND OTO.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+                           AND OTO.PERSON_ID IS NOT NULL
+                           AND OTO.OT_TYPE_NO IS NOT NULL
+                           AND OTO.OT_APPLY_HOUR > 0
+                           AND OTO.ACTIVITY = 1
+                           AND OTO.CREATED_BY NOT LIKE '111111%'
+                           AND OTO.SEND_EMAIL_FLAG = 0
+                        UNION ALL
+                        SELECT CARD.APPLY_NO,
+                               CARD.PERSON_ID,
+                               '218197' APPLY_TYPE_NO,
+                               CARD.ITEM_NO APPLY_TYPE_CODE,
+                               GET_GLOBAL_NAME(CARD.ITEM_NO, #{lang, jdbcType=VARCHAR}) APPLY_TYPE_NAME,
+                               TO_CHAR(CARD.APPLY_TIME, 'DD/MM/YYYY') APPLY_TIME,
+                               TO_CHAR(CARD.APPLY_TIME, 'YYYY/MM/DD') ORDER_TIME,
+                               TO_CHAR(CARD.IN_TIME, 'DD/MM/YYYY HH24:MI') FROM_TIME,
+                               TO_CHAR(CARD.OUT_TIME, 'DD/MM/YYYY HH24:MI') TO_TIME,
+                               CASE WHEN ROUND((CARD.OUT_TIME - CARD.IN_TIME) * 24, 2) > 6
+                                    THEN ROUND((CARD.OUT_TIME - CARD.IN_TIME) * 24, 2) - 1
+                                    ELSE ROUND((CARD.OUT_TIME - CARD.IN_TIME) * 24, 2) END APPLY_LENGTH,
+                               CARD.APPLY_REASON REMARK,
+                               CARD.MISDOCID
+                          FROM ESS_CARD_APPLY_TB CARD
+                         WHERE CARD.AFFIRM_FLAG IN ('14014306', '14014307')
+                           AND CARD.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+                           AND CARD.PERSON_ID IS NOT NULL
+                           AND CARD.ITEM_NO IS NOT NULL
+                           AND CARD.ACTIVITY = '1'
+                           AND CARD.CREATED_BY NOT LIKE '111111%'
+                           AND CARD.SEND_EMAIL_FLAG = 0
+                        UNION ALL
+                        SELECT TR.APPLY_NO,
+                               TR.PERSON_ID,
+                               '81006456' APPLY_TYPE_NO,
+                               TR.TRAINING_TYPE APPLY_TYPE_CODE,
+                               GET_GLOBAL_NAME(TR.TRAINING_TYPE, 'vi') APPLY_TYPE_NAME,
+                               TO_CHAR(TR.START_DATE, 'DD/MM/YYYY') APPLY_TIME,
+                               TO_CHAR(TR.END_DATE, 'YYYY/MM/DD') ORDER_TIME,
+                               TO_CHAR(TR.CREATE_DATE, 'DD/MM/YYYY HH24:MI') FROM_TIME,
+                               TO_CHAR(TR.UPDATE_DATE, 'DD/MM/YYYY HH24:MI') TO_TIME,
+                               TR.ACTIVITY APPLY_LENGTH,
+                               TR.REMARK REMARK,
+                               TR.MISDOCID
+                          FROM EDU_TRAINING_REGISTER TR
+                         WHERE TR.AFFIRM_FLAG IN ('14014306', '14014307')
+                           AND TR.PERSON_ID IS NOT NULL
+                           AND TR.ACTIVITY = 1
+                           AND TR.CREATED_BY NOT LIKE '111111%'
+                           AND TR.SEND_EMAIL_FLAG = 0) A,
+                       HR_EMPLOYEE HR
+                 WHERE A.PERSON_ID = HR.PERSON_ID
+                   AND A.PERSON_ID NOT LIKE '111111%'
+                   AND HR.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}) APPLY_DATA
+         ORDER BY APPLY_DATA.ORDER_TIME
+        ]]>
+    </select>
+
+    <!-- Port sys.endEmail.getAffirmListByApplyNo: ASSIGN_TYPE 0 = người lập (AFFIRM_TYPE 4), 1 = người duyệt -->
+    <select id="selectAffirmListByApplyNo" resultMap="CleverseApprovalSignerResultMap">
+        <![CDATA[
+        SELECT S.SEQ,
+               S.AFFIRM_TYPE,
+               DECODE(S.AFFIRM_TYPE, 4, 0, 1) ASSIGN_TYPE,
+               NULL RECEIVER_TYPE,
+               E.EMPID AFFIRM_EMPID,
+               S.AFFIRM_PERSON_ID,
+               S.AFFIRM_LEVEL
+          FROM SY_AFFIRM_EMAIL S, HR_EMPLOYEE E
+         WHERE S.AFFIRM_PERSON_ID = E.PERSON_ID
+           AND S.APPLY_NO = #{applyNo, jdbcType=VARCHAR}
+           AND S.AFFIRM_TYPE <> 3
+           AND S.AFFIRM_FLAG = 0
+         ORDER BY S.AFFIRM_LEVEL
+        ]]>
+    </select>
+
+    <!-- Port sys.endEmail.getReceiverListByApplyNo: RECEIVER_TYPE referer (AFFIRM_TYPE 3) / receiver -->
+    <select id="selectReceiverListByApplyNo" resultMap="CleverseApprovalSignerResultMap">
+        SELECT S.SEQ,
+               S.AFFIRM_TYPE,
+               NULL ASSIGN_TYPE,
+               DECODE(S.AFFIRM_TYPE, 3, 'referer', 'receiver') RECEIVER_TYPE,
+               E.EMPID AFFIRM_EMPID,
+               S.AFFIRM_PERSON_ID,
+               S.AFFIRM_LEVEL
+          FROM SY_AFFIRM_EMAIL S, HR_EMPLOYEE E
+         WHERE S.AFFIRM_PERSON_ID = E.PERSON_ID
+           AND S.APPLY_NO = #{applyNo, jdbcType=VARCHAR}
+           AND S.AFFIRM_TYPE IN (3, 4)
+         ORDER BY S.AFFIRM_LEVEL
+    </select>
+
+    <!-- APPLY_NO là duy nhất giữa các bảng đơn nên gọi lần lượt cả 5 update (giống updateApplySendFlag bản gốc) -->
+    <update id="updateAttApplySendFlag">
+        UPDATE ESS_LEAVE_APPLY_TB
+           SET SEND_EMAIL_FLAG = 1
+         WHERE APPLY_NO = #{applyNo, jdbcType=VARCHAR}
+    </update>
+
+    <update id="updateOtApplySendFlag">
+        UPDATE ESS_APPLY_OT
+           SET SEND_EMAIL_FLAG = 1
+         WHERE APPLY_NO = #{applyNo, jdbcType=VARCHAR}
+    </update>
+
+    <update id="updateOtOverApplySendFlag">
+        UPDATE ESS_APPLY_OT_OVER
+           SET SEND_EMAIL_FLAG = 1
+         WHERE APPLY_NO = #{applyNo, jdbcType=VARCHAR}
+    </update>
+
+    <update id="updateCardApplySendFlag">
+        UPDATE ESS_CARD_APPLY_TB
+           SET SEND_EMAIL_FLAG = 1
+         WHERE APPLY_NO = #{applyNo, jdbcType=VARCHAR}
+    </update>
+
+    <update id="updateTrainApplySendFlag">
+        UPDATE EDU_TRAINING_REGISTER
+           SET SEND_EMAIL_FLAG = 1
+         WHERE APPLY_NO = #{applyNo, jdbcType=VARCHAR}
+    </update>
+</mapper>

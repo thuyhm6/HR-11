@@ -16,6 +16,7 @@ import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { ArStaItemDto, ArStaItemSavePayload } from './view-summary-item.model';
 import { ViewSummaryItemService } from './view-summary-item.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - dùng lại nguyên namespace staItem.* đã chuẩn bị
  *  sẵn cho đúng trang này (trước đó chỉ có ở bản tiếng Việt, đã bổ sung đủ en/ko/zh/mặc định - xem
@@ -33,8 +34,6 @@ const I18N_KEYS = [
   'staItem.showOrder', 'staItem.searchPlaceholder', 'arItem.msg.pleaseEnterNameVi',
   'essDept.exportExcel',
 ];
-
-const PAGE_SIZE_OPTIONS = [25, 50, 100, 200];
 
 interface StaItemForm {
   itemNo: string | null;

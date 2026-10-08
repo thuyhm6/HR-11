@@ -21,6 +21,7 @@ import {
   CoordApplyAttendanceRow,
   ShiftOption,
 } from './coord-apply-attendance-info.model';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Toàn bộ key bên dưới đã có sẵn trong message.properties (namespace "cai" dùng riêng cho trang này,
  *  "ex"/"common"/"mep" dùng chung với các trang khác) - không cần thêm key mới. */
@@ -68,7 +69,7 @@ const POST_FAMILY_PARENT_CODE = '14015812';
   styleUrl: './coord-apply-attendance-info.component.css',
 })
 export class CoordApplyAttendanceInfoComponent implements OnInit {
-  readonly pageSizeOptions = [25, 50, 100, 200, 500];
+  readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
 
   readonly rows = signal<CoordApplyAttendanceRow[]>([]);
   readonly loading = signal(false);

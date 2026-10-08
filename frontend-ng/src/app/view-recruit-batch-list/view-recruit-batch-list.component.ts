@@ -23,6 +23,7 @@ import {
   RecruitBatchRegister,
 } from './view-recruit-batch-list.model';
 import { ViewRecruitBatchListService } from './view-recruit-batch-list.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - tải trước 1 lần ở ngOnInit (xem I18nService). */
 const I18N_KEYS = [
@@ -143,6 +144,7 @@ function emptyEditForm(): EditForm {
   styleUrl: './view-recruit-batch-list.component.css',
 })
 export class ViewRecruitBatchListComponent implements OnInit {
+  readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
   @ViewChild('excelFileInput') excelFileInputRef?: ElementRef<HTMLInputElement>;
 
   readonly pageSize = PAGE_SIZE;

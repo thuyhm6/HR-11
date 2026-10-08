@@ -15,6 +15,7 @@ import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { CodeItem, EvsItemPanelRow, EvsResumeOption } from './evs-item-panel.model';
 import { EvsItemPanelService } from './evs-item-panel.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** 2 tab của trang - mỗi tab ứng với 1 namespace API riêng (đúng bản Thymeleaf gốc). */
 type TabKey = 'item' | 'param';
@@ -133,6 +134,7 @@ class EvsItemTabState {
   styleUrl: './evs-item-panel.component.css',
 })
 export class EvsItemPanelComponent implements OnInit {
+  readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
   private evsType = '';
   readonly resumeOptions = signal<EvsResumeOption[]>([]);
   resumeSeq: string | null = null;

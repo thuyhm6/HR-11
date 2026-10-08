@@ -21,6 +21,7 @@ import {
   HrAddressMattersDto,
 } from './address-info.model';
 import { AddressInfoService } from './address-info.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - đều đã có sẵn (hrm.empinfo.address.* dành riêng
  *  cho trang này, cộng các key chung), tải trước 1 lần ở ngOnInit (xem I18nService). */
@@ -37,8 +38,6 @@ const I18N_KEYS = [
   'hrm.empinfo.address.colType', 'hrm.empinfo.address.colEffDate', 'hrm.empinfo.address.colContent',
   'hrm.empinfo.address.colNationality', 'hrm.empinfo.address.pleaseSelect', 'hrm.empinfo.address.confirmDelete',
 ];
-
-const PAGE_SIZE_OPTIONS = [25, 50, 100, 200];
 
 /** parentCodeNo của bảng SY_CODE - dùng chung với PersonalInfoComponent (addressTypeOptions/nationalityOptions). */
 const ADDRESS_TYPE_PARENT_CODE = '14013840';

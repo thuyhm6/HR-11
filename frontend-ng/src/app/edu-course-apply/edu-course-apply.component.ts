@@ -20,6 +20,7 @@ import { EduSyllabusViewComponent } from '../edu-common/edu-syllabus-view.compon
 import { courseWithPeriod } from '../edu-common/edu-train.model';
 import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Key message.properties dùng trong trang - hầu hết dùng lại key sẵn có của bản JSP gốc (courseApply.jsp, queryMaker.jsp). */
 const I18N_KEYS = [
@@ -36,8 +37,6 @@ const I18N_KEYS = [
   'common.search', 'common.stt', 'common.noData', 'common.totalRows', 'common.loadFail', 'common.confirm', 'common.cancel',
   'common.delete', 'common.quickFilter', 'alert.message.add_fail',
 ];
-
-const PAGE_SIZE_OPTIONS = [50, 100, 200, 500];
 
 /**
  * Bản Angular của /edu/traineducation/courseApply (JSP + DWZ, dự án Hanwha_HTSV) - nhân viên đăng ký khóa đào tạo:
@@ -78,7 +77,7 @@ export class EduCourseApplyComponent implements OnInit {
   /** Lý do đăng ký theo từng khóa (bản gốc ô APPLY_TASK trên mỗi dòng). */
   tasks: Record<string, string> = {};
   pageIndex = 1;
-  pageSize = PAGE_SIZE_OPTIONS[0];
+  pageSize = 50;
   searchCourseName = '';
   searchStart: Date | null = null;
   searchEnd: Date | null = null;

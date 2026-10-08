@@ -16,6 +16,7 @@ import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { EvsFormulaDto, EvsFormulaSavePayload } from './evs-formula-list.model';
 import { EvsFormulaListService } from './evs-formula-list.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - toàn bộ key evs.manage.viewEvsFormulaList.* đã có
  *  sẵn (dùng chung với bản Thymeleaf cũ, không tạo mới - xem CLAUDE.md mục 3). Tải trước 1 lần ở
@@ -44,7 +45,6 @@ const I18N_KEYS = [
   'common.totalRows',
 ];
 
-const PAGE_SIZE_OPTIONS = [25, 50, 100, 200];
 const PREVIEW_LEN = 80;
 
 interface FormulaForm {

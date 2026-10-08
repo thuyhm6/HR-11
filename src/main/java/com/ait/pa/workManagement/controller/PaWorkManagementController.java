@@ -211,7 +211,7 @@ public class PaWorkManagementController {
     @ResponseBody
     public ResponseEntity<?> getWorkFlowRecords(
             @RequestParam(required = false) String payScheduleNo,
-            @RequestParam(required = false) Integer flowStep) {
+            @RequestParam(required = false) List<Integer> flowStep) {
         try {
             if (payScheduleNo == null || payScheduleNo.isEmpty()) {
                 return ResponseEntity.ok(List.of());
@@ -235,6 +235,11 @@ public class PaWorkManagementController {
                 return ResponseEntity.badRequest().body(Map.of("error", "Thiếu tham số type!"));
             }
             String message = paWorkFlowService.modifyWorkFlow(dto.getPayScheduleNo(), dto.getType());
+            // Giống PaWorkFlowCtroller.execPaWorkFlow bản gốc: procedure không raise exception mà trả
+            // thông báo lỗi qua tham số OUT có chứa chữ "ERROR" -> coi là thất bại.
+            if (message != null && message.contains("ERROR")) {
+                return ResponseEntity.badRequest().body(Map.of("error", message));
+            }
             return ResponseEntity.ok(Map.of("success", true, "message", message != null ? message : "Thực hiện thành công"));
         } catch (Exception e) {
             log.error("Lỗi khi thực hiện quy trình lương payScheduleNo={}, type={}: {}", dto.getPayScheduleNo(), dto.getType(), e.getMessage(), e);

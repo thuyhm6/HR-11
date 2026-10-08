@@ -21,6 +21,7 @@ import {
   HrContractDto,
 } from '../contract-info-list/contract-info-list.model';
 import { ContractInfoListService } from '../contract-info-list/contract-info-list.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - tải trước 1 lần ở ngOnInit (xem I18nService). */
 const I18N_KEYS = [
@@ -56,8 +57,6 @@ const I18N_KEYS = [
   'hrm.viewContract.title.validateContractNo', 'hrm.viewContract.title.validateContractName',
   'tempEmp.validateEmp',
 ];
-
-const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 
 /** Mã CONTRACT_TYPE_CODE (bảng code global) dùng để tính loại hợp đồng kế tiếp khi gia hạn - giữ
  *  nguyên đúng quy tắc đã có ở viewExpiredContract.html gốc (hàm extendContract()). */

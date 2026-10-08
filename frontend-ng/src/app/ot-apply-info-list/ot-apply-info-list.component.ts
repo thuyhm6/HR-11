@@ -16,6 +16,7 @@ import { TranslatePipe } from '../i18n/translate.pipe';
 import { TabService } from '../shell/tab.service';
 import { OtApplyInfoListService } from './ot-apply-info-list.service';
 import { CodeItem, EssBasicInfoDto, OtApplyDetailResponse, OtApplyDisplayRow } from './ot-apply-info-list.model';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - tải trước 1 lần ở ngOnInit (xem I18nService). */
 const I18N_KEYS = [
@@ -71,6 +72,7 @@ const CANCELABLE_FLAGS = ['14014306', '14014307', '14014308'];
   styleUrl: './ot-apply-info-list.component.css',
 })
 export class OtApplyInfoListComponent implements OnInit {
+  readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
   readonly basicInfo = signal<EssBasicInfoDto | null>(null);
   readonly otTypeOptions = signal<CodeItem[]>([]);
   readonly affirmFlagOptions = signal<CodeItem[]>([]);

@@ -15,6 +15,7 @@ import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { CodeItem, EvsParamRow, EvsResumeOption } from './evs-param-panel.model';
 import { EvsParamPanelService } from './evs-param-panel.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** 7 tab của trang - mỗi tab ứng với 1 namespace API + paramType riêng (đúng bản Thymeleaf gốc
  *  _vepp_meta). 4 tab item/list/group/family cùng dùng chung API "evsParam" nhưng khác paramType. */
@@ -37,8 +38,6 @@ const EVAL_GRADE_PARENT_CODE = '14015161'; // Cấp ĐG (tab Cấp đánh giá +
 const START_STEP_PARENT_CODE = '14015351'; // Bước bắt đầu (tab Bảng đánh giá)
 const EVS_STEP_PARENT_CODE = '14015060'; // Giai đoạn (tab Người đánh giá)
 const RULE_ID_PARENT_CODE = '14015172'; // ID quy tắc (tab Người đánh giá)
-
-const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 
 /** Các key message.properties dùng trong trang này - toàn bộ key evsParam.* đã có sẵn (dùng chung với
  *  bản Thymeleaf cũ, không tạo mới - xem CLAUDE.md mục 3). Tải trước 1 lần ở ngOnInit. */

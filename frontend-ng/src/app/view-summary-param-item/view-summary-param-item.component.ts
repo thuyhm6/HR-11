@@ -16,6 +16,7 @@ import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { ArStaItemParamDto, ArStaItemParamSavePayload, AvailableItemOption } from './view-summary-param-item.model';
 import { ViewSummaryParamItemService } from './view-summary-param-item.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** 4 đơn vị cố định (UNIT) của bảng AR_STA_ITEM_PARAM (mã nghiệp vụ, không phải danh mục chung nên
  *  giữ hardcode đúng như bản gốc) - nhãn hiển thị dùng key staParamItem.unitDay/unitHour/unitMinute/unitCount. */
@@ -45,8 +46,6 @@ const I18N_KEYS = [
   'staParamItem.selectItemPlaceholder', 'staParamItem.msg.pleaseSelectItem', 'staParamItem.calOrderHint',
   'staParamItem.itemInfoTitle', 'staParamItem.configTitle', 'ar.viewitemparameter.title.unit', 'essDept.exportExcel',
 ];
-
-const PAGE_SIZE_OPTIONS = [25, 50, 100, 200];
 
 interface StaItemParamForm {
   paramNo: string | null;

@@ -13,6 +13,7 @@ import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { EduCodeItem, EduSystemManagerRow, EduSystemManagerSavePayload } from './edu-system-manager.model';
 import { EduSystemManagerService } from './edu-system-manager.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Key message.properties dùng trong trang - hầu hết dùng lại key sẵn có của bản JSP gốc (edu.systemManager.*). */
 const I18N_KEYS = [
@@ -28,8 +29,6 @@ const I18N_KEYS = [
 
 /** Mã cha của "Chương trình đào tạo" (bản gốc: SelectSyCodeByCpnyID parentNo="14014478"). */
 const TRAIN_DIFF_PARENT_CODE = '14014478';
-
-const PAGE_SIZE_OPTIONS = [50, 100, 200, 500, 1000];
 
 interface SystemManagerForm {
   sysmanaNo: string | null;
@@ -92,7 +91,7 @@ export class EduSystemManagerComponent implements OnInit {
   });
 
   pageIndex = 1;
-  pageSize = PAGE_SIZE_OPTIONS[0];
+  pageSize = 50;
 
   readonly trainDiffOptions = signal<EduCodeItem[]>([]);
   readonly searchTypeOptions = signal<EduCodeItem[]>([]);

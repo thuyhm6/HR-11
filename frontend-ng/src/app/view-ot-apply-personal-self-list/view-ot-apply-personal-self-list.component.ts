@@ -17,6 +17,7 @@ import {
   OtApplyPersonalSelfPivotRow,
 } from './view-ot-apply-personal-self-list.model';
 import { ViewOtApplyPersonalSelfListService } from './view-ot-apply-personal-self-list.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này (toàn bộ tái sử dụng namespace otsl, common đã có
  *  sẵn - không thêm key mới) - tải trước 1 lần ở ngOnInit (xem I18nService). Lưu ý: bảng pivot dùng
@@ -31,8 +32,6 @@ const I18N_KEYS = [
   'otsl.msg.noDataDetail', 'otsl.msg.loadDetailFailed', 'otsl.msg.selectHint',
   'common.search', 'common.exportExcel', 'common.stt', 'common.empId', 'common.empName', 'common.totalRows',
 ];
-
-const PAGE_SIZE_OPTIONS = [25, 50, 100];
 
 /**
  * Bản Angular của ess/viewDept/viewOtApplyPersonalSelfList.html (Thymeleaf + jQuery, tự build bảng

@@ -25,6 +25,7 @@ import {
   EvsResumeOption,
 } from './evs-affirmor-setup.model';
 import { EvsAffirmorSetupService } from './evs-affirmor-setup.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Ô người đánh giá đang được sửa (chỉ hỗ trợ lần 1/2 - đúng phạm vi UI bản gốc). */
 type AffirmLevel = 1 | 2;
@@ -71,8 +72,6 @@ const I18N_KEYS = [
   'common.confirm', 'common.cancel', 'common.close', 'common.save', 'common.search', 'common.clearFilter',
   'common.selectAll', 'common.noData', 'common.totalRows', 'common.loadFail',
 ];
-
-const PAGE_SIZE_OPTIONS = [25, 50, 100, 200];
 
 interface AddObjectForm {
   objectDisplay: string;

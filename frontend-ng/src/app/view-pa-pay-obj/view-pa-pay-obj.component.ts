@@ -20,6 +20,7 @@ import {
   PaPayScheduleOption,
 } from './view-pa-pay-obj.model';
 import { ViewPaPayObjService } from './view-pa-pay-obj.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - đã có sẵn đầy đủ ở namespace pa.payObj.* và
  *  common.*, cùng các key empSearch.* / tempEmp.pickEmp / epi.field.position dùng chung cho modal chọn
@@ -38,8 +39,6 @@ const I18N_KEYS = [
   'empSearch.title', 'empSearch.field.keyword', 'empSearch.placeholder.keyword', 'empSearch.col.no',
   'epi.field.position', 'tempEmp.pickEmp',
 ];
-
-const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
 
 interface AddForm {
   payScheduleNo: string | null;

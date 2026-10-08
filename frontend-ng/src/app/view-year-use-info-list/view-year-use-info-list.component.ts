@@ -14,6 +14,7 @@ import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { ViewYearUseInfoListService } from './view-year-use-info-list.service';
 import { AuthDeptNode, CodeItem, YearUseInfoListDto } from './view-year-use-info-list.model';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Loại nhân viên - giữ đúng 2 giá trị tĩnh (MTSVN/THOIVU) như bên viewMonthDetailList (trang cùng
  *  module ess/tempEmp), không dùng danh mục SY_CODE vì backend lọc theo EMP_TYPE_CODE cứng (xem
@@ -41,7 +42,6 @@ const I18N_KEYS = [
   'common.totalRows', 'common.loadFail', 'mep.msg.loadDeptFailed',
 ];
 
-const PAGE_SIZE_OPTIONS = [25, 50, 100, 200, 500];
 const YEAR_RANGE = 5;
 
 /**

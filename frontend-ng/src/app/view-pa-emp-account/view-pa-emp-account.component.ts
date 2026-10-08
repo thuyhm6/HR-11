@@ -19,6 +19,7 @@ import { TranslatePipe } from '../i18n/translate.pipe';
 import { ChangeUserService } from '../change-user/change-user.service';
 import { AuthDeptNode, CodeItem, EmployeeSearchDto, PaEmpAccountDto, PaEmpAccountSavePayload } from './view-pa-emp-account.model';
 import { ViewPaEmpAccountService } from './view-pa-emp-account.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - đã có sẵn đầy đủ ở namespace pa.empAccount.* (dùng
  *  chung cho cả bản Thymeleaf gốc), common.* và các key empSearch.x / arSupervisor.x dùng chung cho popup
@@ -47,7 +48,6 @@ const I18N_KEYS = [
 
 const BANK_PARENT_CODE = '14015883';
 const EMP_OFFICE_PARENT_CODE = '15118';
-const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
 
 interface EmpAccountForm {
   paEmpAccountNo: number | null;

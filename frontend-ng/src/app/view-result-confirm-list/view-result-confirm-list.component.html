@@ -1,0 +1,239 @@
+<nz-card class="mb-3">
+  <div class="row g-3 align-items-end">
+    <div class="col-xl-7">
+      <app-pa-pay-period idPrefix="vrcl" [(salaryDistinNo)]="salaryDistinNo" [(payDate)]="payDate"
+                         [(payDatePro)]="payDatePro"></app-pa-pay-period>
+    </div>
+    <div class="col-xl-3 col-md-8">
+      <label class="form-label" for="vrclDept">{{ 'ess.infoApply.DEPT' | translate:'Phòng ban' }}</label>
+      <nz-tree-select id="vrclDept" class="w-100" [nzNodes]="deptNodes()" nzShowSearch nzAllowClear [(ngModel)]="deptNo"
+                      [nzPlaceHolder]="'pa.result.deptPlaceholder' | translate:'Chọn phòng ban'"
+                      [nzDropdownStyle]="{ 'max-height': '360px' }"></nz-tree-select>
+      <div *ngIf="deptErrorMessage()" class="text-danger small mt-1">{{ deptErrorMessage() }}</div>
+    </div>
+    <div class="col-xl-2 col-md-4">
+      <button nz-button nzType="primary" type="button" id="vrclBtnSearch" (click)="search()">
+        <i class="bx bx-search"></i> {{ 'public.title.search' | translate:'Tra cứu' }}
+      </button>
+    </div>
+  </div>
+</nz-card>
+
+<nz-card>
+  <nz-tabs id="vrclTabs" [nzSelectedIndex]="tabIndex" (nzSelectedIndexChange)="onTabChange($event)">
+    <nz-tab *ngFor="let tab of tabs; let ti = index" [nzTitle]="(ti + 1) + '. ' + (tab.key | translate:tab.fallback)">
+      <ng-container [ngSwitch]="tab.id">
+
+        <!-- 1. Thay đổi chi tiết -->
+        <div *ngSwitchCase="'summary'" id="vrclSummary">
+          <nz-table #vrclSumTable id="vrclSummaryTable" [nzData]="summary() ? [summary()!] : []" [nzLoading]="summaryLoading()"
+                    nzSize="small" nzBordered [nzFrontPagination]="false" [nzShowPagination]="false" [nzScroll]="{ x: '1300px' }">
+            <thead>
+              <tr>
+                <th colspan="4" class="text-center">{{ 'display.emp.ben.or.benhs68' | translate:'Tháng trước' }}</th>
+                <th colspan="4" class="text-center">{{ 'pa.monthPersonCountInfoList.DANGYUE.b' | translate:'Tháng này' }}</th>
+                <th colspan="4" class="text-center">{{ 'org.title.ADDORDELETTE' | translate:'Tăng giảm' }}</th>
+              </tr>
+              <tr>
+                <ng-container *ngFor="let g of [1, 2, 3]">
+                  <th class="text-end">{{ 'pa.viewResultConfirmSonList.DUIXIANGRENYUAN.b' | translate:'Nhân viên' }}</th>
+                  <th class="text-end">{{ 'pa.viewResultConfirmSonList.GONGZIZONGE.b' | translate:'Tổng thu nhập' }}</th>
+                  <th class="text-end">{{ 'pa.viewResultConfirmSonList.KOUCHUHEJI.b' | translate:'Tổng khoản trừ' }}</th>
+                  <th class="text-end">{{ 'pa.viewResultConfirmSonList.SHIDEGONGZI.b' | translate:'Lương thực lĩnh' }}</th>
+                </ng-container>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let s of vrclSumTable.data">
+                <td class="text-end">{{ s.personNumPro | number:'1.0-0' }}</td>
+                <td class="text-end">{{ s.salaryTotalPro | number:'1.0-0' }}</td>
+                <td class="text-end">{{ s.withholdTotalPro | number:'1.0-0' }}</td>
+                <td class="text-end">{{ s.netPayPro | number:'1.0-0' }}</td>
+                <td class="text-end">{{ s.personNumCur | number:'1.0-0' }}</td>
+                <td class="text-end">{{ s.salaryTotalCur | number:'1.0-0' }}</td>
+                <td class="text-end">{{ s.withholdTotalCur | number:'1.0-0' }}</td>
+                <td class="text-end">{{ s.netPayCur | number:'1.0-0' }}</td>
+                <td class="text-end">{{ s.personNumDif | number:'1.0-0' }}</td>
+                <td class="text-end">{{ s.salaryTotalDif | number:'1.0-0' }}</td>
+                <td class="text-end">{{ s.withholdTotalDif | number:'1.0-0' }}</td>
+                <td class="text-end">{{ s.netPayDif | number:'1.0-0' }}</td>
+              </tr>
+            </tbody>
+          </nz-table>
+          <div class="row g-3 mt-2" *ngIf="summary()">
+            <div class="col-lg-6" id="vrclPersonChart">
+              <app-pa-compare-chart [title]="t('pa.title.pa.excel.thecountnumberofemployee', 'Số người')"
+                                    [unit]="t('pa.viewResultConfirmSonList.REN.b', 'Người')"
+                                    [categories]="chartCategories()" [series]="personChart()"></app-pa-compare-chart>
+            </div>
+            <div class="col-lg-6" id="vrclAmountChart">
+              <app-pa-compare-chart [title]="t('ess.empInfo.amount_of_money', 'Số tiền')" unit="VND"
+                                    [categories]="chartCategories()" [series]="amountChart()"></app-pa-compare-chart>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Đối chiếu hạng mục trả lương / 4. Đối chiếu bảo hiểm -->
+        <ng-container *ngSwitchCase="'payItem'">
+          <ng-container *ngTemplateOutlet="vrclDifTpl; context: { $implicit: 'payItem' }"></ng-container>
+        </ng-container>
+        <ng-container *ngSwitchCase="'insItem'">
+          <ng-container *ngTemplateOutlet="vrclDifTpl; context: { $implicit: 'insItem' }"></ng-container>
+        </ng-container>
+
+        <!-- 3. Thống kê tăng ca -->
+        <div *ngSwitchCase="'ot'" id="vrclOt">
+          <nz-table #vrclOtTable id="vrclOtTable" [nzData]="otRows()" [nzLoading]="otLoading()" nzSize="small" nzBordered
+                    [(nzPageIndex)]="otPageIndex" [(nzPageSize)]="otPageSize" [nzPageSizeOptions]="pageSizeOptions"
+                    [nzShowSizeChanger]="true" [nzShowTotal]="vrclTotalTpl" [nzScroll]="{ x: '1500px', y: '35vh' }">
+            <thead>
+              <tr>
+                <th class="text-center" nzWidth="60px" nzLeft>{{ 'common.stt' | translate:'STT' }}</th>
+                <th *ngFor="let c of otColumns" [nzWidth]="c.width ?? null" [class.text-end]="!!c.format"
+                    [nzSortFn]="sortFns.get(c.field) ?? null">{{ title(c) }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of vrclOtTable.data; let i = index" class="vrcl-row" [class.vrcl-row-selected]="isOtSelected(row)"
+                  (click)="selectOtRow(row)">
+                <td class="text-center" nzLeft>{{ (otPageIndex - 1) * otPageSize + i + 1 }}</td>
+                <td *ngFor="let c of otColumns" [class.text-end]="!!c.format">
+                  <ng-container *ngTemplateOutlet="vrclCellTpl; context: { $implicit: row, col: c }"></ng-container>
+                </td>
+              </tr>
+            </tbody>
+          </nz-table>
+          <div class="mt-3">
+            <div *ngIf="!otSelected()" class="text-muted small text-center py-2">
+              {{ 'pa.salaryDetail.clickRowHint' | translate:'Nhấn vào 1 dòng để xem chi tiết lương' }}
+            </div>
+            <nz-table *ngIf="otSelected()" #vrclOtDetailTable id="vrclOtDetailTable" [nzData]="otDetailRows()"
+                      [nzLoading]="otDetailLoading()" nzSize="small" nzBordered [nzFrontPagination]="false"
+                      [nzShowPagination]="false" [nzScroll]="{ x: '1110px', y: '25vh' }">
+              <thead>
+                <tr>
+                  <th class="text-center" nzWidth="60px">No.</th>
+                  <th *ngFor="let c of otDetailColumns" [nzWidth]="c.width ?? null" [class.text-end]="!!c.format">{{ title(c) }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let row of vrclOtDetailTable.data; let i = index">
+                  <td class="text-center">{{ i + 1 }}</td>
+                  <td *ngFor="let c of otDetailColumns" [class.text-end]="!!c.format">
+                    <ng-container *ngTemplateOutlet="vrclCellTpl; context: { $implicit: row, col: c }"></ng-container>
+                  </td>
+                </tr>
+              </tbody>
+            </nz-table>
+          </div>
+        </div>
+
+        <!-- 5. Chi tiết bảo hiểm -->
+        <div *ngSwitchCase="'insurance'" id="vrclInsurance">
+          <nz-table #vrclInsTable id="vrclInsuranceTable" [nzData]="insuranceRows()" [nzLoading]="insuranceLoading()"
+                    nzSize="small" nzBordered [(nzPageIndex)]="insPageIndex" [(nzPageSize)]="insPageSize"
+                    [nzPageSizeOptions]="pageSizeOptions" [nzShowSizeChanger]="true" [nzShowTotal]="vrclTotalTpl"
+                    [nzScroll]="{ x: '1400px', y: 'calc(100vh - 480px)' }">
+            <thead>
+              <tr>
+                <th class="text-center" nzWidth="60px" nzLeft>{{ 'common.stt' | translate:'STT' }}</th>
+                <th *ngFor="let c of insuranceColumns" [nzWidth]="c.width ?? null" [class.text-end]="!!c.format"
+                    [nzSortFn]="sortFns.get(c.field) ?? null">{{ title(c) }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of vrclInsTable.data; let i = index">
+                <td class="text-center" nzLeft>{{ (insPageIndex - 1) * insPageSize + i + 1 }}</td>
+                <td *ngFor="let c of insuranceColumns" [class.text-end]="!!c.format">
+                  <ng-container *ngTemplateOutlet="vrclCellTpl; context: { $implicit: row, col: c }"></ng-container>
+                </td>
+              </tr>
+            </tbody>
+          </nz-table>
+        </div>
+
+        <!-- 6. Thuế -->
+        <div *ngSwitchCase="'tax'" id="vrclTax">
+          <nz-table #vrclTaxTable id="vrclTaxTable" [nzData]="taxRows()" [nzLoading]="taxLoading()" nzSize="small" nzBordered
+                    [(nzPageIndex)]="taxPageIndex" [(nzPageSize)]="taxPageSize" [nzPageSizeOptions]="pageSizeOptions"
+                    [nzShowSizeChanger]="true" [nzShowTotal]="vrclTotalTpl"
+                    [nzScroll]="{ x: '2300px', y: 'calc(100vh - 480px)' }">
+            <thead>
+              <tr>
+                <th class="text-center" nzWidth="60px" nzLeft>{{ 'common.stt' | translate:'STT' }}</th>
+                <th *ngFor="let c of taxColumns" [nzWidth]="c.width ?? null" [class.text-end]="!!c.format"
+                    [nzSortFn]="sortFns.get(c.field) ?? null">{{ title(c) }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of vrclTaxTable.data; let i = index">
+                <td class="text-center" nzLeft>{{ (taxPageIndex - 1) * taxPageSize + i + 1 }}</td>
+                <td *ngFor="let c of taxColumns" [class.text-end]="!!c.format">
+                  <ng-container *ngTemplateOutlet="vrclCellTpl; context: { $implicit: row, col: c }"></ng-container>
+                </td>
+              </tr>
+            </tbody>
+          </nz-table>
+        </div>
+      </ng-container>
+    </nz-tab>
+  </nz-tabs>
+</nz-card>
+
+<ng-template #vrclTotalTpl let-total>{{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}</ng-template>
+
+<!-- Ô dữ liệu: số theo định dạng cột, chuỗi dài hiển thị tooltip -->
+<ng-template #vrclCellTpl let-row let-c="col">
+  <ng-container [ngSwitch]="c.format">
+    <ng-container *ngSwitchCase="'int'">{{ row[c.field] | number:'1.0-0' }}</ng-container>
+    <ng-container *ngSwitchCase="'dec'">{{ row[c.field] | number:'1.0-4' }}</ng-container>
+    <span *ngSwitchDefault class="vrcl-ellipsis" nz-tooltip [nzTooltipTitle]="row[c.field]">{{ row[c.field] }}</span>
+  </ng-container>
+</ng-template>
+
+<!-- Tab đối chiếu hạng mục: cây nhóm MONTH_DIF bên trái + danh sách NV bên phải (bản gốc demoTree + List3Right) -->
+<ng-template #vrclDifTpl let-tabId>
+  <div class="row g-3" *ngIf="difState(tabId) as st">
+    <div class="col-xl-5">
+      <nz-table [attr.id]="'vrclDifTable_' + tabId" [nzData]="st.groups" [nzLoading]="st.loading" nzSize="small" nzBordered
+                [nzFrontPagination]="false" [nzShowPagination]="false" [nzScroll]="{ x: '760px', y: 'calc(100vh - 470px)' }">
+        <thead>
+          <tr>
+            <th nzWidth="200px">{{ 'pa.viewResultConfirmSonList.GONGZIXIANGMUBIEANLI.b' | translate:'Hạng mục' }}</th>
+            <th nzWidth="90px" class="text-end">{{ 'empsubject.totalCnt' | translate:'Tổng số người' }}</th>
+            <th nzWidth="150px">{{ 'pa.insurance.title.projectName' | translate:'Tên hạng mục' }}</th>
+            <th nzWidth="110px" class="text-end">{{ 'pa.viewResultConfirmSonList.SHANGYUEJINE.b' | translate:'Tháng trước' }}</th>
+            <th nzWidth="110px" class="text-end">{{ 'pa.viewResultConfirmSonList.BENYUEJINE.b' | translate:'Tháng này' }}</th>
+            <th nzWidth="100px" class="text-end">{{ 'ess.infoApply.difference' | translate:'Chênh lệch' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container *ngFor="let g of st.groups">
+            <tr class="vrcl-group" (click)="toggleGroup(g)">
+              <td><i class="bx" [class.bx-chevron-down]="g.expanded" [class.bx-chevron-right]="!g.expanded"></i> {{ g.key | translate:g.fallback }}</td>
+              <td class="text-end vrcl-count">{{ g.personNum | number:'1.0-0' }}</td>
+              <td>--</td><td class="text-end">--</td><td class="text-end">--</td><td class="text-end">--</td>
+            </tr>
+            <ng-container *ngIf="g.expanded">
+              <tr *ngFor="let item of g.items" [class.vrcl-row-selected]="st.selectedKey === item.itemId + ',' + item.monthDif">
+                <td class="ps-4">{{ item.itemName }}</td>
+                <td class="text-end"><a class="vrcl-link" (click)="selectDifItem(tabId, item)">{{ item.personNum | number:'1.0-0' }}</a></td>
+                <td>{{ item.itemName }}</td>
+                <td class="text-end">{{ item.monthPro | number:'1.0-0' }}</td>
+                <td class="text-end">{{ item.monthNow | number:'1.0-0' }}</td>
+                <td class="text-end">{{ difOf(item) | number:'1.0-0' }}</td>
+              </tr>
+            </ng-container>
+          </ng-container>
+        </tbody>
+      </nz-table>
+    </div>
+    <div class="col-xl-7">
+      <div *ngIf="!st.detailQuery" class="text-muted small text-center py-3">
+        {{ 'pa.salaryCheck.clickCountHint' | translate:'Nhấn vào số lượng để xem danh sách nhân viên' }}
+      </div>
+      <app-pa-month-dif-detail *ngIf="st.detailQuery" [idPrefix]="'vrclDifDetail_' + tabId" layout="full"
+                               [query]="st.detailQuery" scrollY="calc(100vh - 520px)"></app-pa-month-dif-detail>
+    </div>
+  </div>
+</ng-template>

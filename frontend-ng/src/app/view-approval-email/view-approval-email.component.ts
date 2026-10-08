@@ -22,6 +22,7 @@ import {
   ExecuteItem,
 } from './view-approval-email.model';
 import { ViewApprovalEmailService } from './view-approval-email.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - tải trước 1 lần ở ngOnInit (xem I18nService).
  *  Toàn bộ key bên dưới đã tồn tại sẵn (namespace vae, arOtf, applyAtt, ck.modal.title) - không cần
@@ -86,7 +87,7 @@ const APPLY_TYPE_OPTIONS: { value: string; labelKey: string; fallback: string }[
 })
 export class ViewApprovalEmailComponent implements OnInit {
   readonly applyTypeOptions = APPLY_TYPE_OPTIONS;
-  readonly pageSizeOptions = [25, 50, 100, 200];
+  readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
 
   readonly displayRows = signal<ApprovalEmailRow[]>([]);
   readonly loading = signal(false);

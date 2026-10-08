@@ -16,6 +16,7 @@ import { APPLY_TABLE_I18N_KEYS, applyClassHour, applyCourseTitle, matchApplyRow 
 import { EduSyllabusViewComponent } from '../edu-common/edu-syllabus-view.component';
 import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Lựa chọn khi phê duyệt (bản gốc courseMaker.jsp: Chưa duyệt / Duyệt / Từ chối). */
 const MAKER_OPTIONS = [
@@ -29,8 +30,6 @@ const I18N_KEYS = [
   'edu.courseMaker.confirmPass', 'edu.courseMaker.confirmReject', 'edu.systemManager.QINGXUANZEQIZHONGYIXIANG.a',
   'pa.salary.canShu.caozuo_fail',
 ];
-
-const PAGE_SIZE_OPTIONS = [50, 100, 200, 500];
 
 /**
  * Bản Angular của /edu/traineducation/courseMaker (JSP + DWZ, dự án Hanwha_HTSV) - người phê duyệt xem các đơn đăng ký
@@ -63,7 +62,7 @@ export class EduCourseMakerComponent implements OnInit {
   readonly someChecked = computed(() => !this.allChecked() && this.editableRows().some((r) => this.checked().has(r.applyNo)));
 
   pageIndex = 1;
-  pageSize = PAGE_SIZE_OPTIONS[0];
+  pageSize = 50;
   private lastSearch: EduApplySearch = {};
 
   constructor(

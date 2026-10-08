@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ait.report.ar.mapper.ArReportMapper">
+
+    <resultMap id="ArReportItemResultMap" type="com.ait.report.ar.dto.ArReportItemDto">
+        <result column="REPORT_TYPE_NO" property="reportTypeNo" jdbcType="VARCHAR"/>
+        <result column="TYPE_NAME"      property="typeName"     jdbcType="VARCHAR"/>
+        <result column="REPORT_NAME"    property="reportName"   jdbcType="VARCHAR"/>
+        <result column="URL_JSP"        property="urlJsp"       jdbcType="VARCHAR"/>
+        <result column="ORDERNO"        property="orderNo"      jdbcType="NUMERIC"/>
+    </resultMap>
+
+    <!--
+      Bản gốc dùng 2 câu: getCodeListByParentCode (cây mã con của parentCodeNo) + getreportList (toàn bộ REPORT_CENTER
+      của công ty) rồi ghép ở JSP theo REPORT_TYPE_NO = CODE_NO. Gộp thành 1 câu, giữ thứ tự cây mã (ORDER SIBLINGS BY).
+    -->
+    <select id="selectReportList" resultMap="ArReportItemResultMap">
+        SELECT TO_CHAR(T.CODE_NO)                                                      AS REPORT_TYPE_NO,
+               NVL(GET_GLOBAL_NAME(T.CODE_NO, #{lang, jdbcType=VARCHAR}), ' ')         AS TYPE_NAME,
+               GET_GLOBAL_NAME(C.REPORT_NO, #{lang, jdbcType=VARCHAR})                 AS REPORT_NAME,
+               C.URL_JSP,
+               C.ORDERNO
+          FROM (SELECT ROWNUM AS RN, H.CODE_NO
+                  FROM (SELECT S.CODE_NO
+                          FROM SY_CODE S
+                         WHERE S.ACTIVITY = 1
+                         START WITH S.PARENT_CODE_NO = #{parentCodeNo, jdbcType=NUMERIC}
+                       CONNECT BY PRIOR S.CODE_NO = S.PARENT_CODE_NO
+                         ORDER SIBLINGS BY S.ORDERNO) H) T
+          JOIN REPORT_CENTER C
+            ON TO_CHAR(C.REPORT_TYPE_NO) = TO_CHAR(T.CODE_NO)
+         WHERE C.ACTIVITY = '1'
+           AND C.CPNY_ID  = #{cpnyId, jdbcType=VARCHAR}
+         ORDER BY T.RN, C.ORDERNO
+    </select>
+
+</mapper>

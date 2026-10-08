@@ -91,7 +91,7 @@
     <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
 
     <nz-table [nzData]="filteredRows()" [nzLoading]="loading()" [nzPageSize]="25" [nzShowSizeChanger]="true"
-              [nzPageSizeOptions]="[25, 50, 100, 200]" [nzShowTotal]="aalTotalTpl"
+              [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="aalTotalTpl"
               [nzScroll]="{ x: '1700px' }" class="table-nowrap" #aalTable>
       <thead>
         <tr>

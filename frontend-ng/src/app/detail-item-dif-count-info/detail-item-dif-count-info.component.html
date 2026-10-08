@@ -1,0 +1,31 @@
+<nz-card class="mb-3">
+  <div class="row g-3 align-items-end">
+    <div class="col-xl-6">
+      <app-pa-pay-period idPrefix="didci" [withPro]="false" [(salaryDistinNo)]="salaryDistinNo"
+                         [(payDate)]="payDate"></app-pa-pay-period>
+    </div>
+    <div class="col-xl-2 col-md-4">
+      <label class="form-label" for="didciItemType">{{ 'liang.public.title.ItemDistinguish' | translate:'Phân biệt hạng mục' }}</label>
+      <nz-select class="w-100" nzId="didciItemType" [ngModel]="itemType()" (ngModelChange)="onItemTypeChange($event)">
+        <nz-option *ngFor="let o of itemTypeOptions" [nzValue]="o.value" [nzLabel]="o.key | translate:o.fallback"></nz-option>
+      </nz-select>
+    </div>
+    <div class="col-xl-2 col-md-4">
+      <label class="form-label" for="didciItem">{{ 'pa.detailItemCountInfo.XIANGXIQUFEN.b' | translate:'Phân loại' }}</label>
+      <nz-select class="w-100" nzId="didciItem" nzShowSearch nzAllowClear [(ngModel)]="itemId"
+                 [nzPlaceHolder]="'sys.affirm.title.choose' | translate:'Lựa chọn'">
+        <nz-option *ngFor="let i of itemsOfType()" [nzValue]="i.itemId" [nzLabel]="i.itemName"></nz-option>
+      </nz-select>
+    </div>
+    <div class="col-xl-2 col-md-4">
+      <button nz-button nzType="primary" type="button" id="didciBtnSearch" (click)="search()">
+        <i class="bx bx-search"></i> {{ 'public.title.search' | translate:'Tra cứu' }}
+      </button>
+    </div>
+  </div>
+</nz-card>
+
+<nz-card>
+  <app-pa-month-dif-detail idPrefix="didciDetail" layout="item" [query]="query()" [refresh]="true"
+                           exportName="changeProject_check"></app-pa-month-dif-detail>
+</nz-card>

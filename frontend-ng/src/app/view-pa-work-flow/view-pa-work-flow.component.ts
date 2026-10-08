@@ -5,74 +5,99 @@ import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzTableModule } from 'ng-zorro-antd/table';
-import { NzModalModule } from 'ng-zorro-antd/modal';
+import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
+import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
+import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { TabService } from '../shell/tab.service';
+import { AppShellComponent } from '../shell/app-shell.component';
 import { PaWorkFlowDto, PaWorkFlowPayScheduleDto, PaWorkFlowRecordDto, PaWorkFlowTaskType } from './view-pa-work-flow.model';
 import { ViewPaWorkFlowService } from './view-pa-work-flow.service';
 
-/** Các key message.properties dùng trong trang này - đã có sẵn đầy đủ ở namespace pa.workFlow.*
- *  (dùng chung cho cả bản Thymeleaf gốc). Tải trước 1 lần ở ngOnInit (xem I18nService). */
+/** Link sang trang chức năng khác trên sơ đồ - url là URL gốc ở viewPaWorkFlow.jsp (navTabNum), được
+ *  đổi sang route Angular qua bảng MIGRATED_ROUTES của AppShellComponent. */
+interface VpwfLink {
+  url: string;
+  key: string;
+  fallback: string;
+}
+
+/** Cột "Điều chỉnh tiền lương" - đúng thứ tự và URL ở bản gốc. */
+const ADJUST_LINKS: VpwfLink[] = [
+  { url: '/pa/salary/viewPaInputItemData?itemType=2', key: 'pa.workFlow.step.adjust.pay', fallback: 'Điều chỉnh trả lương' },
+  { url: '/pa/salary/viewPaInputItemData?itemType=4', key: 'pa.workFlow.step.adjust.deduct', fallback: 'Điều chỉnh khoản trừ' },
+  { url: '/pa/workManagement/viewPaEmpAccount', key: 'pa.workFlow.step.adjust.account', fallback: 'Thông tin tài khoản' },
+];
+
+/** Cột "Đối chiếu lương". */
+const RECONCILE_LINKS: VpwfLink[] = [
+  { url: '/pa/workManagement/monthPersonCountInfoList', key: 'pa.workFlow.step.reconcile.emp', fallback: 'NV tham gia tính lương' },
+  { url: '/pa/paView/viewPaMonthChain', key: 'pa.workFlow.step.reconcile.pay', fallback: 'Các khoản chi trả' },
+  { url: '/pa/workManagement/viewVerificationList', key: 'pa.workFlow.step.reconcile.decision', fallback: 'Quyết định thực hiện' },
+  { url: '/pa/workManagement/detailPersonCountInfo', key: 'pa.workFlow.step.reconcile.detail', fallback: 'Chi tiết lương' },
+  { url: '/pa/workManagement/detailPersonCountInfoLeft', key: 'pa.workFlow.step.reconcile.personal', fallback: 'Kiểm tra cá nhân' },
+  { url: '/pa/workManagement/detailItemCountInfo', key: 'pa.workFlow.step.reconcile.item', fallback: 'Đối chiếu hạng mục' },
+  { url: '/pa/workManagement/detailItemDifCountInfo', key: 'pa.workFlow.step.reconcile.change', fallback: 'Khoản tiền thay đổi' },
+  { url: '/pa/workManagement/viewResultConfirmList', key: 'pa.workFlow.step.reconcile.result', fallback: 'Đối chiếu kết quả' },
+];
+
+/** Cột "Tra cứu bảng lương". */
+const REPORT_LINKS: VpwfLink[] = [
+  { url: '/pa/workManagement/detailmonthCountInfoLeft', key: 'pa.workFlow.step.report.monthly', fallback: 'Lương tháng chi tiết' },
+  { url: '/pa/workManagement/detailYearCountInfoLeft', key: 'pa.workFlow.step.report.yearly', fallback: 'Lương năm chi tiết' },
+  { url: '/pa/workManagement/payStub', key: 'pa.workFlow.step.report.slip', fallback: 'Phiếu lương' },
+  { url: '/pa/workManagement/viewPaResultList', key: 'pa.workFlow.step.report.totalEmp', fallback: 'Tổng lương (cá nhân)' },
+  { url: '/pa/workManagement/viewDeptPaResultList', key: 'pa.workFlow.step.report.totalDept', fallback: 'Tổng lương (phòng ban)' },
+  { url: '/report/ar/viewArReportsList', key: 'pa.workFlow.step.report.table', fallback: 'Bảng lương' },
+];
+
+/** Các key message.properties dùng trong trang này - tải trước 1 lần ở ngOnInit (xem I18nService). */
 const I18N_KEYS = [
   'pa.workFlow.paySchedule', 'pa.workFlow.selectSchedule', 'pa.workFlow.search', 'pa.workFlow.execute',
   'pa.workFlow.hrPeriod', 'pa.workFlow.arPeriod', 'pa.workFlow.empCount',
   'pa.workFlow.step.objCreate', 'pa.workFlow.step.objCreate.label',
   'pa.workFlow.step.arMonthCal', 'pa.workFlow.step.arMonthCal.label',
-  'pa.workFlow.step.paCal', 'pa.workFlow.step.paCal.label',
-  'pa.workFlow.step.adjust', 'pa.workFlow.step.adjust.pay', 'pa.workFlow.step.adjust.deduct', 'pa.workFlow.step.adjust.account',
-  'pa.workFlow.step.reconcile', 'pa.workFlow.step.reconcile.emp', 'pa.workFlow.step.reconcile.pay',
-  'pa.workFlow.step.reconcile.decision', 'pa.workFlow.step.reconcile.detail', 'pa.workFlow.step.reconcile.personal',
-  'pa.workFlow.step.reconcile.item', 'pa.workFlow.step.reconcile.change', 'pa.workFlow.step.reconcile.result',
-  'pa.workFlow.step.confirm', 'pa.workFlow.step.confirm.label',
-  'pa.workFlow.step.report', 'pa.workFlow.step.report.monthly', 'pa.workFlow.step.report.yearly',
-  'pa.workFlow.step.report.slip', 'pa.workFlow.step.report.totalEmp', 'pa.workFlow.step.report.totalDept',
-  'pa.workFlow.step.report.table', 'pa.workFlow.step.open', 'pa.workFlow.step.open.label',
-  'pa.workFlow.msgSelectSchedule', 'pa.workFlow.msgNoData', 'pa.workFlow.msgSelectStep',
-  'pa.workFlow.records.title', 'pa.workFlow.records.no', 'pa.workFlow.records.step', 'pa.workFlow.records.datetime',
-  'pa.workFlow.records.operator', 'pa.workFlow.records.step.1', 'pa.workFlow.records.step.2', 'pa.workFlow.records.step.3',
-  'pa.workFlow.records.step.4', 'pa.workFlow.records.step.5', 'pa.workFlow.records.step.6', 'pa.workFlow.records.step.7',
-  'pa.workFlow.records.noData', 'pa.workFlow.msgExecuting', 'pa.workFlow.msgExecuteSuccess',
-  'pa.workFlow.msgObjCreateAlreadyExist', 'pa.workFlow.msgPayrollConfirmed',
-  'common.close', 'common.loadFail',
+  'pa.workFlow.step.paCal', 'pa.workFlow.step.paCal.label', 'pa.workFlow.step.adjust',
+  'pa.workFlow.step.reconcile', 'pa.workFlow.step.confirm', 'pa.workFlow.step.confirm.label',
+  'pa.workFlow.step.report', 'pa.workFlow.step.open', 'pa.workFlow.step.open.label',
+  ...ADJUST_LINKS.map((l) => l.key), ...RECONCILE_LINKS.map((l) => l.key), ...REPORT_LINKS.map((l) => l.key),
+  'pa.workFlow.msgSelectSchedule', 'pa.workFlow.msgNoData', 'pa.workFlow.msgExecuting', 'pa.workFlow.msgExecuteSuccess',
+  'pa.workFlow.msgPageNotMigrated',
+  'pa.workFlow.records.no', 'pa.workFlow.records.step', 'pa.workFlow.records.datetime', 'pa.workFlow.records.operator',
+  'pa.workFlow.records.step.1', 'pa.workFlow.records.step.2', 'pa.workFlow.records.step.3', 'pa.workFlow.records.step.4',
+  'pa.workFlow.records.step.5', 'pa.workFlow.records.step.6', 'pa.workFlow.records.step.7', 'pa.workFlow.records.noData',
+  'pa.viewPaWorkFlow.KAOQINSUODING.C', 'pa.viewPaWorkFlow.KAOQINJIESUO.C',
+  'pa.viewPaWorkFlow.QUXIAOSUODING.C', 'pa.viewPaWorkFlow.QUXIAOKAIFANG.C',
+  'pa.viewPaWorkFlow.GONGZILIUCHENGCAOZUOJILU.C', 'pa.viewPaWorkFlow.CHAKANCAOZUOJILU.C',
+  'pa.viewPaWorkFlow.TISHIDANGYUEKAOQINHAIWEISUODING.C',
+  'pa.viewPaWorkFlow.QUEDINGYAOGUANBIKAOQINSHENQINGMA.C', 'pa.viewPaWorkFlow.QUEDINGYAOJIECHUKAOQINSHENQINGDEGUANBIMA.C',
+  'org.title.SELECT_EXECUTE', 'org.title.IS_SELECT_EXECUTE',
+  'common.confirm', 'common.loadFail',
 ];
 
-/** stepKey (nút "sổ" bên cạnh checkbox) -> FLOW_STEP tương ứng trong PA_WORK_FLOW_RECORDS - đúng
- *  vpwf_stepKeyMap ở bản gốc. Các stepKey còn lại (đối chiếu lương / tra cứu bảng lương) không lọc
- *  theo bước - hiển thị toàn bộ lịch sử thao tác của kế hoạch trả lương đang chọn. */
-const STEP_KEY_MAP: Record<string, number> = {
-  objCreate: 1,
-  arMonthCal: 2,
-  paCal: 3,
-  confirm: 4,
-  open: 5,
-};
-
-/** task gửi khi Thực hiện -> FLOW_STEP tương ứng - dùng để lấy tên bước hiển thị trên overlay loading. */
-const TASK_STEP_MAP: Record<PaWorkFlowTaskType, number> = {
+/** FLOW_STEP ghi vào PA_WORK_FLOW_RECORDS ứng với từng task - dùng hiển thị tên bước trên overlay loading. */
+const TASK_STEP_MAP: Partial<Record<PaWorkFlowTaskType, number>> = {
   createPaObj: 1,
   arMonthCal: 2,
   paMonthCal: 3,
   paConfirm: 4,
   paOpen: 5,
+  paUnConfirm: 6,
+  paUnOpen: 7,
 };
 
 /**
- * Bản Angular của pa/workManagement/viewPaWorkFlow.html (Thymeleaf + jQuery) - sơ đồ quy trình tính
- * lương theo kế hoạch trả lương. Gọi lại nguyên API JSON đã có sẵn ở PaWorkManagementController (xem
- * ViewPaWorkFlowService) - không đổi backend. Layout sơ đồ (process-container/process-group/step-btn/
- * ...) giữ nguyên các class CSS toàn cục sẵn có trong assets/css/style.css (đã nạp chung ở
- * index.html Angular, dùng chung với org/orgManage/viewResumeProcess.html) thay vì viết lại.
- * 2 link "Điều chỉnh trả lương/khoản trừ" trỏ tới trang đã migrate sang Angular route
- * /view-pa-input-item-data (ViewPaInputItemDataComponent) nên mở qua TabService kiểu 'route', kèm
- * itemType=2/4 trên query string (xem openInputItemDataTab()). Link "Thông tin tài khoản" đã migrate
- * sang Angular route /view-pa-emp-account (ViewPaEmpAccountComponent) nên mở qua TabService kiểu 'route'
- * (xem openAccountTab()).
- * Các nút còn lại (đối chiếu lương / tra cứu bảng lương / nút "sổ" cạnh checkbox) ở bản gốc đều chỉ
- * mở modal "Lịch sử thao tác" (vpwfOpenMenu) - KHÔNG điều hướng sang trang khác - giữ nguyên hành vi
- * này, không tự ý gắn thêm link vì bản gốc chưa có URL đích cho các báo cáo đó.
+ * Bản Angular của pa/workManagement/viewPaWorkFlow.jsp - sơ đồ quy trình tính lương theo kế hoạch trả lương.
+ * - Đổi kế hoạch trả lương -> tự tra cứu lại (giống onchange submit form ở bản gốc).
+ * - Thực hiện: chạy lần lượt các bước được tick (thứ tự như bản gốc). Bước Chốt lương / Mở lương tự đổi
+ *   thành Hủy chốt / Hủy mở (paUnConfirm/paUnOpen) khi kế hoạch đã chốt / đã mở.
+ * - Chốt công / Mở công (arLockYes/arLockNo) theo AR_LOCK_FLAG của kế hoạch.
+ * - Icon lịch sử cạnh mỗi bước mở modal lịch sử thao tác lọc theo FLOW_STEP (Chốt lương = 4,6; Mở lương = 5,7).
+ * - Các ô điều chỉnh / đối chiếu / tra cứu mở trang tương ứng thành tab mới; trang chưa migrate sang
+ *   Angular thì báo chưa chuyển đổi.
  */
 @Component({
   selector: 'app-view-pa-work-flow',
@@ -86,16 +111,21 @@ const TASK_STEP_MAP: Record<PaWorkFlowTaskType, number> = {
     NzTableModule,
     NzModalModule,
     NzSpinModule,
+    NzCheckboxModule,
+    NzTooltipModule,
     TranslatePipe,
   ],
   templateUrl: './view-pa-work-flow.component.html',
   styleUrl: './view-pa-work-flow.component.css',
 })
 export class ViewPaWorkFlowComponent implements OnInit {
+  readonly adjustLinks = ADJUST_LINKS;
+  readonly reconcileLinks = RECONCILE_LINKS;
+  readonly reportLinks = REPORT_LINKS;
+
   readonly schedules = signal<PaWorkFlowPayScheduleDto[]>([]);
   readonly currentData = signal<PaWorkFlowDto | null>(null);
   readonly searching = signal(false);
-  readonly searched = signal(false);
 
   payScheduleNo: string | null = null;
 
@@ -116,12 +146,17 @@ export class ViewPaWorkFlowComponent implements OnInit {
     private readonly api: ViewPaWorkFlowService,
     private readonly i18n: I18nService,
     private readonly message: NzMessageService,
+    private readonly modal: NzModalService,
     private readonly tabs: TabService,
   ) {}
 
   ngOnInit(): void {
     this.i18n.loadKeys(I18N_KEYS);
     this.loadSchedules();
+  }
+
+  private t(key: string, fallback: string): string {
+    return this.i18n.t(key, fallback);
   }
 
   private loadSchedules(): void {
@@ -133,119 +168,148 @@ export class ViewPaWorkFlowComponent implements OnInit {
           this.search();
         }
       },
-      error: () => this.message.warning(this.i18n.t('common.loadFail', 'Tải dữ liệu thất bại!')),
+      error: () => this.message.warning(this.t('common.loadFail', 'Tải dữ liệu thất bại!')),
     });
+  }
+
+  /** Đổi kế hoạch trả lương -> tra cứu lại ngay (bản gốc: onchange submit form). */
+  onScheduleChange(): void {
+    this.resetChecks();
+    if (this.payScheduleNo) {
+      this.search();
+    } else {
+      this.currentData.set(null);
+    }
   }
 
   search(): void {
     if (!this.payScheduleNo) {
-      this.message.warning(this.i18n.t('pa.workFlow.msgSelectSchedule', 'Vui lòng chọn kế hoạch trả lương!'));
+      this.message.warning(this.t('pa.workFlow.msgSelectSchedule', 'Vui lòng chọn kế hoạch trả lương!'));
       return;
     }
     this.searching.set(true);
-    this.searched.set(true);
     this.api.getWorkFlow(this.payScheduleNo).subscribe({
       next: (data) => {
         this.searching.set(false);
+        this.currentData.set(data ?? null);
         if (!data) {
-          this.message.warning(this.i18n.t('pa.workFlow.msgNoData', 'Không có dữ liệu quy trình cho kế hoạch này!'));
-          this.currentData.set(null);
-          return;
+          this.message.warning(this.t('pa.workFlow.msgNoData', 'Không có dữ liệu quy trình cho kế hoạch này!'));
         }
-        this.currentData.set(data);
       },
       error: (err) => {
         this.searching.set(false);
-        this.message.error(err?.error?.error || this.i18n.t('common.loadFail', 'Tải dữ liệu thất bại!'));
+        this.message.error(err?.error?.error || this.t('common.loadFail', 'Tải dữ liệu thất bại!'));
       },
     });
   }
 
-  iconClass(flag: number | undefined): string {
-    return flag === 1 ? 'bx bxs-book-open' : 'bx bxs-book';
-  }
-
-  /** 'DD-MM-YYYY' (BE trả về) -> 'dd/MM/yyyy' theo CLAUDE.md. */
+  /** 'DD-MM-YYYY' (BE trả về) -> 'DD/MM/YYYY' theo CLAUDE.md. */
   toDmy(dmy: string | null | undefined): string {
-    return dmy ? dmy.replace(/-/g, '/') : '--';
+    return dmy ? dmy.replace(/-/g, '/') : '';
   }
 
+  /** Nút "Thực hiện" - giống executeProcess() ở bản gốc. */
   execute(): void {
-    if (!this.payScheduleNo) {
-      this.message.warning(this.i18n.t('pa.workFlow.msgSelectSchedule', 'Vui lòng chọn kế hoạch trả lương!'));
+    const data = this.currentData();
+    if (!this.payScheduleNo || !data) {
+      this.message.warning(this.t('pa.workFlow.msgSelectSchedule', 'Vui lòng chọn kế hoạch trả lương!'));
       return;
     }
     const tasks: PaWorkFlowTaskType[] = [];
     if (this.chkObjCreate) tasks.push('createPaObj');
     if (this.chkArMonthCal) tasks.push('arMonthCal');
     if (this.chkPaCal) tasks.push('paMonthCal');
-    if (this.chkPaConfirm) tasks.push('paConfirm');
-    if (this.chkPaOpen) tasks.push('paOpen');
-    if (tasks.length === 0) {
-      this.message.warning(this.i18n.t('pa.workFlow.msgSelectStep', 'Vui lòng chọn ít nhất một bước cần thực hiện!'));
-      return;
-    }
-    const data = this.currentData();
-    if (this.chkObjCreate && data?.objCreateFlag === 1) {
-      this.message.warning(this.i18n.t('pa.workFlow.msgObjCreateAlreadyExist', 'Đã tạo đối tượng nhận lương, không thể tạo lại!'));
-      return;
-    }
-    if ((this.chkArMonthCal || this.chkPaCal) && data?.paConfirmFlag === 1) {
-      this.message.warning(this.i18n.t('pa.workFlow.msgPayrollConfirmed', 'Lương tháng này đã chốt, không thể tính công!'));
-      return;
-    }
+    if (this.chkPaConfirm) tasks.push(data.paConfirmFlag === 1 ? 'paUnConfirm' : 'paConfirm');
+    if (this.chkPaOpen) tasks.push(data.paOpenFlag === 1 ? 'paUnOpen' : 'paOpen');
 
-    this.executing.set(true);
-    this.executingStepText.set('');
-    this.runNextTask(this.payScheduleNo, tasks, 0);
+    // Bản gốc chỉ nhắc (alert), không chặn khi tổng hợp công lúc chấm công tháng chưa chốt.
+    if (this.chkArMonthCal && data.arLockFlag === 0) {
+      this.message.warning(this.t('pa.viewPaWorkFlow.TISHIDANGYUEKAOQINHAIWEISUODING.C', 'Lưu ý: chấm công tháng này chưa chốt'));
+    }
+    if (tasks.length === 0) {
+      this.message.error(this.t('org.title.SELECT_EXECUTE', 'Xin chọn quy trình muốn thực hiện'));
+      return;
+    }
+    const payScheduleNo = this.payScheduleNo;
+    this.modal.confirm({
+      nzTitle: this.t('common.confirm', 'Xác nhận'),
+      nzContent: this.t('org.title.IS_SELECT_EXECUTE', 'Đồng ý thực hiện không?'),
+      nzOnOk: () => this.runTasks(payScheduleNo, tasks),
+    });
   }
 
-  private runNextTask(payScheduleNo: string, tasks: PaWorkFlowTaskType[], index: number): void {
+  /** Nút "Chốt công" / "Mở công" - giống exeArLock(flag) ở bản gốc. */
+  arLock(lock: boolean): void {
+    if (!this.payScheduleNo) return;
+    this.resetChecks();
+    const content = lock
+      ? this.t('pa.viewPaWorkFlow.QUEDINGYAOGUANBIKAOQINSHENQINGMA.C', 'Đồng ý đóng xin tăng ca, nghỉ phép không') + '?'
+      : this.t('pa.viewPaWorkFlow.QUEDINGYAOJIECHUKAOQINSHENQINGDEGUANBIMA.C', 'Đồng ý mở xin phép chấm công không?');
+    const payScheduleNo = this.payScheduleNo;
+    this.modal.confirm({
+      nzTitle: this.t('common.confirm', 'Xác nhận'),
+      nzContent: content,
+      nzOnOk: () => this.runTasks(payScheduleNo, [lock ? 'arLockYes' : 'arLockNo']),
+    });
+  }
+
+  private runTasks(payScheduleNo: string, tasks: PaWorkFlowTaskType[]): void {
+    this.executing.set(true);
+    this.executingStepText.set('');
+    this.runNextTask(payScheduleNo, tasks, 0, []);
+  }
+
+  /** Chạy tuần tự từng bước (procedure PA_WORKFLOW_EXECUTE xử lý 1 type/lần như bản gốc), gom thông
+   *  báo trả về của procedure để hiển thị khi xong. Dừng ở bước đầu tiên bị lỗi. */
+  private runNextTask(payScheduleNo: string, tasks: PaWorkFlowTaskType[], index: number, messages: string[]): void {
     if (index >= tasks.length) {
       this.executing.set(false);
-      this.message.success(this.i18n.t('pa.workFlow.msgExecuteSuccess', 'Tất cả các bước đã hoàn thành thành công!'));
-      this.uncheckExecutedTasks(tasks);
+      const msg = messages.filter((m) => !!m).join('\n');
+      this.message.success(msg || this.t('pa.workFlow.msgExecuteSuccess', 'Tất cả các bước đã hoàn thành thành công!'));
+      this.resetChecks();
       this.search();
       return;
     }
-    const stepName = this.i18n.t(`pa.workFlow.records.step.${TASK_STEP_MAP[tasks[index]]}`, tasks[index]);
-    this.executingStepText.set(`(${index + 1}/${tasks.length}) ${stepName}`);
+    const step = TASK_STEP_MAP[tasks[index]];
+    const stepName = step ? this.stepName(step) : '';
+    this.executingStepText.set(stepName ? `(${index + 1}/${tasks.length}) ${stepName}` : '');
     this.api.executeTask(payScheduleNo, tasks[index]).subscribe({
-      next: () => this.runNextTask(payScheduleNo, tasks, index + 1),
+      next: (res) => this.runNextTask(payScheduleNo, tasks, index + 1, [...messages, res?.message ?? '']),
       error: (err) => {
         this.executing.set(false);
-        this.message.error(err?.error?.error || this.i18n.t('common.loadFail', 'Tải dữ liệu thất bại!'));
+        // Bản gốc dùng alert() để hiện nguyên văn thông báo lỗi của procedure (có thể nhiều dòng).
+        this.modal.error({ nzTitle: err?.error?.error || this.t('common.loadFail', 'Tải dữ liệu thất bại!') });
+        // Các bước trước đó có thể đã chạy xong - tải lại trạng thái quy trình.
+        this.search();
       },
     });
   }
 
-  /** Bỏ tick các checkbox bước vừa thực hiện thành công, để tránh bấm nhầm thực hiện lại. */
-  private uncheckExecutedTasks(tasks: PaWorkFlowTaskType[]): void {
-    if (tasks.includes('createPaObj')) this.chkObjCreate = false;
-    if (tasks.includes('arMonthCal')) this.chkArMonthCal = false;
-    if (tasks.includes('paMonthCal')) this.chkPaCal = false;
-    if (tasks.includes('paConfirm')) this.chkPaConfirm = false;
-    if (tasks.includes('paOpen')) this.chkPaOpen = false;
+  private resetChecks(): void {
+    this.chkObjCreate = false;
+    this.chkArMonthCal = false;
+    this.chkPaCal = false;
+    this.chkPaConfirm = false;
+    this.chkPaOpen = false;
   }
 
-  /** Mở modal "Lịch sử thao tác" - giống vpwfOpenMenu ở bản gốc (đúng cho cả nút "sổ" cạnh checkbox
-   *  lẫn các ô đối chiếu lương/tra cứu bảng lương). */
-  openRecordsModal(stepKey: string): void {
+  /** Mở modal lịch sử thao tác lọc theo FLOW_STEP - giống link viewPaWorkFlowOperationRecordList ở bản gốc. */
+  openRecordsModal(flowSteps: number[]): void {
     if (!this.payScheduleNo) {
-      this.message.warning(this.i18n.t('pa.workFlow.msgSelectSchedule', 'Vui lòng chọn kế hoạch trả lương!'));
+      this.message.warning(this.t('pa.workFlow.msgSelectSchedule', 'Vui lòng chọn kế hoạch trả lương!'));
       return;
     }
     this.recordsModalVisible.set(true);
     this.recordsLoading.set(true);
     this.records.set([]);
-    this.api.getRecords(this.payScheduleNo, STEP_KEY_MAP[stepKey]).subscribe({
+    this.api.getRecords(this.payScheduleNo, flowSteps).subscribe({
       next: (list) => {
         this.records.set(list ?? []);
         this.recordsLoading.set(false);
       },
       error: (err) => {
         this.recordsLoading.set(false);
-        this.message.error(err?.error?.error || this.i18n.t('common.loadFail', 'Tải dữ liệu thất bại!'));
+        this.message.error(err?.error?.error || this.t('common.loadFail', 'Tải dữ liệu thất bại!'));
       },
     });
   }
@@ -255,18 +319,16 @@ export class ViewPaWorkFlowComponent implements OnInit {
   }
 
   stepName(flowStep: number): string {
-    return this.i18n.t(`pa.workFlow.records.step.${flowStep}`, String(flowStep));
+    return this.t(`pa.workFlow.records.step.${flowStep}`, String(flowStep));
   }
 
-  /** Mở trang "Điều chỉnh trả lương/khoản trừ" (đã migrate sang Angular route /view-pa-input-item-data,
-   *  ViewPaInputItemDataComponent) như 1 tab, giữ nguyên tham số itemType trên query string - trang đó
-   *  đọc itemType để lọc đúng nhóm hạng mục ở panel trái (đúng hành vi ?itemType=2/4 ở bản gốc). */
-  openInputItemDataTab(itemType: string, titleKey: string, fallback: string): void {
-    this.tabs.openTab(`/view-pa-input-item-data?itemType=${itemType}`, this.i18n.t(titleKey, fallback), 'route');
-  }
-
-  /** Mở trang "Thông tin tài khoản" (đã migrate sang Angular route /view-pa-emp-account) như 1 tab. */
-  openAccountTab(): void {
-    this.tabs.openTab('/view-pa-emp-account', this.i18n.t('pa.workFlow.step.adjust.account', 'Thông tin tài khoản'), 'route');
+  /** Mở trang chức năng tương ứng thành tab mới (bản gốc: navTabNum). */
+  openLink(link: VpwfLink): void {
+    const route = AppShellComponent.migratedRouteFor(link.url);
+    if (!route) {
+      this.message.warning(this.t('pa.workFlow.msgPageNotMigrated', 'Trang này chưa được chuyển đổi sang hệ thống mới!'));
+      return;
+    }
+    this.tabs.openTab(route, this.t(link.key, link.fallback), 'route');
   }
 }

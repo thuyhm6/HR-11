@@ -15,6 +15,7 @@ import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { ViewArCardRecordDayService } from './view-ar-card-record-day.service';
 import { ArCardRecordDayDto, AuthDeptNode, ShiftOption } from './view-ar-card-record-day.model';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Toàn bộ key bên dưới đã có sẵn trong messages.properties/messages_vi_VN.properties (namespace "acrd"
  *  dùng riêng cho trang này, "common"/"attSearch"/"acr" dùng chung với các trang khác) - không cần
@@ -60,7 +61,7 @@ const I18N_KEYS = [
   styleUrl: './view-ar-card-record-day.component.css',
 })
 export class ViewArCardRecordDayComponent implements OnInit {
-  readonly pageSizeOptions = [25, 50, 100, 200];
+  readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
 
   readonly rows = signal<ArCardRecordDayDto[]>([]);
   readonly loading = signal(false);

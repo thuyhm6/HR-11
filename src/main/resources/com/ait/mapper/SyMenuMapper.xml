@@ -102,11 +102,12 @@
         WHERE 1=1
         <if test="keyword != null and keyword != ''">
             AND (
-                m.MENU_CODE LIKE '%' || #{keyword} || '%' OR 
-                gvi.CONTENT LIKE '%' || #{keyword} || '%' OR
-                gen.CONTENT LIKE '%' || #{keyword} || '%' OR
-                gzh.CONTENT LIKE '%' || #{keyword} || '%' OR
-                gko.CONTENT LIKE '%' || #{keyword} || '%'
+                CONVERTTOUNSIGN(UPPER(m.MENU_CODE)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{keyword, jdbcType=VARCHAR})) || '%'
+                OR CONVERTTOUNSIGN(UPPER(m.MENU_URL)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{keyword, jdbcType=VARCHAR})) || '%'
+                OR CONVERTTOUNSIGN(UPPER(gvi.CONTENT)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{keyword, jdbcType=VARCHAR})) || '%'
+                OR CONVERTTOUNSIGN(UPPER(gen.CONTENT)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{keyword, jdbcType=VARCHAR})) || '%'
+                OR UPPER(gzh.CONTENT) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%'
+                OR UPPER(gko.CONTENT) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%'
             )
         </if>
         ORDER BY m.DEPTH, m.ORDERNO

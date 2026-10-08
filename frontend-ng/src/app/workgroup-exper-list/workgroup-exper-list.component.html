@@ -71,7 +71,7 @@
         <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
 
         <nz-table [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="15" [nzShowSizeChanger]="true"
-                  [nzPageSizeOptions]="[15, 25, 50, 100]" [nzShowTotal]="wgeTotalTpl"
+                  [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="wgeTotalTpl"
                   class="table-nowrap" #wgeTable>
           <thead>
             <tr>

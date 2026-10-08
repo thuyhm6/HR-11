@@ -20,6 +20,7 @@ import {
   CodeItem,
   EssBasicInfoDto,
 } from './apply-leave-info-list.model';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này (toàn bộ tái sử dụng từ namespace essLeave, essCommon,
  *  common đã có sẵn - không thêm key mới) - tải trước 1 lần ở ngOnInit (xem I18nService). */
@@ -82,6 +83,7 @@ const CANCELABLE_FLAGS = ['14014306', '14014307', '14014308'];
   styleUrl: './apply-leave-info-list.component.css',
 })
 export class ApplyLeaveInfoListComponent implements OnInit {
+  readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
   readonly basicInfo = signal<EssBasicInfoDto | null>(null);
   readonly affirmFlagOptions = signal<CodeItem[]>([]);
 

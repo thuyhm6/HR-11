@@ -22,6 +22,7 @@ import {
   OtApplyPersonalListSummaryRow,
 } from './view-ot-apply-personal-list.model';
 import { ViewOtApplyPersonalListService } from './view-ot-apply-personal-list.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Nhóm AR_ITEM dùng để build cột động (nhóm tăng ca) - giữ nguyên giá trị bản Thymeleaf gốc. */
 const ITEM_GROUP = '1433';
@@ -37,8 +38,6 @@ const I18N_KEYS = [
   'otsl.col.startTime', 'otsl.col.endTime', 'otsl.col.duration', 'otsl.msg.selectHint',
   'otsl.msg.noDataDetail', 'otsl.msg.loadDetailFailed', 'mep.msg.loadDeptFailed',
 ];
-
-const PAGE_SIZE_OPTIONS = [25, 50, 100];
 
 /**
  * Bản Angular của ess/viewDept/viewOtApplyPersonalList.html (Thymeleaf + bảng tự viết tay), gọi lại

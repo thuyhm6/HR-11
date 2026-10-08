@@ -19,6 +19,7 @@ import {
   PaInputItemParamUpdatePayload,
 } from './view-pa-input-item-param.model';
 import { ViewPaInputItemParamService } from './view-pa-input-item-param.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - đã có sẵn đầy đủ ở namespace pa.inputItemParam.*
  *  và pa.salaryCode.itemType.* (dùng chung cho cả bản Thymeleaf gốc) và common.*. Tải trước 1 lần ở
@@ -37,7 +38,6 @@ const I18N_KEYS = [
   'pa.salaryCode.itemType.calc',
 ];
 
-const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
 const DEFAULT_PAGE_SIZE = 20;
 
 interface ItemTypeOption {

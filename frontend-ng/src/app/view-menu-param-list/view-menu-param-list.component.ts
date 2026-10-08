@@ -20,6 +20,7 @@ import { TranslatePipe } from '../i18n/translate.pipe';
 import { SyMenuDto } from '../view-menu-list/view-menu-list.model';
 import { CompanyOption, MenuParamPayload, SyMenuParamDto } from './view-menu-param-list.model';
 import { ViewMenuParamListService } from './view-menu-param-list.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - riêng cho trang này dùng namespace
  *  sys.basic.viewMenuParamList.* (tạo mới, xem CLAUDE.md), các cột/label trùng với ViewMenuListComponent
@@ -41,8 +42,6 @@ const I18N_KEYS = [
   'sys.basic.viewMenuParamList.modal.editTitle', 'sys.basic.viewMenuParamList.label.isCanBeBuild',
   'sys.basic.viewMenuParamList.export.colAssigned',
 ];
-
-const PAGE_SIZE_OPTIONS = [25, 50, 100, 200];
 
 /** SyMenuParamDto + trạng thái checkbox đang chỉnh trên UI (khởi tạo = assigned, đổi độc lập với
  *  assigned gốc để phát hiện dòng nào cần lưu/xóa khi bấm "Lưu" hàng loạt - xem saveList()). */

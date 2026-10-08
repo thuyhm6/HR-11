@@ -19,6 +19,7 @@ import {
   PaFormulaToolItem,
 } from './view-pa-formula.model';
 import { ViewPaFormulaService } from './view-pa-formula.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - toàn bộ đã có sẵn từ trước dưới namespace
  *  pa.formula.* (dùng riêng cho đúng trang này, xem PaFormulaController) cộng thêm vài key common.*
@@ -35,8 +36,6 @@ const I18N_KEYS = [
   'pa.formula.toolPanel', 'pa.formula.toolParamItem', 'pa.formula.toolSalaryItem',
   'pa.formula.toolAttendanceItem', 'pa.formula.toolFixedParam',
 ];
-
-const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
 
 interface PaFormulaForm {
   formularNo: number | null;

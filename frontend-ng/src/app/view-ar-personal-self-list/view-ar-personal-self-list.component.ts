@@ -17,6 +17,7 @@ import {
   ArPersonalSelfPivotRow,
 } from './view-ar-personal-self-list.model';
 import { ViewArPersonalSelfListService } from './view-ar-personal-self-list.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này (toàn bộ tái sử dụng namespace apsl, common đã có
  *  sẵn - không thêm key mới) - tải trước 1 lần ở ngOnInit (xem I18nService). */
@@ -29,8 +30,6 @@ const I18N_KEYS = [
   'apsl.msg.noDataDetail', 'apsl.msg.loadDetailFailed',
   'common.search', 'common.exportExcel', 'common.totalRows',
 ];
-
-const PAGE_SIZE_OPTIONS = [25, 50, 100];
 
 /**
  * Bản Angular của ess/viewDept/viewArPersonalSelfList.html (Thymeleaf + jQuery, tự build bảng pivot +

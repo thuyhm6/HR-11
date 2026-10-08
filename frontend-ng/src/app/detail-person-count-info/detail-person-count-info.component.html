@@ -1,0 +1,46 @@
+<nz-card class="mb-3">
+  <form class="row g-3" (ngSubmit)="search()">
+    <div class="col-md-4">
+      <label class="form-label" [attr.for]="idPrefix + 'Emp'">{{ 'hr.viewContractByInsert.title.EMPIDANDLOCALNAME' | translate:'Mã nhân viên/Họ tên' }} <span class="text-danger">*</span></label>
+      <input nz-input [id]="idPrefix + 'Emp'" [name]="idPrefix + 'Emp'" autocomplete="off" [ngModel]="empKeyword"
+             (ngModelChange)="onEmpKeywordChange($event)" [nzAutocomplete]="dpciEmpAuto"
+             [placeholder]="'hrm.empinfo.workexp.selectEmp' | translate:'Chọn nhân viên...'">
+      <nz-autocomplete #dpciEmpAuto>
+        <nz-auto-option *ngFor="let opt of empOptions()" [nzValue]="empLabel(opt)" [nzLabel]="empLabel(opt)"
+                        (selectionChange)="$event.isUserInput && onEmpSelected(opt)">
+          {{ opt.empId }} - {{ opt.localName }} <small class="text-muted">({{ opt.deptName }})</small>
+        </nz-auto-option>
+      </nz-autocomplete>
+    </div>
+    <div class="col-md-4">
+      <label class="form-label" [attr.for]="idPrefix + 'PaySchedule'">{{ 'ess.empInfo.pay_plan' | translate:'Kế hoạch trả lương' }} <span class="text-danger">*</span></label>
+      <nz-select class="w-100" [nzId]="idPrefix + 'PaySchedule'" [name]="idPrefix + 'PaySchedule'" nzShowSearch [(ngModel)]="payScheduleNo">
+        <nz-option *ngFor="let s of schedules()" [nzValue]="s.payScheduleNo" [nzLabel]="scheduleLabel(s)"></nz-option>
+      </nz-select>
+    </div>
+    <div class="col d-flex align-items-end">
+      <button nz-button nzType="primary" type="submit" [id]="idPrefix + 'BtnSearch'" [nzLoading]="loading()">
+        <i class="bx bx-search"></i> {{ 'public.title.search' | translate:'Tra cứu' }}
+      </button>
+    </div>
+  </form>
+</nz-card>
+
+<nz-card class="mb-3" *ngIf="info() as emp">
+  <nz-descriptions nzBordered nzSize="small" [nzColumn]="{ xxl: 4, xl: 4, lg: 2, md: 2, sm: 1, xs: 1 }">
+    <nz-descriptions-item [nzTitle]="'ess.infoApply.DEPT' | translate:'Phòng ban'">{{ emp.deptName }}</nz-descriptions-item>
+    <nz-descriptions-item [nzTitle]="'ess.empInfo.zhiqun' | translate:'Nhóm nhân viên'">{{ emp.postFamilyName }}</nz-descriptions-item>
+    <nz-descriptions-item [nzTitle]="'hrm.contract.Rank' | translate:'Chức vụ'">{{ emp.postGradeName }}</nz-descriptions-item>
+    <nz-descriptions-item [nzTitle]="'org.title.POSITION_NO' | translate:'Chức danh'">{{ emp.positionName }}</nz-descriptions-item>
+    <nz-descriptions-item [nzTitle]="'ess.empInfo.entry_date' | translate:'Ngày vào làm'">{{ emp.dateStarted }}</nz-descriptions-item>
+    <nz-descriptions-item [nzTitle]="'hr.viewPersonalInfo.title.END_PROBATION_DATE' | translate:'Ngày chuyển chính thức'">{{ emp.endProbationDate }}</nz-descriptions-item>
+    <nz-descriptions-item [nzTitle]="'ess.empInfo.leaveDate' | translate:'Ngày thôi việc'">{{ emp.dateLeft }}</nz-descriptions-item>
+    <nz-descriptions-item [nzTitle]="'ess.viewpersonalpainfo.shifagongzi' | translate:'Lương thực lĩnh'">{{ emp.realWages | number:'1.0-0' }}</nz-descriptions-item>
+  </nz-descriptions>
+</nz-card>
+
+<nz-card>
+  <app-pa-person-salary-items [idPrefix]="idPrefix + 'Items'" [grouped]="true"
+                              [personId]="itemsQuery()?.personId ?? null"
+                              [payScheduleNo]="itemsQuery()?.payScheduleNo ?? null"></app-pa-person-salary-items>
+</nz-card>

@@ -11,6 +11,7 @@ import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { CodeItem, EssBasicInfoDto, WorkGroupHistoryDto } from './workgroup-exper-list.model';
 import { WorkgroupExperListService } from './workgroup-exper-list.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - tải trước 1 lần ở ngOnInit (xem I18nService). */
 const I18N_KEYS = [
@@ -52,6 +53,7 @@ const SHIFT_PARENT_CODE = '400223';
   styleUrl: './workgroup-exper-list.component.css',
 })
 export class WorkgroupExperListComponent implements OnInit {
+  readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
   readonly basicInfo = signal<EssBasicInfoDto | null>(null);
 
   readonly rows = signal<WorkGroupHistoryDto[]>([]);

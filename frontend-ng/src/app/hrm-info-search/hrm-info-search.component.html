@@ -106,7 +106,7 @@
 
   <!-- ════ Bảng dữ liệu (phân trang client-side giống DataTables ở JSP gốc) ════ -->
   <nz-table #hisTable [nzData]="filteredRows()" [nzLoading]="loading()" nzSize="small" class="table-nowrap"
-            [(nzPageIndex)]="pageIndex" [(nzPageSize)]="pageSize" nzShowSizeChanger [nzPageSizeOptions]="[15, 20, 35, 50, 100]"
+            [(nzPageIndex)]="pageIndex" [(nzPageSize)]="pageSize" nzShowSizeChanger [nzPageSizeOptions]="pageSizeOptions"
             [nzScroll]="{ x: scrollX, y: 'calc(100vh - 380px)' }">
     <thead>
       <tr>

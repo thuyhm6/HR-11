@@ -27,6 +27,7 @@ import {
   LeaveApplyDetailResponse,
   LeaveApplyRow,
 } from './apply-attendance-batch-info.model';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - tải trước 1 lần ở ngOnInit (xem I18nService). */
 const I18N_KEYS = [
@@ -123,7 +124,7 @@ const AFFIRM_BADGE: Record<string, { color: string; labelKey: string; fallback: 
 export class ApplyAttendanceBatchInfoComponent implements OnInit {
   readonly affirmFlagOptions = AFFIRM_FLAG_OPTIONS;
   readonly confirmFlagOptions = CONFIRM_FLAG_OPTIONS;
-  readonly pageSizeOptions = [25, 50, 100, 200];
+  readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
   /** Chỉ dòng đã duyệt (AFFIRM_APPROVED) mới có checkbox để Hủy đơn/Lưu lại - xem template. */
   readonly AFFIRM_APPROVED = AFFIRM_APPROVED;
 

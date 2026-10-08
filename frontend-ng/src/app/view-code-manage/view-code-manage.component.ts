@@ -16,6 +16,7 @@ import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { CodeSavePayload, SyCodeDto } from './view-code-manage.model';
 import { ViewCodeManageService } from './view-code-manage.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - riêng cho trang này dùng namespace
  *  sys.basic.viewCodeManage.* (tạo mới, xem CLAUDE.md); các label tên đa ngôn ngữ/thứ tự/hoạt động
@@ -39,8 +40,6 @@ const I18N_KEYS = [
   'sys.basic.viewCodeManage.col.codeNo', 'sys.basic.viewCodeManage.col.nameZh',
   'sys.basic.viewCodeManage.col.nameKo',
 ];
-
-const PAGE_SIZE_OPTIONS = [25, 50, 100, 200];
 
 interface CodeForm {
   codeNo: string | null;

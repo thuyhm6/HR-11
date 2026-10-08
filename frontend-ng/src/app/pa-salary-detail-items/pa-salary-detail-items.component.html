@@ -1,0 +1,33 @@
+<div class="psdi-wrap">
+  <div class="psdi-title">{{ 'ess.empInfo.salary_detail' | translate:'Chi tiết lương' }}</div>
+
+  <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-2"></nz-alert>
+
+  <div *ngIf="!query" class="text-muted small py-3 text-center" id="psdiHint">
+    {{ 'pa.salaryDetail.clickRowHint' | translate:'Nhấn vào 1 dòng để xem chi tiết lương' }}
+  </div>
+
+  <ng-container *ngIf="query">
+    <!-- 3 bảng theo ITEM_TYPE 1/2/3 như bản gốc detailYearCountInfoRight.jsp (pa0132_table_r1..r3) -->
+    <nz-table *ngFor="let type of itemTypes" #psdiTable class="psdi-table mb-2" [attr.id]="'psdiTable' + type"
+              [nzData]="groups()[type] ?? []" [nzLoading]="loading()" [nzFrontPagination]="false"
+              [nzShowPagination]="false" nzSize="small" nzBordered [nzScroll]="{ y: '220px' }">
+      <thead>
+        <tr>
+          <th nzWidth="50px" class="text-center">No.</th>
+          <th>{{ 'ess.empInfo.project' | translate:'Hạng mục' }}</th>
+          <th nzWidth="25%" class="text-end">{{ 'ess.empInfo.amount_of_money' | translate:'Số tiền' }}</th>
+          <th nzWidth="25%" class="text-end">{{ 'pa.detailmonthCountInfoRight.NIANJIALEIJIAE.b' | translate:'Tổng khoản tiền trong năm' }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of psdiTable.data; let i = index">
+          <td class="text-center">{{ i + 1 }}</td>
+          <td>{{ item.itemName || item.itemNo }}</td>
+          <td class="text-end">{{ item.itemValue | number:'1.0-0' }}</td>
+          <td class="text-end">{{ item.itemYearValue | number:'1.0-0' }}</td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </ng-container>
+</div>

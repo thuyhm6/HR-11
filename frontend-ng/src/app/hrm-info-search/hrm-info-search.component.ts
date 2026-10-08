@@ -27,6 +27,7 @@ import {
   HrmInfoSearchMode,
 } from './hrm-info-search.model';
 import { HrmInfoSearchService } from './hrm-info-search.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang - tải trước 1 lần ở ngOnInit (xem I18nService). */
 const I18N_KEYS = [
@@ -97,6 +98,7 @@ function emptyFilter(): HisFilterForm {
   styleUrl: './hrm-info-search.component.css',
 })
 export class HrmInfoSearchComponent implements OnInit {
+  readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
   readonly mode: HrmInfoSearchMode;
   readonly config: HisModeConfig;
 

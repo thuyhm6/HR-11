@@ -18,12 +18,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayOutputStream;
-import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Service
 public class PaItemInputServiceImpl implements PaItemInputService {
@@ -85,17 +85,25 @@ public class PaItemInputServiceImpl implements PaItemInputService {
     }
 
     @Override
-    public byte[] exportSummaryHtsv(String payScheduleNo, List<String> deptNos, List<String> itemIds) {
+    public byte[] exportSummaryHtsv(String payScheduleNo, List<String> deptNos, List<PaItemInputDto> items) {
         try {
-            // Lấy tên hiển thị cho từng ITEM_ID (dùng làm header cột)
-            List<PaItemInputDto> itemDefs = mapper.selectItemNamesByIds(itemIds);
+            List<String> itemIds = new ArrayList<>();
             Map<String, String> itemNameMap = new LinkedHashMap<>();
-            for (PaItemInputDto d : itemDefs) {
-                if (d.getItemId() != null) {
-                    itemNameMap.put(d.getItemId().toUpperCase(), d.getItemName() != null ? d.getItemName() : d.getItemId());
+            for (PaItemInputDto it : items) {
+                if (it.getItemId() == null || it.getItemId().isBlank()) continue;
+                itemIds.add(it.getItemId());
+                if (it.getItemName() != null && !it.getItemName().isBlank()) {
+                    itemNameMap.put(it.getItemId().toUpperCase(), it.getItemName());
                 }
             }
-            // Đảm bảo đủ tất cả itemIds được chọn (fallback về itemId nếu không tìm thấy tên)
+            // Hạng mục FE không gửi tên -> lấy tên đã lưu ở PA_ITEM_INPUT, cuối cùng fallback về itemId
+            if (itemNameMap.size() < itemIds.size() && !itemIds.isEmpty()) {
+                for (PaItemInputDto d : mapper.selectItemNamesByIds(itemIds)) {
+                    if (d.getItemId() != null && d.getItemName() != null) {
+                        itemNameMap.putIfAbsent(d.getItemId().toUpperCase(), d.getItemName());
+                    }
+                }
+            }
             for (String id : itemIds) {
                 itemNameMap.putIfAbsent(id.toUpperCase(), id);
             }
@@ -112,18 +120,9 @@ public class PaItemInputServiceImpl implements PaItemInputService {
                 headerStyle.setFillForegroundColor(IndexedColors.LIGHT_CORNFLOWER_BLUE.getIndex());
                 headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 
-                // Các cột cố định: STT, Mã NV, Họ tên, Phòng ban
-                List<String> fixedHeaders = Arrays.asList("STT", "EMP_ID", "LOCAL_NAME_EMP", "DEPT_NAME_VAL");
-                List<String> fixedDisplayHeaders = Arrays.asList("STT", "Mã NV", "Họ tên", "Phòng ban");
-
-                // Hàng header
+                // Chỉ xuất các cột được tick, đúng thứ tự FE gửi lên (giống exportResult bản gốc - không có cột cố định)
                 XSSFRow headerRow = sheet.createRow(0);
                 int col = 0;
-                for (String h : fixedDisplayHeaders) {
-                    XSSFCell cell = headerRow.createCell(col++);
-                    cell.setCellValue(h);
-                    cell.setCellStyle(headerStyle);
-                }
                 List<String> upperItemIds = new ArrayList<>();
                 for (String id : itemIds) {
                     upperItemIds.add(id.toUpperCase());
@@ -135,26 +134,23 @@ public class PaItemInputServiceImpl implements PaItemInputService {
                 // Hàng dữ liệu
                 int rowIdx = 1;
                 for (Map<String, Object> row : dataList) {
-                    XSSFRow dataRow = sheet.createRow(rowIdx);
+                    XSSFRow dataRow = sheet.createRow(rowIdx++);
                     int c = 0;
-                    dataRow.createCell(c++).setCellValue(rowIdx);
-                    dataRow.createCell(c++).setCellValue(str(row.get("EMPID")));
-                    dataRow.createCell(c++).setCellValue(str(row.get("LOCAL_NAME_EMP")));
-                    dataRow.createCell(c++).setCellValue(str(row.get("DEPT_NAME_VAL")));
                     for (String itemId : upperItemIds) {
                         Object val = row.get(itemId);
                         XSSFCell cell = dataRow.createCell(c++);
                         if (val instanceof Number) {
                             cell.setCellValue(((Number) val).doubleValue());
+                        } else if (NUMERIC_TEXT_COLUMNS.contains(itemId) && isNumeric(val)) {
+                            // Mã NV lưu VARCHAR2 nhưng phải ra dạng number trong Excel
+                            cell.setCellValue(Double.parseDouble(val.toString().trim()));
                         } else {
                             cell.setCellValue(val != null ? val.toString() : "");
                         }
                     }
-                    rowIdx++;
                 }
 
-                // Auto-size các cột cố định
-                for (int i = 0; i < fixedHeaders.size(); i++) {
+                for (int i = 0; i < upperItemIds.size(); i++) {
                     sheet.autoSizeColumn(i);
                 }
 
@@ -168,7 +164,10 @@ public class PaItemInputServiceImpl implements PaItemInputService {
         }
     }
 
-    private String str(Object val) {
-        return val != null ? val.toString() : "";
+    /** Cột kiểu chuỗi trong PA_SUMMARY_HTSV nhưng cần ghi ra Excel dạng number. */
+    private static final Set<String> NUMERIC_TEXT_COLUMNS = Set.of("EMPID");
+
+    private boolean isNumeric(Object val) {
+        return val != null && val.toString().trim().matches("\\d+(\\.\\d+)?");
     }
 }

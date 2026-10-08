@@ -18,6 +18,7 @@ import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { CodeItem, EvsResumeDto, EvsResumeSavePayload } from './evs-resume-list.model';
 import { EvsResumeListService } from './evs-resume-list.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Chu kỳ đánh giá (parentCodeNo=14015038) và Số lần đánh giá (parentCodeNo=14015060) - đúng giá trị
  *  hardcode data-parent-code ở bản Thymeleaf gốc (viewResumeList.html). */
@@ -53,8 +54,6 @@ const I18N_KEYS = [
   'common.stt', 'common.action', 'common.edit', 'common.delete', 'common.confirm', 'common.cancel',
   'common.exportExcel', 'common.noData', 'common.totalRows',
 ];
-
-const PAGE_SIZE_OPTIONS = [25, 50, 100, 200];
 
 interface ResumeForm {
   seq: string;

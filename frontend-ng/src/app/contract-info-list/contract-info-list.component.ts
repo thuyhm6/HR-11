@@ -22,6 +22,7 @@ import {
   HrContractDto,
 } from './contract-info-list.model';
 import { ContractInfoListService } from './contract-info-list.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - tải trước 1 lần ở ngOnInit (xem I18nService). */
 const I18N_KEYS = [
@@ -61,8 +62,6 @@ const I18N_KEYS = [
   'tempEmp.validateEmp', 'tempEmp.pickEmp',
   'empSearch.title', 'empSearch.field.keyword', 'empSearch.placeholder.keyword', 'empSearch.col.no', 'epi.field.position',
 ];
-
-const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 
 interface ContractForm {
   contractNo: string;

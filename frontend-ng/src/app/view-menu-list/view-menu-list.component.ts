@@ -16,6 +16,7 @@ import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { MenuSavePayload, SyMenuDto } from './view-menu-list.model';
 import { ViewMenuListService } from './view-menu-list.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - đều đã có sẵn (sys.basic.viewMenuList.* dành
  *  riêng cho trang này, cộng các key chung), tải trước 1 lần ở ngOnInit (xem I18nService). */
@@ -36,8 +37,6 @@ const I18N_KEYS = [
   'sys.basic.viewMenuList.msg.addTitle', 'sys.basic.viewMenuList.msg.editTitle',
   'sys.basic.viewMenuList.msg.confirmDelete',
 ];
-
-const PAGE_SIZE_OPTIONS = [25, 50, 100, 200];
 
 interface MenuForm {
   menuNo: string | null;

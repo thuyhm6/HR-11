@@ -6,7 +6,7 @@ import {
   PaItemInputDto,
   PaItemInputSaveReqDto,
   PaPayScheduleDto,
-  PaResultExportExcelParams,
+  PaResultExportReqDto,
   PaSectionItemsDto,
 } from './view-pa-result.model';
 
@@ -17,9 +17,8 @@ const API_BASE = '/pa/salary/result/api';
  * mục hiển thị cho các báo cáo kết quả tính lương (PA_ITEM_INPUT). Kế hoạch trả lương và cây phòng ban
  * dùng chung 2 API đã có sẵn ở ViewPaPayStubService (/pa/workManagement/api/paySchedule và
  * /pa/wagebase/api/supervisor/authorized-departments), đúng như bản Thymeleaf gốc viewPaResult.html
- * chỉ định. exportExcel backend tự sinh file .xlsx theo query params nên điều hướng trình duyệt tới
- * URL kèm params thay vì gọi HttpClient responseType 'blob' (xem exportExcelUrl() + pattern ở
- * ViewArCardRecordMealService).
+ * chỉ định. exportExcel gửi POST JSON (kèm tên hạng mục làm header Excel) và nhận về file .xlsx dạng
+ * blob, giống pattern ViewRetrieveSqlMasterListService.export().
  */
 @Injectable({ providedIn: 'root' })
 export class ViewPaResultService {
@@ -46,8 +45,7 @@ export class ViewPaResultService {
     return this.http.post<{ success: boolean; message: string }>(`${API_BASE}/save`, payload, { withCredentials: true });
   }
 
-  exportExcelUrl(params: PaResultExportExcelParams): string {
-    const httpParams = new HttpParams({ fromObject: { ...params } });
-    return `${API_BASE}/exportExcel?${httpParams.toString()}`;
+  exportExcel(payload: PaResultExportReqDto): Observable<Blob> {
+    return this.http.post(`${API_BASE}/exportExcel`, payload, { responseType: 'blob', withCredentials: true });
   }
 }

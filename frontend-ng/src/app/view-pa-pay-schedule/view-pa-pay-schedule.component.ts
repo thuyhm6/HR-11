@@ -15,6 +15,7 @@ import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { CodeItem, PaPayScheduleDto, PaPayScheduleSavePayload } from './view-pa-pay-schedule.model';
 import { ViewPaPayScheduleService } from './view-pa-pay-schedule.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - đã có sẵn đầy đủ ở namespace pa.paySchedule.*
  *  (dùng chung cho cả bản Thymeleaf gốc) và common.*. Tải trước 1 lần ở ngOnInit (xem I18nService). */
@@ -31,8 +32,6 @@ const I18N_KEYS = [
   'pa.paySchedule.confirmDelete', 'pa.paySchedule.validateRequired',
   'essDept.exportExcel',
 ];
-
-const PAGE_SIZE_OPTIONS = [25, 50, 100, 200];
 
 /** Mã cha (SY_CODE) dùng chung cho dropdown Phân loại lương - đúng bản Thymeleaf gốc
  *  (data-parent-code="14013797" trong viewPaPaySchedule.html). */

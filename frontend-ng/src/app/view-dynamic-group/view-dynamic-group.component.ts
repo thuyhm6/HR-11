@@ -18,6 +18,7 @@ import { AuthDeptNode, CodeItem, EmployeeSearchDto } from '../change-user/change
 import { ChangeUserService } from '../change-user/change-user.service';
 import { ArEmpGroupDto, ArEmpGroupSavePayload } from './view-dynamic-group.model';
 import { ViewDynamicGroupService } from './view-dynamic-group.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - phần lớn tái dùng namespace dynGroup.x đã có sẵn
  *  từ bản Thymeleaf gốc, cộng thêm 2 key cột còn thiếu (dynGroup.colUpdatedBy/colUpdateDate) và các key
@@ -40,7 +41,6 @@ const I18N_KEYS = [
 ];
 
 const EMP_OFFICE_PARENT_CODE = '15118';
-const PAGE_SIZE_OPTIONS = [25, 50, 100, 200];
 
 /**
  * Bản Angular của ar/attendanceSettings/viewDynamicGroup.html (Thymeleaf + jQuery DataTables) - quản

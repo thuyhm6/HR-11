@@ -19,6 +19,7 @@ import {
   EssBasicInfoDto,
   EssCwaAbnormalDto,
 } from './cwa-abnormal-apply.model';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - tải trước 1 lần ở ngOnInit (xem I18nService). */
 const I18N_KEYS = [
@@ -67,6 +68,7 @@ const I18N_KEYS = [
   styleUrl: './cwa-abnormal-apply.component.css',
 })
 export class CwaAbnormalApplyComponent implements OnInit {
+  readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
   readonly basicInfo = signal<EssBasicInfoDto | null>(null);
   readonly rows = signal<CwaAbnormalDisplayRow[]>([]);
   readonly loading = signal(false);

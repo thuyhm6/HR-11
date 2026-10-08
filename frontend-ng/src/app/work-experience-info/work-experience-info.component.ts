@@ -14,6 +14,7 @@ import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { EmployeeOption, HrWorkExperienceDto, WorkExperienceSavePayload } from './work-experience-info.model';
 import { WorkExperienceInfoService } from './work-experience-info.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - tải trước 1 lần ở ngOnInit (xem I18nService). */
 const I18N_KEYS = [
@@ -32,8 +33,6 @@ const I18N_KEYS = [
   'hrm.empinfo.workexp.colFrom', 'hrm.empinfo.workexp.colTo', 'hrm.empinfo.workexp.colDuty',
   'hrm.empinfo.workexp.colResignReason', 'hrm.empinfo.workexp.colSalary', 'hrm.empinfo.workexp.colRemark',
 ];
-
-const PAGE_SIZE_OPTIONS = [25, 50, 100, 200];
 
 interface WorkExpForm {
   workExpNo: number | null;

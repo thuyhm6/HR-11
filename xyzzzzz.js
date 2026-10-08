@@ -2541,9 +2541,12 @@ Tôi đang thực hiện việc chuyển đổi dự án HR ở dự án D:\Java
 Tương tự Tạo mới cho tôi giao diện /disc/autoExcel/viewRetrieveSqlMasterList - Tra cứu line phê duyệt với dạng Angular + NG-ZORRO  (Frontend). chức năng giống như /disc/autoExcel/viewRetrieveSqlMasterList ở dự án D:\Java\WorkSpace\Hanwha_HTSV. chỉ là giao diện được chuyển sang Angular + NG-ZORRO  (Frontend) và tương thích với dự án mới này. với modal, khi bấm chuột ra ngoài phạm vi modal thì sẽ đóng modal
 
 
-Tôi đang thực hiện việc chuyển đổi dự án HR ở dự án D:\Java\WorkSpace\Hanwha_HTSV sang dự án này. Tạo mới cho tôi giao diện /ess/viewDept/viewUseOfAnnualLeaveList với dạng Angular + NG-ZORRO  (Frontend). chức năng giống như ở dự án D:\Java\WorkSpace\Hanwha_HTSV. chỉ là giao diện được chuyển sang Angular + NG-ZORRO  (Frontend) và tương thích với dự án mới này.
+Tôi đang thực hiện việc chuyển đổi dự án HR ở dự án D:\Java\WorkSpace\Hanwha_HTSV sang dự án này. Tạo mới cho tôi giao diện /pa/workManagement/detailmonthCountInfoLeft, /pa/workManagement/detailYearCountInfoLeft, /pa/workManagement/viewPaResultList, /pa/workManagement/viewDeptPaResultList và /report/ar/viewArReportsList  với dạng Angular + NG-ZORRO  (Frontend). chức năng giống như ở dự án D:\Java\WorkSpace\Hanwha_HTSV. chỉ là giao diện được chuyển sang Angular + NG-ZORRO  (Frontend) và tương thích với dự án mới này.
 
-Tôi đang thực hiện việc chuyển đổi dự án HR ở dự án D:\Java\WorkSpace\Hanwha_HTSV sang dự án này. Chỉnh sửa lại cho tôi giao diện /pa/workManagement/viewPaArSummaryForManageList với dạng Angular + NG-ZORRO  (Frontend). chức năng và giao diện hiển thị giống như ở dự án D:\Java\WorkSpace\Hanwha_HTSV. chỉ là giao diện được chuyển sang Angular + NG-ZORRO  (Frontend) và tương thích với dự án mới này.
+Tôi đang thực hiện việc chuyển đổi dự án HR ở dự án D:\Java\WorkSpace\Hanwha_HTSV sang dự án này. Tạo mới cho tôi giao diện /pa/workManagement/monthPersonCountInfoList, /pa/paView/viewPaMonthChain, /pa/workManagement/viewVerificationList, /pa/workManagement/detailPersonCountInfo, /pa/workManagement/detailPersonCountInfoLeft, /pa/workManagement/detailItemCountInfo, /pa/workManagement/detailItemDifCountInfo và /pa/workManagement/viewResultConfirmList  với dạng Angular + NG-ZORRO  (Frontend). chức năng giống như ở dự án D:\Java\WorkSpace\Hanwha_HTSV. chỉ là giao diện được chuyển sang Angular + NG-ZORRO  (Frontend) và tương thích với dự án mới này.
+
+
+Tôi đang thực hiện việc chuyển đổi dự án HR ở dự án D:\Java\WorkSpace\Hanwha_HAE sang dự án này. Chỉnh sửa lại cho tôi chức năng Xin phép ở giao diện /ess/infoApply/viewSSTOtApplyInfo. Áp dụng chức năng đồng bộ sang Cleverse (sendAffirmInfoEmailApproval) giống như ở dự án D:\Java\WorkSpace\Hanwha_HAE để tương thích với dự án mới này.
 
 
 

@@ -21,6 +21,7 @@ import { TranslatePipe } from '../i18n/translate.pipe';
 import { buildDeptTree } from '../manage-emp-position-info/dept-tree.util';
 import { EduTrainArchive } from './edu-train-archives.model';
 import { EduTrainArchivesService } from './edu-train-archives.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Key message.properties dùng trong trang - dùng lại key sẵn có của bản JSP gốc (trainArchives.jsp). */
 const I18N_KEYS = [
@@ -36,8 +37,6 @@ const I18N_KEYS = [
   'common.search', 'common.stt', 'common.noData', 'common.totalRows', 'common.loadFail', 'common.quickFilter',
   'common.exportExcel', 'common.all',
 ];
-
-const PAGE_SIZE_OPTIONS = [50, 100, 200, 500, 1000];
 
 /**
  * Bản Angular của /edu/traineducation/trainArchives (JSP + DWZ, dự án Hanwha_HTSV) - hồ sơ đào tạo theo học viên: tìm theo
@@ -67,7 +66,7 @@ export class EduTrainArchivesComponent implements OnInit {
   });
 
   pageIndex = 1;
-  pageSize = PAGE_SIZE_OPTIONS[0];
+  pageSize = 50;
   searchKeyword = '';
   searchDeptNo: string | null = null;
   searchCourseName = '';

@@ -21,6 +21,7 @@ import {
   PaItemOption,
 } from './view-pa-compute-item-param-list.model';
 import { ViewPaComputeItemParamListService } from './view-pa-compute-item-param-list.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - đã có sẵn đầy đủ ở namespace pa.computeItemParam.*
  *  (dùng chung cho cả bản Thymeleaf gốc) và common.*. Tải trước 1 lần ở ngOnInit (xem I18nService). */
@@ -35,7 +36,6 @@ const I18N_KEYS = [
   'pa.computeItemParam.validateRequired',
 ];
 
-const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
 const DEFAULT_PAGE_SIZE = 20;
 
 interface AddForm {

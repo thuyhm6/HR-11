@@ -20,6 +20,7 @@ import {
   EvsResumeOption,
 } from './affirm-target1.model';
 import { AffirmTarget1Service } from './affirm-target1.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - tải trước 1 lần ở ngOnInit (xem I18nService).
  *  Toàn bộ key evs.viewAffirmTarget1.* đã có sẵn (dùng chung với bản Thymeleaf cũ, không tạo mới). */
@@ -60,8 +61,6 @@ const EVS_LEVEL_AFFIRM1 = '14015070';
 const EDITABLE_ACTIVITY = '14015357';
 
 const GRADE_NAMES = ['EX', 'VG', 'GD', 'NI', 'UN'] as const;
-
-const PAGE_SIZE_OPTIONS = [50, 100, 200];
 
 interface RowVm {
   seq: string;

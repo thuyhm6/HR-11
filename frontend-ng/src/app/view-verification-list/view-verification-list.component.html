@@ -1,0 +1,50 @@
+<nz-card class="mb-3">
+  <form class="row g-3" (ngSubmit)="search()">
+    <div class="col-md-3">
+      <label class="form-label" for="vvlEmpSearch">{{ 'ess.infoApply.NAME_EMPID' | translate:'Mã nhân viên/Họ tên' }}</label>
+      <input nz-input id="vvlEmpSearch" name="vvlEmpSearch" [(ngModel)]="empSearch">
+    </div>
+    <div class="col-md-4">
+      <label class="form-label" for="vvlPaySchedule">{{ 'ess.empInfo.pay_plan' | translate:'Kế hoạch trả lương' }} <span class="text-danger">*</span></label>
+      <nz-select class="w-100" nzId="vvlPaySchedule" name="vvlPaySchedule" nzShowSearch [(ngModel)]="payScheduleNo">
+        <nz-option *ngFor="let s of schedules()" [nzValue]="s.payScheduleNo" [nzLabel]="scheduleLabel(s)"></nz-option>
+      </nz-select>
+    </div>
+    <div class="col d-flex align-items-end">
+      <button nz-button nzType="primary" type="submit" id="vvlBtnSearch" [nzLoading]="loading()">
+        <i class="bx bx-search"></i> {{ 'public.title.search' | translate:'Tra cứu' }}
+      </button>
+    </div>
+  </form>
+</nz-card>
+
+<nz-card>
+  <nz-table #vvlTable id="vvlTable" [nzData]="rows()" [nzLoading]="loading()" nzSize="small" nzBordered
+            [(nzPageIndex)]="pageIndex" [(nzPageSize)]="pageSize" [nzPageSizeOptions]="pageSizeOptions"
+            [nzShowSizeChanger]="true" [nzShowTotal]="vvlTotalTpl"
+            [nzScroll]="{ x: '1600px', y: 'calc(100vh - 400px)' }">
+    <thead>
+      <tr>
+        <th class="text-center" nzWidth="60px" nzLeft>{{ 'common.stt' | translate:'STT' }}</th>
+        <th *ngFor="let c of columns" [nzWidth]="c.width ?? null" [nzSortFn]="sortFns.get(c.field) ?? null">{{ title(c) }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let row of vvlTable.data; let i = index" class="vvl-row" (click)="openDetail(row)">
+        <td class="text-center" nzLeft>{{ (pageIndex - 1) * pageSize + i + 1 }}</td>
+        <td *ngFor="let c of columns">{{ row[c.field] }}</td>
+      </tr>
+    </tbody>
+    <ng-template #vvlTotalTpl let-total>{{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}</ng-template>
+  </nz-table>
+</nz-card>
+
+<!-- Popup Chi tiết lương: nhúng lại DetailPersonCountInfoComponent với tiền tố id riêng (vvlDpci) để không trùng id
+     với trang Chi tiết lương (dpci) có thể đang mở ở tab khác. -->
+<nz-modal [nzVisible]="!!detail()" [nzTitle]="detail()?.title ?? ''" nzWidth="1200px" [nzFooter]="null"
+          (nzOnCancel)="closeDetail()">
+  <ng-container *nzModalContent>
+    <app-detail-person-count-info *ngIf="detail() as d" idPrefix="vvlDpci" [initPersonId]="d.personId"
+                                  [initPayScheduleNo]="d.payScheduleNo"></app-detail-person-count-info>
+  </ng-container>
+</nz-modal>

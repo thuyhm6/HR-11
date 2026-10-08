@@ -27,6 +27,7 @@ import {
   ShiftOption,
 } from './ar-count-info-list.model';
 import { ArCountInfoListService } from './ar-count-info-list.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Nhóm AR_ITEM cần loại trừ khi build cột động cho tab "Nghỉ phép" (nhóm tăng ca) - giống view-ar-personal-list. */
 const LEAVE_ITEM_GROUP = '!1433';
@@ -78,8 +79,6 @@ const I18N_KEYS = [
   'common.month.05', 'common.month.06', 'common.month.07', 'common.month.08',
   'common.month.09', 'common.month.10', 'common.month.11', 'common.month.12',
 ];
-
-const PAGE_SIZE_OPTIONS = [25, 50, 100];
 
 /**
  * Hiện trạng chấm công của nhân viên (/ar/countAttendance/arCountInfoList) - gồm 2 tab dùng chung 1 bộ

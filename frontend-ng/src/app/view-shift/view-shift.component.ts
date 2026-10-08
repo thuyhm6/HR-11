@@ -24,6 +24,7 @@ import {
   ArShift020SavePayload,
 } from './view-shift.model';
 import { ViewShiftService } from './view-shift.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - dùng lại nguyên namespace shift.* đã chuẩn bị sẵn
  *  cho đúng trang này (trước đó chỉ có ở bản tiếng Việt và bản mặc định, đã bổ sung đủ en/ko/zh - xem
@@ -45,8 +46,6 @@ const I18N_KEYS = [
   'shift.detail.confirmDelete', 'ar.viewshift.title.start', 'ar.viewshift.title.end',
   'essDept.exportExcel',
 ];
-
-const PAGE_SIZE_OPTIONS = [25, 50, 100, 200];
 
 interface ShiftForm {
   shiftNo: string | null;

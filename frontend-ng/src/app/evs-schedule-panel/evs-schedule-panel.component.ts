@@ -16,14 +16,13 @@ import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { CodeItem, EvsResumeOption, EvsScheduleDto, EvsScheduleSavePayload } from './evs-schedule-panel.model';
 import { EvsSchedulePanelService } from './evs-schedule-panel.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** 3 loại quy trình đánh giá (scheduleType) - đúng bản Thymeleaf gốc (3 tab Công ty/Phòng ban/Cá nhân). */
 type ScheduleType = 'CPNY' | 'DEPT' | 'EMP';
 
 /** Giai đoạn thực hiện (parentCodeNo=14015065) - đúng giá trị hardcode data-parent-code ở bản gốc. */
 const EVS_STEP_PARENT_CODE = '14015065';
-
-const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 
 /** Các key message.properties dùng trong trang này - toàn bộ key evs.manage.viewEvsSchedulePanel.* và
  *  evs.viewEvsSchedulePanel.* (nhãn 3 tab) đã có sẵn (dùng chung với bản Thymeleaf cũ, không tạo mới -

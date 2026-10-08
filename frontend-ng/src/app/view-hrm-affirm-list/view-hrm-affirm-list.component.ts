@@ -23,6 +23,7 @@ import {
   HrmAffirmRow,
 } from './view-hrm-affirm-list.model';
 import { ViewHrmAffirmListService } from './view-hrm-affirm-list.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - tải trước 1 lần ở ngOnInit (xem I18nService). */
 const I18N_KEYS = [
@@ -38,8 +39,6 @@ const I18N_KEYS = [
   'sys.affirm.title.startLength', 'sys.affirm.title.endLength', 'vaal.hint.lengthRange',
   'vaal.msg.enterStartLength', 'vaal.msg.enterEndLength', 'vaal.msg.invalidLength', 'vaal.msg.lengthRange',
 ];
-
-const PAGE_SIZE_OPTIONS = [25, 50, 100];
 
 /** Giá trị "Tất cả" dùng chung cho EMP_TYPE và DUTY_NO (giữ nguyên quy ước 'Q' của bản gốc). */
 const ALL_VALUE = 'Q';

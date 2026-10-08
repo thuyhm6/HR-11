@@ -1,0 +1,57 @@
+<nz-card class="mb-3">
+  <form class="row g-3" (ngSubmit)="search()">
+    <div class="col-md-3">
+      <label class="form-label" for="diciPaySchedule">{{ 'ess.empInfo.pay_plan' | translate:'Kế hoạch trả lương' }} <span class="text-danger">*</span></label>
+      <nz-select class="w-100" nzId="diciPaySchedule" name="diciPaySchedule" nzShowSearch [(ngModel)]="payScheduleNo">
+        <nz-option *ngFor="let s of schedules()" [nzValue]="s.payScheduleNo" [nzLabel]="scheduleLabel(s)"></nz-option>
+      </nz-select>
+    </div>
+    <div class="col-md-2">
+      <label class="form-label" for="diciItemType">{{ 'liang.public.title.ItemDistinguish' | translate:'Phân biệt hạng mục' }}</label>
+      <nz-select class="w-100" nzId="diciItemType" name="diciItemType" [ngModel]="itemType()" (ngModelChange)="onItemTypeChange($event)">
+        <nz-option *ngFor="let o of itemTypeOptions" [nzValue]="o.value" [nzLabel]="o.key | translate:o.fallback"></nz-option>
+      </nz-select>
+    </div>
+    <div class="col-md-3">
+      <label class="form-label" for="diciItem">{{ 'pa.detailItemCountInfo.XIANGXIQUFEN.b' | translate:'Phân loại' }} <span class="text-danger">*</span></label>
+      <nz-select class="w-100" nzId="diciItem" name="diciItem" nzShowSearch [(ngModel)]="itemId">
+        <nz-option *ngFor="let i of itemsOfType()" [nzValue]="i.itemId" [nzLabel]="i.itemName"></nz-option>
+      </nz-select>
+    </div>
+    <div class="col d-flex align-items-end gap-2">
+      <button nz-button nzType="primary" type="submit" id="diciBtnSearch" [nzLoading]="loading()">
+        <i class="bx bx-search"></i> {{ 'public.title.search' | translate:'Tra cứu' }}
+      </button>
+      <button nz-button type="button" id="diciBtnExport" (click)="exportExcel()">
+        <i class="bx bx-download"></i> {{ 'ess.infoApply.export_to_Excel' | translate:'Xuất Excel' }}
+      </button>
+    </div>
+  </form>
+</nz-card>
+
+<nz-card>
+  <nz-table #diciTable id="diciTable" [nzData]="rows()" [nzLoading]="loading()" nzSize="small" nzBordered
+            [(nzPageIndex)]="pageIndex" [(nzPageSize)]="pageSize" [nzPageSizeOptions]="pageSizeOptions"
+            [nzShowSizeChanger]="true" [nzShowTotal]="diciTotalTpl"
+            [nzScroll]="{ x: '1500px', y: 'calc(100vh - 400px)' }">
+    <thead>
+      <tr>
+        <th class="text-center" nzWidth="60px" nzLeft>{{ 'common.stt' | translate:'STT' }}</th>
+        <th *ngFor="let c of columns" [nzWidth]="c.width ?? null" [class.text-end]="c.number"
+            [nzSortFn]="sortFns.get(c.field) ?? null">{{ title(c) }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let row of diciTable.data; let i = index">
+        <td class="text-center" nzLeft>{{ (pageIndex - 1) * pageSize + i + 1 }}</td>
+        <td *ngFor="let c of columns" [class.text-end]="c.number">
+          <ng-container *ngIf="c.number; else diciText">{{ $any(row[c.field]) | number:'1.0-0' }}</ng-container>
+          <ng-template #diciText>
+            <span class="dici-ellipsis" nz-tooltip [nzTooltipTitle]="$any(row[c.field])">{{ row[c.field] }}</span>
+          </ng-template>
+        </td>
+      </tr>
+    </tbody>
+    <ng-template #diciTotalTpl let-total>{{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}</ng-template>
+  </nz-table>
+</nz-card>

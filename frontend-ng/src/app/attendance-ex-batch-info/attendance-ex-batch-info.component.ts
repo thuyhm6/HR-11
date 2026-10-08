@@ -17,6 +17,7 @@ import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { AttendanceExBatchInfoService } from './attendance-ex-batch-info.service';
 import { ApplyPayloadRow, AttendanceExApiRow, AttendanceExRow, AuthDeptNode, CodeItem, ShiftOption } from './attendance-ex-batch-info.model';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Toàn bộ key bên dưới đã có sẵn trong message.properties (namespace "ex" - dùng riêng cho trang này,
  *  "common"/"mep" dùng chung với các trang khác) - không cần thêm key mới. */
@@ -85,7 +86,7 @@ const ITEM_NO_OPTIONS: { value: string; labelKey: string; fallback: string }[] =
 })
 export class AttendanceExBatchInfoComponent implements OnInit {
   readonly itemNoOptions = ITEM_NO_OPTIONS;
-  readonly pageSizeOptions = [25, 50, 100, 200];
+  readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
 
   readonly rows = signal<AttendanceExRow[]>([]);
   readonly loading = signal(false);

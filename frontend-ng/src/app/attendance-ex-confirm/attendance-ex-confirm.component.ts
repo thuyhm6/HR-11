@@ -16,6 +16,7 @@ import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { AttendanceExConfirmService } from './attendance-ex-confirm.service';
 import { AttendanceExConfirmUiRow, AttendanceExDetailResponse } from './attendance-ex-confirm.model';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - tải trước 1 lần ở ngOnInit (xem I18nService).
  *  Namespace "aec" đã được tạo sẵn riêng cho trang này (chỉ thiếu 4 key msg.confirm* dùng cho nội dung
@@ -88,7 +89,7 @@ const DEFAULT_CONFIRM_FLAG = '0';
 })
 export class AttendanceExConfirmComponent implements OnInit {
   readonly confirmFlagOptions = CONFIRM_FLAG_OPTIONS;
-  readonly pageSizeOptions = [25, 50, 100, 200];
+  readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
 
   readonly rows = signal<AttendanceExConfirmUiRow[]>([]);
   readonly loading = signal(false);

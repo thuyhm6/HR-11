@@ -15,6 +15,7 @@ import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { ViewArCardRecordMealService } from './view-ar-card-record-meal.service';
 import { ArMacRecordEatDto, AuthDeptNode, ImportDeviceResult } from './view-ar-card-record-meal.model';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Toàn bộ key bên dưới đã có sẵn trong messages.properties/messages_vi_VN.properties (namespace "acrm"
  *  dùng riêng cho trang này, "acr.imp.result.*" tái sử dụng từ trang chị em ViewArCardRecordComponent vì
@@ -63,7 +64,7 @@ const I18N_KEYS = [
   styleUrl: './view-ar-card-record-meal.component.css',
 })
 export class ViewArCardRecordMealComponent implements OnInit {
-  readonly pageSizeOptions = [25, 50, 100, 200];
+  readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
 
   readonly rows = signal<ArMacRecordEatDto[]>([]);
   readonly loading = signal(false);

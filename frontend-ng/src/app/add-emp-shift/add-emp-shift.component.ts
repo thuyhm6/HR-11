@@ -19,6 +19,7 @@ import { AuthDeptNode, CodeItem, EmployeeSearchDto } from '../change-user/change
 import { ChangeUserService } from '../change-user/change-user.service';
 import { ArScheduleHtsvDto, ArScheduleHtsvSavePayload, ShiftOption } from './add-emp-shift.model';
 import { AddEmpShiftService } from './add-emp-shift.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Toàn bộ key bên dưới đã có sẵn trong message.properties (namespace "addShift.x" dùng riêng cho
  *  trang này, "common.x" dùng chung) - không cần bổ sung key mới. Các key cho popup tìm nhân viên
@@ -42,7 +43,6 @@ const I18N_KEYS = [
 
 const EMP_OFFICE_PARENT_CODE = '15118';
 const DAY_TYPE_PARENT_CODE = '1439';
-const PAGE_SIZE_OPTIONS = [25, 50, 100, 200];
 
 interface ShiftForm {
   pkNo: number | null;

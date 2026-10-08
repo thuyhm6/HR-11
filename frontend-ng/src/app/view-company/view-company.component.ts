@@ -15,6 +15,7 @@ import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { CompanySavePayload, HrCompanyDto } from './view-company.model';
 import { ViewCompanyService } from './view-company.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - riêng cho trang này dùng namespace
  *  sys.basic.viewCompany.* (tạo mới, xem CLAUDE.md); các nhãn liên hệ công ty (địa chỉ, điện thoại,
@@ -40,8 +41,6 @@ const I18N_KEYS = [
   'common.loadFail', 'common.saveSuccess', 'common.saveFail', 'common.deleteSuccess', 'common.deleteFail',
   'common.search', 'common.clearFilter', 'common.keyword',
 ];
-
-const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 
 interface CompanyForm {
   cpnyId: string;

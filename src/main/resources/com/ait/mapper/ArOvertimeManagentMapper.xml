@@ -556,7 +556,9 @@
             APPLY_TIME,
             CPNY_ID,
             BATCH_YN,
-            DEDUCT_YN
+            DEDUCT_YN,
+            SEND_EMAIL_FLAG,
+            MISDOCID
         ) VALUES (
             #{applyNo, jdbcType=VARCHAR},
             #{personId, jdbcType=VARCHAR},
@@ -579,7 +581,10 @@
             SYSDATE,
             #{cpnyId, jdbcType=VARCHAR},
             0,
-            0
+            0,
+            0,
+            <!-- Khóa tài liệu trên Cleverse (giống insertOvertimeApplySST bản Hanwha_HAE) -->
+            TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS') || LPAD(MISDOCID.NEXTVAL, 7, 0)
         )
     </insert>
 

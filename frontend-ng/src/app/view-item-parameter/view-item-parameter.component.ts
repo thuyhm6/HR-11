@@ -21,6 +21,7 @@ import {
   ArItemParamSavePayload,
 } from '../view-ar-item-param-list/view-ar-item-param-list.model';
 import { ViewArItemParamListService } from '../view-ar-item-param-list/view-ar-item-param-list.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** 3 lựa chọn chiều bù trừ quẹt thẻ (cardFromRelation/cardToRelation) - xem giải thích ở
  *  ViewArItemParamListComponent (trang chị em cùng dữ liệu AR_ITEM_PARAM). */
@@ -55,8 +56,6 @@ const I18N_KEYS = [
   'ar.viewitemparameter.title.dayu', 'ar.viewitemparameter.title.xiaoyu', 'ar.viewitemparameter.title.dengyu',
   'essDept.exportExcel',
 ];
-
-const PAGE_SIZE_OPTIONS = [25, 50, 100, 200];
 
 interface ArItemParamForm {
   arParamNo: string | null;

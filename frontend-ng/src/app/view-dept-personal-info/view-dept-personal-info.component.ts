@@ -19,6 +19,7 @@ import {
   EmpPositionDetailModalComponent,
   resolveEmpPhotoUrl,
 } from '../manage-emp-position-info/emp-position-detail-modal.component';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - tải trước 1 lần ở ngOnInit (xem I18nService). */
 const I18N_KEYS = [
@@ -30,8 +31,6 @@ const I18N_KEYS = [
   'vdpi.card.job', 'vdpi.card.costCode', 'vdpi.card.workDuration', 'vdpi.card.school',
   'vdpi.card.deptManager', 'vdpi.quickFilter', 'vdpi.pageSize', 'vdpi.duration',
 ];
-
-const PAGE_SIZE_OPTIONS = [10, 25, 50, 100, 200];
 
 const DEFAULT_EMP_OFFICE = '15119';
 

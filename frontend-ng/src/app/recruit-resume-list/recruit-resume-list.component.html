@@ -46,7 +46,7 @@
   <div class="small text-muted mb-1">{{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ rows().length }}</div>
 
   <nz-table #rrlTable [nzData]="rows()" [nzLoading]="loading()" nzSize="small" class="table-nowrap"
-            [(nzPageIndex)]="pageIndex" [(nzPageSize)]="pageSize" nzShowSizeChanger [nzPageSizeOptions]="[20, 50, 100]"
+            [(nzPageIndex)]="pageIndex" [(nzPageSize)]="pageSize" nzShowSizeChanger [nzPageSizeOptions]="pageSizeOptions"
             [nzScroll]="{ x: '1100px', y: 'calc(100vh - 330px)' }">
     <thead>
       <tr>

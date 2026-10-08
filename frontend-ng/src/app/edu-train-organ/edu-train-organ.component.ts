@@ -17,6 +17,7 @@ import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { EduTrainOrgan } from './edu-train-organ.model';
 import { EduTrainOrganService } from './edu-train-organ.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Key message.properties dùng trong trang - hầu hết dùng lại key sẵn có của bản JSP gốc (edu.trainOrgan.*). */
 const I18N_KEYS = [
@@ -30,8 +31,6 @@ const I18N_KEYS = [
   'common.cancel', 'common.stt', 'common.noData', 'common.totalRows', 'common.loadFail', 'common.quickFilter',
   'alert.message.add_fail', 'alert.message.update_fail', 'alert.message.delete_fail', 'alert.message.delete_success',
 ];
-
-const PAGE_SIZE_OPTIONS = [50, 100, 200, 500, 1000];
 
 const EMPTY_FORM: EduTrainOrgan = {
   organNo: null, organName: '', linkman: '', address: '', officePhone: '', cellphone: '', urlNet: '',
@@ -77,7 +76,7 @@ export class EduTrainOrganComponent implements OnInit {
   });
 
   pageIndex = 1;
-  pageSize = PAGE_SIZE_OPTIONS[0];
+  pageSize = 50;
   searchOrganName = '';
   searchAddress = '';
 

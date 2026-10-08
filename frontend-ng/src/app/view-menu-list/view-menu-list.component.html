@@ -3,9 +3,9 @@
     <nz-card class="mb-3 sticky-filter-card">
       <form class="row g-3" (ngSubmit)="search()">
         <div class="col-md-6">
-          <label class="form-label">{{ 'sys.basic.viewMenuList.search.keyword' | translate:'Từ khóa (Mã, Tên)' }}</label>
+          <label class="form-label">{{ 'sys.basic.viewMenuList.search.keyword' | translate:'Từ khóa (Mã, Tên, URL)' }}</label>
           <input nz-input [(ngModel)]="searchKeyword" name="vmlSearchKeyword"
-                 [placeholder]="'sys.basic.viewMenuList.search.keyword.placeholder' | translate:'Nhập mã hoặc tên menu'">
+                 [placeholder]="'sys.basic.viewMenuList.search.keyword.placeholder' | translate:'Nhập mã, tên hoặc URL menu'">
         </div>
         <div class="col-md-6 d-flex align-items-end gap-2 flex-wrap">
           <button nz-button nzType="primary" type="submit">

@@ -14,6 +14,7 @@ import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { PaSalaryCodeDto, PaSalaryCodeSavePayload } from './view-salary-code.model';
 import { ViewSalaryCodeService } from './view-salary-code.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - đã có sẵn đầy đủ ở namespace pa.salaryCode.*
  *  (dùng chung cho cả bản Thymeleaf gốc) và common.*. Tải trước 1 lần ở ngOnInit (xem I18nService). */
@@ -31,7 +32,6 @@ const I18N_KEYS = [
   'pa.salaryCode.companyUsage',
 ];
 
-const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
 const DEFAULT_PAGE_SIZE = 20;
 
 interface ItemTypeOption {

@@ -1,0 +1,17 @@
+<nz-card class="varl-card" [nzTitle]="'rp.report.title.reporttype' | translate:'Loại bảng biểu'" nzSize="small">
+  <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-2"></nz-alert>
+  <nz-spin [nzSpinning]="loading()">
+    <ul nz-menu nzMode="inline" id="varlMenu" class="varl-menu">
+      <li nz-menu-group *ngFor="let g of groups()" [nzTitle]="g.typeName">
+        <ul>
+          <li nz-menu-item *ngFor="let r of g.reports" (click)="open(g, r)">
+            <i class="bx bx-file me-2"></i>{{ reportLabel(g, r) }}
+          </li>
+        </ul>
+      </li>
+    </ul>
+    <div *ngIf="!loading() && !errorMessage() && groups().length === 0" class="text-muted small p-2">
+      {{ 'common.noData' | translate:'Không có dữ liệu' }}
+    </div>
+  </nz-spin>
+</nz-card>

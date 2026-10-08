@@ -3,6 +3,7 @@ package com.ait.ar.attendanceMintenance.controller;
 import com.ait.ar.attendanceMintenance.dto.ArOvertimeImportTempDto;
 import com.ait.ar.attendanceMintenance.dto.ArOvertimeManagentDto;
 import com.ait.ar.attendanceMintenance.service.ArOvertimeManagentService;
+import com.ait.cleverse.service.CleverseApprovalService;
 import com.ait.sy.syAffirm.dto.SyAffirmEmailDto;
 import com.ait.sy.syAffirm.service.SyAffirmEmailService;
 import org.slf4j.Logger;
@@ -32,6 +33,9 @@ public class ArOvertimeManagentController {
 
     @Autowired
     private SyAffirmEmailService affirmorService;
+
+    @Autowired
+    private CleverseApprovalService cleverseApprovalService;
 
     // Trang Thymeleaf viewArOvertimeManagent_fast.html đã được thay bằng Angular route /ot-apply-batch-info
     // (dùng chung component/API với /ess/infoApply/viewPiciOtAffirmLBatchList)
@@ -174,6 +178,11 @@ public class ArOvertimeManagentController {
             response.put("error", e.getMessage() == null || e.getMessage().isBlank()
                     ? "Lỗi hệ thống khi lưu tăng ca."
                     : e.getMessage());
+        }
+        // Đồng bộ sang hộp phê duyệt Cleverse - gọi sau khi transaction lưu đơn đã commit
+        // (giống addSSTOvertimeApply bản Hanwha_HAE); lỗi đồng bộ không ảnh hưởng kết quả lưu đơn.
+        if (Boolean.TRUE.equals(response.get("success"))) {
+            cleverseApprovalService.sendAffirmInfoEmailApproval();
         }
         return ResponseEntity.ok(response);
     }

@@ -66,8 +66,11 @@
           JOIN PA_PAY_SCHEDULE PPS ON PWF.PAY_SCHEDULE_NO = PPS.PAY_SCHEDULE_NO
          WHERE PPS.PAY_SCHEDULE_NO = #{payScheduleNo, jdbcType=VARCHAR}
            AND PPS.CPNY_ID         = #{cpnyId, jdbcType=VARCHAR}
-           <if test="flowStep != null">
-               AND PWFR.FLOW_STEP = #{flowStep, jdbcType=NUMERIC}
+           <if test="flowSteps != null and flowSteps.size() > 0">
+               AND PWFR.FLOW_STEP IN
+               <foreach collection="flowSteps" item="step" open="(" separator="," close=")">
+                   #{step, jdbcType=NUMERIC}
+               </foreach>
            </if>
          ORDER BY PWFR.PA_WORK_FLOW_RECORDS_NO ASC
     </select>

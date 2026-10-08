@@ -1,0 +1,105 @@
+<nz-card class="mb-3">
+  <div class="row g-3 align-items-end">
+    <div class="col-lg-9">
+      <app-pa-pay-period idPrefix="mpcil" [(salaryDistinNo)]="salaryDistinNo" [(payDate)]="payDate"
+                         [(payDatePro)]="payDatePro"></app-pa-pay-period>
+    </div>
+    <div class="col-lg-3">
+      <button nz-button nzType="primary" type="button" id="mpcilBtnSearch" [nzLoading]="loading()" (click)="search()">
+        <i class="bx bx-search"></i> {{ 'public.title.search' | translate:'Tra cứu' }}
+      </button>
+    </div>
+  </div>
+</nz-card>
+
+<div class="row g-3 mb-3">
+  <div class="col-xl-6">
+    <nz-card>
+      <nz-table #mpcilCountTable id="mpcilCountTable" [nzData]="counts()" [nzLoading]="loading()" nzSize="small" nzBordered
+                [nzFrontPagination]="false" [nzShowPagination]="false">
+        <thead>
+          <tr>
+            <th class="text-center">{{ 'pa.monthPersonCountInfoList.GONGZIQUFEN.b' | translate:'Phân loại lương' }}</th>
+            <th class="text-center">{{ 'display.emp.ben.or.benhs68' | translate:'Tháng trước' }}</th>
+            <th class="text-center">{{ 'pa.monthPersonCountInfoList.DANGYUE.b' | translate:'Tháng này' }}</th>
+            <th class="text-center">{{ 'pa.monthPersonCountInfoList.ZENGJIANRENYUAN.b' | translate:'Tăng giảm NV' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of mpcilCountTable.data">
+            <td class="text-center">{{ row.salaryDistinName }}</td>
+            <td class="text-center">{{ row.prevCount | number:'1.0-0' }}</td>
+            <td class="text-center">{{ row.curCount | number:'1.0-0' }}</td>
+            <td class="text-center">{{ changeCount(row) | number:'1.0-0' }}</td>
+          </tr>
+        </tbody>
+      </nz-table>
+    </nz-card>
+  </div>
+  <div class="col-xl-3 col-md-6">
+    <nz-card>
+      <nz-table #mpcilIncTable id="mpcilIncreaseTable" [nzData]="increases()" [nzLoading]="loading()" nzSize="small"
+                nzBordered [nzFrontPagination]="false" [nzShowPagination]="false">
+        <thead>
+          <tr>
+            <th class="text-center">{{ 'pa.monthPersonCountInfoList.ZENGJIANRENYUANQUFEN.b' | translate:'Thêm loại nhân viên' }}</th>
+            <th class="text-center">{{ 'pa.monthPersonCountInfoList.ZENGJIARENYUAN.b' | translate:'Thêm nhân viên' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of mpcilIncTable.data">
+            <td class="text-center">{{ categoryLabel(row.category) }}</td>
+            <td class="text-center">
+              <a class="mpcil-link" (click)="showEmployees(row, 'add')">{{ row.count | number:'1.0-0' }}</a>
+            </td>
+          </tr>
+        </tbody>
+      </nz-table>
+    </nz-card>
+  </div>
+  <div class="col-xl-3 col-md-6">
+    <nz-card>
+      <nz-table #mpcilDecTable id="mpcilDecreaseTable" [nzData]="decreases()" [nzLoading]="loading()" nzSize="small"
+                nzBordered [nzFrontPagination]="false" [nzShowPagination]="false">
+        <thead>
+          <tr>
+            <th class="text-center">{{ 'pa.monthPersonCountInfoList.JIANSHAORENYUANQUFEN.b' | translate:'Giảm loại nhân viên' }}</th>
+            <th class="text-center">{{ 'pa.monthPersonCountInfoList.JIANSHAORENYUAN.b' | translate:'Giảm' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of mpcilDecTable.data">
+            <td class="text-center">{{ categoryLabel(row.category) }}</td>
+            <td class="text-center">
+              <a class="mpcil-link" (click)="showEmployees(row, 'delete')">{{ row.count | number:'1.0-0' }}</a>
+            </td>
+          </tr>
+        </tbody>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>
+
+<nz-card [nzTitle]="'pa.monthPersonCountInfoList.XIANGXIRENYUANLIEBIAO.b' | translate:'Danh sách nhân viên'">
+  <div *ngIf="!empFlag()" class="text-muted small py-2 text-center" id="mpcilHint">
+    {{ 'pa.salaryCheck.clickCountHint' | translate:'Nhấn vào số lượng để xem danh sách nhân viên' }}
+  </div>
+  <nz-table *ngIf="empFlag()" #mpcilEmpTable id="mpcilEmpTable" [nzData]="empRows()" [nzLoading]="empLoading()"
+            nzSize="small" nzBordered [(nzPageIndex)]="pageIndex" [(nzPageSize)]="pageSize"
+            [nzPageSizeOptions]="pageSizeOptions" [nzShowSizeChanger]="true" [nzShowTotal]="mpcilTotalTpl"
+            [nzScroll]="{ x: '1200px', y: 'calc(100vh - 480px)' }">
+    <thead>
+      <tr>
+        <th class="text-center" nzWidth="60px" nzLeft>{{ 'common.stt' | translate:'STT' }}</th>
+        <th *ngFor="let c of empColumns" [nzWidth]="c.width ?? null" [nzSortFn]="empSortFns.get(c.field) ?? null">{{ title(c) }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let row of mpcilEmpTable.data; let i = index">
+        <td class="text-center" nzLeft>{{ (pageIndex - 1) * pageSize + i + 1 }}</td>
+        <td *ngFor="let c of empColumns">{{ row[c.field] }}</td>
+      </tr>
+    </tbody>
+    <ng-template #mpcilTotalTpl let-total>{{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}</ng-template>
+  </nz-table>
+</nz-card>

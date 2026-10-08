@@ -20,6 +20,7 @@ import {
   HrSpecialMatterSavePayload,
 } from './view-temp-emp-info-list.model';
 import { ViewTempEmpInfoListService } from './view-temp-emp-info-list.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - tải trước 1 lần ở ngOnInit (xem I18nService). */
 const I18N_KEYS = [
@@ -37,8 +38,6 @@ const I18N_KEYS = [
   'tempEmp.addTitle', 'tempEmp.editTitle', 'tempEmp.pickEmp', 'tempEmp.validateEmp',
   'tempEmp.deleteConfirmContent',
 ];
-
-const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 
 interface SpecialMatterForm {
   personId: string;

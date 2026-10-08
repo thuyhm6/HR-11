@@ -20,6 +20,7 @@ import {
   HrEducationDto,
 } from './education-info.model';
 import { EducationInfoService } from './education-info.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - đều đã có sẵn (hrm.empinfo.educ.* dành riêng cho
  *  trang này, cộng các key chung), tải trước 1 lần ở ngOnInit (xem I18nService). */
@@ -41,8 +42,6 @@ const I18N_KEYS = [
   'hrm.empinfo.educ.colTo', 'hrm.empinfo.educ.colLength', 'hrm.empinfo.educ.colCountry',
   'hrm.empinfo.educ.colRemark', 'hrm.empinfo.educ.pleaseSelect', 'hrm.empinfo.educ.confirmDelete',
 ];
-
-const PAGE_SIZE_OPTIONS = [25, 50, 100, 200];
 
 /** parentCodeNo của bảng SY_CODE - dùng chung với PersonalInfoComponent (finalDegreeOptions/nationalityOptions). */
 const DEGREE_PARENT_CODE = '13769';

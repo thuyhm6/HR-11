@@ -1,0 +1,511 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<!--
+  Báo cáo kết quả lương - port từ sqlViewPaParam.xml (dự án Hanwha_HTSV), chỉ giữ nhánh HTSV (PA_SUMMARY_HTSV)
+  vì dự án mới chỉ dùng bảng này (xem PaPayStubMapper.xml).
+-->
+<mapper namespace="com.ait.pa.workManagement.mapper.PaSalaryResultMapper">
+
+    <resultMap id="PaSalaryDetailResultMap" type="com.ait.pa.workManagement.dto.PaSalaryDetailDto">
+        <result column="PAY_SCHEDULE_NO"   property="payScheduleNo"   jdbcType="VARCHAR"/>
+        <result column="PERSON_ID"         property="personId"        jdbcType="VARCHAR"/>
+        <result column="EMPID"             property="empId"           jdbcType="VARCHAR"/>
+        <result column="LOCAL_NAME"        property="localName"       jdbcType="VARCHAR"/>
+        <result column="DEPTNO"            property="deptNo"          jdbcType="VARCHAR"/>
+        <result column="DEPT_NAME"         property="deptName"        jdbcType="VARCHAR"/>
+        <result column="POST_FAMILY_NAME"  property="postFamilyName"  jdbcType="VARCHAR"/>
+        <result column="POST_GRADE_NAME"   property="postGradeName"   jdbcType="VARCHAR"/>
+        <result column="POSITION_NAME"     property="positionName"    jdbcType="VARCHAR"/>
+        <result column="PAY_DATE"          property="payDate"         jdbcType="VARCHAR"/>
+        <result column="PAY_DATE_FORMAT"   property="payDateFormat"   jdbcType="VARCHAR"/>
+        <result column="INCOME_BEFORE_TAX" property="incomeBeforeTax" jdbcType="NUMERIC"/>
+        <result column="WITHHOLD_TOTAL"    property="withholdTotal"   jdbcType="NUMERIC"/>
+        <result column="REAL_WAGES"        property="realWages"       jdbcType="NUMERIC"/>
+    </resultMap>
+
+    <resultMap id="PaSalaryDetailItemResultMap" type="com.ait.pa.workManagement.dto.PaSalaryDetailItemDto">
+        <result column="PERSON_ID"       property="personId"      jdbcType="VARCHAR"/>
+        <result column="ITEM_TYPE"       property="itemType"      jdbcType="NUMERIC"/>
+        <result column="ITEM_NO"         property="itemNo"        jdbcType="VARCHAR"/>
+        <result column="ITEM_NAME"       property="itemName"      jdbcType="VARCHAR"/>
+        <result column="ITEM_VALUE"      property="itemValue"     jdbcType="NUMERIC"/>
+        <result column="ITEM_YEAR_VALUE" property="itemYearValue" jdbcType="NUMERIC"/>
+    </resultMap>
+
+    <resultMap id="PaResultSummaryResultMap" type="com.ait.pa.workManagement.dto.PaResultSummaryDto">
+        <result column="PERSON_ID" property="personId" jdbcType="VARCHAR"/>
+        <result column="EMPID" property="empId" jdbcType="VARCHAR"/>
+        <result column="LOCAL_NAME" property="localName" jdbcType="VARCHAR"/>
+        <result column="DEPTNO" property="deptNo" jdbcType="VARCHAR"/>
+        <result column="DEPT_NAME" property="deptName" jdbcType="VARCHAR"/>
+        <result column="POST_FAMILY_NAME" property="postFamilyName" jdbcType="VARCHAR"/>
+        <result column="POST_GRADE_NAME" property="postGradeName" jdbcType="VARCHAR"/>
+        <result column="POSITION_NAME" property="positionName" jdbcType="VARCHAR"/>
+        <result column="DATE_STARTED" property="dateStarted" jdbcType="VARCHAR"/>
+        <result column="DATE_LEFT" property="dateLeft" jdbcType="VARCHAR"/>
+        <result column="EMPNUMS" property="empNums" jdbcType="NUMERIC"/>
+        <result column="PROBATION_DAYS" property="probationDays" jdbcType="NUMERIC"/>
+        <result column="REGULAR_DAYS" property="regularDays" jdbcType="NUMERIC"/>
+        <result column="WORK_SCHEDULE_DAYS" property="workScheduleDays" jdbcType="NUMERIC"/>
+        <result column="PROB_NIGHT_SHIFT_COUNT" property="probNightShiftCount" jdbcType="NUMERIC"/>
+        <result column="NIGHT_SHIFT_COUNT" property="nightShiftCount" jdbcType="NUMERIC"/>
+        <result column="PROB_WORKDAYOT150_HOURS" property="probWorkdayot150Hours" jdbcType="NUMERIC"/>
+        <result column="WORKDAYOT150_HOURS" property="workdayot150Hours" jdbcType="NUMERIC"/>
+        <result column="PROB_WORKDAYOT200_HOURS" property="probWorkdayot200Hours" jdbcType="NUMERIC"/>
+        <result column="WORKDAYOT200_HOURS" property="workdayot200Hours" jdbcType="NUMERIC"/>
+        <result column="PROB_WORKDAYOT210_HOURS" property="probWorkdayot210Hours" jdbcType="NUMERIC"/>
+        <result column="WORKDAYOT210_HOURS" property="workdayot210Hours" jdbcType="NUMERIC"/>
+        <result column="PROB_SATURDAYOT200_HOURS" property="probSaturdayot200Hours" jdbcType="NUMERIC"/>
+        <result column="SATURDAYOT200_HOURS" property="saturdayot200Hours" jdbcType="NUMERIC"/>
+        <result column="PROB_SATURDAYOT270_HOURS" property="probSaturdayot270Hours" jdbcType="NUMERIC"/>
+        <result column="SATURDAYOT270_HOURS" property="saturdayot270Hours" jdbcType="NUMERIC"/>
+        <result column="PROB_WEEKLYOT200_HOURS" property="probWeeklyot200Hours" jdbcType="NUMERIC"/>
+        <result column="WEEKLYOT200_HOURS" property="weeklyot200Hours" jdbcType="NUMERIC"/>
+        <result column="PROB_WEEKLYOT270_HOURS" property="probWeeklyot270Hours" jdbcType="NUMERIC"/>
+        <result column="WEEKLYOT270_HOURS" property="weeklyot270Hours" jdbcType="NUMERIC"/>
+        <result column="PROB_HOLIDAYOT300_HOURS" property="probHolidayot300Hours" jdbcType="NUMERIC"/>
+        <result column="HOLIDAYOT300_HOURS" property="holidayot300Hours" jdbcType="NUMERIC"/>
+        <result column="PROB_HOLIDAYOT390_HOURS" property="probHolidayot390Hours" jdbcType="NUMERIC"/>
+        <result column="HOLIDAYOT390_HOURS" property="holidayot390Hours" jdbcType="NUMERIC"/>
+        <result column="RESIGN_ANNUALLEAVE_PAY_DAYS" property="resignAnnualleavePayDays" jdbcType="NUMERIC"/>
+        <result column="PROB_PERSONALLEAVE_DAYS" property="probPersonalleaveDays" jdbcType="NUMERIC"/>
+        <result column="PERSONALLEAVE_DAYS" property="personalleaveDays" jdbcType="NUMERIC"/>
+        <result column="PROB_SICKLEAVE_DAYS" property="probSickleaveDays" jdbcType="NUMERIC"/>
+        <result column="SICKLEAVE_DAYS" property="sickleaveDays" jdbcType="NUMERIC"/>
+        <result column="PROB_CHILD_SICKLEAVE_DAYS" property="probChildSickleaveDays" jdbcType="NUMERIC"/>
+        <result column="CHILD_SICKLEAVE_DAYS" property="childSickleaveDays" jdbcType="NUMERIC"/>
+        <result column="PROB_LONG_SICKLEAVE_DAYS" property="probLongSickleaveDays" jdbcType="NUMERIC"/>
+        <result column="LONG_SICKLEAVE_DAYS" property="longSickleaveDays" jdbcType="NUMERIC"/>
+        <result column="MATERNITYLEAVE_DAYS" property="maternityleaveDays" jdbcType="NUMERIC"/>
+        <result column="PROB_ABSENTEEISM_DAYS" property="probAbsenteeismDays" jdbcType="NUMERIC"/>
+        <result column="ABSENTEEISM_DAYS" property="absenteeismDays" jdbcType="NUMERIC"/>
+        <result column="PROB_LATE_ARRIVE_MINUTES" property="probLateArriveMinutes" jdbcType="NUMERIC"/>
+        <result column="LATE_ARRIVE_MINUTES" property="lateArriveMinutes" jdbcType="NUMERIC"/>
+        <result column="PROB_EARLY_LEAVE_MINUTES" property="probEarlyLeaveMinutes" jdbcType="NUMERIC"/>
+        <result column="EARLY_LEAVE_MINUTES" property="earlyLeaveMinutes" jdbcType="NUMERIC"/>
+        <result column="UNPAIDLEAVE_DAYS" property="unpaidleaveDays" jdbcType="NUMERIC"/>
+        <result column="BASIC_SALARY" property="basicSalary" jdbcType="NUMERIC"/>
+        <result column="POSITION_ALLOWANCE" property="positionAllowance" jdbcType="NUMERIC"/>
+        <result column="TRANSPORTATION_ALLOWANCE" property="transportationAllowance" jdbcType="NUMERIC"/>
+        <result column="LONG_ATTENDANCE" property="longAttendance" jdbcType="NUMERIC"/>
+        <result column="FULL_ATTENDANCE_BONUS" property="fullAttendanceBonus" jdbcType="NUMERIC"/>
+        <result column="NIGHTSHIFT_ALLOWANCE" property="nightshiftAllowance" jdbcType="NUMERIC"/>
+        <result column="EVALUATION_BONUS" property="evaluationBonus" jdbcType="NUMERIC"/>
+        <result column="PROB_OT_HOUR_SALARY" property="probOtHourSalary" jdbcType="NUMERIC"/>
+        <result column="OT_HOUR_SALARY" property="otHourSalary" jdbcType="NUMERIC"/>
+        <result column="PROB_WORKDAYOT150_FEE" property="probWorkdayot150Fee" jdbcType="NUMERIC"/>
+        <result column="WORKDAYOT150_FEE" property="workdayot150Fee" jdbcType="NUMERIC"/>
+        <result column="PROB_WORKDAYOT200_FEE" property="probWorkdayot200Fee" jdbcType="NUMERIC"/>
+        <result column="WORKDAYOT200_FEE" property="workdayot200Fee" jdbcType="NUMERIC"/>
+        <result column="PROB_WORKDAYOT210_FEE" property="probWorkdayot210Fee" jdbcType="NUMERIC"/>
+        <result column="WORKDAYOT210_FEE" property="workdayot210Fee" jdbcType="NUMERIC"/>
+        <result column="WORKDAYOT_FEE_TOTAL" property="workdayotFeeTotal" jdbcType="NUMERIC"/>
+        <result column="PROB_SATURDAYOT200_FEE" property="probSaturdayot200Fee" jdbcType="NUMERIC"/>
+        <result column="SATURDAYOT200_FEE" property="saturdayot200Fee" jdbcType="NUMERIC"/>
+        <result column="PROB_SATURDAYOT270_FEE" property="probSaturdayot270Fee" jdbcType="NUMERIC"/>
+        <result column="SATURDAYOT270_FEE" property="saturdayot270Fee" jdbcType="NUMERIC"/>
+        <result column="SATURDAYOT_FEE_TOTAL" property="saturdayotFeeTotal" jdbcType="NUMERIC"/>
+        <result column="PROB_WEEKLYOT200_FEE" property="probWeeklyot200Fee" jdbcType="NUMERIC"/>
+        <result column="WEEKLYOT200_FEE" property="weeklyot200Fee" jdbcType="NUMERIC"/>
+        <result column="PROB_WEEKLYOT270_FEE" property="probWeeklyot270Fee" jdbcType="NUMERIC"/>
+        <result column="WEEKLYOT270_FEE" property="weeklyot270Fee" jdbcType="NUMERIC"/>
+        <result column="WEEKLYOT_FEE_TOTAL" property="weeklyotFeeTotal" jdbcType="NUMERIC"/>
+        <result column="PROB_HOLIDAYOT300_FEE" property="probHolidayot300Fee" jdbcType="NUMERIC"/>
+        <result column="HOLIDAYOT300_FEE" property="holidayot300Fee" jdbcType="NUMERIC"/>
+        <result column="PROB_HOLIDAYOT390_FEE" property="probHolidayot390Fee" jdbcType="NUMERIC"/>
+        <result column="HOLIDAYOT390_FEE" property="holidayot390Fee" jdbcType="NUMERIC"/>
+        <result column="HOLIDAYOT_FEE_TOTAL" property="holidayotFeeTotal" jdbcType="NUMERIC"/>
+        <result column="OT_FEE_TOTAL" property="otFeeTotal" jdbcType="NUMERIC"/>
+        <result column="ANNUALLEAVE_CLEAR_PAY" property="annualleaveClearPay" jdbcType="NUMERIC"/>
+        <result column="RESIGN_ANNUALLEAVE_PAY" property="resignAnnualleavePay" jdbcType="NUMERIC"/>
+        <result column="PROB_PERSONALLEAVE_DEDUCT" property="probPersonalleaveDeduct" jdbcType="NUMERIC"/>
+        <result column="PERSONALLEAVE_DEDUCT" property="personalleaveDeduct" jdbcType="NUMERIC"/>
+        <result column="PROB_SICKLEAVE_DEDUCT" property="probSickleaveDeduct" jdbcType="NUMERIC"/>
+        <result column="SICKLEAVE_DEDUCT" property="sickleaveDeduct" jdbcType="NUMERIC"/>
+        <result column="MATERNITYLEAVE_DEDUCT" property="maternityleaveDeduct" jdbcType="NUMERIC"/>
+        <result column="PROB_ABSENT_DEDUCT" property="probAbsentDeduct" jdbcType="NUMERIC"/>
+        <result column="ABSENT_DEDUCT" property="absentDeduct" jdbcType="NUMERIC"/>
+        <result column="PROB_LATEEARLY_DEDUCT" property="probLateearlyDeduct" jdbcType="NUMERIC"/>
+        <result column="LATEEARLY_DEDUCT" property="lateearlyDeduct" jdbcType="NUMERIC"/>
+        <result column="ATT_DEDUCT_TOTAL" property="attDeductTotal" jdbcType="NUMERIC"/>
+        <result column="INCOME_BEFORE_TAX" property="incomeBeforeTax" jdbcType="NUMERIC"/>
+        <result column="PT_TAX_RATE" property="ptTaxRate" jdbcType="NUMERIC"/>
+        <result column="QUICK_DEDUCTION_TAX" property="quickDeductionTax" jdbcType="NUMERIC"/>
+        <result column="OT_SALARY_NOT_PIT" property="otSalaryNotPit" jdbcType="NUMERIC"/>
+        <result column="TAXABLE_INCOME" property="taxableIncome" jdbcType="NUMERIC"/>
+        <result column="PERSONAL_TAX" property="personalTax" jdbcType="NUMERIC"/>
+        <result column="PIT_SETTLEMENT" property="pitSettlement" jdbcType="NUMERIC"/>
+        <result column="SEVERANCE_ALLOWANCE" property="severanceAllowance" jdbcType="NUMERIC"/>
+        <result column="REAL_WAGES" property="realWages" jdbcType="NUMERIC"/>
+        <result column="TRADE_UNION" property="tradeUnion" jdbcType="NUMERIC"/>
+        <result column="TRADE_UNION_CORP" property="tradeUnionCorp" jdbcType="NUMERIC"/>
+        <result column="INSURANCE_BASE" property="insuranceBase" jdbcType="NUMERIC"/>
+        <result column="SOCIAL_INS_PERSONAL" property="socialInsPersonal" jdbcType="NUMERIC"/>
+        <result column="MEDICAL_INS_PERSONAL" property="medicalInsPersonal" jdbcType="NUMERIC"/>
+        <result column="UNEMPLOYMENT_INS_PERSONAL" property="unemploymentInsPersonal" jdbcType="NUMERIC"/>
+        <result column="PERSONAL_INS_TOTAL" property="personalInsTotal" jdbcType="NUMERIC"/>
+        <result column="SOCIAL_INS_COMPANY" property="socialInsCompany" jdbcType="NUMERIC"/>
+        <result column="MEDICAL_INS_COMPANY" property="medicalInsCompany" jdbcType="NUMERIC"/>
+        <result column="UNEMPLOYMENT_INS_COMPANY" property="unemploymentInsCompany" jdbcType="NUMERIC"/>
+        <result column="COMPANY_INS_TOTAL" property="companyInsTotal" jdbcType="NUMERIC"/>
+        <result column="SOCIAL_SICK_INS_COMPANY" property="socialSickInsCompany" jdbcType="NUMERIC"/>
+    </resultMap>
+
+    <!-- Cột chung của danh sách lương tháng / năm -->
+    <sql id="salaryDetailColumns">
+               PA.PAY_SCHEDULE_NO,
+               PA.PERSON_ID,
+               PA.EMPID,
+               PA.LOCAL_NAME,
+               PA.DEPTNO,
+               GET_DEPT_NAME(PA.DEPTNO, #{lang, jdbcType=VARCHAR})           AS DEPT_NAME,
+               GET_GLOBAL_NAME(PA.POST_FAMILY_NO, #{lang, jdbcType=VARCHAR}) AS POST_FAMILY_NAME,
+               GET_GLOBAL_NAME(PA.POST_GRADE_NO, #{lang, jdbcType=VARCHAR})  AS POST_GRADE_NAME,
+               GET_GLOBAL_NAME(PA.POSITION_NO, #{lang, jdbcType=VARCHAR})    AS POSITION_NAME,
+               PA.INCOME_BEFORE_TAX,
+               (PA.PERSONAL_INS_TOTAL + PA.PERSONAL_TAX + PA.P_AFTER_TAX_MINUS) AS WITHHOLD_TOTAL,
+               PA.REAL_WAGES
+    </sql>
+
+    <!-- Lương tháng chi tiết - danh sách nhân viên theo kế hoạch trả lương (bản gốc detailPersonCountInfoLeft) -->
+    <select id="selectMonthList" parameterType="com.ait.pa.workManagement.dto.PaSalaryDetailSearchDto"
+            resultMap="PaSalaryDetailResultMap">
+        SELECT <include refid="salaryDetailColumns"/>,
+               NULL AS PAY_DATE,
+               NULL AS PAY_DATE_FORMAT
+          FROM PA_SUMMARY_HTSV PA
+         WHERE PA.CPNY_ID         = #{cpnyId, jdbcType=VARCHAR}
+           AND PA.PAY_SCHEDULE_NO = #{payScheduleNo, jdbcType=VARCHAR}
+        <if test="empSearch != null and empSearch != ''">
+           AND (PA.EMPID LIKE '%' || #{empSearch, jdbcType=VARCHAR} || '%'
+                OR CONVERTTOUNSIGN(UPPER(PA.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{empSearch, jdbcType=VARCHAR})) || '%'
+                OR PA.ENGLISH_NAME LIKE '%' || #{empSearch, jdbcType=VARCHAR} || '%')
+        </if>
+        <if test="deptNo != null and deptNo != ''">
+           AND EXISTS (SELECT B1.DEPTID
+                         FROM HR_DEPARTMENT B1
+                        WHERE B1.DEPTNO = PA.DEPTNO
+                          AND B1.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+                        START WITH B1.DEPTNO = #{deptNo, jdbcType=VARCHAR}
+                      CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO)
+        </if>
+         ORDER BY PA.EMPID
+    </select>
+
+    <!-- Lương năm chi tiết - các kỳ lương của 1 nhân viên trong khoảng tháng MM/YYYY (bản gốc detailYearCountInfoLeft) -->
+    <select id="selectYearList" parameterType="com.ait.pa.workManagement.dto.PaSalaryDetailSearchDto"
+            resultMap="PaSalaryDetailResultMap">
+        SELECT <include refid="salaryDetailColumns"/>,
+               TO_CHAR(TO_DATE(PA.PAY_DATE, 'YYYY-MM-DD'), 'DD-MM-YYYY') AS PAY_DATE,
+               TO_CHAR(TO_DATE(PA.PAY_DATE, 'YYYY-MM-DD'), 'DD/MM/YYYY') AS PAY_DATE_FORMAT
+          FROM PA_SUMMARY_HTSV PA
+         WHERE PA.CPNY_ID   = #{cpnyId, jdbcType=VARCHAR}
+           AND PA.PERSON_ID = #{personId, jdbcType=VARCHAR}
+           AND SUBSTR(PA.PAY_DATE, 0, 7) BETWEEN TO_CHAR(TO_DATE(#{startMonth, jdbcType=VARCHAR}, 'MM/YYYY'), 'YYYY-MM')
+                                             AND TO_CHAR(TO_DATE(#{endMonth, jdbcType=VARCHAR}, 'MM/YYYY'), 'YYYY-MM')
+         ORDER BY PA.PAY_DATE
+    </select>
+
+    <!-- Sinh dữ liệu chi tiết lương của 1 kỳ lương vào PA_MY_SALARY_PAGE_DATA (bản gốc callDetailMonthCountInfoRight) -->
+    <update id="callMonthDetailPage" parameterType="com.ait.pa.workManagement.dto.PaSalaryDetailSearchDto"
+            statementType="CALLABLE">
+        { CALL PA_FOR_MY_SALARY_DETAIL_PAGE_P(
+            #{cpnyId,        jdbcType=VARCHAR},
+            #{payScheduleNo, jdbcType=VARCHAR},
+            NULL, NULL, NULL, NULL,
+            #{personId,      jdbcType=VARCHAR},
+            #{adminID,       jdbcType=VARCHAR},
+            #{itemType,      jdbcType=NUMERIC}
+        ) }
+    </update>
+
+    <!-- Sinh dữ liệu chi tiết lương luỹ kế từ startMonth đến endMonth (bản gốc callDetailYearCountInfoRight).
+         Tham số thứ 5 giữ nguyên giá trị bản gốc truyền cho procedure. -->
+    <update id="callYearDetailPage" parameterType="com.ait.pa.workManagement.dto.PaSalaryDetailSearchDto"
+            statementType="CALLABLE">
+        { CALL PA_FOR_MY_SALARY_DETAIL_PAGE_P(
+            #{cpnyId,     jdbcType=VARCHAR},
+            NULL,
+            #{startMonth, jdbcType=VARCHAR},
+            #{endMonth,   jdbcType=VARCHAR},
+            '全体员工',
+            TO_CHAR(TO_DATE(#{payDate, jdbcType=VARCHAR}, 'DD-MM-YYYY'), 'YYYY-MM-DD'),
+            #{personId,   jdbcType=VARCHAR},
+            #{adminID,    jdbcType=VARCHAR},
+            #{itemType,   jdbcType=NUMERIC}
+        ) }
+    </update>
+
+    <!-- Hạng mục chi tiết lương vừa sinh (bản gốc detailMonthYearCountInfoRight) -->
+    <select id="selectDetailItems" resultMap="PaSalaryDetailItemResultMap">
+        SELECT P.PERSON_ID,
+               P.ITEM_TYPE,
+               P.ITEM_NO,
+               GET_GLOBAL_NAME(P.ITEM_NO, #{lang, jdbcType=VARCHAR}) AS ITEM_NAME,
+               P.ITEM_VALUE,
+               P.ITEM_YEAR_VALUE
+          FROM PA_MY_SALARY_PAGE_DATA P
+         WHERE P.CPNY_ID   = #{cpnyId, jdbcType=VARCHAR}
+           AND P.PERSON_ID = #{personId, jdbcType=VARCHAR}
+         ORDER BY P.ITEM_TYPE, P.ORDERNO
+    </select>
+
+    <!-- Điều kiện chung của tổng lương. Bản gốc ghép chuỗi $DEPTNO_Multi$ - đổi sang foreach để tránh SQL injection. -->
+    <sql id="resultSummaryWhere">
+         WHERE PA.CPNY_ID         = #{cpnyId, jdbcType=VARCHAR}
+           AND PA.PAY_SCHEDULE_NO = #{payScheduleNo, jdbcType=VARCHAR}
+        <if test="deptNos != null and deptNos.size() > 0">
+           AND PA.DEPTNO IN
+            <foreach item="deptNo" collection="deptNos" open="(" separator="," close=")">
+                #{deptNo, jdbcType=VARCHAR}
+            </foreach>
+        </if>
+    </sql>
+
+    <!-- Tổng lương (cá nhân) - bản gốc viewPaResultList -->
+    <select id="selectEmpResultList" parameterType="com.ait.pa.workManagement.dto.PaResultSummarySearchDto"
+            resultMap="PaResultSummaryResultMap">
+        SELECT PA.PERSON_ID,
+               PA.EMPID,
+               PA.LOCAL_NAME,
+               PA.DEPTNO,
+               GET_DEPT_NAME(PA.DEPTNO, #{lang, jdbcType=VARCHAR})           AS DEPT_NAME,
+               GET_GLOBAL_NAME(PA.POST_FAMILY_NO, #{lang, jdbcType=VARCHAR}) AS POST_FAMILY_NAME,
+               GET_GLOBAL_NAME(PA.POST_GRADE_NO, #{lang, jdbcType=VARCHAR})  AS POST_GRADE_NAME,
+               GET_GLOBAL_NAME(PA.POSITION_NO, #{lang, jdbcType=VARCHAR})    AS POSITION_NAME,
+               TO_CHAR(PA.DATE_STARTED, 'DD/MM/YYYY')                        AS DATE_STARTED,
+               TO_CHAR(PA.DATE_LEFT, 'DD/MM/YYYY')                           AS DATE_LEFT,
+               NULL                                                          AS EMPNUMS,
+               PA.PROBATION_DAYS,
+               PA.REGULAR_DAYS,
+               PA.WORK_SCHEDULE_DAYS,
+               PA.PROB_NIGHT_SHIFT_COUNT,
+               PA.NIGHT_SHIFT_COUNT,
+               PA.PROB_WORKDAYOT150_HOURS,
+               PA.WORKDAYOT150_HOURS,
+               PA.PROB_WORKDAYOT200_HOURS,
+               PA.WORKDAYOT200_HOURS,
+               PA.PROB_WORKDAYOT210_HOURS,
+               PA.WORKDAYOT210_HOURS,
+               PA.PROB_SATURDAYOT200_HOURS,
+               PA.SATURDAYOT200_HOURS,
+               PA.PROB_SATURDAYOT270_HOURS,
+               PA.SATURDAYOT270_HOURS,
+               PA.PROB_WEEKLYOT200_HOURS,
+               PA.WEEKLYOT200_HOURS,
+               PA.PROB_WEEKLYOT270_HOURS,
+               PA.WEEKLYOT270_HOURS,
+               PA.PROB_HOLIDAYOT300_HOURS,
+               PA.HOLIDAYOT300_HOURS,
+               PA.PROB_HOLIDAYOT390_HOURS,
+               PA.HOLIDAYOT390_HOURS,
+               PA.RESIGN_ANNUALLEAVE_PAY_DAYS,
+               PA.PROB_PERSONALLEAVE_DAYS,
+               PA.PERSONALLEAVE_DAYS,
+               PA.PROB_SICKLEAVE_DAYS,
+               PA.SICKLEAVE_DAYS,
+               PA.PROB_CHILD_SICKLEAVE_DAYS,
+               PA.CHILD_SICKLEAVE_DAYS,
+               PA.PROB_LONG_SICKLEAVE_DAYS,
+               PA.LONG_SICKLEAVE_DAYS,
+               PA.MATERNITYLEAVE_DAYS,
+               PA.PROB_ABSENTEEISM_DAYS,
+               PA.ABSENTEEISM_DAYS,
+               PA.PROB_LATE_ARRIVE_MINUTES,
+               PA.LATE_ARRIVE_MINUTES,
+               PA.PROB_EARLY_LEAVE_MINUTES,
+               PA.EARLY_LEAVE_MINUTES,
+               PA.UNPAIDLEAVE_DAYS,
+               PA.BASIC_SALARY,
+               PA.POSITION_ALLOWANCE,
+               PA.TRANSPORTATION_ALLOWANCE,
+               PA.LONG_ATTENDANCE,
+               PA.FULL_ATTENDANCE_BONUS,
+               PA.NIGHTSHIFT_ALLOWANCE,
+               PA.EVALUATION_BONUS,
+               PA.PROB_OT_HOUR_SALARY,
+               PA.OT_HOUR_SALARY,
+               PA.PROB_WORKDAYOT150_FEE,
+               PA.WORKDAYOT150_FEE,
+               PA.PROB_WORKDAYOT200_FEE,
+               PA.WORKDAYOT200_FEE,
+               PA.PROB_WORKDAYOT210_FEE,
+               PA.WORKDAYOT210_FEE,
+               PA.WORKDAYOT_FEE_TOTAL,
+               PA.PROB_SATURDAYOT200_FEE,
+               PA.SATURDAYOT200_FEE,
+               PA.PROB_SATURDAYOT270_FEE,
+               PA.SATURDAYOT270_FEE,
+               PA.SATURDAYOT_FEE_TOTAL,
+               PA.PROB_WEEKLYOT200_FEE,
+               PA.WEEKLYOT200_FEE,
+               PA.PROB_WEEKLYOT270_FEE,
+               PA.WEEKLYOT270_FEE,
+               PA.WEEKLYOT_FEE_TOTAL,
+               PA.PROB_HOLIDAYOT300_FEE,
+               PA.HOLIDAYOT300_FEE,
+               PA.PROB_HOLIDAYOT390_FEE,
+               PA.HOLIDAYOT390_FEE,
+               PA.HOLIDAYOT_FEE_TOTAL,
+               PA.OT_FEE_TOTAL,
+               PA.ANNUALLEAVE_CLEAR_PAY,
+               PA.RESIGN_ANNUALLEAVE_PAY,
+               PA.PROB_PERSONALLEAVE_DEDUCT,
+               PA.PERSONALLEAVE_DEDUCT,
+               PA.PROB_SICKLEAVE_DEDUCT,
+               PA.SICKLEAVE_DEDUCT,
+               PA.MATERNITYLEAVE_DEDUCT,
+               PA.PROB_ABSENT_DEDUCT,
+               PA.ABSENT_DEDUCT,
+               PA.PROB_LATEEARLY_DEDUCT,
+               PA.LATEEARLY_DEDUCT,
+               PA.ATT_DEDUCT_TOTAL,
+               PA.INCOME_BEFORE_TAX,
+               PA.PT_TAX_RATE,
+               PA.QUICK_DEDUCTION_TAX,
+               PA.OT_SALARY_NOT_PIT,
+               PA.TAXABLE_INCOME,
+               PA.PERSONAL_TAX,
+               PA.PIT_SETTLEMENT,
+               PA.SEVERANCE_ALLOWANCE,
+               PA.REAL_WAGES,
+               PA.TRADE_UNION,
+               PA.TRADE_UNION_CORP,
+               PA.INSURANCE_BASE,
+               PA.SOCIAL_INS_PERSONAL,
+               PA.MEDICAL_INS_PERSONAL,
+               PA.UNEMPLOYMENT_INS_PERSONAL,
+               PA.PERSONAL_INS_TOTAL,
+               PA.SOCIAL_INS_COMPANY,
+               PA.MEDICAL_INS_COMPANY,
+               PA.UNEMPLOYMENT_INS_COMPANY,
+               PA.COMPANY_INS_TOTAL,
+               PA.SOCIAL_SICK_INS_COMPANY
+          FROM PA_SUMMARY_HTSV PA
+        <include refid="resultSummaryWhere"/>
+        <if test="empSearch != null and empSearch != ''">
+           AND (PA.EMPID LIKE '%' || #{empSearch, jdbcType=VARCHAR} || '%'
+                OR CONVERTTOUNSIGN(UPPER(PA.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{empSearch, jdbcType=VARCHAR})) || '%'
+                OR PA.ENGLISH_NAME LIKE '%' || #{empSearch, jdbcType=VARCHAR} || '%')
+        </if>
+         ORDER BY PA.EMPID ASC
+    </select>
+
+    <!-- Tổng lương (phòng ban) - bản gốc viewDeptPaResultList -->
+    <select id="selectDeptResultList" parameterType="com.ait.pa.workManagement.dto.PaResultSummarySearchDto"
+            resultMap="PaResultSummaryResultMap">
+        SELECT PA.DEPTNO,
+               MIN(GET_DEPT_NAME(PA.DEPTNO, #{lang, jdbcType=VARCHAR})) AS DEPT_NAME,
+               COUNT(PA.EMPID)                                          AS EMPNUMS,
+               SUM(PA.PROBATION_DAYS) AS PROBATION_DAYS,
+               SUM(PA.REGULAR_DAYS) AS REGULAR_DAYS,
+               SUM(PA.WORK_SCHEDULE_DAYS) AS WORK_SCHEDULE_DAYS,
+               SUM(PA.PROB_NIGHT_SHIFT_COUNT) AS PROB_NIGHT_SHIFT_COUNT,
+               SUM(PA.NIGHT_SHIFT_COUNT) AS NIGHT_SHIFT_COUNT,
+               SUM(PA.PROB_WORKDAYOT150_HOURS) AS PROB_WORKDAYOT150_HOURS,
+               SUM(PA.WORKDAYOT150_HOURS) AS WORKDAYOT150_HOURS,
+               SUM(PA.PROB_WORKDAYOT200_HOURS) AS PROB_WORKDAYOT200_HOURS,
+               SUM(PA.WORKDAYOT200_HOURS) AS WORKDAYOT200_HOURS,
+               SUM(PA.PROB_WORKDAYOT210_HOURS) AS PROB_WORKDAYOT210_HOURS,
+               SUM(PA.WORKDAYOT210_HOURS) AS WORKDAYOT210_HOURS,
+               SUM(PA.PROB_SATURDAYOT200_HOURS) AS PROB_SATURDAYOT200_HOURS,
+               SUM(PA.SATURDAYOT200_HOURS) AS SATURDAYOT200_HOURS,
+               SUM(PA.PROB_SATURDAYOT270_HOURS) AS PROB_SATURDAYOT270_HOURS,
+               SUM(PA.SATURDAYOT270_HOURS) AS SATURDAYOT270_HOURS,
+               SUM(PA.PROB_WEEKLYOT200_HOURS) AS PROB_WEEKLYOT200_HOURS,
+               SUM(PA.WEEKLYOT200_HOURS) AS WEEKLYOT200_HOURS,
+               SUM(PA.PROB_WEEKLYOT270_HOURS) AS PROB_WEEKLYOT270_HOURS,
+               SUM(PA.WEEKLYOT270_HOURS) AS WEEKLYOT270_HOURS,
+               SUM(PA.PROB_HOLIDAYOT300_HOURS) AS PROB_HOLIDAYOT300_HOURS,
+               SUM(PA.HOLIDAYOT300_HOURS) AS HOLIDAYOT300_HOURS,
+               SUM(PA.PROB_HOLIDAYOT390_HOURS) AS PROB_HOLIDAYOT390_HOURS,
+               SUM(PA.HOLIDAYOT390_HOURS) AS HOLIDAYOT390_HOURS,
+               SUM(PA.RESIGN_ANNUALLEAVE_PAY_DAYS) AS RESIGN_ANNUALLEAVE_PAY_DAYS,
+               SUM(PA.PROB_PERSONALLEAVE_DAYS) AS PROB_PERSONALLEAVE_DAYS,
+               SUM(PA.PERSONALLEAVE_DAYS) AS PERSONALLEAVE_DAYS,
+               SUM(PA.PROB_SICKLEAVE_DAYS) AS PROB_SICKLEAVE_DAYS,
+               SUM(PA.SICKLEAVE_DAYS) AS SICKLEAVE_DAYS,
+               SUM(PA.PROB_CHILD_SICKLEAVE_DAYS) AS PROB_CHILD_SICKLEAVE_DAYS,
+               SUM(PA.CHILD_SICKLEAVE_DAYS) AS CHILD_SICKLEAVE_DAYS,
+               SUM(PA.PROB_LONG_SICKLEAVE_DAYS) AS PROB_LONG_SICKLEAVE_DAYS,
+               SUM(PA.LONG_SICKLEAVE_DAYS) AS LONG_SICKLEAVE_DAYS,
+               SUM(PA.MATERNITYLEAVE_DAYS) AS MATERNITYLEAVE_DAYS,
+               SUM(PA.PROB_ABSENTEEISM_DAYS) AS PROB_ABSENTEEISM_DAYS,
+               SUM(PA.ABSENTEEISM_DAYS) AS ABSENTEEISM_DAYS,
+               SUM(PA.PROB_LATE_ARRIVE_MINUTES) AS PROB_LATE_ARRIVE_MINUTES,
+               SUM(PA.LATE_ARRIVE_MINUTES) AS LATE_ARRIVE_MINUTES,
+               SUM(PA.PROB_EARLY_LEAVE_MINUTES) AS PROB_EARLY_LEAVE_MINUTES,
+               SUM(PA.EARLY_LEAVE_MINUTES) AS EARLY_LEAVE_MINUTES,
+               SUM(PA.UNPAIDLEAVE_DAYS) AS UNPAIDLEAVE_DAYS,
+               SUM(PA.BASIC_SALARY) AS BASIC_SALARY,
+               SUM(PA.POSITION_ALLOWANCE) AS POSITION_ALLOWANCE,
+               SUM(PA.TRANSPORTATION_ALLOWANCE) AS TRANSPORTATION_ALLOWANCE,
+               SUM(PA.LONG_ATTENDANCE) AS LONG_ATTENDANCE,
+               SUM(PA.FULL_ATTENDANCE_BONUS) AS FULL_ATTENDANCE_BONUS,
+               SUM(PA.NIGHTSHIFT_ALLOWANCE) AS NIGHTSHIFT_ALLOWANCE,
+               SUM(PA.EVALUATION_BONUS) AS EVALUATION_BONUS,
+               SUM(PA.PROB_OT_HOUR_SALARY) AS PROB_OT_HOUR_SALARY,
+               SUM(PA.OT_HOUR_SALARY) AS OT_HOUR_SALARY,
+               SUM(PA.PROB_WORKDAYOT150_FEE) AS PROB_WORKDAYOT150_FEE,
+               SUM(PA.WORKDAYOT150_FEE) AS WORKDAYOT150_FEE,
+               SUM(PA.PROB_WORKDAYOT200_FEE) AS PROB_WORKDAYOT200_FEE,
+               SUM(PA.WORKDAYOT200_FEE) AS WORKDAYOT200_FEE,
+               SUM(PA.PROB_WORKDAYOT210_FEE) AS PROB_WORKDAYOT210_FEE,
+               SUM(PA.WORKDAYOT210_FEE) AS WORKDAYOT210_FEE,
+               SUM(PA.WORKDAYOT_FEE_TOTAL) AS WORKDAYOT_FEE_TOTAL,
+               SUM(PA.PROB_SATURDAYOT200_FEE) AS PROB_SATURDAYOT200_FEE,
+               SUM(PA.SATURDAYOT200_FEE) AS SATURDAYOT200_FEE,
+               SUM(PA.PROB_SATURDAYOT270_FEE) AS PROB_SATURDAYOT270_FEE,
+               SUM(PA.SATURDAYOT270_FEE) AS SATURDAYOT270_FEE,
+               SUM(PA.SATURDAYOT_FEE_TOTAL) AS SATURDAYOT_FEE_TOTAL,
+               SUM(PA.PROB_WEEKLYOT200_FEE) AS PROB_WEEKLYOT200_FEE,
+               SUM(PA.WEEKLYOT200_FEE) AS WEEKLYOT200_FEE,
+               SUM(PA.PROB_WEEKLYOT270_FEE) AS PROB_WEEKLYOT270_FEE,
+               SUM(PA.WEEKLYOT270_FEE) AS WEEKLYOT270_FEE,
+               SUM(PA.WEEKLYOT_FEE_TOTAL) AS WEEKLYOT_FEE_TOTAL,
+               SUM(PA.PROB_HOLIDAYOT300_FEE) AS PROB_HOLIDAYOT300_FEE,
+               SUM(PA.HOLIDAYOT300_FEE) AS HOLIDAYOT300_FEE,
+               SUM(PA.PROB_HOLIDAYOT390_FEE) AS PROB_HOLIDAYOT390_FEE,
+               SUM(PA.HOLIDAYOT390_FEE) AS HOLIDAYOT390_FEE,
+               SUM(PA.HOLIDAYOT_FEE_TOTAL) AS HOLIDAYOT_FEE_TOTAL,
+               SUM(PA.OT_FEE_TOTAL) AS OT_FEE_TOTAL,
+               SUM(PA.ANNUALLEAVE_CLEAR_PAY) AS ANNUALLEAVE_CLEAR_PAY,
+               SUM(PA.RESIGN_ANNUALLEAVE_PAY) AS RESIGN_ANNUALLEAVE_PAY,
+               SUM(PA.PROB_PERSONALLEAVE_DEDUCT) AS PROB_PERSONALLEAVE_DEDUCT,
+               SUM(PA.PERSONALLEAVE_DEDUCT) AS PERSONALLEAVE_DEDUCT,
+               SUM(PA.PROB_SICKLEAVE_DEDUCT) AS PROB_SICKLEAVE_DEDUCT,
+               SUM(PA.SICKLEAVE_DEDUCT) AS SICKLEAVE_DEDUCT,
+               SUM(PA.MATERNITYLEAVE_DEDUCT) AS MATERNITYLEAVE_DEDUCT,
+               SUM(PA.PROB_ABSENT_DEDUCT) AS PROB_ABSENT_DEDUCT,
+               SUM(PA.ABSENT_DEDUCT) AS ABSENT_DEDUCT,
+               SUM(PA.PROB_LATEEARLY_DEDUCT) AS PROB_LATEEARLY_DEDUCT,
+               SUM(PA.LATEEARLY_DEDUCT) AS LATEEARLY_DEDUCT,
+               SUM(PA.ATT_DEDUCT_TOTAL) AS ATT_DEDUCT_TOTAL,
+               SUM(PA.INCOME_BEFORE_TAX) AS INCOME_BEFORE_TAX,
+               SUM(PA.PT_TAX_RATE) AS PT_TAX_RATE,
+               SUM(PA.QUICK_DEDUCTION_TAX) AS QUICK_DEDUCTION_TAX,
+               SUM(PA.OT_SALARY_NOT_PIT) AS OT_SALARY_NOT_PIT,
+               SUM(PA.TAXABLE_INCOME) AS TAXABLE_INCOME,
+               SUM(PA.PERSONAL_TAX) AS PERSONAL_TAX,
+               SUM(PA.PIT_SETTLEMENT) AS PIT_SETTLEMENT,
+               SUM(PA.SEVERANCE_ALLOWANCE) AS SEVERANCE_ALLOWANCE,
+               SUM(PA.REAL_WAGES) AS REAL_WAGES,
+               SUM(PA.TRADE_UNION) AS TRADE_UNION,
+               SUM(PA.TRADE_UNION_CORP) AS TRADE_UNION_CORP,
+               SUM(PA.INSURANCE_BASE) AS INSURANCE_BASE,
+               SUM(PA.SOCIAL_INS_PERSONAL) AS SOCIAL_INS_PERSONAL,
+               SUM(PA.MEDICAL_INS_PERSONAL) AS MEDICAL_INS_PERSONAL,
+               SUM(PA.UNEMPLOYMENT_INS_PERSONAL) AS UNEMPLOYMENT_INS_PERSONAL,
+               SUM(PA.PERSONAL_INS_TOTAL) AS PERSONAL_INS_TOTAL,
+               SUM(PA.SOCIAL_INS_COMPANY) AS SOCIAL_INS_COMPANY,
+               SUM(PA.MEDICAL_INS_COMPANY) AS MEDICAL_INS_COMPANY,
+               SUM(PA.UNEMPLOYMENT_INS_COMPANY) AS UNEMPLOYMENT_INS_COMPANY,
+               SUM(PA.COMPANY_INS_TOTAL) AS COMPANY_INS_TOTAL,
+               SUM(PA.SOCIAL_SICK_INS_COMPANY) AS SOCIAL_SICK_INS_COMPANY
+          FROM PA_SUMMARY_HTSV PA
+        <include refid="resultSummaryWhere"/>
+         GROUP BY PA.DEPTNO
+         ORDER BY MIN(PA.DEPT_ORDERNO)
+    </select>
+
+</mapper>

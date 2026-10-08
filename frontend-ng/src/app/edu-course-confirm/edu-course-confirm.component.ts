@@ -25,13 +25,12 @@ import {
 import { EduSyllabusViewComponent } from '../edu-common/edu-syllabus-view.component';
 import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 const I18N_KEYS = [
   ...APPLY_TABLE_I18N_KEYS, 'ess.humanConfirm.title.confirmStatus', 'hr.viewPersonalInfo.title.AFFIRM',
   'edu.courseConfirm.confirmSelected', 'edu.systemManager.QINGXUANZEQIZHONGYIXIANG.a', 'alert.message.update_fail',
 ];
-
-const PAGE_SIZE_OPTIONS = [50, 100, 200, 500];
 
 /**
  * Bản Angular của /edu/traineducation/courseConfirm (JSP + DWZ, dự án Hanwha_HTSV) - quản lý đào tạo xác nhận các đơn đăng
@@ -63,7 +62,7 @@ export class EduCourseConfirmComponent implements OnInit {
   readonly someChecked = computed(() => !this.allChecked() && this.checkableRows().some((r) => this.checked().has(r.applyNo)));
 
   pageIndex = 1;
-  pageSize = PAGE_SIZE_OPTIONS[0];
+  pageSize = 50;
   private lastSearch: EduApplySearch = currentMonthSearch();
 
   constructor(

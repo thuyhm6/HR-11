@@ -9,6 +9,7 @@ import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { EssBasicInfoDto, PersonShiftDto } from './person-shift-list.model';
 import { PersonShiftListService } from './person-shift-list.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - tải trước 1 lần ở ngOnInit (xem I18nService). */
 const I18N_KEYS = [
@@ -45,6 +46,7 @@ const I18N_KEYS = [
   styleUrl: './person-shift-list.component.css',
 })
 export class PersonShiftListComponent implements OnInit {
+  readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
   readonly basicInfo = signal<EssBasicInfoDto | null>(null);
 
   readonly rows = signal<PersonShiftDto[]>([]);

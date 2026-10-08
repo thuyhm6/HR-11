@@ -16,6 +16,7 @@ import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { EmployeeOption, HrPunishmentDto, PunishmentSavePayload } from './punishment-info.model';
 import { PunishmentInfoService } from './punishment-info.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - đều đã có sẵn (hrm.empinfo.punish.* dành riêng
  *  cho trang này, cộng các key chung), tải trước 1 lần ở ngOnInit (xem I18nService). */
@@ -34,8 +35,6 @@ const I18N_KEYS = [
   'hrm.empinfo.punish.colReason', 'hrm.empinfo.punish.colDept', 'hrm.empinfo.punish.colScore',
   'hrm.empinfo.punish.pleaseSelectEmp', 'hrm.empinfo.punish.confirmDelete',
 ];
-
-const PAGE_SIZE_OPTIONS = [25, 50, 100, 200];
 
 interface PunishmentForm {
   punishNo: number | null;

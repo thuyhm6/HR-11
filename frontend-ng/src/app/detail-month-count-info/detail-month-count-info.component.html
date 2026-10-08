@@ -1,0 +1,61 @@
+<nz-card class="mb-3">
+  <form class="row g-3" (ngSubmit)="search()">
+    <div class="col-md-3">
+      <label class="form-label" for="dmciEmpSearch">{{ 'hr.viewContractByInsert.title.EMPIDANDLOCALNAME' | translate:'Mã nhân viên/Họ tên' }}</label>
+      <input nz-input id="dmciEmpSearch" name="dmciEmpSearch" [(ngModel)]="empSearch">
+    </div>
+    <div class="col-md-3">
+      <label class="form-label" for="dmciPaySchedule">{{ 'ess.empInfo.pay_plan' | translate:'Kế hoạch trả lương' }} <span class="text-danger">*</span></label>
+      <nz-select id="dmciPaySchedule" class="w-100" name="dmciPaySchedule" nzShowSearch [(ngModel)]="payScheduleNo">
+        <nz-option *ngFor="let s of schedules()" [nzValue]="s.payScheduleNo" [nzLabel]="scheduleLabel(s)"></nz-option>
+      </nz-select>
+    </div>
+    <div class="col-md-4">
+      <label class="form-label" for="dmciDept">{{ 'ess.infoApply.DEPT' | translate:'Phòng ban' }}</label>
+      <nz-tree-select id="dmciDept" class="w-100" name="dmciDept" [nzNodes]="deptNodes()" nzShowSearch nzAllowClear
+                      [(ngModel)]="deptNo" [nzPlaceHolder]="'pa.result.deptPlaceholder' | translate:'Chọn phòng ban'"
+                      [nzDropdownStyle]="{ 'max-height': '360px' }"></nz-tree-select>
+      <div *ngIf="deptErrorMessage()" class="text-danger small mt-1">{{ deptErrorMessage() }}</div>
+    </div>
+    <div class="col d-flex align-items-end">
+      <button nz-button nzType="primary" type="submit" id="dmciBtnSearch" [nzLoading]="loading()">
+        <i class="bx bx-search"></i> {{ 'public.title.search' | translate:'Tra cứu' }}
+      </button>
+    </div>
+  </form>
+</nz-card>
+
+<div class="row g-3">
+  <div class="col-xl-8">
+    <nz-card>
+      <nz-table #dmciTable id="dmciTable" [nzData]="rows()" [nzLoading]="loading()" nzSize="small" nzBordered
+                [(nzPageIndex)]="pageIndex" [(nzPageSize)]="pageSize" [nzPageSizeOptions]="pageSizeOptions"
+                [nzShowSizeChanger]="true" [nzShowTotal]="dmciTotalTpl"
+                [nzScroll]="{ x: '1250px', y: 'calc(100vh - 420px)' }">
+        <thead>
+          <tr>
+            <th class="text-center" nzWidth="60px" nzLeft>{{ 'common.stt' | translate:'STT' }}</th>
+            <th *ngFor="let c of columns" [nzWidth]="c.width" [class.text-end]="c.number"
+                [nzSortFn]="sortFns.get(c.field) ?? null">{{ title(c) }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of dmciTable.data; let i = index" class="dmci-row" [class.dmci-row-selected]="isSelected(row)"
+              (click)="selectRow(row)">
+            <td class="text-center" nzLeft>{{ (pageIndex - 1) * pageSize + i + 1 }}</td>
+            <td *ngFor="let c of columns" [class.text-end]="c.number">
+              <ng-container *ngIf="c.number; else dmciText">{{ $any(row[c.field]) | number:'1.0-0' }}</ng-container>
+              <ng-template #dmciText>{{ row[c.field] }}</ng-template>
+            </td>
+          </tr>
+        </tbody>
+        <ng-template #dmciTotalTpl let-total>{{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}</ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+  <div class="col-xl-4">
+    <nz-card>
+      <app-pa-salary-detail-items [query]="detailQuery()"></app-pa-salary-detail-items>
+    </nz-card>
+  </div>
+</div>

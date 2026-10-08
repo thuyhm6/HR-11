@@ -14,6 +14,7 @@ import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { ViewUseOfAnnualLeaveListService } from './view-use-of-annual-leave-list.service';
 import { AuthDeptNode, CodeItem, UseOfAnnualLeaveDto } from './view-use-of-annual-leave-list.model';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Mã cha danh mục Loại nhân viên - đúng parentNo="13864" của JSP cũ (ait:SelectSyCodeByCpnyID). */
 const EMP_TYPE_PARENT_CODE = '13864';
@@ -34,7 +35,6 @@ const I18N_KEYS = [
 ];
 
 /** Giống lengthMenu của dataTable JSP cũ: [50, 100, 200, 500], mặc định 50. */
-const PAGE_SIZE_OPTIONS = [50, 100, 200, 500];
 /** JSP cũ: ait:date yearPlus="10". */
 const YEAR_RANGE = 10;
 

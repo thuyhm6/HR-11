@@ -15,6 +15,7 @@ import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { EvsConfirmTarget1Row, EvsPersonalTargetInfo, EvsPersonalTargetItem, EvsResumeOption } from './confirm-target1.model';
 import { ConfirmTarget1Service } from './confirm-target1.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - tải trước 1 lần ở ngOnInit (xem I18nService).
  *  Toàn bộ key evs.viewConfirmTarget1.* đã có sẵn (dùng chung với bản Thymeleaf cũ, không tạo mới). */
@@ -45,8 +46,6 @@ const EVS_LEVEL_CONFIRM = '14015084';
 /** ACTIVITY cho biết đối tượng đang chờ xác nhận lần 1 (chỉ dòng này mới bấm được để mở chi tiết) -
  *  đúng giá trị hardcode CONFIRM_ACTIVITY ở bản Thymeleaf gốc. */
 const CONFIRM_ACTIVITY = '14015364';
-
-const PAGE_SIZE_OPTIONS = [50, 100, 200];
 
 /**
  * Bản Angular của evs/manage/viewConfirmTarget1.html (Thymeleaf + jQuery + DataTables serverSide) -

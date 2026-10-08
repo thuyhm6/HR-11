@@ -24,6 +24,7 @@ import {
   RecruitResumeItem,
 } from './recruit-resume-list.model';
 import { RecruitResumeListService } from './recruit-resume-list.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 const I18N_KEYS = [
   'rrl.registerCode', 'rrl.registerInfo', 'rrl.registerType', 'rrl.registerDate', 'rrl.outline',
@@ -81,6 +82,7 @@ function emptyForm(): ResumeForm {
   styleUrl: './recruit-resume-list.component.css',
 })
 export class RecruitResumeListComponent implements OnInit {
+  readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
   readonly ACTIVITY_IN_PROGRESS = RRL_ACTIVITY_IN_PROGRESS;
   readonly ACTIVITY_COMPLETED = RRL_ACTIVITY_COMPLETED;
 

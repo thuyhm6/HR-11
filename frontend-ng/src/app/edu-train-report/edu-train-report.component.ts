@@ -28,6 +28,7 @@ import {
   REPORT_VALUE_COLUMNS,
 } from './edu-train-report.model';
 import { EduTrainReportService } from './edu-train-report.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 const TRAIN_DIFF_PARENT_CODE = '14014478';
 const TRAIN_FORM_PARENT_CODE = '14014493';
@@ -39,8 +40,6 @@ const I18N_KEYS = [
   'ar.viewsummaryparameteritem.title.hour', 'common.search', 'common.stt', 'common.noData', 'common.totalRows',
   'common.loadFail', 'common.exportExcel', 'common.all',
 ];
-
-const PAGE_SIZE_OPTIONS = [50, 100, 200, 500];
 
 /**
  * Bản Angular của /report/ar/viewTrainReport?menuNo=14014477 (JSP + DWZ, dự án Hanwha_HTSV): bên trái là các loại báo cáo
@@ -76,7 +75,7 @@ export class EduTrainReportComponent implements OnInit {
   });
 
   pageIndex = 1;
-  pageSize = PAGE_SIZE_OPTIONS[0];
+  pageSize = 50;
   searchTrainDiffCode: string | null = null;
   searchTrainTypeCode: string | null = null;
   searchCourseName = '';

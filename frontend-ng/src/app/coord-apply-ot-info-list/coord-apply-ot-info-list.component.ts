@@ -21,6 +21,7 @@ import {
   OtItemOption,
   ShiftOption,
 } from './coord-apply-ot-info-list.model';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Toàn bộ key bên dưới đã có sẵn trong message.properties (namespace "caoi" dùng riêng cho trang này,
  *  "cai"/"ex"/"common" dùng chung với các trang khác) - không cần thêm key mới. */
@@ -68,7 +69,7 @@ const POST_FAMILY_PARENT_CODE = '14015812';
   styleUrl: './coord-apply-ot-info-list.component.css',
 })
 export class CoordApplyOtInfoListComponent implements OnInit {
-  readonly pageSizeOptions = [25, 50, 100, 200, 500];
+  readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
 
   readonly rows = signal<CoordApplyOtInfoRow[]>([]);
   readonly loading = signal(false);

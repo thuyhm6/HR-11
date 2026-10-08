@@ -1,3 +1,120 @@
+/* Sơ đồ quy trình - cùng phong cách với .vrp-process-* của ViewResumeProcessComponent. Các class
+   .process-* trong assets/css/style.css (bản Thymeleaf) không có trong bundle Angular và style của
+   component bị đóng gói (view encapsulation) nên không dùng chung được - khai báo lại với tiền tố vpwf-. */
+
+.vpwf-schedule-select {
+  width: 280px;
+}
+
+.vpwf-info-table th {
+  width: 12%;
+  background-color: #f5f7fa;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.vpwf-info-table td {
+  text-align: center;
+}
+
+.vpwf-process-container {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px;
+  overflow-x: auto;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+.vpwf-vertical-groups {
+  display: flex;
+  flex-direction: column;
+}
+
+.vpwf-process-group {
+  border: 2px solid #fd7e14;
+  border-radius: 15px;
+  background-color: #fff5f0;
+  padding: 15px;
+  min-width: 230px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.vpwf-process-header {
+  text-align: center;
+  color: #d35400;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+.vpwf-step-item {
+  margin-bottom: 12px;
+}
+
+.vpwf-step-item:last-child {
+  margin-bottom: 0;
+}
+
+.vpwf-step-btn {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  text-align: center;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+  background: linear-gradient(to bottom, #ffffff 0%, #f1f1f1 100%);
+  color: #333;
+  font-weight: 500;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.vpwf-step-btn.vpwf-active-step {
+  background: linear-gradient(to bottom, #f39c12 0%, #e67e22 100%);
+  color: #fff;
+  border-color: #d35400;
+  cursor: pointer;
+  transition: filter 0.2s;
+}
+
+.vpwf-step-btn.vpwf-active-step:hover {
+  filter: brightness(1.08);
+}
+
+.vpwf-step-btn.vpwf-checkbox-step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+}
+
+/* Bước đã thực hiện - bản gốc tô chữ màu #0A258F */
+.vpwf-done {
+  color: #0a258f;
+  font-weight: 600;
+}
+
+.vpwf-history-btn {
+  font-size: 1.25rem;
+  line-height: 1;
+  color: #e67e22;
+}
+
+.vpwf-step-arrow {
+  text-align: center;
+  color: #aaa;
+  font-size: 22px;
+  margin: 4px 0;
+}
+
+.vpwf-group-connector {
+  display: flex;
+  align-items: center;
+  align-self: center;
+  color: #aaa;
+  font-size: 2rem;
+}
+
 .vpwf-loading-overlay {
   position: fixed;
   inset: 0;

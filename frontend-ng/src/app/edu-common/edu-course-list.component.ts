@@ -12,8 +12,7 @@ import { TranslatePipe } from '../i18n/translate.pipe';
 import { classHourText } from './edu-basic-header.component';
 import { formatDmy } from './edu-date.util';
 import { EduTrainBasic, EduTrainBasicSearch, courseWithPeriod } from './edu-train.model';
-
-const PAGE_SIZE_OPTIONS = [50, 100, 200, 500, 1000];
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /**
  * Tìm kiếm + bảng danh sách thông tin cơ bản đào tạo - dùng chung cho các trang Thông tin cơ bản, Đánh giá học viên, Đánh giá
@@ -126,7 +125,7 @@ export class EduCourseListComponent implements OnChanges {
 
   readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
   pageIndex = 1;
-  pageSize = PAGE_SIZE_OPTIONS[0];
+  pageSize = 50;
   courseName = '';
   startDate: Date | null = null;
   endDate: Date | null = null;

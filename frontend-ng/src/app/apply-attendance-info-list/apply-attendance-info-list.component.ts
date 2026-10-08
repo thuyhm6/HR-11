@@ -21,6 +21,7 @@ import {
   LeaveApplyDetailResponse,
   MyLeaveApplyDisplayRow,
 } from './apply-attendance-info-list.model';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - tải trước 1 lần ở ngOnInit (xem I18nService). */
 const I18N_KEYS = [
@@ -78,6 +79,7 @@ const CANCELABLE_FLAGS = ['14014306', '14014307', '14014308'];
   styleUrl: './apply-attendance-info-list.component.css',
 })
 export class ApplyAttendanceInfoListComponent implements OnInit {
+  readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
   readonly basicInfo = signal<EssBasicInfoDto | null>(null);
   readonly leaveTypeOptions = signal<CodeItem[]>([]);
   readonly affirmFlagOptions = signal<CodeItem[]>([]);

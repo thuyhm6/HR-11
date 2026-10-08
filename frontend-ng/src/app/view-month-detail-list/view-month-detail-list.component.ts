@@ -14,6 +14,7 @@ import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { ViewMonthDetailListService } from './view-month-detail-list.service';
 import { AuthDeptNode, CodeItem, MonthDetailDate, MonthDetailRow } from './view-month-detail-list.model';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 const NATIONALITY_PARENT_CODE = '870';
 const EMP_OFFICE_PARENT_CODE = '15118';
@@ -217,7 +218,7 @@ interface ViewRow {
   styleUrl: './view-month-detail-list.component.css',
 })
 export class ViewMonthDetailListComponent implements OnInit {
-  readonly pageSizeOptions = [50, 100, 200, 500];
+  readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
   readonly numGroups = NUM_GROUPS;
   readonly workdayTypeId = WORKDAY_TYPE_ID;
 

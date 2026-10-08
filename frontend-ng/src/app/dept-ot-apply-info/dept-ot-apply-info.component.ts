@@ -11,6 +11,7 @@ import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { DeptOtApplyInfoService } from './dept-ot-apply-info.service';
 import { EssDeptOtApplyInfoDto } from './dept-ot-apply-info.model';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 interface MonthColumn {
   key: string;
@@ -60,7 +61,7 @@ const I18N_KEYS = [
 export class DeptOtApplyInfoComponent implements OnInit {
   readonly monthColumns = MONTH_COLUMNS;
   readonly years = this.buildYearOptions();
-  readonly pageSizeOptions = [10, 25, 50, 100];
+  readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
 
   readonly rows = signal<EssDeptOtApplyInfoDto[]>([]);
   readonly loading = signal(false);

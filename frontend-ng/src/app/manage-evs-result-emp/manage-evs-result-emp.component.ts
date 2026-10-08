@@ -15,6 +15,7 @@ import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { AuthDeptNode, CodeItem, ManageEvsResultEmpDto } from './manage-evs-result-emp.model';
 import { ManageEvsResultEmpService } from './manage-evs-result-emp.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - tải trước 1 lần ở ngOnInit (xem I18nService). */
 const I18N_KEYS = [
@@ -30,8 +31,6 @@ const I18N_KEYS = [
   'vmer.col.competency',
   'mep.msg.loadDeptFailed', 'common.loadFail', 'common.totalRows',
 ];
-
-const PAGE_SIZE_OPTIONS = [25, 50, 100, 200, 500];
 
 const DEFAULT_EMP_OFFICE = '15119';
 

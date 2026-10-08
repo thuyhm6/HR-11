@@ -15,6 +15,7 @@ import { OrgTreeNodeOptions, buildOrgTree, collectAllKeys } from '../view-compos
 import { OrgEmployeeDto, OrgInfoDto } from '../view-compose-org/view-compose-org.model';
 import { ViewComposeOrgService } from '../view-compose-org/view-compose-org.service';
 import { OrgResumeInfoDto } from '../view-resume-list/view-resume-list.model';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - toàn bộ tái dùng key đã có sẵn (không cần tạo
  *  namespace riêng): "org.orgManage.viewHistoryOrgInfo.title" (tiêu đề trang), "orgResumeProcess.*"
@@ -33,8 +34,6 @@ const I18N_KEYS = [
   'hrm.empinfo.hrcard.empGroup',
   'common.stt', 'common.status', 'common.noData', 'common.totalRows', 'common.createDate', 'common.loadFail',
 ];
-
-const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 
 /**
  * Bản Angular của org/orgManage/viewHistoryOrgInfo.html (Thymeleaf + jQuery + jsTree + DataTables) -

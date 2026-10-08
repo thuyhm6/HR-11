@@ -22,6 +22,7 @@ import {
   CodeItem,
 } from './view-ar-personal-list.model';
 import { ViewArPersonalListService } from './view-ar-personal-list.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Nhóm AR_ITEM cần loại trừ khi build cột động (nhóm nghỉ phép) - giữ nguyên giá trị bản Thymeleaf gốc. */
 const ITEM_GROUP = '!1433';
@@ -38,8 +39,6 @@ const I18N_KEYS = [
   'apsl.detail.col.startTime', 'apsl.detail.col.endTime', 'apsl.detail.col.duration', 'apsl.detail.hint',
   'apsl.msg.noDataDetail', 'apsl.msg.loadDetailFailed', 'mep.msg.loadDeptFailed',
 ];
-
-const PAGE_SIZE_OPTIONS = [25, 50, 100];
 
 /**
  * Bản Angular của ess/viewDept/viewArPersonalList.html (Thymeleaf + bảng tự viết tay), gọi lại nguyên

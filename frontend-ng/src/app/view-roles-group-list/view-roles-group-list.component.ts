@@ -18,6 +18,7 @@ import { TranslatePipe } from '../i18n/translate.pipe';
 import { SyRoleDto } from '../view-roles-group/view-roles-group.model';
 import { RoleGroupRelationsPayload, RoleGroupSavePayload, SyRoleGroupDto } from './view-roles-group-list.model';
 import { ViewRolesGroupListService } from './view-roles-group-list.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - toàn bộ đã có sẵn từ bản Thymeleaf gốc (namespace
  *  sys.role.viewRolesGroupList và các label/opt dùng chung của sys.role.viewRolesGroup), không cần thêm
@@ -42,8 +43,6 @@ const I18N_KEYS = [
   'sys.role.viewRolesGroup.label.sysType', 'sys.role.viewRolesGroup.label.orderNo',
   'sys.role.viewRolesGroup.label.activity', 'sys.role.viewRolesGroup.opt.hub', 'sys.role.viewRolesGroup.opt.partner',
 ];
-
-const PAGE_SIZE_OPTIONS = [25, 50, 100, 200];
 
 interface RoleGroupForm {
   roleGroupNo: string | null;

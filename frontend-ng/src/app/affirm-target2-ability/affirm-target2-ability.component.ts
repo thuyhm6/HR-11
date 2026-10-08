@@ -21,6 +21,7 @@ import {
   EvsScoreOption,
 } from './affirm-target2-ability.model';
 import { AffirmTarget2AbilityService } from './affirm-target2-ability.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - tải trước 1 lần ở ngOnInit (xem I18nService).
  *  Toàn bộ key evs.viewAffirmTarget2Ability.* đã có sẵn (dùng chung với bản Thymeleaf cũ, không tạo mới). */
@@ -68,8 +69,6 @@ const EVS_LEVEL_AFFIRM2 = '14015071';
 const EDITABLE_ACTIVITY = '14015358';
 
 const GRADE_NAMES = ['EX', 'VG', 'GD', 'NI', 'UN'] as const;
-
-const PAGE_SIZE_OPTIONS = [50, 100, 200];
 
 interface RowVm {
   seq: string;

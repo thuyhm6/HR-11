@@ -94,7 +94,7 @@
       <div class="text-danger small mb-2" *ngIf="leaveErrorMessage()">{{ leaveErrorMessage() }}</div>
       <div style="overflow-x:auto;">
         <nz-table [nzData]="leaveRows()" [nzLoading]="leaveLoading()" [nzPageSize]="25" [nzShowSizeChanger]="true"
-                  [nzPageSizeOptions]="[25, 50, 100]" [nzShowTotal]="yuifTotalTpl"
+                  [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="yuifTotalTpl"
                   nzSize="small" style="white-space:nowrap;" #yuifLeaveTable>
           <thead>
             <tr>

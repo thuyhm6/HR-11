@@ -16,6 +16,7 @@ import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { ArItemDto, ArItemSavePayload, CodeItem } from './view-ar-item.model';
 import { ViewArItemService } from './view-ar-item.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Combo Mã nhóm hạng mục lấy theo parentCodeNo=1429 (xem viewArItem.html gốc, data-parent-code="1429"). */
 const ITEM_GROUP_PARENT_CODE = '1429';
@@ -34,8 +35,6 @@ const I18N_KEYS = [
   'arItem.idMapping', 'arItem.ordernoSst', 'arItem.searchPlaceholder', 'arItem.msg.pleaseEnterNameVi',
   'essDept.exportExcel',
 ];
-
-const PAGE_SIZE_OPTIONS = [25, 50, 100, 200];
 
 interface ArItemForm {
   itemNo: string | null;

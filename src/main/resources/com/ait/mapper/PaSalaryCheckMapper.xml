@@ -1,0 +1,716 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<!--
+  Nhóm màn hình kiểm tra / đối chiếu lương - port từ sqlViewPaParam.xml (dự án Hanwha_HTSV):
+  monthPersonCountInfoList, monthPersonIncreaseList, monthPersonDecreaseList, monthPersonCountInfoSonList,
+  viewVerificationList, getPaDetailEmpInfoByPersonId, callForSalaryDetailInfo, getPaDetailInfoList, itemValueInfo,
+  detailItemCountInfoList, callProForPayMonthDifItem, callItemList, viewResultConfirmSonList0/2/3/5/6,
+  viewResultConfirmList3Right, viewResultConfirmList2Bottom, getPaMonthList.
+  Chỉ giữ nhánh HTSV (PA_SUMMARY_HTSV) như PaSalaryResultMapper.xml.
+  Bản gốc ghép chuỗi $PERSON_ID_THIS$ - đổi sang foreach để tránh SQL injection.
+-->
+<mapper namespace="com.ait.pa.workManagement.mapper.PaSalaryCheckMapper">
+
+    <resultMap id="CountRowResultMap" type="com.ait.pa.workManagement.dto.PaMonthPersonSummaryDto$CountRow">
+        <result column="SALARY_DISTIN_NAME" property="salaryDistinName" jdbcType="VARCHAR"/>
+        <result column="PREV_COUNT"         property="prevCount"        jdbcType="NUMERIC"/>
+        <result column="CUR_COUNT"          property="curCount"         jdbcType="NUMERIC"/>
+    </resultMap>
+
+    <resultMap id="ChangeRowResultMap" type="com.ait.pa.workManagement.dto.PaMonthPersonSummaryDto$ChangeRow">
+        <result column="CATEGORY"       property="category"      jdbcType="VARCHAR"/>
+        <result column="NUMB"           property="count"         jdbcType="NUMERIC"/>
+        <result column="PERSON_ID_PART1" property="personIdPart1" jdbcType="VARCHAR"/>
+        <result column="PERSON_ID_PART2" property="personIdPart2" jdbcType="VARCHAR"/>
+        <result column="PERSON_ID_PART3" property="personIdPart3" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <resultMap id="RowResultMap" type="com.ait.pa.workManagement.dto.PaSalaryCheckRowDto">
+        <result column="PERSON_ID"          property="personId"          jdbcType="VARCHAR"/>
+        <result column="EMPID"              property="empId"             jdbcType="VARCHAR"/>
+        <result column="LOCAL_NAME"         property="localName"         jdbcType="VARCHAR"/>
+        <result column="DEPTNO"             property="deptNo"            jdbcType="VARCHAR"/>
+        <result column="DEPT_NAME"          property="deptName"          jdbcType="VARCHAR"/>
+        <result column="POST_FAMILY_NAME"   property="postFamilyName"    jdbcType="VARCHAR"/>
+        <result column="POST_GRADE_NAME"    property="postGradeName"     jdbcType="VARCHAR"/>
+        <result column="POSITION_NAME"      property="positionName"      jdbcType="VARCHAR"/>
+        <result column="DUTY_NAME"          property="dutyName"          jdbcType="VARCHAR"/>
+        <result column="MAIN_BUSINESS"      property="mainBusiness"      jdbcType="VARCHAR"/>
+        <result column="EMP_TYPE_NAME"      property="empTypeName"       jdbcType="VARCHAR"/>
+        <result column="EMP_OFFICE_NAME"    property="empOfficeName"     jdbcType="VARCHAR"/>
+        <result column="DATE_STARTED"       property="dateStarted"       jdbcType="VARCHAR"/>
+        <result column="DATE_LEFT"          property="dateLeft"          jdbcType="VARCHAR"/>
+        <result column="END_PROBATION_DATE" property="endProbationDate"  jdbcType="VARCHAR"/>
+        <result column="TRANS_DATE"         property="transDate"         jdbcType="VARCHAR"/>
+        <result column="TRANS_CODE_NAME"    property="transCodeName"     jdbcType="VARCHAR"/>
+        <result column="ITEM_NO"            property="itemNo"            jdbcType="VARCHAR"/>
+        <result column="ITEM_NAME"          property="itemName"          jdbcType="VARCHAR"/>
+        <result column="PAY_NUMBER"         property="payNumber"         jdbcType="NUMERIC"/>
+        <result column="MONTH_PRO"          property="monthPro"          jdbcType="NUMERIC"/>
+        <result column="MONTH_NOW"          property="monthNow"          jdbcType="NUMERIC"/>
+        <result column="CAL_VALUE"          property="calValue"          jdbcType="NUMERIC"/>
+        <result column="FORMULAR_VALUE"     property="formularValue"     jdbcType="VARCHAR"/>
+        <result column="REMARK"             property="remark"            jdbcType="VARCHAR"/>
+        <result column="AR_START_DATE"      property="arStartDate"       jdbcType="VARCHAR"/>
+        <result column="AR_END_DATE"        property="arEndDate"         jdbcType="VARCHAR"/>
+        <result column="AR_DATE"            property="arDate"            jdbcType="VARCHAR"/>
+        <result column="SHIFT_NAME"         property="shiftName"         jdbcType="VARCHAR"/>
+        <result column="FROM_TIME"          property="fromTime"          jdbcType="VARCHAR"/>
+        <result column="TO_TIME"            property="toTime"            jdbcType="VARCHAR"/>
+        <result column="QUANTITY"           property="quantity"          jdbcType="NUMERIC"/>
+        <result column="SOCIAL_INS_PERSONAL"       property="socialInsPersonal"       jdbcType="NUMERIC"/>
+        <result column="MEDICAL_INS_PERSONAL"      property="medicalInsPersonal"      jdbcType="NUMERIC"/>
+        <result column="UNEMPLOYMENT_INS_PERSONAL" property="unemploymentInsPersonal" jdbcType="NUMERIC"/>
+        <result column="PERSONAL_INS_TOTAL"        property="personalInsTotal"        jdbcType="NUMERIC"/>
+        <result column="INCOME_BEFORE_TAX"         property="incomeBeforeTax"         jdbcType="NUMERIC"/>
+        <result column="ATT_DEDUCT_TOTAL"          property="attDeductTotal"          jdbcType="NUMERIC"/>
+        <result column="P_TAX_DEDUCT_STD"          property="taxDeductStd"            jdbcType="NUMERIC"/>
+        <result column="P_TAX_FAMILY_DEDUCT_STD"   property="taxFamilyDeductStd"      jdbcType="NUMERIC"/>
+        <result column="P_TAX_FAMILY_DEDUCT_COUNT" property="taxFamilyDeductCount"    jdbcType="NUMERIC"/>
+        <result column="TAXABLE_INCOME"            property="taxableIncome"           jdbcType="NUMERIC"/>
+        <result column="PT_TAX_RATE"               property="ptTaxRate"               jdbcType="NUMERIC"/>
+        <result column="QUICK_DEDUCTION_TAX"       property="quickDeductionTax"       jdbcType="NUMERIC"/>
+        <result column="PERSONAL_TAX"              property="personalTax"             jdbcType="NUMERIC"/>
+        <result column="REAL_WAGES"                property="realWages"               jdbcType="NUMERIC"/>
+    </resultMap>
+
+    <resultMap id="ItemResultMap" type="com.ait.pa.workManagement.dto.PaSalaryCheckItemDto">
+        <result column="ITEM_ID"       property="itemId"       jdbcType="VARCHAR"/>
+        <result column="ITEM_NO"       property="itemNo"       jdbcType="VARCHAR"/>
+        <result column="ITEM_NAME"     property="itemName"     jdbcType="VARCHAR"/>
+        <result column="ITEM_TYPE"     property="itemType"     jdbcType="VARCHAR"/>
+        <result column="ITEM_VALUE"    property="itemValue"    jdbcType="NUMERIC"/>
+        <result column="ITEM_FORMULAR" property="itemFormular" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <resultMap id="MonthDifItemResultMap" type="com.ait.pa.workManagement.dto.PaMonthDifItemDto">
+        <result column="ITEM_ID"            property="itemId"          jdbcType="VARCHAR"/>
+        <result column="ITEM_NO"            property="itemNo"          jdbcType="VARCHAR"/>
+        <result column="ITEM_NAME"          property="itemName"        jdbcType="VARCHAR"/>
+        <result column="ITEM_TYPE"          property="itemType"        jdbcType="VARCHAR"/>
+        <result column="PAGE_TYPE"          property="pageType"        jdbcType="VARCHAR"/>
+        <result column="MONTH_DIF"          property="monthDif"        jdbcType="VARCHAR"/>
+        <result column="PERSON_NUM"         property="personNum"       jdbcType="NUMERIC"/>
+        <result column="MONTH_PRO"          property="monthPro"        jdbcType="NUMERIC"/>
+        <result column="MONTH_NOW"          property="monthNow"        jdbcType="NUMERIC"/>
+        <result column="PERSON_NUM_PRO"     property="personNumPro"    jdbcType="NUMERIC"/>
+        <result column="PERSON_NUM_DIF"     property="personNumDif"    jdbcType="NUMERIC"/>
+        <result column="COUNT_NUM"          property="countNum"        jdbcType="NUMERIC"/>
+        <result column="COUNT_NUM_PRO"      property="countNumPro"     jdbcType="NUMERIC"/>
+        <result column="COUNT_NUM_DIF"      property="countNumDif"     jdbcType="NUMERIC"/>
+        <result column="PERSON_NUM_AVG"     property="personNumAvg"    jdbcType="NUMERIC"/>
+        <result column="PERSON_NUM_AVG_PRO" property="personNumAvgPro" jdbcType="NUMERIC"/>
+        <result column="PERSON_NUM_AVG_DIF" property="personNumAvgDif" jdbcType="NUMERIC"/>
+        <result column="COUNT_UP"           property="countUp"         jdbcType="NUMERIC"/>
+        <result column="COUNT_LOW"          property="countLow"        jdbcType="NUMERIC"/>
+        <result column="PERSON_UP"          property="personUp"        jdbcType="NUMERIC"/>
+        <result column="PERSON_LOW"         property="personLow"       jdbcType="NUMERIC"/>
+    </resultMap>
+
+    <resultMap id="ResultConfirmSummaryResultMap" type="com.ait.pa.workManagement.dto.PaResultConfirmSummaryDto">
+        <result column="PAY_DATE_PRO"       property="payDatePro"       jdbcType="VARCHAR"/>
+        <result column="PAY_DATE_CUR"       property="payDateCur"       jdbcType="VARCHAR"/>
+        <result column="PERSON_NUM_PRO"     property="personNumPro"     jdbcType="NUMERIC"/>
+        <result column="SALARY_TOTAL_PRO"   property="salaryTotalPro"   jdbcType="NUMERIC"/>
+        <result column="WITHHOLD_TOTAL_PRO" property="withholdTotalPro" jdbcType="NUMERIC"/>
+        <result column="NET_PAY_PRO"        property="netPayPro"        jdbcType="NUMERIC"/>
+        <result column="PERSON_NUM_CUR"     property="personNumCur"     jdbcType="NUMERIC"/>
+        <result column="SALARY_TOTAL_CUR"   property="salaryTotalCur"   jdbcType="NUMERIC"/>
+        <result column="WITHHOLD_TOTAL_CUR" property="withholdTotalCur" jdbcType="NUMERIC"/>
+        <result column="NET_PAY_CUR"        property="netPayCur"        jdbcType="NUMERIC"/>
+        <result column="PERSON_NUM_DIF"     property="personNumDif"     jdbcType="NUMERIC"/>
+        <result column="SALARY_TOTAL_DIF"   property="salaryTotalDif"   jdbcType="NUMERIC"/>
+        <result column="WITHHOLD_TOTAL_DIF" property="withholdTotalDif" jdbcType="NUMERIC"/>
+        <result column="NET_PAY_DIF"        property="netPayDif"        jdbcType="NUMERIC"/>
+    </resultMap>
+
+    <!--
+      PAY_SCHEDULE_NO của kỳ lương tháng này / tháng trước theo ngày phát (DD-MM-YYYY) + phân loại lương.
+      Bản gốc lặp lại subquery này ở mỗi câu SQL (có chỗ thiếu ACTIVITY/ROWNUM) - gom lại 1 chỗ, luôn lấy 1 dòng
+      để tránh ORA-01427 khi trùng ngày phát.
+    -->
+    <sql id="curScheduleNo">
+        (SELECT PPS.PAY_SCHEDULE_NO
+           FROM PA_PAY_SCHEDULE PPS
+          WHERE PPS.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+            AND TO_CHAR(PPS.PAY_DATE, 'DD-MM-YYYY') = #{payDate, jdbcType=VARCHAR}
+            AND PPS.SALARY_DISTIN_NO = #{salaryDistinNo, jdbcType=VARCHAR}
+            AND PPS.ACTIVITY = 1
+            AND ROWNUM = 1)
+    </sql>
+
+    <sql id="proScheduleNo">
+        (SELECT PPS.PAY_SCHEDULE_NO
+           FROM PA_PAY_SCHEDULE PPS
+          WHERE PPS.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+            AND TO_CHAR(PPS.PAY_DATE, 'DD-MM-YYYY') = #{payDatePro, jdbcType=VARCHAR}
+            AND PPS.SALARY_DISTIN_NO = #{salaryDistinNo, jdbcType=VARCHAR}
+            AND PPS.ACTIVITY = 1
+            AND ROWNUM = 1)
+    </sql>
+
+    <!-- Lọc phòng ban gồm cả phòng ban con. Alias bảng chính phải là PA. -->
+    <sql id="deptFilter">
+        <if test="deptNo != null and deptNo != ''">
+           AND EXISTS (SELECT B1.DEPTID
+                         FROM HR_DEPARTMENT B1
+                        WHERE B1.DEPTNO = PA.DEPTNO
+                          AND B1.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+                        START WITH B1.DEPTNO = #{deptNo, jdbcType=VARCHAR}
+                      CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO)
+        </if>
+    </sql>
+
+    <!-- Thông tin NV từ PA_SUMMARY_HTSV (alias PA) -->
+    <sql id="summaryEmpColumns">
+               PA.PERSON_ID,
+               PA.EMPID,
+               PA.LOCAL_NAME,
+               PA.DEPTNO,
+               GET_DEPT_NAME(PA.DEPTNO, #{lang, jdbcType=VARCHAR})           AS DEPT_NAME,
+               GET_GLOBAL_NAME(PA.POST_FAMILY_NO, #{lang, jdbcType=VARCHAR}) AS POST_FAMILY_NAME,
+               GET_GLOBAL_NAME(PA.POST_GRADE_NO, #{lang, jdbcType=VARCHAR})  AS POST_GRADE_NAME,
+               GET_GLOBAL_NAME(PA.POSITION_NO, #{lang, jdbcType=VARCHAR})    AS POSITION_NAME
+    </sql>
+
+    <!-- ═════════════ Hiện trạng lương theo tháng ═════════════ -->
+
+    <!-- Số NV tháng trước / tháng này theo phân loại lương (bản gốc monthPersonCountInfoList) -->
+    <select id="selectMonthPersonCounts" parameterType="com.ait.pa.workManagement.dto.PaSalaryCheckSearchDto"
+            resultMap="CountRowResultMap">
+        SELECT TT.SALARY_DISTIN_NAME,
+               SUM(TT.PREV_COUNT) AS PREV_COUNT,
+               SUM(TT.CUR_COUNT)  AS CUR_COUNT
+          FROM (SELECT CASE WHEN PST.PAY_SCHEDULE_NO = <include refid="curScheduleNo"/> THEN COUNT(1) END AS CUR_COUNT,
+                       CASE WHEN PST.PAY_SCHEDULE_NO = <include refid="proScheduleNo"/> THEN COUNT(1) END AS PREV_COUNT,
+                       GET_GLOBAL_NAME(PST.SALARY_DISTIN_NO, #{lang, jdbcType=VARCHAR}) AS SALARY_DISTIN_NAME
+                  FROM PA_SUMMARY_HTSV PST
+                 WHERE PST.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+                 GROUP BY PST.PAY_SCHEDULE_NO, PST.SALARY_DISTIN_NO) TT
+         WHERE (TT.CUR_COUNT > 0 OR TT.PREV_COUNT > 0)
+         GROUP BY TT.SALARY_DISTIN_NAME
+    </select>
+
+    <!--
+      NV tăng: có ở kỳ tháng này nhưng không có ở kỳ tháng trước (bản gốc monthPersonIncreaseList).
+      Điều kiện "tuyển mới" giữ nguyên bản gốc (BETWEEN HR_START_DATE AND HR_START_DATE).
+    -->
+    <select id="selectMonthPersonIncreases" parameterType="com.ait.pa.workManagement.dto.PaSalaryCheckSearchDto"
+            resultMap="ChangeRowResultMap">
+        SELECT CASE WHEN TO_CHAR(HE.DATE_STARTED, 'YYYY/MM/DD') BETWEEN PST.HR_START_DATE AND PST.HR_START_DATE
+                    THEN 'RECRUIT' ELSE 'OTHER' END AS CATEGORY,
+               NVL(COUNT(1), 0) AS NUMB,
+               ZH_CONCAT(CASE WHEN ROWNUM &lt;= 300 THEN HE.PERSON_ID END)                     AS PERSON_ID_PART1,
+               ZH_CONCAT(CASE WHEN ROWNUM &gt; 300 AND ROWNUM &lt;= 600 THEN HE.PERSON_ID END) AS PERSON_ID_PART2,
+               ZH_CONCAT(CASE WHEN ROWNUM &gt; 600 THEN HE.PERSON_ID END)                      AS PERSON_ID_PART3
+          FROM PA_SUMMARY_HTSV PST, HR_EMPLOYEE HE
+         WHERE HE.PERSON_ID = PST.PERSON_ID
+           AND PST.PAY_SCHEDULE_NO = <include refid="curScheduleNo"/>
+           AND PST.PERSON_ID NOT IN (SELECT PSTS.PERSON_ID
+                                       FROM PA_SUMMARY_HTSV PSTS
+                                      WHERE PSTS.PAY_SCHEDULE_NO = <include refid="proScheduleNo"/>)
+         GROUP BY CASE WHEN TO_CHAR(HE.DATE_STARTED, 'YYYY/MM/DD') BETWEEN PST.HR_START_DATE AND PST.HR_START_DATE
+                       THEN 'RECRUIT' ELSE 'OTHER' END
+    </select>
+
+    <!-- NV giảm: có ở kỳ tháng trước nhưng không có ở kỳ tháng này (bản gốc monthPersonDecreaseList) -->
+    <select id="selectMonthPersonDecreases" parameterType="com.ait.pa.workManagement.dto.PaSalaryCheckSearchDto"
+            resultMap="ChangeRowResultMap">
+        SELECT CASE WHEN TO_CHAR(HE.DATE_LEFT, 'YYYY/MM/DD') BETWEEN PST.HR_START_DATE AND PST.HR_END_DATE
+                    THEN 'RESIGN' ELSE 'OTHER' END AS CATEGORY,
+               NVL(COUNT(1), 0) AS NUMB,
+               ZH_CONCAT(CASE WHEN ROWNUM &lt;= 300 THEN HE.PERSON_ID END)                     AS PERSON_ID_PART1,
+               ZH_CONCAT(CASE WHEN ROWNUM &gt; 300 AND ROWNUM &lt;= 600 THEN HE.PERSON_ID END) AS PERSON_ID_PART2,
+               ZH_CONCAT(CASE WHEN ROWNUM &gt; 600 THEN HE.PERSON_ID END)                      AS PERSON_ID_PART3
+          FROM PA_SUMMARY_HTSV PST, HR_EMPLOYEE HE
+         WHERE HE.PERSON_ID = PST.PERSON_ID
+           AND PST.PAY_SCHEDULE_NO = <include refid="proScheduleNo"/>
+           AND PST.PERSON_ID NOT IN (SELECT PSTS.PERSON_ID
+                                       FROM PA_SUMMARY_HTSV PSTS
+                                      WHERE PSTS.PAY_SCHEDULE_NO = <include refid="curScheduleNo"/>)
+         GROUP BY CASE WHEN TO_CHAR(HE.DATE_LEFT, 'YYYY/MM/DD') BETWEEN PST.HR_START_DATE AND PST.HR_END_DATE
+                       THEN 'RESIGN' ELSE 'OTHER' END
+    </select>
+
+    <!-- Danh sách NV theo PERSON_ID (bản gốc monthPersonCountInfoSonList). Service chia lô <= 900 vì giới hạn IN của Oracle. -->
+    <select id="selectEmployeesByPersonIds" resultMap="RowResultMap">
+        SELECT HE.PERSON_ID,
+               HE.EMPID,
+               HE.LOCAL_NAME,
+               HE.DEPTNO,
+               GET_DEPT_NAME(HE.DEPTNO, #{lang, jdbcType=VARCHAR})            AS DEPT_NAME,
+               GET_GLOBAL_NAME(HE.POST_FAMILY, #{lang, jdbcType=VARCHAR})     AS POST_FAMILY_NAME,
+               GET_GLOBAL_NAME(HE.POST_GRADE_NO, #{lang, jdbcType=VARCHAR})   AS POST_GRADE_NAME,
+               GET_GLOBAL_NAME(HE.POSITION_NO, #{lang, jdbcType=VARCHAR})     AS POSITION_NAME,
+               GET_GLOBAL_NAME(HE.DUTY_NO, #{lang, jdbcType=VARCHAR})         AS DUTY_NAME,
+               GET_GLOBAL_NAME(HE.MAIN_BUSINESS, #{lang, jdbcType=VARCHAR})   AS MAIN_BUSINESS,
+               GET_GLOBAL_NAME(HE.EMP_TYPE_CODE, #{lang, jdbcType=VARCHAR})   AS EMP_TYPE_NAME,
+               GET_GLOBAL_NAME(HE.EMP_OFFICE, #{lang, jdbcType=VARCHAR})      AS EMP_OFFICE_NAME,
+               TO_CHAR(HE.DATE_STARTED, 'DD/MM/YYYY')                         AS DATE_STARTED,
+               TO_CHAR(HE.DATE_LEFT, 'DD/MM/YYYY')                            AS DATE_LEFT
+          FROM HR_EMPLOYEE HE
+         WHERE HE.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+           AND HE.PERSON_ID IN
+            <foreach item="pid" collection="personIds" open="(" separator="," close=")">
+                #{pid, jdbcType=VARCHAR}
+            </foreach>
+         ORDER BY HE.EMPID
+    </select>
+
+    <!-- ═════════════ Kiểm tra quyết định nhân sự ═════════════ -->
+
+    <!-- Quyết định nhân sự phát sinh trong kỳ chấm công của kế hoạch trả lương (bản gốc viewVerificationList) -->
+    <select id="selectVerificationList" parameterType="com.ait.pa.workManagement.dto.PaSalaryCheckSearchDto"
+            resultMap="RowResultMap">
+        SELECT HE.PERSON_ID,
+               HE.EMPID,
+               HE.LOCAL_NAME,
+               HE.DEPTNO,
+               GET_DEPT_NAME(HE.DEPTNO, #{lang, jdbcType=VARCHAR})            AS DEPT_NAME,
+               GET_GLOBAL_NAME(HE.POST_FAMILY, #{lang, jdbcType=VARCHAR})     AS POST_FAMILY_NAME,
+               GET_GLOBAL_NAME(HE.POST_GRADE_NO, #{lang, jdbcType=VARCHAR})   AS POST_GRADE_NAME,
+               GET_GLOBAL_NAME(HE.POSITION_NO, #{lang, jdbcType=VARCHAR})     AS POSITION_NAME,
+               GET_GLOBAL_NAME(HE.DUTY_NO, #{lang, jdbcType=VARCHAR})         AS DUTY_NAME,
+               GET_GLOBAL_NAME(HE.EMP_TYPE_CODE, #{lang, jdbcType=VARCHAR})   AS EMP_TYPE_NAME,
+               TO_CHAR(HE.DATE_STARTED, 'DD/MM/YYYY')                         AS DATE_STARTED,
+               TO_CHAR(HE.DATE_LEFT, 'DD/MM/YYYY')                            AS DATE_LEFT,
+               TO_CHAR(TO_DATE(HEI.START_DATE, 'DD.MM.YYYY'), 'DD/MM/YYYY')    AS TRANS_DATE,
+               GET_GLOBAL_NAME(HEI.TRANS_CODE, #{lang, jdbcType=VARCHAR})     AS TRANS_CODE_NAME
+          FROM HR_EXPERIENCE_INSIDE HEI, HR_EMPLOYEE HE
+         WHERE HEI.ACTIVITY = 1
+           AND HE.PERSON_ID = HEI.PERSON_ID
+           AND HE.PERSON_ID NOT LIKE '11111%'
+           AND HE.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+           AND TO_CHAR(TO_DATE(HEI.START_DATE, 'DD.MM.YYYY'), 'YYYY.MM.DD')
+               BETWEEN TO_CHAR((SELECT PSS.AR_START_DATE FROM PA_PAY_SCHEDULE PSS
+                                 WHERE PSS.PAY_SCHEDULE_NO = #{payScheduleNo, jdbcType=VARCHAR}), 'YYYY.MM.DD')
+                   AND TO_CHAR((SELECT PSS.AR_END_DATE FROM PA_PAY_SCHEDULE PSS
+                                 WHERE PSS.PAY_SCHEDULE_NO = #{payScheduleNo, jdbcType=VARCHAR}), 'YYYY.MM.DD')
+        <if test="empSearch != null and empSearch != ''">
+           AND (HE.EMPID LIKE '%' || #{empSearch, jdbcType=VARCHAR} || '%'
+                OR CONVERTTOUNSIGN(UPPER(HE.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{empSearch, jdbcType=VARCHAR})) || '%'
+                OR HE.ENGLISH_NAME LIKE '%' || #{empSearch, jdbcType=VARCHAR} || '%')
+        </if>
+         ORDER BY HE.EMPID, HEI.START_DATE
+    </select>
+
+    <!-- ═════════════ Chi tiết lương cá nhân ═════════════ -->
+
+    <!-- Thông tin NV của 1 kỳ lương (bản gốc getPaDetailEmpInfoByPersonId) -->
+    <select id="selectPersonEmpInfo" parameterType="com.ait.pa.workManagement.dto.PaSalaryCheckSearchDto"
+            resultMap="RowResultMap">
+        SELECT <include refid="summaryEmpColumns"/>,
+               GET_GLOBAL_NAME(PA.EMP_TYPE_CODE, #{lang, jdbcType=VARCHAR}) AS EMP_TYPE_NAME,
+               TO_CHAR(PA.DATE_STARTED, 'DD/MM/YYYY')                       AS DATE_STARTED,
+               TO_CHAR(PA.DATE_LEFT, 'DD/MM/YYYY')                          AS DATE_LEFT,
+               TO_CHAR(PA.END_PROBATION_DATE, 'DD/MM/YYYY')                 AS END_PROBATION_DATE,
+               PA.REAL_WAGES
+          FROM PA_SUMMARY_HTSV PA
+         WHERE PA.CPNY_ID         = #{cpnyId, jdbcType=VARCHAR}
+           AND PA.PERSON_ID       = #{personId, jdbcType=VARCHAR}
+           AND PA.PAY_SCHEDULE_NO = #{payScheduleNo, jdbcType=VARCHAR}
+           AND ROWNUM = 1
+    </select>
+
+    <!-- Sinh hạng mục lương của 1 NV vào PA_SALARY_DETAIL_PAGE_DATA (bản gốc callForSalaryDetailInfo) -->
+    <update id="callSalaryDetailPage" parameterType="com.ait.pa.workManagement.dto.PaSalaryCheckSearchDto"
+            statementType="CALLABLE">
+        { CALL PA_FOR_SALARY_DETAIL_PAGE_P(
+            #{cpnyId,        jdbcType=VARCHAR},
+            #{payScheduleNo, jdbcType=VARCHAR},
+            #{personId,      jdbcType=VARCHAR},
+            #{adminID,       jdbcType=VARCHAR}
+        ) }
+    </update>
+
+    <!-- Hạng mục lương vừa sinh (bản gốc getPaDetailInfoList) -->
+    <select id="selectPersonSalaryItems" parameterType="com.ait.pa.workManagement.dto.PaSalaryCheckSearchDto"
+            resultMap="ItemResultMap">
+        SELECT NULL                                             AS ITEM_ID,
+               P.ITEM_NO,
+               GET_GLOBAL_NAME(P.ITEM_NO, #{lang, jdbcType=VARCHAR}) AS ITEM_NAME,
+               TO_CHAR(P.ITEM_TYPE)                             AS ITEM_TYPE,
+               P.ITEM_VALUE,
+               P.ITEM_FORMULAR
+          FROM PA_SALARY_DETAIL_PAGE_DATA P
+         WHERE P.CPNY_ID   = #{cpnyId, jdbcType=VARCHAR}
+           AND P.PERSON_ID = #{personId, jdbcType=VARCHAR}
+         ORDER BY P.ITEM_TYPE, P.ORDERNO
+    </select>
+
+    <!-- ═════════════ Hạng mục ═════════════ -->
+
+    <!-- Hạng mục dùng cho đối chiếu (bản gốc itemValueInfo - IS_USE = 4) -->
+    <select id="selectItemOptions" resultMap="ItemResultMap">
+        SELECT PII.ITEM_ID,
+               PII.ITEM_NO,
+               GET_GLOBAL_NAME(PII.ITEM_NO, #{lang, jdbcType=VARCHAR}) AS ITEM_NAME,
+               TO_CHAR(PII.ITEM_TYPE)                                AS ITEM_TYPE,
+               NULL                                                  AS ITEM_VALUE,
+               NULL                                                  AS ITEM_FORMULAR
+          FROM PA_ITEM_INPUT PII
+         WHERE PII.IS_USE   = 4
+           AND PII.CPNY_ID  = #{cpnyId, jdbcType=VARCHAR}
+           AND PII.ACTIVITY = 1
+         ORDER BY PII.ITEM_TYPE, PII.ORDERNO
+    </select>
+
+    <!--
+      Lương theo hạng mục (bản gốc detailItemCountInfoList). Cột PST.${itemColumn} là cột động theo ITEM_ID -
+      service chỉ truyền giá trị đã có trong selectItemOptions và khớp ^[A-Za-z0-9_]+$.
+    -->
+    <select id="selectItemCountList" resultMap="RowResultMap">
+        SELECT PA.PERSON_ID,
+               PA.EMPID,
+               PA.LOCAL_NAME,
+               PA.DEPTNO,
+               GET_DEPT_NAME(PA.DEPTNO, #{lang, jdbcType=VARCHAR})           AS DEPT_NAME,
+               GET_GLOBAL_NAME(PA.POST_FAMILY_NO, #{lang, jdbcType=VARCHAR}) AS POST_FAMILY_NAME,
+               GET_GLOBAL_NAME(PA.POST_GRADE_NO, #{lang, jdbcType=VARCHAR})  AS POST_GRADE_NAME,
+               GET_GLOBAL_NAME(PA.POSITION_NO, #{lang, jdbcType=VARCHAR})    AS POSITION_NAME,
+               PA.${itemColumn}                                             AS PAY_NUMBER,
+               (SELECT PCF.FORMULAR_VALUE
+                  FROM PA_CAL_FORMULAR_HTSV PCF
+                 WHERE PCF.ITEM_ID = #{itemId, jdbcType=VARCHAR}
+                   AND PCF.PAY_SCHEDULE_NO = PA.PAY_SCHEDULE_NO
+                   AND PCF.PERSON_ID = PA.PERSON_ID
+                   AND ROWNUM = 1)                                           AS FORMULAR_VALUE,
+               (SELECT PPD.REMARK
+                  FROM PA_PARAM_DATA PPD
+                 WHERE PPD.PARAM_NO = (SELECT PPIP.PARAM_NO
+                                         FROM PA_PARAM_ITEM_PARAM PPIP
+                                        WHERE PPIP.PARAM_ITEM_NO = (SELECT PPI.PARAM_ITEM_NO
+                                                                      FROM PA_PARAM_ITEM PPI
+                                                                     WHERE PPI.PARAM_ITEM_ID = #{itemId, jdbcType=VARCHAR}
+                                                                       AND PPI.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+                                                                       AND ROWNUM = 1)
+                                          AND ROWNUM = 1)
+                   AND ROWNUM = 1)                                           AS REMARK
+          FROM PA_SUMMARY_HTSV PA
+         WHERE PA.CPNY_ID         = #{cpnyId, jdbcType=VARCHAR}
+           AND PA.PAY_SCHEDULE_NO = #{payScheduleNo, jdbcType=VARCHAR}
+         ORDER BY PA.EMPID
+    </select>
+
+    <!-- ═════════════ Chênh lệch hạng mục giữa 2 kỳ (PA_MONTH_DIF_ITEM_TEMP) ═════════════ -->
+
+    <!-- Sinh chênh lệch hạng mục tháng này so với kỳ trước (bản gốc callProForPayMonthDifItem) -->
+    <update id="callMonthDifItem" parameterType="com.ait.pa.workManagement.dto.PaSalaryCheckSearchDto"
+            statementType="CALLABLE">
+        { CALL PA_MONTH_DIF_ITEM_VIEW(
+            #{adminID,        jdbcType=VARCHAR},
+            #{cpnyId,         jdbcType=VARCHAR},
+            TO_CHAR(TO_DATE(#{payDate, jdbcType=VARCHAR}, 'DD-MM-YYYY'), 'YYYY-MM-DD'),
+            #{salaryDistinNo, jdbcType=VARCHAR},
+            #{itemType,       jdbcType=NUMERIC},
+            #{pageType,       jdbcType=VARCHAR}
+        ) }
+    </update>
+
+    <!-- Sinh so sánh hạng mục giữa 2 ngày phát cho trang So sánh lương theo tháng (bản gốc callItemList, PAGE_TYPE 3) -->
+    <update id="callMonthDifItemCompare" parameterType="com.ait.pa.workManagement.dto.PaSalaryCheckSearchDto"
+            statementType="CALLABLE">
+        { CALL PA_MONTH_DIF_ITEM_VIEW2(
+            #{adminID,        jdbcType=VARCHAR},
+            #{cpnyId,         jdbcType=VARCHAR},
+            TO_CHAR(TO_DATE(#{payDate, jdbcType=VARCHAR}, 'DD-MM-YYYY'), 'YYYY-MM-DD'),
+            TO_CHAR(TO_DATE(#{payDatePro, jdbcType=VARCHAR}, 'DD-MM-YYYY'), 'YYYY-MM-DD'),
+            #{salaryDistinNo, jdbcType=VARCHAR},
+            '4',
+            '3'
+        ) }
+    </update>
+
+    <!-- Tổng hợp theo hạng mục + loại thay đổi (bản gốc viewResultConfirmSonList3) -->
+    <select id="selectMonthDifGroups" parameterType="com.ait.pa.workManagement.dto.PaSalaryCheckSearchDto"
+            resultMap="MonthDifItemResultMap">
+        SELECT PDIT.ITEM_ID,
+               PDIT.ITEM_NO,
+               GET_GLOBAL_NAME(PDIT.ITEM_NO, #{lang, jdbcType=VARCHAR}) AS ITEM_NAME,
+               TO_CHAR(PDIT.ITEM_TYPE)                                AS ITEM_TYPE,
+               TO_CHAR(PDIT.MONTH_DIF)                                AS MONTH_DIF,
+               COUNT(PDIT.PERSON_ID)                                  AS PERSON_NUM,
+               SUM(PDIT.MONTH_PRO)                                    AS MONTH_PRO,
+               SUM(PDIT.MONTH_NOW)                                    AS MONTH_NOW
+          FROM PA_MONTH_DIF_ITEM_TEMP PDIT
+         WHERE PDIT.CREATED_BY = #{adminID, jdbcType=VARCHAR}
+           AND PDIT.ITEM_TYPE  = #{itemType, jdbcType=NUMERIC}
+           AND PDIT.PAGE_TYPE  = #{pageType, jdbcType=VARCHAR}
+         GROUP BY PDIT.ITEM_ID, PDIT.MONTH_DIF, PDIT.ITEM_NO, PDIT.ITEM_TYPE
+         ORDER BY PDIT.MONTH_DIF, PDIT.ITEM_NO
+    </select>
+
+    <!-- Danh sách NV chênh lệch theo hạng mục (bản gốc viewResultConfirmList3Right) -->
+    <select id="selectMonthDifDetails" parameterType="com.ait.pa.workManagement.dto.PaSalaryCheckSearchDto"
+            resultMap="RowResultMap">
+        SELECT <include refid="summaryEmpColumns"/>,
+               GET_GLOBAL_NAME(PA.EMP_TYPE_CODE, #{lang, jdbcType=VARCHAR}) AS EMP_TYPE_NAME,
+               GET_GLOBAL_NAME(PA.EMP_OFFICE, #{lang, jdbcType=VARCHAR})    AS EMP_OFFICE_NAME,
+               TO_CHAR(PA.DATE_STARTED, 'DD/MM/YYYY')                       AS DATE_STARTED,
+               TO_CHAR(PA.END_PROBATION_DATE, 'DD/MM/YYYY')                 AS END_PROBATION_DATE,
+               TO_CHAR(PA.DATE_LEFT, 'DD/MM/YYYY')                          AS DATE_LEFT,
+               PDIT.ITEM_NO,
+               GET_GLOBAL_NAME(PDIT.ITEM_NO, #{lang, jdbcType=VARCHAR})     AS ITEM_NAME,
+               PDIT.MONTH_PRO,
+               PDIT.MONTH_NOW,
+               TO_CHAR(NVL(PDIT.FORMULAR_VALUE, PDIT.MONTH_NOW))            AS FORMULAR_VALUE
+          FROM PA_MONTH_DIF_ITEM_TEMP PDIT, PA_SUMMARY_HTSV PA
+         WHERE PDIT.CREATED_BY = #{adminID, jdbcType=VARCHAR}
+           AND PA.PERSON_ID    = PDIT.PERSON_ID
+           AND PA.PAY_SCHEDULE_NO = (SELECT PPS.PAY_SCHEDULE_NO
+                                       FROM PA_PAY_SCHEDULE PPS
+                                      WHERE TO_CHAR(PPS.PAY_DATE, 'DD-MM-YYYY') = #{payDate, jdbcType=VARCHAR}
+                                        AND PPS.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+                                    <if test="salaryDistinNo != null and salaryDistinNo != ''">
+                                        AND PPS.SALARY_DISTIN_NO = #{salaryDistinNo, jdbcType=VARCHAR}
+                                    </if>
+                                        AND ROWNUM = 1)
+           AND PDIT.ITEM_TYPE  = #{itemType, jdbcType=NUMERIC}
+           AND PDIT.PAGE_TYPE  = #{pageType, jdbcType=VARCHAR}
+        <choose>
+            <when test="monthDif != null and monthDif != ''">
+           AND PDIT.MONTH_DIF = #{monthDif, jdbcType=VARCHAR}
+            </when>
+            <when test="pageType == '1'.toString() or pageType == '2'.toString()">
+           AND PDIT.MONTH_DIF IN ('0', '1', '2', '4')
+            </when>
+        </choose>
+        <if test="itemId != null and itemId != ''">
+           AND PDIT.ITEM_ID = #{itemId, jdbcType=VARCHAR}
+        </if>
+        <choose>
+            <when test="selectType == 'PERSON_NUM'">
+           AND PDIT.MONTH_NOW &lt;&gt; '0'
+            </when>
+            <when test="selectType == 'PERSON_NUM_PRO'">
+           AND PDIT.MONTH_PRO &lt;&gt; '0'
+            </when>
+            <when test="selectType == 'COUNT_UP'">
+           AND PDIT.MONTH_NOW &gt; PDIT.MONTH_PRO
+            </when>
+            <when test="selectType == 'COUNT_LOW'">
+           AND PDIT.MONTH_NOW &lt; PDIT.MONTH_PRO
+            </when>
+            <when test="selectType == 'PERSON_UP'">
+           AND PDIT.PERSON_ID NOT IN (SELECT PDIT2.PERSON_ID
+                                        FROM PA_MONTH_DIF_ITEM_TEMP PDIT2
+                                       WHERE PDIT2.ITEM_ID    = PDIT.ITEM_ID
+                                         AND PDIT2.PAGE_TYPE  = #{pageType, jdbcType=VARCHAR}
+                                         AND PDIT2.CREATED_BY = #{adminID, jdbcType=VARCHAR}
+                                         AND PDIT2.MONTH_PRO &lt;&gt; '0')
+            </when>
+            <when test="selectType == 'PERSON_LOW'">
+           AND PDIT.PERSON_ID NOT IN (SELECT PDIT2.PERSON_ID
+                                        FROM PA_MONTH_DIF_ITEM_TEMP PDIT2
+                                       WHERE PDIT2.ITEM_ID    = PDIT.ITEM_ID
+                                         AND PDIT2.PAGE_TYPE  = #{pageType, jdbcType=VARCHAR}
+                                         AND PDIT2.CREATED_BY = #{adminID, jdbcType=VARCHAR}
+                                         AND PDIT2.MONTH_NOW &lt;&gt; '0')
+            </when>
+        </choose>
+         ORDER BY PA.DATE_STARTED, PA.EMPID
+    </select>
+
+    <!-- So sánh lương theo tháng - tổng hợp theo hạng mục (bản gốc getPaMonthList, PAGE_TYPE 3) -->
+    <select id="selectMonthChainList" resultMap="MonthDifItemResultMap">
+        SELECT T.ITEM_ID,
+               NULL                        AS ITEM_NO,
+               T.ITEM_NAME,
+               TO_CHAR(T.ITEM_TYPE)        AS ITEM_TYPE,
+               TO_CHAR(T.PAGE_TYPE)        AS PAGE_TYPE,
+               NULL                        AS MONTH_DIF,
+               SUM(T.PERSON_NUM)           AS PERSON_NUM,
+               NULL                        AS MONTH_PRO,
+               NULL                        AS MONTH_NOW,
+               SUM(T.PERSON_NUM_PRO)       AS PERSON_NUM_PRO,
+               SUM(T.PERSON_NUM) - SUM(T.PERSON_NUM_PRO) AS PERSON_NUM_DIF,
+               SUM(T.COUNT_NUM)            AS COUNT_NUM,
+               SUM(T.COUNT_NUM_PRO)        AS COUNT_NUM_PRO,
+               SUM(T.COUNT_NUM) - SUM(T.COUNT_NUM_PRO)   AS COUNT_NUM_DIF,
+               ROUND(SUM(T.COUNT_NUM) / CASE WHEN SUM(T.PERSON_NUM) = 0 THEN 1 ELSE SUM(T.PERSON_NUM) END, 2)
+                                           AS PERSON_NUM_AVG,
+               ROUND(SUM(T.COUNT_NUM_PRO) / CASE WHEN SUM(T.PERSON_NUM_PRO) = 0 THEN 1 ELSE SUM(T.PERSON_NUM_PRO) END, 2)
+                                           AS PERSON_NUM_AVG_PRO,
+               ROUND(SUM(T.COUNT_NUM) / CASE WHEN SUM(T.PERSON_NUM) = 0 THEN 1 ELSE SUM(T.PERSON_NUM) END
+                     - SUM(T.COUNT_NUM_PRO) / CASE WHEN SUM(T.PERSON_NUM_PRO) = 0 THEN 1 ELSE SUM(T.PERSON_NUM_PRO) END, 2)
+                                           AS PERSON_NUM_AVG_DIF,
+               SUM(T.COUNT_UP)             AS COUNT_UP,
+               SUM(T.COUNT_LOW)            AS COUNT_LOW,
+               SUM(T.PERSON_UP)            AS PERSON_UP,
+               SUM(T.PERSON_LOW)           AS PERSON_LOW
+          FROM (SELECT COUNT(PDIT.ITEM_ID) AS PERSON_NUM,
+                       0                   AS PERSON_NUM_PRO,
+                       SUM(PDIT.MONTH_NOW) AS COUNT_NUM,
+                       0                   AS COUNT_NUM_PRO,
+                       0                   AS COUNT_UP,
+                       0                   AS COUNT_LOW,
+                       GET_GLOBAL_NAME(PDIT.ITEM_NO, #{lang, jdbcType=VARCHAR}) AS ITEM_NAME,
+                       PDIT.PAGE_TYPE,
+                       PDIT.ITEM_ID,
+                       PDIT.ITEM_TYPE,
+                       SUM(CASE WHEN PDIT.PERSON_ID NOT IN (SELECT PDIT2.PERSON_ID
+                                                              FROM PA_MONTH_DIF_ITEM_TEMP PDIT2
+                                                             WHERE PDIT2.ITEM_ID = PDIT.ITEM_ID
+                                                               AND PDIT2.PAGE_TYPE = '3'
+                                                               AND PDIT2.CREATED_BY = #{adminID, jdbcType=VARCHAR}
+                                                               AND PDIT2.MONTH_PRO &lt;&gt; '0')
+                                THEN 1 END) AS PERSON_UP,
+                       0                   AS PERSON_LOW,
+                       MAX(PDIT.ORDERNO)   AS ORDERNO
+                  FROM PA_MONTH_DIF_ITEM_TEMP PDIT
+                 WHERE PDIT.PAGE_TYPE = '3'
+                   AND PDIT.MONTH_NOW &lt;&gt; '0'
+                   AND PDIT.CREATED_BY = #{adminID, jdbcType=VARCHAR}
+                 GROUP BY PDIT.ITEM_ID, PDIT.ITEM_NO, PDIT.PAGE_TYPE, PDIT.ITEM_TYPE
+                UNION ALL
+                SELECT 0, 0, 0, 0,
+                       SUM(CASE WHEN PDIT.MONTH_NOW &gt; PDIT.MONTH_PRO THEN 1 END),
+                       SUM(CASE WHEN PDIT.MONTH_NOW &lt; PDIT.MONTH_PRO THEN 1 END),
+                       GET_GLOBAL_NAME(PDIT.ITEM_NO, #{lang, jdbcType=VARCHAR}),
+                       PDIT.PAGE_TYPE,
+                       PDIT.ITEM_ID,
+                       PDIT.ITEM_TYPE,
+                       0, 0,
+                       MAX(PDIT.ORDERNO)
+                  FROM PA_MONTH_DIF_ITEM_TEMP PDIT
+                 WHERE PDIT.PAGE_TYPE = '3'
+                   AND PDIT.CREATED_BY = #{adminID, jdbcType=VARCHAR}
+                 GROUP BY PDIT.ITEM_ID, PDIT.ITEM_NO, PDIT.PAGE_TYPE, PDIT.ITEM_TYPE
+                UNION ALL
+                SELECT 0,
+                       COUNT(PDIT.ITEM_ID),
+                       0,
+                       SUM(PDIT.MONTH_PRO),
+                       0, 0,
+                       GET_GLOBAL_NAME(PDIT.ITEM_NO, #{lang, jdbcType=VARCHAR}),
+                       PDIT.PAGE_TYPE,
+                       PDIT.ITEM_ID,
+                       PDIT.ITEM_TYPE,
+                       0,
+                       SUM(CASE WHEN PDIT.PERSON_ID NOT IN (SELECT PDIT2.PERSON_ID
+                                                              FROM PA_MONTH_DIF_ITEM_TEMP PDIT2
+                                                             WHERE PDIT2.ITEM_ID = PDIT.ITEM_ID
+                                                               AND PDIT2.PAGE_TYPE = '3'
+                                                               AND PDIT2.CREATED_BY = #{adminID, jdbcType=VARCHAR}
+                                                               AND PDIT2.MONTH_NOW &lt;&gt; '0')
+                                THEN 1 END),
+                       MAX(PDIT.ORDERNO)
+                  FROM PA_MONTH_DIF_ITEM_TEMP PDIT
+                 WHERE PDIT.PAGE_TYPE = '3'
+                   AND PDIT.CREATED_BY = #{adminID, jdbcType=VARCHAR}
+                   AND PDIT.MONTH_PRO &lt;&gt; '0'
+                 GROUP BY PDIT.ITEM_ID, PDIT.ITEM_NO, PDIT.PAGE_TYPE, PDIT.ITEM_TYPE) T
+         GROUP BY T.ITEM_ID, T.ITEM_NAME, T.PAGE_TYPE, T.ITEM_TYPE, T.ORDERNO
+         ORDER BY T.ITEM_TYPE, T.ORDERNO
+    </select>
+
+    <!-- ═════════════ Xác nhận kết quả ═════════════ -->
+
+    <!-- Tổng hợp tháng trước / tháng này (bản gốc viewResultConfirmSonList0, nhánh khác SPC_DL) -->
+    <sql id="resultSummaryOfSchedule">
+        SELECT COUNT(PA.PAY_SCHEDULE_NO) AS PERSON_NUM,
+               SUM(PA.REAL_WAGES)        AS NET_PAY,
+               SUM(PA.ATT_DEDUCT_TOTAL) + SUM(PA.PERSONAL_INS_TOTAL) + SUM(PA.PERSONAL_TAX)
+                 + SUM(PA.P_PRE_TAX_MINUS) + SUM(PA.P_AFTER_TAX_MINUS) AS WITHHOLD_TOTAL
+          FROM PA_SUMMARY_HTSV PA
+    </sql>
+
+    <select id="selectResultConfirmSummary" parameterType="com.ait.pa.workManagement.dto.PaSalaryCheckSearchDto"
+            resultMap="ResultConfirmSummaryResultMap">
+        SELECT #{payDatePro, jdbcType=VARCHAR}                           AS PAY_DATE_PRO,
+               #{payDate, jdbcType=VARCHAR}                              AS PAY_DATE_CUR,
+               PA_PRO.PERSON_NUM                                         AS PERSON_NUM_PRO,
+               PA_PRO.NET_PAY + PA_PRO.WITHHOLD_TOTAL                    AS SALARY_TOTAL_PRO,
+               PA_PRO.WITHHOLD_TOTAL                                     AS WITHHOLD_TOTAL_PRO,
+               PA_PRO.NET_PAY                                            AS NET_PAY_PRO,
+               PA_CUR.PERSON_NUM                                         AS PERSON_NUM_CUR,
+               PA_CUR.NET_PAY + PA_CUR.WITHHOLD_TOTAL                    AS SALARY_TOTAL_CUR,
+               PA_CUR.WITHHOLD_TOTAL                                     AS WITHHOLD_TOTAL_CUR,
+               PA_CUR.NET_PAY                                            AS NET_PAY_CUR,
+               PA_CUR.PERSON_NUM - PA_PRO.PERSON_NUM                     AS PERSON_NUM_DIF,
+               (PA_CUR.NET_PAY + PA_CUR.WITHHOLD_TOTAL) - (PA_PRO.NET_PAY + PA_PRO.WITHHOLD_TOTAL) AS SALARY_TOTAL_DIF,
+               PA_CUR.WITHHOLD_TOTAL - PA_PRO.WITHHOLD_TOTAL             AS WITHHOLD_TOTAL_DIF,
+               PA_CUR.NET_PAY - PA_PRO.NET_PAY                           AS NET_PAY_DIF
+          FROM (<include refid="resultSummaryOfSchedule"/>
+                 WHERE PA.PAY_SCHEDULE_NO = <include refid="proScheduleNo"/>) PA_PRO,
+               (<include refid="resultSummaryOfSchedule"/>
+                 WHERE PA.PAY_SCHEDULE_NO = <include refid="curScheduleNo"/>) PA_CUR
+    </select>
+
+    <!-- Thống kê tăng ca (bản gốc viewResultConfirmSonList2) -->
+    <select id="selectResultConfirmOtList" parameterType="com.ait.pa.workManagement.dto.PaSalaryCheckSearchDto"
+            resultMap="RowResultMap">
+        SELECT <include refid="summaryEmpColumns"/>,
+               P.ITEM_NAME,
+               P.CAL_VALUE,
+               P.FORMULAR_VALUE,
+               TO_CHAR(PA.AR_START_DATE, 'YYYY/MM/DD') AS AR_START_DATE,
+               TO_CHAR(PA.AR_END_DATE, 'YYYY/MM/DD')   AS AR_END_DATE
+          FROM PA_CAL_FORMULAR_HTSV P, PA_SUMMARY_HTSV PA
+         WHERE P.PAY_SCHEDULE_NO = <include refid="curScheduleNo"/>
+           AND P.PAY_SCHEDULE_NO = PA.PAY_SCHEDULE_NO
+           AND P.PERSON_ID = PA.PERSON_ID
+           AND P.ITEM_NO IN (570019, 570026, 570033)
+           AND P.CAL_VALUE > 0
+        <include refid="deptFilter"/>
+         ORDER BY PA.EMPID, P.ITEM_NO
+    </select>
+
+    <!-- Chi tiết tăng ca của 1 NV trong kỳ chấm công (bản gốc viewResultConfirmList2Bottom) -->
+    <select id="selectResultConfirmOtDetails" parameterType="com.ait.pa.workManagement.dto.PaSalaryCheckSearchDto"
+            resultMap="RowResultMap">
+        SELECT HRE.PERSON_ID,
+               HRE.EMPID,
+               HRE.LOCAL_NAME,
+               TO_CHAR(TO_DATE(AD.AR_DATE_STR, 'YYYY/MM/DD'), 'DD/MM/YYYY') AS AR_DATE,
+               TO_CHAR(AD.FROM_TIME, 'DD/MM/YYYY HH24:MI')                 AS FROM_TIME,
+               TO_CHAR(AD.TO_TIME, 'DD/MM/YYYY HH24:MI')                   AS TO_TIME,
+               GET_GLOBAL_NAME(AD.SHIFT_NO, #{lang, jdbcType=VARCHAR})     AS SHIFT_NAME,
+               GET_GLOBAL_NAME(AD.ITEM_NO, #{lang, jdbcType=VARCHAR})      AS ITEM_NAME,
+               AD.QUANTITY
+          FROM AR_DETAIL_HTSV AD, HR_EMPLOYEE HRE
+         WHERE AD.PERSON_ID = HRE.PERSON_ID
+           AND AD.ACTIVITY = 1
+           AND AD.ITEM_NO IN (90000295, 90000296, 90000297, 90000298, 90000299, 90000300, 90000301)
+           AND AD.PERSON_ID = #{personId, jdbcType=VARCHAR}
+        <if test="arStartDate != null and arStartDate != '' and arEndDate != null and arEndDate != ''">
+           AND AD.AR_DATE_STR BETWEEN #{arStartDate, jdbcType=VARCHAR} AND #{arEndDate, jdbcType=VARCHAR}
+        </if>
+         ORDER BY AD.AR_DATE_STR, AD.ITEM_NO
+    </select>
+
+    <!-- Chi tiết bảo hiểm cá nhân (bản gốc viewResultConfirmSonList6) -->
+    <select id="selectResultConfirmInsuranceList" parameterType="com.ait.pa.workManagement.dto.PaSalaryCheckSearchDto"
+            resultMap="RowResultMap">
+        SELECT <include refid="summaryEmpColumns"/>,
+               PA.SOCIAL_INS_PERSONAL,
+               PA.MEDICAL_INS_PERSONAL,
+               PA.UNEMPLOYMENT_INS_PERSONAL,
+               PA.PERSONAL_INS_TOTAL
+          FROM PA_SUMMARY_HTSV PA
+         WHERE PA.PAY_SCHEDULE_NO = <include refid="curScheduleNo"/>
+        <include refid="deptFilter"/>
+         ORDER BY PA.EMPID
+    </select>
+
+    <!-- Thuế (bản gốc viewResultConfirmSonList5, nhánh HTSV) -->
+    <select id="selectResultConfirmTaxList" parameterType="com.ait.pa.workManagement.dto.PaSalaryCheckSearchDto"
+            resultMap="RowResultMap">
+        SELECT <include refid="summaryEmpColumns"/>,
+               PA.INCOME_BEFORE_TAX,
+               PA.ATT_DEDUCT_TOTAL,
+               PA.PERSONAL_INS_TOTAL,
+               PA.P_TAX_DEDUCT_STD,
+               PA.P_TAX_FAMILY_DEDUCT_STD,
+               PA.P_TAX_FAMILY_DEDUCT_COUNT,
+               PA.TAXABLE_INCOME,
+               PA.PT_TAX_RATE,
+               PA.QUICK_DEDUCTION_TAX,
+               PA.PERSONAL_TAX,
+               PA.REAL_WAGES
+          FROM PA_SUMMARY_HTSV PA
+         WHERE PA.PAY_SCHEDULE_NO = <include refid="curScheduleNo"/>
+        <include refid="deptFilter"/>
+         ORDER BY PA.EMPID
+    </select>
+</mapper>

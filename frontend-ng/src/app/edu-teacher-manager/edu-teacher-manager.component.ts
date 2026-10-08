@@ -21,6 +21,7 @@ import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { EduTeacher } from './edu-teacher-manager.model';
 import { EduTeacherManagerService } from './edu-teacher-manager.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Key message.properties dùng trong trang - hầu hết dùng lại key sẵn có của bản JSP gốc (edu.teacherManager.*). */
 const I18N_KEYS = [
@@ -43,8 +44,6 @@ const I18N_KEYS = [
 const FIELD_PARENT_CODE = '14015148';
 const LEVEL_PARENT_CODE = '14015140';
 const STATUS_PARENT_CODE = '14015155';
-
-const PAGE_SIZE_OPTIONS = [50, 100, 200, 500, 1000];
 
 interface TeacherForm {
   teacherNo: string | null;
@@ -110,7 +109,7 @@ export class EduTeacherManagerComponent implements OnInit {
   });
 
   pageIndex = 1;
-  pageSize = PAGE_SIZE_OPTIONS[0];
+  pageSize = 50;
 
   readonly fieldOptions = signal<EduCodeItem[]>([]);
   readonly levelOptions = signal<EduCodeItem[]>([]);

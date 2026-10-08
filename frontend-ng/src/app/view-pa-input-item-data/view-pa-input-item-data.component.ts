@@ -27,6 +27,7 @@ import {
   PaInputItemListItem,
 } from './view-pa-input-item-data.model';
 import { ViewPaInputItemDataService } from './view-pa-input-item-data.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - đã có sẵn đầy đủ ở namespace pa.inputItemData.*
  *  (dùng chung cho cả bản Thymeleaf gốc) cộng thêm common.*, arOtf.importResult (nhãn tab kết quả import,
@@ -58,7 +59,6 @@ const I18N_KEYS = [
 ];
 
 const EMP_OFFICE_PARENT_CODE = '15118';
-const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
 
 interface DataForm {
   paramDataNo: number | null;

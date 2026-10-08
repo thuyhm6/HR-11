@@ -11,6 +11,7 @@ import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { AttendancePersonalInfoListService } from './attendance-personal-info-list.service';
 import { EssAttendancePersonalInfoDto, EssBasicInfoDto } from './attendance-personal-info-list.model';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này (toàn bộ tái sử dụng namespace atpi.* đã có sẵn -
  *  không thêm key mới) - tải trước 1 lần ở ngOnInit (xem I18nService). */
@@ -53,6 +54,7 @@ const I18N_KEYS = [
   styleUrl: './attendance-personal-info-list.component.css',
 })
 export class AttendancePersonalInfoListComponent implements OnInit {
+  readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
   readonly basicInfo = signal<EssBasicInfoDto | null>(null);
   readonly itemOptions = signal<EssAttendancePersonalInfoDto[]>([]);
 

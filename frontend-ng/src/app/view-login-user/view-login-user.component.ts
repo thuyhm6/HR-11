@@ -17,6 +17,7 @@ import { SyRoleGroupDto } from '../view-roles-group-list/view-roles-group-list.m
 import { HrDepartmentDto } from '../view-current-org-info/view-current-org-info.model';
 import { SyUserDto, UserRelationsPayload } from './view-login-user.model';
 import { ViewLoginUserService } from './view-login-user.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 const DEFAULT_PASSWORD = '123456A@';
 
@@ -36,8 +37,6 @@ const I18N_KEYS = [
   'sys.role.viewLoginUser.modal.resetPassword.title', 'sys.role.viewLoginUser.modal.resetPassword.loginId',
   'sys.role.viewLoginUser.modal.resetPassword.newPassword', 'sys.role.viewLoginUser.modal.resetPassword.defaultNote',
 ];
-
-const PAGE_SIZE_OPTIONS = [20, 50, 100, 200];
 
 /**
  * Bản Angular của sys/syRole/viewLoginUser.html (Thymeleaf + jQuery DataTables) - quản lý danh sách

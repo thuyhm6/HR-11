@@ -1,0 +1,71 @@
+<nz-card class="mb-3">
+  <div class="row g-3 align-items-end">
+    <div class="col-lg-9">
+      <app-pa-pay-period idPrefix="vpmc" [(salaryDistinNo)]="salaryDistinNo" [(payDate)]="payDate"
+                         [(payDatePro)]="payDatePro"></app-pa-pay-period>
+    </div>
+    <div class="col-lg-3 d-flex gap-2">
+      <button nz-button nzType="primary" type="button" id="vpmcBtnSearch" [nzLoading]="loading()" (click)="search()">
+        <i class="bx bx-search"></i> {{ 'public.title.search' | translate:'Tra cứu' }}
+      </button>
+      <button nz-button type="button" id="vpmcBtnExport" (click)="exportExcel()">
+        <i class="bx bx-download"></i> {{ 'ess.infoApply.export_to_Excel' | translate:'Xuất Excel' }}
+      </button>
+    </div>
+  </div>
+</nz-card>
+
+<nz-card>
+  <nz-table #vpmcTable id="vpmcTable" [nzData]="rows()" [nzLoading]="loading()" nzSize="small" nzBordered
+            [nzFrontPagination]="false" [nzShowPagination]="false"
+            [nzScroll]="{ x: '1600px', y: 'calc(100vh - 400px)' }">
+    <thead>
+      <tr>
+        <th rowspan="2" class="text-center" nzWidth="60px" nzLeft>{{ 'common.stt' | translate:'STT' }}</th>
+        <th rowspan="2" nzWidth="180px" nzLeft>{{ 'ess.empInfo.project' | translate:'Hạng mục' }}</th>
+        <th colspan="3" class="text-center">{{ 'pa.viewPaMonthChain.YUANGONGRENSHU.b' | translate:'Tổng nhân viên' }}</th>
+        <th colspan="3" class="text-center">{{ 'ess.empInfo.amount_of_money' | translate:'Số tiền' }}</th>
+        <th colspan="3" class="text-center">{{ 'pa.viewPaMonthChain.PINGJUN.b' | translate:'Bình quân' }}</th>
+        <th rowspan="2" class="text-end" nzWidth="100px">{{ 'pa.viewPaMonthChain.JINEZENGJIA.b' | translate:'Số tiền tăng' }}</th>
+        <th rowspan="2" class="text-end" nzWidth="100px">{{ 'pa.viewPaMonthChain.JINEJIANSHAO.b' | translate:'Số tiền giảm' }}</th>
+        <th rowspan="2" class="text-end" nzWidth="100px">{{ 'pa.viewPaMonthChain.RENYUANZENGJIA.b' | translate:'Tăng NV' }}</th>
+        <th rowspan="2" class="text-end" nzWidth="100px">{{ 'pa.viewPaMonthChain.RENYUANJIANSHAO.b' | translate:'Giảm NV' }}</th>
+      </tr>
+      <tr>
+        <ng-container *ngFor="let g of [1, 2, 3]">
+          <th class="text-end" nzWidth="110px">{{ 'display.emp.ben.or.benhs68' | translate:'Tháng trước' }}</th>
+          <th class="text-end" nzWidth="110px">{{ 'pa.monthPersonCountInfoList.DANGYUE.b' | translate:'Tháng này' }}</th>
+          <th class="text-end" nzWidth="110px">{{ 'org.title.ADDORDELETTE' | translate:'Tăng giảm' }}</th>
+        </ng-container>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let row of vpmcTable.data; let i = index">
+        <td class="text-center" nzLeft>{{ i + 1 }}</td>
+        <td nzLeft>{{ row.itemName }}</td>
+        <td class="text-end"><a class="vpmc-link" (click)="openDetail(row, 'PERSON_NUM_PRO')">{{ row.personNumPro | number:'1.0-0' }}</a></td>
+        <td class="text-end"><a class="vpmc-link" (click)="openDetail(row, 'PERSON_NUM')">{{ row.personNum | number:'1.0-0' }}</a></td>
+        <td class="text-end">{{ row.personNumDif | number:'1.0-0' }}</td>
+        <td class="text-end">{{ row.countNumPro | number:'1.0-0' }}</td>
+        <td class="text-end">{{ row.countNum | number:'1.0-0' }}</td>
+        <td class="text-end">{{ row.countNumDif | number:'1.0-0' }}</td>
+        <td class="text-end">{{ row.personNumAvgPro | number:'1.0-0' }}</td>
+        <td class="text-end">{{ row.personNumAvg | number:'1.0-0' }}</td>
+        <td class="text-end">{{ row.personNumAvgDif | number:'1.0-0' }}</td>
+        <td class="text-end"><a class="vpmc-link" (click)="openDetail(row, 'COUNT_UP')">{{ row.countUp | number:'1.0-0' }}</a></td>
+        <td class="text-end"><a class="vpmc-link" (click)="openDetail(row, 'COUNT_LOW')">{{ row.countLow | number:'1.0-0' }}</a></td>
+        <td class="text-end"><a class="vpmc-link" (click)="openDetail(row, 'PERSON_UP')">{{ row.personUp | number:'1.0-0' }}</a></td>
+        <td class="text-end"><a class="vpmc-link" (click)="openDetail(row, 'PERSON_LOW')">{{ row.personLow | number:'1.0-0' }}</a></td>
+      </tr>
+    </tbody>
+  </nz-table>
+  <div class="small text-muted mt-2" id="vpmcTotal">{{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ rows().length }}</div>
+</nz-card>
+
+<nz-modal [nzVisible]="!!detailQuery()" [nzTitle]="detailTitle()" nzWidth="1150px" [nzFooter]="null"
+          (nzOnCancel)="closeDetail()">
+  <ng-container *nzModalContent>
+    <app-pa-month-dif-detail idPrefix="vpmcDetail" layout="chain" [query]="detailQuery()" exportName="PersonNum"
+                             scrollY="50vh"></app-pa-month-dif-detail>
+  </ng-container>
+</nz-modal>

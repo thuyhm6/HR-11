@@ -15,6 +15,7 @@ import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { ApplyDetailKind, ApplyDetailResponse, SyAffirmEmailDto } from './view-noticeed-email.model';
 import { ViewNoticeedEmailService } from './view-noticeed-email.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - tải trước 1 lần ở ngOnInit (xem I18nService).
  *  Toàn bộ key bên dưới đã tồn tại sẵn (namespace vne, arOtf, applyAtt, ck.modal.title) - không cần
@@ -84,7 +85,7 @@ const STATUS_COLOR: Record<string, string> = {
 })
 export class ViewNoticeedEmailComponent implements OnInit {
   readonly applyTypeOptions = APPLY_TYPE_OPTIONS;
-  readonly pageSizeOptions = [25, 50, 100, 200];
+  readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
 
   readonly displayRows = signal<SyAffirmEmailDto[]>([]);
   readonly loading = signal(false);

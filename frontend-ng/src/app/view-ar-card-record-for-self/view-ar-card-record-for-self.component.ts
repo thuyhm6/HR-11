@@ -14,6 +14,7 @@ import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { ViewArCardRecordForSelfService } from './view-ar-card-record-for-self.service';
 import { ArCardRecordForSelfDto, AuthDeptNode, ImportDeviceResult } from './view-ar-card-record-for-self.model';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Toàn bộ key bên dưới đã có sẵn trong messages.properties/messages_vi_VN.properties (namespace "acr"
  *  dùng chung với ViewArCardRecordComponent vì cùng nội dung cột/label, "common" dùng chung) - không cần
@@ -60,7 +61,7 @@ const I18N_KEYS = [
   styleUrl: './view-ar-card-record-for-self.component.css',
 })
 export class ViewArCardRecordForSelfComponent implements OnInit {
-  readonly pageSizeOptions = [25, 50, 100, 200];
+  readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
 
   readonly rows = signal<ArCardRecordForSelfDto[]>([]);
   readonly loading = signal(false);

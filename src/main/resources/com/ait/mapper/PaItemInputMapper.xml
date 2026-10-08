@@ -12,6 +12,8 @@
         <result column="ITEM_TYPE" property="itemType" jdbcType="NUMERIC" />
         <result column="ACTIVITY"  property="activity" jdbcType="NUMERIC" />
         <result column="CPNY_ID"   property="cpnyId"   jdbcType="VARCHAR" />
+        <result column="ITEM_FLAG"   property="itemFlag"   jdbcType="VARCHAR" />
+        <result column="ITEM_NUMBER" property="itemNumber" jdbcType="NUMERIC" />
     </resultMap>
 
     <!-- ── Hạng mục nhân sự (PA_DISTINCT_LIST + SY_GLOBAL_NAME) ─────────────── -->
@@ -31,7 +33,9 @@
     <select id="selectAttendanceItems" resultMap="PaItemInputResultMap">
         SELECT AR_STA_ITEM.ITEM_NO    AS ITEM_NO,
                COLUMN_NAME            AS ITEM_ID,
-               SY_GLOBAL_NAME.CONTENT AS ITEM_NAME
+               SY_GLOBAL_NAME.CONTENT AS ITEM_NAME,
+               GET_ITEM_GLAG(COLUMN_NAME, AR_STA_ITEM_PARAM.CPNY_ID)   AS ITEM_FLAG,
+               GET_ITEM_NUMBER(COLUMN_NAME, AR_STA_ITEM_PARAM.CPNY_ID) AS ITEM_NUMBER
           FROM USER_TAB_COLUMNS,
                AR_STA_ITEM,
                AR_STA_ITEM_PARAM,
@@ -73,7 +77,9 @@
     <select id="selectComputeItems" resultMap="PaItemInputResultMap">
         SELECT T.ITEM_NO    AS ITEM_NO,
                PI.ITEM_ID   AS ITEM_ID,
-               SY.CONTENT   AS ITEM_NAME
+               SY.CONTENT   AS ITEM_NAME,
+               GET_ITEM_GLAG(PI.ITEM_ID, T.CPNY_ID)   AS ITEM_FLAG,
+               GET_ITEM_NUMBER(PI.ITEM_ID, T.CPNY_ID) AS ITEM_NUMBER
           FROM PA_ITEM_PARAM  T,
                PA_ITEM        PI,
                SY_GLOBAL_NAME SY
@@ -160,11 +166,15 @@
           FROM PA_SUMMARY_HTSV S
           LEFT JOIN HR_EMPLOYEE   E  ON S.EMPID   = E.EMPID
                                     AND E.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
-          LEFT JOIN HR_DEPARTMENT HD ON E.DEPTNO  = HD.DEPTNO
+          LEFT JOIN HR_DEPARTMENT HD ON S.DEPTNO  = HD.DEPTNO
          WHERE S.CPNY_ID         = #{cpnyId, jdbcType=VARCHAR}
            AND S.PAY_SCHEDULE_NO = #{payScheduleNo, jdbcType=VARCHAR}
+           <!-- Giới hạn theo phòng ban được phân quyền lương (giống exportResult bản gốc) -->
+           AND EXISTS (SELECT 1 FROM PA_SUPERVISOR_INFO PS
+                        WHERE PS.DEPTNO    = S.DEPTNO
+                          AND PS.PERSON_ID = #{adminID, jdbcType=VARCHAR})
            <if test="deptNos != null and deptNos.size() > 0">
-           AND E.DEPTNO IN
+           AND S.DEPTNO IN
                <foreach collection="deptNos" item="d" open="(" separator="," close=")">
                    #{d, jdbcType=VARCHAR}
                </foreach>

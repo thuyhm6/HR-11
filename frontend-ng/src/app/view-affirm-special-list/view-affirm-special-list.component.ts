@@ -20,6 +20,7 @@ import {
 } from './view-affirm-special-list.model';
 import { ViewAffirmSpecialListService } from './view-affirm-special-list.service';
 import { AffirmSpecialEditModalComponent, AffirmSpecialModalMode } from './affirm-special-edit-modal.component';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này + modal - tải trước 1 lần ở ngOnInit (xem I18nService). */
 const I18N_KEYS = [
@@ -37,8 +38,6 @@ const I18N_KEYS = [
   'vasl.msg.selectCell', 'vasl.msg.chooseObject', 'vasl.msg.chooseAffirmor', 'vasl.msg.duplicatePerson',
   'vasl.msg.noAffirmor', 'vasl.msg.emptyAffirmorWarn', 'vasl.msg.confirmDelete', 'vasl.msg.saveFail', 'vasl.msg.deleteFail',
 ];
-
-const PAGE_SIZE_OPTIONS = [25, 50, 100, 200];
 
 /** Độ rộng cột cố định (STT + Đối tượng) và mỗi cột loại phê duyệt - dùng tính nzScroll.x. */
 const FIXED_COLUMNS_WIDTH = 60 + 240;

@@ -13,6 +13,7 @@ import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { ArShiftGroupSavePayload, CodeItem, ShiftGroupEditRow } from './view-ar-shift-group-list.model';
 import { ViewArShiftGroupListService } from './view-ar-shift-group-list.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - toàn bộ đã có sẵn (namespace ess.shiftGroup.x
  *  dùng riêng cho đúng trang này, common.x/addShift.x/empCal.x dùng chung với các trang đã migrate
@@ -27,7 +28,6 @@ const I18N_KEYS = [
 
 /** parentCode của danh sách "Ca làm" (400223) - giữ nguyên như data-parent-code trong bản Thymeleaf gốc. */
 const SHIFT_PARENT_CODE = '400223';
-const PAGE_SIZE_OPTIONS = [25, 50, 100, 200];
 
 /**
  * Bản Angular của ess/deptEmpAtt/viewArShiftGroupList.html (Thymeleaf + jQuery DataTables) - danh sách

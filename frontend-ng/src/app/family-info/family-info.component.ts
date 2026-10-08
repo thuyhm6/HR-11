@@ -21,6 +21,7 @@ import {
   HrFamilyDto,
 } from './family-info.model';
 import { FamilyInfoService } from './family-info.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - đều đã có sẵn (hrm.empinfo.family.* dành riêng
  *  cho trang này, cộng các key chung), tải trước 1 lần ở ngOnInit (xem I18nService). */
@@ -41,8 +42,6 @@ const I18N_KEYS = [
   'hrm.empinfo.family.colPhone', 'hrm.empinfo.family.colOcupation', 'hrm.empinfo.family.colDependent',
   'hrm.empinfo.family.famTypePlaceholder', 'hrm.empinfo.family.pleaseSelect', 'hrm.empinfo.family.confirmDelete',
 ];
-
-const PAGE_SIZE_OPTIONS = [25, 50, 100, 200];
 
 /** parentCodeNo của bảng SY_CODE cho quan hệ người thân - dùng chung với PersonalInfoComponent (famTypeOptions). */
 const FAM_TYPE_PARENT_CODE = '950';

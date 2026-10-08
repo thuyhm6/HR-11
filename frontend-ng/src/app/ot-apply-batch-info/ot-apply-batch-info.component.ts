@@ -20,6 +20,7 @@ import { TranslatePipe } from '../i18n/translate.pipe';
 import { TabService } from '../shell/tab.service';
 import { OtApplyBatchInfoService } from './ot-apply-batch-info.service';
 import { ApprovalInfo, EmployeeOption, OtBatchApiRow, OtBatchRow, OtDetailResponse } from './ot-apply-batch-info.model';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - tải trước 1 lần ở ngOnInit (xem I18nService).
  *  Toàn bộ key bên dưới đã tồn tại sẵn (namespace arOtf, impOt.deductYn, ps.col, common, applyAtt -
@@ -129,7 +130,7 @@ const AFFIRM_BADGE: Record<string, { color: string; labelKey: string; fallback: 
 export class OtApplyBatchInfoComponent implements OnInit {
   readonly affirmFlagOptions = AFFIRM_FLAG_OPTIONS;
   readonly confirmFlagOptions = CONFIRM_FLAG_OPTIONS;
-  readonly pageSizeOptions = [25, 50, 100, 200];
+  readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
   readonly AFFIRM_APPROVED = AFFIRM_APPROVED;
 
   readonly serverRows = signal<OtBatchRow[]>([]);

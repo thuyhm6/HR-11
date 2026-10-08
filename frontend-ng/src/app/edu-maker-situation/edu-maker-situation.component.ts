@@ -26,13 +26,12 @@ import {
 import { EduSyllabusViewComponent } from '../edu-common/edu-syllabus-view.component';
 import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 const I18N_KEYS = [
   ...APPLY_TABLE_I18N_KEYS, 'ess.infoApply.confirm_status', 'hrm.empinfo.PERSON_NUMBER', 'ess.affirmApply.title.quxiaoshenqing',
   'edu.makerSituationHUB.QUEDINGQUXIAO.a', 'inct.salesman.button.cancelImport', 'alert.message.delete_fail',
 ];
-
-const PAGE_SIZE_OPTIONS = [50, 100, 200, 500];
 
 /**
  * Bản Angular của /edu/traineducation/makerSituation (JSP + DWZ, dự án Hanwha_HTSV) - tình hình đơn đăng ký khóa đào tạo:
@@ -63,7 +62,7 @@ export class EduMakerSituationComponent implements OnInit {
   readonly filteredRows = computed(() => this.rows().filter((r) => matchApplyRow(r, this.quickFilter())));
 
   pageIndex = 1;
-  pageSize = PAGE_SIZE_OPTIONS[0];
+  pageSize = 50;
   private lastSearch: EduApplySearch = currentMonthSearch();
 
   constructor(

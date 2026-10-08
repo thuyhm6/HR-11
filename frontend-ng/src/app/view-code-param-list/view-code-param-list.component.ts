@@ -20,6 +20,7 @@ import { TranslatePipe } from '../i18n/translate.pipe';
 import { SyCodeDto } from '../view-code-manage/view-code-manage.model';
 import { CodeParamPayload, CompanyOption, SyCodeParamDto } from './view-code-param-list.model';
 import { ViewCodeParamListService } from './view-code-param-list.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - riêng cho trang này dùng namespace
  *  sys.basic.viewCodeParamList.* (chỉ 3 key thực sự mới, xem CLAUDE.md), phần lớn tái dùng nguyên key
@@ -42,8 +43,6 @@ const I18N_KEYS = [
   'sys.basic.viewCodeParamList.treeTitle', 'sys.basic.viewCodeParamList.modal.editTitle',
   'sys.basic.viewCodeParamList.msg.selectNodeHint',
 ];
-
-const PAGE_SIZE_OPTIONS = [25, 50, 100, 200];
 
 /** SyCodeParamDto + trạng thái checkbox đang chỉnh trên UI (khởi tạo = assigned) - xem giải thích ở
  *  ViewMenuParamListComponent (cùng cơ chế MenuParamRow/saveList). */

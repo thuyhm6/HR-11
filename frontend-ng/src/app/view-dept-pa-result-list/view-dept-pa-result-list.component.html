@@ -1,0 +1,56 @@
+<nz-card class="mb-3">
+  <form class="row g-3" (ngSubmit)="search()">
+    <div class="col-md-4">
+      <label class="form-label" for="vdprlDept">{{ 'ess.infoApply.DEPT' | translate:'Phòng ban' }}</label>
+      <nz-tree-select id="vdprlDept" class="w-100" name="vdprlDept" [nzNodes]="deptNodes()" nzShowSearch nzAllowClear
+                      nzCheckable [nzMaxTagCount]="2" [(ngModel)]="deptNos"
+                      [nzPlaceHolder]="'pa.result.deptPlaceholder' | translate:'Chọn phòng ban'"
+                      [nzDropdownStyle]="{ 'max-height': '360px' }"></nz-tree-select>
+      <div *ngIf="deptErrorMessage()" class="text-danger small mt-1">{{ deptErrorMessage() }}</div>
+    </div>
+    <div class="col-md-3">
+      <label class="form-label" for="vdprlPaySchedule">{{ 'ess.empInfo.pay_plan' | translate:'Kế hoạch trả lương' }} <span class="text-danger">*</span></label>
+      <nz-select id="vdprlPaySchedule" class="w-100" name="vdprlPaySchedule" nzShowSearch [(ngModel)]="payScheduleNo">
+        <nz-option *ngFor="let s of schedules()" [nzValue]="s.payScheduleNo" [nzLabel]="scheduleLabel(s)"></nz-option>
+      </nz-select>
+    </div>
+    <div class="col d-flex align-items-end gap-2 flex-wrap">
+      <button nz-button nzType="primary" type="submit" id="vdprlBtnSearch" [nzLoading]="loading()">
+        <i class="bx bx-search"></i> {{ 'public.title.search' | translate:'Tra cứu' }}
+      </button>
+      <button nz-button type="button" id="vdprlBtnExport" class="vdprl-btn-export" (click)="exportExcel()">
+        <i class="bx bx-spreadsheet"></i> {{ 'hrm.empinfo.EXPORT' | translate:'Xuất Excel' }}
+      </button>
+    </div>
+  </form>
+</nz-card>
+
+<nz-card>
+  <nz-table #vdprlTable id="vdprlTable" [nzData]="rows()" [nzLoading]="loading()" nzSize="small" nzBordered
+            [(nzPageIndex)]="pageIndex" [(nzPageSize)]="pageSize" [nzPageSizeOptions]="pageSizeOptions"
+            [nzShowSizeChanger]="true" [nzShowTotal]="vdprlTotalTpl"
+            [nzScroll]="{ x: scrollX, y: 'calc(100vh - 430px)' }">
+    <thead>
+      <tr>
+        <th class="text-center" nzWidth="60px" nzLeft>{{ 'common.stt' | translate:'STT' }}</th>
+        <th class="text-center" nzWidth="200px" nzLeft>{{ 'ess.infoApply.DEPT' | translate:'Phòng ban' }}</th>
+        <th *ngFor="let c of numberColumns" class="text-center" [nzWidth]="numberColumnWidth">{{ title(c) }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let row of vdprlTable.data; let i = index">
+        <td class="text-center" nzLeft>{{ (pageIndex - 1) * pageSize + i + 1 }}</td>
+        <td nzLeft>{{ row.deptName }}</td>
+        <td *ngFor="let c of numberColumns" class="text-end">{{ $any(row[c.field]) | number:'1.0-2' }}</td>
+      </tr>
+    </tbody>
+    <!-- Dòng tổng - bản gốc viewDeptPaResultListSum -->
+    <tfoot nzSummary nzFixed *ngIf="rows().length">
+      <tr class="vdprl-sum-row">
+        <td [colspan]="2" class="text-center fw-semibold" nzLeft>{{ 'ess.viewpersonalpainfo.heji' | translate:'Tổng' }}</td>
+        <td *ngFor="let c of numberColumns" class="text-end fw-semibold">{{ totals()[c.field] | number:'1.0-2' }}</td>
+      </tr>
+    </tfoot>
+    <ng-template #vdprlTotalTpl let-total>{{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}</ng-template>
+  </nz-table>
+</nz-card>

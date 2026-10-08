@@ -147,6 +147,19 @@ export class AppShellComponent implements OnInit, OnDestroy {
     '/pa/workManagement/viewPaPayObj': '/view-pa-pay-obj',
     '/pa/workManagement/viewPaEmpAccount': '/view-pa-emp-account',
     '/pa/workManagement/payStub': '/view-pa-pay-stub',
+    '/pa/workManagement/detailmonthCountInfoLeft': '/detail-month-count-info',
+    '/pa/workManagement/detailYearCountInfoLeft': '/detail-year-count-info',
+    '/pa/workManagement/viewPaResultList': '/view-pa-result-list',
+    '/pa/workManagement/viewDeptPaResultList': '/view-dept-pa-result-list',
+    '/pa/workManagement/monthPersonCountInfoList': '/month-person-count-info-list',
+    '/pa/paView/viewPaMonthChain': '/view-pa-month-chain',
+    '/pa/workManagement/viewVerificationList': '/view-verification-list',
+    '/pa/workManagement/detailPersonCountInfo': '/detail-person-count-info',
+    '/pa/workManagement/detailPersonCountInfoLeft': '/detail-person-count-info-left',
+    '/pa/workManagement/detailItemCountInfo': '/detail-item-count-info',
+    '/pa/workManagement/detailItemDifCountInfo': '/detail-item-dif-count-info',
+    '/pa/workManagement/viewResultConfirmList': '/view-result-confirm-list',
+    '/report/ar/viewArReportsList': '/view-ar-reports-list',
     '/pa/wagebase/viewPaSupervisor': '/view-pa-supervisor',
     '/ar/attendanceSettings/viewDynamicGroup': '/view-dynamic-group',
     '/ar/attendanceSettings/viewArItem': '/view-ar-item',
@@ -287,6 +300,12 @@ export class AppShellComponent implements OnInit, OnDestroy {
   }
 
   angularRouteFor(menuUrl: string | null): string | null {
+    return AppShellComponent.migratedRouteFor(menuUrl);
+  }
+
+  /** Bản static của angularRouteFor() - để các trang đã migrate có link sang trang khác theo URL cũ
+   *  (vd ViewPaWorkFlowComponent) dùng chung bảng MIGRATED_ROUTES thay vì khai báo lại. */
+  static migratedRouteFor(menuUrl: string | null): string | null {
     if (!menuUrl) return null;
     // Menu trong DB có thể kèm query string (vd: "?seach_EMP_OFFICE=15119") - đa số trang gốc không
     // dùng tới nên so khớp theo path thuần để tránh bỏ sót menu đã migrate, nhưng vẫn phải giữ lại

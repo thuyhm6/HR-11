@@ -84,7 +84,7 @@
 
     <!-- ===== Bảng danh sách ===== -->
     <nz-table [nzData]="filteredRows()" [nzLoading]="loading()" [nzPageSize]="50" [nzShowSizeChanger]="true"
-              [nzPageSizeOptions]="[25, 50, 100]" [nzShowTotal]="cwaTotalTpl"
+              [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="cwaTotalTpl"
               [nzScroll]="{ x: '1200px' }" class="table-nowrap" #cwaTable>
       <thead>
         <tr>

@@ -20,6 +20,7 @@ import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { COST_FIELDS, CostField, EduTrainCost } from './edu-train-cost.model';
 import { EduTrainCostService } from './edu-train-cost.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Key message.properties dùng trong trang - hầu hết dùng lại key sẵn có của bản JSP gốc (edu.trainCostMANAGER.*). */
 const I18N_KEYS = [
@@ -34,7 +35,6 @@ const I18N_KEYS = [
   'common.loadFail', 'common.quickFilter', 'common.exportExcel', 'alert.message.update_fail',
 ];
 
-const PAGE_SIZE_OPTIONS = [50, 100, 200, 500, 1000];
 const NUMBER_PATTERN = /^\d+(\.\d+)?$/;
 
 /**
@@ -69,7 +69,7 @@ export class EduTrainCostComponent implements OnInit {
   });
 
   pageIndex = 1;
-  pageSize = PAGE_SIZE_OPTIONS[0];
+  pageSize = 50;
   searchCourseName = '';
   searchStart: Date | null = null;
   searchEnd: Date | null = null;

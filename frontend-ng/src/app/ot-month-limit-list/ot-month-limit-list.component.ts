@@ -14,6 +14,7 @@ import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { OtMonthLimitDeptNode, OtMonthLimitPeriod, OtMonthLimitPeriodColumn, OtMonthLimitRow } from './ot-month-limit-list.model';
 import { OtMonthLimitListService } from './ot-month-limit-list.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** 13 nhóm cột kỳ trên bảng: "Cả năm" (yearTotal, nhãn ghép động với năm đang chọn) + 12 tháng. */
 const PERIOD_COLUMNS: OtMonthLimitPeriodColumn[] = [
@@ -53,8 +54,6 @@ const I18N_KEYS = [
   'common.month.05', 'common.month.06', 'common.month.07', 'common.month.08',
   'common.month.09', 'common.month.10', 'common.month.11', 'common.month.12',
 ];
-
-const PAGE_SIZE_OPTIONS = [25, 50, 100];
 
 /**
  * Theo dõi tăng ca tháng (/ess/infoApply/viewOverTimeLimtShenPiList) - tổng hợp tăng ca (Tổng/Đã duyệt/

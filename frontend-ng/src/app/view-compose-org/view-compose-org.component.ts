@@ -18,6 +18,7 @@ import { OrgResumeInfoDto } from '../view-resume-list/view-resume-list.model';
 import { OrgTreeNodeOptions, buildOrgTree, collectAllKeys } from './org-info-tree.util';
 import { OrgCostCenterOption, OrgEmployeeDto, OrgInfoDto } from './view-compose-org.model';
 import { ViewComposeOrgService } from './view-compose-org.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - namespace "orgCompose" dành riêng cho trang này,
  *  còn lại tái sử dụng nguyên các key đã có ở "common", "orgResumeProcess" (dropdown phiên bản - cùng
@@ -41,8 +42,6 @@ const I18N_KEYS = [
   'common.confirm', 'common.status', 'common.noData', 'common.totalRows', 'common.createDate', 'common.loadFail',
   'common.saveFail', 'common.deleteFail',
 ];
-
-const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 
 type ComposeMode = 'VIEW' | 'NEW' | 'EDIT';
 

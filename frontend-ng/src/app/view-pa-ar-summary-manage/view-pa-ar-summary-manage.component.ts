@@ -25,6 +25,7 @@ import {
   PaArSummaryOption,
 } from './view-pa-ar-summary-manage.model';
 import { ViewPaArSummaryManageService } from './view-pa-ar-summary-manage.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - đều đã có sẵn (dùng chung với JSP gốc
  *  viewPaArSummaryForManageList.jsp: ar.viewPaArSummaryForManageList.*, ess.*, org.title.*, hr.*), chỉ thêm
@@ -54,7 +55,6 @@ const I18N_KEYS = [
 ];
 
 const EMP_OFFICE_PARENT_CODE = '15118';
-const PAGE_SIZE_OPTIONS = [20, 50, 100, 500];
 /** Báo cáo AutoExcel "Xuất dữ liệu ngoại lệ" - đúng /disc/autoExcel/exportLOtImportExcel?SQL_SEQMEAN=292 bản gốc. */
 const EXCEPTION_REPORT_SQL_SEQ = '292';
 

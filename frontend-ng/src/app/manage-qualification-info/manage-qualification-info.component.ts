@@ -16,6 +16,7 @@ import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { EmployeeOption, HrQualificationDto, QualificationSavePayload } from './manage-qualification-info.model';
 import { ManageQualificationInfoService } from './manage-qualification-info.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - hrm.empinfo.qual.* đã có sẵn từ trước (dành riêng
  *  cho trang này), cộng các key chung, tải trước 1 lần ở ngOnInit (xem I18nService). */
@@ -33,8 +34,6 @@ const I18N_KEYS = [
   'hrm.empinfo.qual.pleaseSelectAndName', 'hrm.empinfo.qual.confirmDelete', 'hrm.empinfo.qual.colCertName',
   'hrm.empinfo.qual.colSerialNo', 'hrm.empinfo.qual.colIssuer', 'hrm.empinfo.qual.colExpiry', 'hrm.empinfo.qual.colGrade',
 ];
-
-const PAGE_SIZE_OPTIONS = [25, 50, 100, 200];
 
 interface QualificationForm {
   qualNo: number | null;

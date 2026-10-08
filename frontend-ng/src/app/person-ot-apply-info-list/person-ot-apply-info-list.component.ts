@@ -12,6 +12,7 @@ import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { PersonOtApplyInfoListService } from './person-ot-apply-info-list.service';
 import { EssBasicInfoDto, EssPersonOtInfoDto } from './person-ot-apply-info-list.model';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này (toàn bộ tái sử dụng namespace poai.* đã có sẵn -
  *  không thêm key mới) - tải trước 1 lần ở ngOnInit (xem I18nService). */
@@ -59,6 +60,7 @@ const DEFAULT_WEEKDAYS = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
   styleUrl: './person-ot-apply-info-list.component.css',
 })
 export class PersonOtApplyInfoListComponent implements OnInit {
+  readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
   readonly basicInfo = signal<EssBasicInfoDto | null>(null);
   readonly itemOptions = signal<EssPersonOtInfoDto[]>([]);
 

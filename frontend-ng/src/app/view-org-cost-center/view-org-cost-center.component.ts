@@ -12,6 +12,7 @@ import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { OrgCostCenterDto } from './view-org-cost-center.model';
 import { ViewOrgCostCenterService } from './view-org-cost-center.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - namespace "orgCostCenter" riêng cho trang này,
  *  "common"/"orgCompose"/"org.title"/"alert.message" dùng chung với các trang org khác đã chuyển đổi -
@@ -30,8 +31,6 @@ const I18N_KEYS = [
   'common.deleteFail',
   'alert.message.add_success', 'alert.message.update_success', 'alert.message.delete_success',
 ];
-
-const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
 
 interface CostCenterForm {
   seq: string | null;

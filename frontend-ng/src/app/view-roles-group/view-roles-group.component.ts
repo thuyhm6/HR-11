@@ -19,6 +19,7 @@ import { TranslatePipe } from '../i18n/translate.pipe';
 import { SyMenuDto } from '../view-menu-list/view-menu-list.model';
 import { RoleRelationsPayload, RoleSavePayload, SyRoleDto } from './view-roles-group.model';
 import { ViewRolesGroupService } from './view-roles-group.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - tất cả đều đã có sẵn từ bản Thymeleaf gốc (namespace
  *  sys.role.viewRolesGroup.*), chỉ thêm 2 key mới opt.hub/opt.partner cho combo Loại hệ thống (bản gốc
@@ -42,8 +43,6 @@ const I18N_KEYS = [
   'sys.role.viewRolesGroup.msg.menuPanelPrefix', 'sys.role.viewRolesGroup.opt.hub',
   'sys.role.viewRolesGroup.opt.partner',
 ];
-
-const PAGE_SIZE_OPTIONS = [25, 50, 100, 200];
 
 interface RoleForm {
   roleNo: string | null;

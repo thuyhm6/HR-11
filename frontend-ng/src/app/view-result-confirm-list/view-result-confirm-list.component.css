@@ -1,0 +1,28 @@
+.vrcl-row,
+.vrcl-group {
+  cursor: pointer;
+}
+
+.vrcl-group > td {
+  background: #fafafa;
+  font-weight: 600;
+}
+
+.vrcl-row-selected > td {
+  background: #e6f4ff !important;
+}
+
+.vrcl-link,
+.vrcl-count {
+  color: #1677ff;
+  cursor: pointer;
+}
+
+.vrcl-ellipsis {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom;
+}

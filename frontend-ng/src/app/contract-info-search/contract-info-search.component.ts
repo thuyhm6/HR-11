@@ -17,6 +17,7 @@ import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { DataTablesRequestPayload, HrContractDto } from '../contract-info-list/contract-info-list.model';
 import { ContractInfoListService } from '../contract-info-list/contract-info-list.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - tải trước 1 lần ở ngOnInit (xem I18nService). */
 const I18N_KEYS = [
@@ -39,8 +40,6 @@ const I18N_KEYS = [
   'common.selectAll', 'common.stt', 'common.action', 'common.export', 'common.loadFail', 'common.noData',
   'common.totalRows', 'common.empName',
 ];
-
-const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 
 /**
  * Bản Angular của hrm/contract/viewContractInfoForSearch.html (Thymeleaf + jQuery DataTables) - trang

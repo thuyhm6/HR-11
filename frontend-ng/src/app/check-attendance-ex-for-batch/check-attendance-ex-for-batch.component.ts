@@ -25,6 +25,7 @@ import {
   CodeItem,
   ShiftOption,
 } from './check-attendance-ex-for-batch.model';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Toàn bộ key bên dưới đã có sẵn trong message.properties (namespace "ck" dùng riêng cho trang này,
  *  "common"/"mep" dùng chung với các trang khác) - không cần thêm key mới. */
@@ -98,7 +99,7 @@ const ITEM_NO_OPTIONS: { value: string; labelKey: string; fallback: string }[] =
 })
 export class CheckAttendanceExForBatchComponent implements OnInit {
   readonly itemNoOptions = ITEM_NO_OPTIONS;
-  readonly pageSizeOptions = [25, 50, 100, 200, 500];
+  readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
 
   readonly rows = signal<CheckAttendanceExRow[]>([]);
   readonly loading = signal(false);

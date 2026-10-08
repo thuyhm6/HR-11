@@ -17,6 +17,7 @@ import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { ArStatisticDateParamDto, CycleParameterSavePayload } from './view-cycle-parameter.model';
 import { ViewCycleParameterService } from './view-cycle-parameter.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - phần lớn đã có sẵn (dùng chung common.* và
  *  ar.viewcycleparameter.* đã tồn tại cho trang gốc), chỉ bổ sung thêm placeholder/addTitle/editTitle
@@ -33,8 +34,6 @@ const I18N_KEYS = [
   'ar.viewcycleparameter.msg.pleaseEnterRequired',
   'essDept.exportExcel',
 ];
-
-const PAGE_SIZE_OPTIONS = [25, 50, 100, 200];
 
 interface CycleParameterForm {
   paramNo: string | null;

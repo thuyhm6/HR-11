@@ -16,6 +16,7 @@ import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { LeaveConfirmService } from './leave-confirm.service';
 import { LeaveConfirmUiRow, LeaveDetailResponse, LeaveTypeOption } from './leave-confirm.model';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - tải trước 1 lần ở ngOnInit (xem I18nService).
  *  Namespace "lc"/"applyAtt"/"common"/"ck" dùng chung với viewAttendanceExConfirm đã migrate
@@ -89,7 +90,7 @@ const DEFAULT_CONFIRM_FLAG = '0';
 })
 export class LeaveConfirmComponent implements OnInit {
   readonly confirmFlagOptions = CONFIRM_FLAG_OPTIONS;
-  readonly pageSizeOptions = [25, 50, 100, 200];
+  readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
   readonly leaveTypeOptions = signal<LeaveTypeOption[]>([]);
 
   readonly rows = signal<LeaveConfirmUiRow[]>([]);

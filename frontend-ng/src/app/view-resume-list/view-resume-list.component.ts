@@ -16,6 +16,7 @@ import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { DataTablesRequestPayload, OrgResumeInfoDto, OrgResumeSavePayload } from './view-resume-list.model';
 import { ViewResumeListService } from './view-resume-list.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - namespace "orgResume" dành riêng cho trang này,
  *  "common"/"alert.message" dùng chung với các trang khác - tải trước 1 lần ở ngOnInit. */
@@ -30,8 +31,6 @@ const I18N_KEYS = [
   'common.loadFail', 'common.saveFail', 'common.deleteFail', 'common.exportExcel', 'common.selectAll',
   'alert.message.add_success', 'alert.message.update_success', 'alert.message.delete_success',
 ];
-
-const PAGE_SIZE_OPTIONS = [25, 50, 100, 200];
 
 /** Đúng 2 giá trị hardcode ở select bản gốc (viewResumeList.html Thymeleaf) - "14013948" là code SY_CODE
  *  cho trạng thái Hoạt động, còn "INACTIVE" là chuỗi literal (không phải code hợp lệ trong SY_CODE) nên

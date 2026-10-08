@@ -59,7 +59,7 @@
           </div>
 
           <nz-table [nzData]="item.filteredRows()" [nzLoading]="item.loading()" [nzPageSize]="50" [nzShowSizeChanger]="true"
-                    [nzPageSizeOptions]="[10, 25, 50, 100]" [nzShowTotal]="eipTotalTpl" [nzScroll]="{ x: '1150px' }" #itemTable="nzTable">
+                    [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="eipTotalTpl" [nzScroll]="{ x: '1150px' }" #itemTable="nzTable">
             <thead>
               <tr>
                 <th class="text-center" nzWidth="40px">
@@ -141,7 +141,7 @@
           </div>
 
           <nz-table [nzData]="param.filteredRows()" [nzLoading]="param.loading()" [nzPageSize]="50" [nzShowSizeChanger]="true"
-                    [nzPageSizeOptions]="[10, 25, 50, 100]" [nzShowTotal]="eipTotalTpl" [nzScroll]="{ x: '1450px' }" #paramTable="nzTable">
+                    [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="eipTotalTpl" [nzScroll]="{ x: '1450px' }" #paramTable="nzTable">
             <thead>
               <tr>
                 <th class="text-center" nzWidth="40px">

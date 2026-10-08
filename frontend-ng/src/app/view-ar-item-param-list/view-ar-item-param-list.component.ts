@@ -16,6 +16,7 @@ import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { ArItemOption, ArItemParamDto, ArItemParamSavePayload } from './view-ar-item-param-list.model';
 import { ViewArItemParamListService } from './view-ar-item-param-list.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** 3 lựa chọn chiều bù trừ quẹt thẻ (cardFromRelation/cardToRelation) - tái dùng key có sẵn
  *  ar.viewitemparameter.title.dayu/xiaoyu/dengyu (>, <, =), thay cho input text tự do của bản gốc
@@ -51,8 +52,6 @@ const I18N_KEYS = [
   'ar.viewitemparameter.title.dayu', 'ar.viewitemparameter.title.xiaoyu', 'ar.viewitemparameter.title.dengyu',
   'essDept.exportExcel',
 ];
-
-const PAGE_SIZE_OPTIONS = [25, 50, 100, 200];
 
 interface ArItemParamForm {
   arParamNo: string | null;

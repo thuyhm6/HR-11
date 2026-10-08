@@ -17,6 +17,7 @@ import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { ArCalenderHolidayDto, ArCalenderHolidaySavePayload } from './view-statutory-holidays.model';
 import { ViewStatutoryHolidaysService } from './view-statutory-holidays.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Shift ca hành chính mặc định dùng khi tạo ngày lễ - bản gốc hardcode y hệt (xem
  *  shlSaveData() trong viewStatutoryHolidays.html gốc), không có ô cho người dùng chọn. */
@@ -43,8 +44,6 @@ const I18N_KEYS = [
   'shl.typeHoliday', 'shl.typeWeekend', 'shl.msg.pleaseEnterDate',
   'essDept.exportExcel',
 ];
-
-const PAGE_SIZE_OPTIONS = [25, 50, 100, 200];
 
 interface HolidayForm {
   ddateStr: string | null;

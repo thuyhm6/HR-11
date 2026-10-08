@@ -20,6 +20,7 @@ import { CodeItem } from '../hrm-info-search/hrm-info-search.model';
 import { HrmInfoSearchService } from '../hrm-info-search/hrm-info-search.service';
 import { ExperienceListCriteria, ExperienceListItem } from './view-experience-list.model';
 import { ViewExperienceListService } from './view-experience-list.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 const I18N_KEYS = [
   'common.search.empIdOrName', 'common.deptName', 'common.includeSubDept', 'common.joinDate', 'common.empType',
@@ -109,6 +110,7 @@ const COLUMNS: VelColumn[] = [
   styleUrl: './view-experience-list.component.css',
 })
 export class ViewExperienceListComponent implements OnInit {
+  readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
   readonly columns = COLUMNS;
   readonly scrollX = `${COLUMNS.reduce((s, c) => s + parseInt(c.width, 10), 60)}px`;
 

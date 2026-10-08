@@ -23,6 +23,7 @@ import {
   SyncCleversePayload,
 } from './attendance-search.model';
 import { AttendanceSearchService } from './attendance-search.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - tải trước 1 lần ở ngOnInit (xem I18nService). */
 const I18N_KEYS = [
@@ -38,8 +39,6 @@ const I18N_KEYS = [
   'attSearch.syncModal.status', 'attSearch.syncModal.reason', 'attSearch.syncModal.send',
   'attSearch.syncModal.result', 'common.cancel',
 ];
-
-const PAGE_SIZE_OPTIONS = [25, 50, 100, 200, 500];
 
 /**
  * Bản Angular của ar/attendanceMintenance/viewAttendanceManagentForSerchInfoList.html (Thymeleaf +

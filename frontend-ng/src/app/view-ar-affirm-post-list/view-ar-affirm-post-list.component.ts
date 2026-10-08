@@ -14,6 +14,7 @@ import { TranslatePipe } from '../i18n/translate.pipe';
 import { CodeItem } from '../manage-emp-position-info/manage-emp-position-info.model';
 import { ArAffirmPostRow } from './view-ar-affirm-post-list.model';
 import { ViewArAffirmPostListService } from './view-ar-affirm-post-list.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - tải trước 1 lần ở ngOnInit (xem I18nService). */
 const I18N_KEYS = [
@@ -24,8 +25,6 @@ const I18N_KEYS = [
   'vaap.msg.chooseDuty', 'vaap.msg.enterLevel', 'vaap.msg.invalidLevel', 'vaap.msg.dutyExists',
   'vaap.msg.notFound', 'vaap.msg.confirmDelete', 'vaap.msg.saveFail', 'vaap.msg.deleteFail',
 ];
-
-const PAGE_SIZE_OPTIONS = [25, 50, 100];
 
 /**
  * Bản Angular của /sys/arAffirmPost/viewArAffirmPostList (JSP + DWZ, dự án Hanwha_HTSV) - Cấu hình vai trò người

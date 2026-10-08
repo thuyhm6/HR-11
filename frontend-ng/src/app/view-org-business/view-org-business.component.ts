@@ -19,6 +19,7 @@ import { OrgInfoDto } from '../view-compose-org/view-compose-org.model';
 import { OrgTreeNodeOptions, buildOrgTree, collectAllKeys } from '../view-compose-org/org-info-tree.util';
 import { OrgBusinessRelationDto } from './view-org-business.model';
 import { ViewOrgBusinessService } from './view-org-business.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - namespace "orgBusiness" riêng cho trang này, còn
  *  lại tái sử dụng nguyên các key đã có ở "common", "orgResumeProcess" (dropdown phiên bản), "orgCompose"
@@ -36,8 +37,6 @@ const I18N_KEYS = [
   'common.stt', 'common.addNew', 'common.edit', 'common.save', 'common.delete', 'common.cancel', 'common.close',
   'common.confirm', 'common.noData', 'common.loadFail', 'common.saveFail', 'common.deleteFail',
 ];
-
-const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 
 type BusinessMode = 'NEW' | 'EDIT';
 

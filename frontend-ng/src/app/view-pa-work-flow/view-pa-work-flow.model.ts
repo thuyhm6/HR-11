@@ -34,5 +34,15 @@ export interface PaWorkFlowRecordDto {
   rowNum: number;
 }
 
-/** type gửi kèm khi gọi POST /api/workFlow/execute - đúng tên PKG_PA_WORK_FLOW.PA_WORKFLOW_EXECUTE mong đợi. */
-export type PaWorkFlowTaskType = 'createPaObj' | 'arMonthCal' | 'paMonthCal' | 'paConfirm' | 'paOpen';
+/** type gửi kèm khi gọi POST /api/workFlow/execute - đúng tên PKG_PA_WORK_FLOW.PA_WORKFLOW_EXECUTE mong đợi
+ *  (giống value của checkbox processType / hidden arLockFlag ở viewPaWorkFlow.jsp gốc). */
+export type PaWorkFlowTaskType =
+  | 'createPaObj'
+  | 'arMonthCal'
+  | 'paMonthCal'
+  | 'paConfirm'
+  | 'paUnConfirm'
+  | 'paOpen'
+  | 'paUnOpen'
+  | 'arLockYes'
+  | 'arLockNo';

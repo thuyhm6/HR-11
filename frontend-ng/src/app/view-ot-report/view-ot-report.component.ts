@@ -13,6 +13,7 @@ import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { ViewOtReportService } from './view-ot-report.service';
 import { AuthDeptNode, EssOtReportDto } from './view-ot-report.model';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 interface OtMetricColumn {
   labelKey: string;
@@ -70,7 +71,7 @@ const I18N_KEYS = [
 })
 export class ViewOtReportComponent implements OnInit {
   readonly otMetricColumns = OT_METRIC_COLUMNS;
-  readonly pageSizeOptions = [10, 25, 50, 100];
+  readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
 
   readonly rows = signal<EssOtReportDto[]>([]);
   readonly loading = signal(false);

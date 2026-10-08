@@ -30,6 +30,7 @@ import {
   EduTrainAgreement,
 } from './edu-train-agreement.model';
 import { EduTrainAgreementService } from './edu-train-agreement.service';
+import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Key message.properties dùng trong trang - hầu hết dùng lại key sẵn có của bản JSP gốc (edu.trainAgreement.*). */
 const I18N_KEYS = [
@@ -52,8 +53,6 @@ const I18N_KEYS = [
   'common.empId', 'common.empName', 'common.deptName', 'ess.trans.title.postGradeName',
   'alert.message.add_fail', 'alert.message.update_fail', 'alert.message.delete_fail', 'alert.message.delete_success',
 ];
-
-const PAGE_SIZE_OPTIONS = [50, 100, 200, 500, 1000];
 
 interface AgreementForm {
   agreeNo: string | null;
@@ -126,7 +125,7 @@ export class EduTrainAgreementComponent implements OnInit {
   });
 
   pageIndex = 1;
-  pageSize = PAGE_SIZE_OPTIONS[0];
+  pageSize = 50;
   searchDeptNo: string | null = null;
   searchKeyword = '';
   searchConStart: Date | null = null;
