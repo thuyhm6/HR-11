@@ -1,8 +1,8 @@
 package com.ait.cleverse.dto;
 
 /**
- * Đơn chờ gửi sang hộp phê duyệt Cleverse (SEND_EMAIL_FLAG = 0).
- * Port từ kết quả sys.endEmail.getWaitSendApplyInfoList (Hanwha_HAE).
+ * Đơn xin phép trao đổi với hộp phê duyệt Cleverse. Port từ kết quả sys.endEmail
+ * getWaitSendApplyInfoList / getSynchronizationApprovalList / getApplyLeaveData (Hanwha_HAE).
  */
 public class CleverseApprovalApplyDto {
 
@@ -27,6 +27,11 @@ public class CleverseApprovalApplyDto {
     private String otTotalMonth;
     private String remark;
     private String misDocId;
+    /** 1: đơn nghỉ bắt đầu sau giờ vào ca (cần báo bảo vệ) - chỉ dùng khi đồng bộ trạng thái */
+    private String timeFlag;
+
+    public String getTimeFlag() { return timeFlag; }
+    public void setTimeFlag(String timeFlag) { this.timeFlag = timeFlag; }
 
     public String getApplyNo() { return applyNo; }
     public void setApplyNo(String applyNo) { this.applyNo = applyNo; }

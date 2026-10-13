@@ -1,0 +1,11 @@
+table td, table th {
+  white-space: nowrap;
+}
+
+table td {
+  vertical-align: middle;
+}
+
+.ewtl-row { cursor: pointer; }
+.ewtl-hint { font-size: .82rem; color: #64748b; }
+.ewtl-hint .bx { color: #f59e0b; vertical-align: middle; }

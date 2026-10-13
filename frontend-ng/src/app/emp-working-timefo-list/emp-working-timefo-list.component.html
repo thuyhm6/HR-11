@@ -1,0 +1,146 @@
+<div class="row">
+  <div class="col-12">
+    <!-- Điều kiện tìm kiếm - đứng im khi cuộn (xem .sticky-filter-card trong styles.css) -->
+    <nz-card class="mb-3 sticky-filter-card">
+      <form class="row g-3 align-items-end" (ngSubmit)="search()">
+        <div class="col-md-3">
+          <label class="form-label">{{ 'common.search.empIdOrName' | translate:'Mã nhân viên / Họ tên' }}</label>
+          <input nz-input [(ngModel)]="keyword" name="keyword"
+                 [placeholder]="'common.placeholder.enterEmpId' | translate:'Nhập mã hoặc họ tên'">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'common.fromDate' | translate:'Từ ngày' }}</label>
+          <nz-date-picker class="w-100" [(ngModel)]="fromDate" name="fromDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'common.toDate' | translate:'Đến ngày' }}</label>
+          <nz-date-picker class="w-100" [(ngModel)]="toDate" name="toDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'common.deptName' | translate:'Phòng ban' }}</label>
+          <nz-tree-select class="w-100" [nzNodes]="deptNodes()" [(ngModel)]="deptNos" name="deptNos"
+                          nzCheckable nzShowSearch nzAllowClear
+                          [nzPlaceHolder]="'common.select' | translate:'Chọn phòng ban'"></nz-tree-select>
+          <div *ngIf="deptTreeErrorMessage()" class="text-danger small mt-1">{{ deptTreeErrorMessage() }}</div>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'ewtl.minDays' | translate:'Số ngày OUT liên tiếp tối thiểu' }}</label>
+          <nz-input-number class="w-100" [(ngModel)]="minDays" name="minDays"
+                           [nzMin]="minConsecutiveDays" [nzMax]="366" [nzStep]="1"></nz-input-number>
+        </div>
+        <div class="col-12 d-flex align-items-center gap-2 flex-wrap">
+          <span class="ewtl-hint">
+            <i class="bx bx-info-circle"></i>
+            {{ 'ewtl.hint' | translate:'Chỉ hiển thị nhân viên có dữ liệu quẹt thẻ OUT liên tiếp từ 13 ngày trở lên và có dữ liệu chấm công chi tiết trong chuỗi ngày đó.' }}
+          </span>
+          <div class="ms-auto d-flex gap-2 flex-wrap">
+            <button nz-button nzType="primary" type="submit">
+              <i class="bx bx-search"></i> {{ 'common.search' | translate:'Tra cứu' }}
+            </button>
+            <button nz-button type="button" (click)="clearSearch()">
+              <i class="bx bx-x"></i> {{ 'common.clearFilter' | translate:'Xóa lọc' }}
+            </button>
+            <button nz-button type="button" (click)="exportExcel()" [disabled]="rows().length === 0">
+              <i class="bx bx-export"></i> {{ 'common.exportExcel' | translate:'Xuất Excel' }}
+            </button>
+          </div>
+        </div>
+      </form>
+    </nz-card>
+
+    <nz-card>
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+      <nz-table [nzData]="rows()" [nzFrontPagination]="false" [nzLoading]="loading()"
+                [nzTotal]="recordsTotal()" [nzPageIndex]="pageIndex" [nzPageSize]="pageSize"
+                [nzPageSizeOptions]="pageSizeOptions" nzShowSizeChanger [nzShowTotal]="ewtlTotalTpl"
+                (nzPageIndexChange)="onPageIndexChange($event)" (nzPageSizeChange)="onPageSizeChange($event)"
+                [nzScroll]="{ x: '1150px', y: 'calc(100vh - 400px)' }"
+                class="table-nowrap">
+        <thead>
+          <tr>
+            <th class="text-center" nzWidth="60px">{{ 'common.stt' | translate:'STT' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'common.empId' | translate:'Mã nhân viên' }}</th>
+            <th nzWidth="170px">{{ 'common.empName' | translate:'Họ tên' }}</th>
+            <th nzWidth="200px">{{ 'common.deptName' | translate:'Phòng ban' }}</th>
+            <th nzWidth="130px">{{ 'common.position' | translate:'Chức vụ' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'common.fromDate' | translate:'Từ ngày' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'common.toDate' | translate:'Đến ngày' }}</th>
+            <th class="text-center" nzWidth="130px">{{ 'ewtl.col.dayCount' | translate:'Số ngày OUT liên tiếp' }}</th>
+            <th class="text-center" nzWidth="130px">{{ 'ewtl.col.detailDayCount' | translate:'Số ngày có chấm công' }}</th>
+            <th class="text-center" nzWidth="80px">{{ 'common.detail' | translate:'Chi tiết' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of rows(); let i = index" class="ewtl-row" (dblclick)="openDetail(row)">
+            <td class="text-center">{{ (pageIndex - 1) * pageSize + i + 1 }}</td>
+            <td class="text-center">{{ row.empId }}</td>
+            <td [attr.title]="row.localName || null">{{ row.localName }}</td>
+            <td [attr.title]="row.deptName || null">{{ row.deptName }}</td>
+            <td [attr.title]="row.postGradeName || null">{{ row.postGradeName }}</td>
+            <td class="text-center">{{ row.streakFrom }}</td>
+            <td class="text-center">{{ row.streakTo }}</td>
+            <td class="text-center">
+              <nz-tag [nzColor]="row.dayCount >= minConsecutiveDays + 7 ? 'red' : 'orange'">
+                {{ row.dayCount }} {{ 'ewtl.days' | translate:'ngày' }}
+              </nz-tag>
+            </td>
+            <td class="text-center">{{ row.detailDayCount }}</td>
+            <td class="text-center">
+              <button nz-button nzType="text" nzSize="small" (click)="openDetail(row)"
+                      [title]="'common.detail' | translate:'Chi tiết'">
+                <i class="bx bx-show text-primary"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+        <ng-template #ewtlTotalTpl let-total>
+          {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+        </ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>
+
+<!-- ===== Modal chi tiết quẹt thẻ theo ngày trong chuỗi ===== -->
+<nz-modal [nzVisible]="detailVisible()" [nzTitle]="ewtlDetailTitleTpl" nzWidth="820px"
+          [nzFooter]="ewtlDetailFooterTpl" (nzOnCancel)="closeDetail()">
+  <ng-template #ewtlDetailTitleTpl>
+    {{ 'ewtl.detail.title' | translate:'Chi tiết quẹt thẻ' }}
+    <ng-container *ngIf="detailRow() as d">
+      - {{ d.empId }} {{ d.localName }} ({{ d.streakFrom }} → {{ d.streakTo }})
+    </ng-container>
+  </ng-template>
+  <ng-container *nzModalContent>
+    <nz-table #ewtlDetailTable [nzData]="detailDays()" [nzLoading]="detailLoading()" [nzFrontPagination]="false"
+              nzSize="small" [nzScroll]="{ y: '55vh' }" class="table-nowrap">
+      <thead>
+        <tr>
+          <th class="text-center" nzWidth="50px">{{ 'common.stt' | translate:'STT' }}</th>
+          <th class="text-center" nzWidth="110px">{{ 'attSearch.workDate' | translate:'Ngày công' }}</th>
+          <th class="text-center" nzWidth="110px">{{ 'attSearch.shiftType' | translate:'Ca' }}</th>
+          <th class="text-center" nzWidth="140px">{{ 'ewtl.col.inTime' | translate:'Giờ vào' }}</th>
+          <th class="text-center" nzWidth="140px">{{ 'ewtl.col.outTime' | translate:'Giờ ra' }}</th>
+          <th class="text-center" nzWidth="90px">{{ 'ewtl.col.swipeCount' | translate:'Số lần quẹt' }}</th>
+          <th class="text-center" nzWidth="100px">{{ 'ewtl.col.hasDetail' | translate:'Có chấm công' }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let d of ewtlDetailTable.data; let i = index">
+          <td class="text-center">{{ i + 1 }}</td>
+          <td class="text-center">{{ d.arDate }}</td>
+          <td class="text-center">{{ d.shiftName }}</td>
+          <td class="text-center">{{ d.inTime }}</td>
+          <td class="text-center">{{ d.outTime }}</td>
+          <td class="text-center">{{ d.swipeCount }}</td>
+          <td class="text-center">
+            <i class="bx" [ngClass]="d.hasDetail === 'Y' ? 'bx-check text-success' : 'bx-x text-danger'"></i>
+          </td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </ng-container>
+  <ng-template #ewtlDetailFooterTpl>
+    <button nz-button type="button" (click)="closeDetail()">{{ 'common.close' | translate:'Đóng' }}</button>
+  </ng-template>
+</nz-modal>

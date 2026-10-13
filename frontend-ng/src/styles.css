@@ -13,11 +13,124 @@
   padding: 10px 0;
 }
 
-.ant-table-thead > tr > th {
-  padding: 6px 4px;
+/* ===== Tham số dùng chung: chiều cao ô nhập liệu / nút bấm trên mọi giao diện (mặc định antd là 32px).
+   Áp dụng cho nz-input, nz-input-wrapper (prefix/suffix), nz-date-picker, nz-select, nz-tree-select,
+   nz-input-number và nz-button => form điều kiện tìm kiếm gọn hơn, ô nhập cao bằng nút bấm.
+   Không áp dụng cho textarea và các control đã khai báo nzSize="small" / "large". ===== */
+:root {
+  --app-control-height: 26px;
+  /* Chiều cao tag đã chọn trong select nhiều giá trị (nz-select nzMode="multiple", nz-tree-select nzCheckable) */
+  --app-control-tag-height: 18px;
 }
-.ant-table-tbody > tr > td {
-  padding: 4px;
+
+/* Ô nhập thường */
+input.ant-input:not(.ant-input-sm):not(.ant-input-lg) {
+  height: var(--app-control-height);
+  padding-top: 0;
+  padding-bottom: 0;
+}
+/* Ô nhập có prefix / suffix (nz-input-wrapper, nzSuffix...) - input bên trong không tự đặt chiều cao */
+.ant-input-affix-wrapper:not(.ant-input-affix-wrapper-sm):not(.ant-input-affix-wrapper-lg) {
+  height: var(--app-control-height);
+  padding-top: 0;
+  padding-bottom: 0;
+  align-items: center;
+}
+.ant-input-affix-wrapper > input.ant-input {
+  height: 100%;
+}
+
+/* Chọn ngày / tháng / khoảng ngày */
+.ant-picker:not(.ant-picker-small):not(.ant-picker-large) {
+  height: var(--app-control-height);
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+/* Ô số */
+.ant-input-number:not(.ant-input-number-sm):not(.ant-input-number-lg) {
+  height: var(--app-control-height);
+}
+.ant-input-number:not(.ant-input-number-sm):not(.ant-input-number-lg) .ant-input-number-input {
+  height: calc(var(--app-control-height) - 2px);
+}
+
+/* Select 1 giá trị */
+.ant-select-single.ant-select:not(.ant-select-sm):not(.ant-select-lg) {
+  height: var(--app-control-height);
+}
+.ant-select-single.ant-select:not(.ant-select-sm):not(.ant-select-lg) .ant-select-selector .ant-select-selection-search-input {
+  height: calc(var(--app-control-height) - 2px);
+}
+.ant-select-single.ant-select:not(.ant-select-sm):not(.ant-select-lg) .ant-select-selector .ant-select-selection-wrap::after,
+.ant-select-single.ant-select:not(.ant-select-sm):not(.ant-select-lg) .ant-select-selector::after {
+  line-height: calc(var(--app-control-height) - 2px);
+}
+
+/* Select nhiều giá trị / cây chọn phòng ban checkable: 2px viền + 2px padding + 4px lề tag + tag */
+.ant-select-multiple.ant-select:not(.ant-select-sm):not(.ant-select-lg) {
+  min-height: var(--app-control-height);
+}
+.ant-select-multiple.ant-select:not(.ant-select-sm):not(.ant-select-lg) .ant-select-selection-item {
+  height: var(--app-control-tag-height);
+  line-height: calc(var(--app-control-tag-height) - 2px);
+}
+.ant-select-multiple.ant-select:not(.ant-select-sm):not(.ant-select-lg) .ant-select-selection-search-input,
+.ant-select-multiple.ant-select:not(.ant-select-sm):not(.ant-select-lg) .ant-select-selection-search-mirror {
+  height: var(--app-control-tag-height);
+}
+.ant-select-multiple.ant-select:not(.ant-select-sm):not(.ant-select-lg) .ant-select-selection-overflow-item-suffix {
+  min-height: var(--app-control-tag-height);
+}
+.ant-select-multiple.ant-select:not(.ant-select-sm):not(.ant-select-lg) .ant-select-selection-wrap::after,
+.ant-select-multiple.ant-select:not(.ant-select-sm):not(.ant-select-lg) .ant-select-selector::after {
+  line-height: var(--app-control-tag-height);
+}
+
+/* Form item của nz-form (label ngang hàng ô nhập) */
+.ant-form-item-control-input {
+  min-height: var(--app-control-height);
+}
+.ant-form-item-label > label {
+  height: var(--app-control-height);
+}
+
+/* ===== Tham số dùng chung cho mọi nz-table (format chuẩn lấy theo trang Đổi đồng phục - uniform-change-list).
+   Muốn đổi cho toàn hệ thống chỉ cần sửa các biến dưới đây; trang nào cần khác thì override biến trong CSS
+   của trang đó (vd. :host { --app-table-row-even-bg: transparent; }). ===== */
+:root {
+  --app-table-head-padding: 4px;
+  --app-table-cell-padding: 4px;
+  --app-table-row-odd-bg: #ffffff;
+  --app-table-row-even-bg: #f2f6fc;
+  --app-table-row-hover-bg: #e6f4ff;
+}
+
+/* Padding ô - phải liệt kê cả size small / middle vì rule mặc định của antd cho các size này
+   (.ant-table.ant-table-small ... padding: 8px) có độ ưu tiên cao hơn rule chung. */
+.ant-table-thead > tr > th,
+.ant-table.ant-table-small .ant-table-thead > tr > th,
+.ant-table.ant-table-middle .ant-table-thead > tr > th {
+  padding: var(--app-table-head-padding);
+}
+.ant-table-tbody > tr > td,
+.ant-table.ant-table-small .ant-table-tbody > tr > td,
+.ant-table.ant-table-middle .ant-table-tbody > tr > td {
+  padding: var(--app-table-cell-padding);
+}
+
+/* Dòng lẻ / chẵn khác màu. Chỉ đếm dòng dữ liệu (tr.ant-table-row) - bỏ qua dòng đo độ rộng ẩn mà nz-table
+   chèn đầu tbody khi có nzScroll, dòng mở rộng (nzExpand) và dòng "không có dữ liệu" => không lệch chẵn/lẻ.
+   :where() giữ độ ưu tiên thấp (0,2,0): vẫn đè được nền trắng của cột cố định (.ant-table-cell-fix-left/right)
+   nhưng nhường cho dòng được chọn (ant-table-row-selected), hover và màu riêng khai báo trong từng trang. */
+:where(.ant-table-tbody) > :where(tr):nth-child(odd of .ant-table-row) > :where(td) {
+  background: var(--app-table-row-odd-bg);
+}
+:where(.ant-table-tbody) > :where(tr):nth-child(even of .ant-table-row) > :where(td) {
+  background: var(--app-table-row-even-bg);
+}
+.ant-table-tbody > tr.ant-table-row:hover > td {
+  background: var(--app-table-row-hover-bg);
 }
 
 /* Ô dữ liệu quá dài (tên phòng ban, tên quản lý...) bị ẩn bớt kèm dấu "..." thay vì tràn sang cột
@@ -63,8 +176,9 @@
   z-index: 15;
 }
 
+/* Nút bấm cao bằng ô nhập (--app-control-height) */
 .ant-btn {
-  height: 26px;
+  height: var(--app-control-height);
   padding: 2px 6px;
 }
 

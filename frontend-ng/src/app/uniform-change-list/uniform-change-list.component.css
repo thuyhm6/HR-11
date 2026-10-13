@@ -1,0 +1,35 @@
+table td, table th {
+  white-space: nowrap;
+}
+
+table td {
+  vertical-align: middle;
+}
+
+.ucl-hint { font-size: .82rem; color: #64748b; }
+.ucl-hint .bx { color: #f59e0b; vertical-align: middle; }
+
+/* Màu header theo file Excel gốc: thông tin NV (xanh lá), lí do (cam nhạt), nhóm đồng phục (vàng nhạt) */
+.ucl-table .ucl-th-key { background: #e8f5e1; }
+.ucl-table .ucl-th-reason { background: #fbe3d6; }
+.ucl-table .ucl-th-item { background: #fff7e0; }
+
+/* Padding ô + màu dòng lẻ/chẵn/hover: dùng format chung của mọi nz-table (biến --app-table-* trong styles.css) */
+
+.ucl-required::after { content: ' *'; color: #ef4444; }
+.ucl-emp-box {
+  padding: 8px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background: #f8fafc;
+  font-size: .875rem;
+  line-height: 1.6;
+}
+
+.ucl-import-error td { background: #fff1f0; }
+.ucl-wrap { white-space: normal; }
+
+/* Nhóm cột 6 tháng trước: ô có số lượng > 0 bấm được để xem chi tiết */
+.ucl-table .ucl-th-prev { background: #e6f4ff; }
+.ucl-prev-link { display: inline-block; min-width: 28px; font-weight: 600; text-decoration: underline; cursor: pointer; }
+.ucl-history-total td { font-weight: 600; background: #fafafa; }

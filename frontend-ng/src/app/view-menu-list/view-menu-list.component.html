@@ -89,9 +89,12 @@
         <input nz-input [(ngModel)]="form.menuCode" name="vmlMenuCode">
       </div>
       <div class="col-md-6">
-        <label class="form-label fw-semibold">{{ 'sys.basic.viewMenuList.label.parentMenuCode' | translate:'Mã Parent Menu' }}</label>
-        <input nz-input [(ngModel)]="form.menuParentNo" name="vmlMenuParentNo"
-               [placeholder]="'sys.basic.viewMenuList.label.parentMenuCode.placeholder' | translate:'Để trống nếu là gốc'">
+        <label class="form-label fw-semibold">{{ 'sys.basic.viewMenuList.label.parentMenuCode' | translate:'Parent Menu' }}</label>
+        <nz-tree-select class="w-100" id="vml-menuParentNo" [nzNodes]="parentMenuNodes()"
+                        [(ngModel)]="form.menuParentNo" name="vmlMenuParentNo"
+                        (ngModelChange)="onParentMenuChange($event)"
+                        nzShowSearch nzAllowClear [nzDropdownStyle]="{ 'max-height': '350px' }"
+                        [nzPlaceHolder]="'sys.basic.viewMenuList.label.parentMenuCode.placeholder' | translate:'Để trống nếu là gốc'"></nz-tree-select>
       </div>
 
       <div class="col-md-6">

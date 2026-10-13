@@ -10,6 +10,8 @@ import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
+import { NzTreeSelectModule } from 'ng-zorro-antd/tree-select';
+import { NzTreeNodeOptions } from 'ng-zorro-antd/tree';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import * as XLSX from 'xlsx';
 import { I18nService } from '../i18n/i18n.service';
@@ -40,7 +42,7 @@ const I18N_KEYS = [
 
 interface MenuForm {
   menuNo: string | null;
-  menuParentNo: string;
+  menuParentNo: string | null;
   menuCode: string;
   menuImg: string;
   menuUrl: string;
@@ -54,7 +56,7 @@ interface MenuForm {
 }
 
 const EMPTY_FORM: MenuForm = {
-  menuNo: null, menuParentNo: '', menuCode: '', menuImg: '', menuUrl: '', depth: 0, orderNo: 0, activity: true,
+  menuNo: null, menuParentNo: null, menuCode: '', menuImg: '', menuUrl: '', depth: 0, orderNo: 0, activity: true,
   nameVi: '', nameEn: '', nameZh: '', nameKo: '',
 };
 
@@ -83,6 +85,7 @@ const EMPTY_FORM: MenuForm = {
     NzModalModule,
     NzTagModule,
     NzAlertModule,
+    NzTreeSelectModule,
     TranslatePipe,
   ],
   templateUrl: './view-menu-list.component.html',
@@ -106,6 +109,10 @@ export class ViewMenuListComponent implements OnInit {
       : this.i18n.t('sys.basic.viewMenuList.msg.editTitle', 'Cập nhật Menu'),
   );
   form: MenuForm = { ...EMPTY_FORM };
+
+  /** Toàn bộ menu (không lọc theo keyword) - nguồn dựng cây chọn Parent Menu trong modal. */
+  private allMenus: SyMenuDto[] = [];
+  readonly parentMenuNodes = signal<NzTreeNodeOptions[]>([]);
 
   readonly deleteVisible = signal(false);
   readonly deleting = signal(false);
@@ -148,6 +155,7 @@ export class ViewMenuListComponent implements OnInit {
   openAddModal(): void {
     this.isNew.set(true);
     this.form = { ...EMPTY_FORM };
+    this.loadParentMenuTree(null);
     this.modalVisible.set(true);
   }
 
@@ -155,7 +163,7 @@ export class ViewMenuListComponent implements OnInit {
     this.isNew.set(false);
     this.form = {
       menuNo: row.menuNo,
-      menuParentNo: row.menuParentNo || '',
+      menuParentNo: row.menuParentNo || null,
       menuCode: row.menuCode || '',
       menuImg: row.menuImg || '',
       menuUrl: row.menuUrl || '',
@@ -167,7 +175,77 @@ export class ViewMenuListComponent implements OnInit {
       nameZh: row.nameZh || '',
       nameKo: row.nameKo || '',
     };
+    this.loadParentMenuTree(row.menuNo);
     this.modalVisible.set(true);
+  }
+
+  /** Khi chọn Parent Menu thì tự gợi ý Depth = depth của menu cha + 1 (bỏ chọn = gốc, depth 0). */
+  onParentMenuChange(parentNo: string | null): void {
+    const parent = parentNo ? this.allMenus.find((m) => m.menuNo === parentNo) : null;
+    this.form.depth = parent ? (parent.depth ?? 0) + 1 : 0;
+  }
+
+  /** Lấy toàn bộ menu qua API list có sẵn (keyword rỗng - không phụ thuộc bộ lọc đang tìm kiếm trên
+   *  bảng) rồi dựng cây menu cha cho nz-tree-select. */
+  private loadParentMenuTree(editingMenuNo: string | null): void {
+    this.api.list('').subscribe({
+      next: (list) => {
+        this.allMenus = list ?? [];
+        this.parentMenuNodes.set(this.buildParentMenuTree(this.allMenus, editingMenuNo));
+      },
+      error: () => {
+        this.allMenus = [];
+        this.parentMenuNodes.set([]);
+        this.message.error(this.i18n.t('common.loadFail', 'Tải dữ liệu thất bại!'));
+      },
+    });
+  }
+
+  /**
+   * Dựng cây chỉ gồm các "menu cha": menu đang có menu con hoặc không có URL (menu nhóm). Khi sửa,
+   * loại chính menu đang sửa cùng toàn bộ nhánh con của nó để tránh tạo vòng lặp cha-con.
+   */
+  private buildParentMenuTree(list: SyMenuDto[], editingMenuNo: string | null): NzTreeNodeOptions[] {
+    const childrenOf = new Map<string, SyMenuDto[]>();
+    list.forEach((m) => {
+      if (!m.menuParentNo) return;
+      const arr = childrenOf.get(m.menuParentNo) ?? [];
+      arr.push(m);
+      childrenOf.set(m.menuParentNo, arr);
+    });
+
+    const excluded = new Set<string>();
+    if (editingMenuNo) {
+      const stack = [editingMenuNo];
+      while (stack.length) {
+        const no = stack.pop()!;
+        excluded.add(no);
+        (childrenOf.get(no) ?? []).forEach((c) => stack.push(c.menuNo));
+      }
+    }
+
+    const isParentMenu = (m: SyMenuDto) => childrenOf.has(m.menuNo) || !m.menuUrl;
+    const byOrder = (a: SyMenuDto, b: SyMenuDto) => (a.orderNo ?? 0) - (b.orderNo ?? 0);
+    const menuNos = new Set(list.map((m) => m.menuNo));
+
+    const toNode = (m: SyMenuDto): NzTreeNodeOptions => {
+      const children = (childrenOf.get(m.menuNo) ?? [])
+        .filter((c) => !excluded.has(c.menuNo) && isParentMenu(c))
+        .sort(byOrder)
+        .map(toNode);
+      return {
+        title: `${m.menuCode} - ${m.nameVi ?? ''}`,
+        key: m.menuNo,
+        children,
+        isLeaf: children.length === 0,
+      };
+    };
+
+    return list
+      .filter((m) => !m.menuParentNo || !menuNos.has(m.menuParentNo))
+      .filter((m) => !excluded.has(m.menuNo) && isParentMenu(m))
+      .sort(byOrder)
+      .map(toNode);
   }
 
   closeModal(): void {

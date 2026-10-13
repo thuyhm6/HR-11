@@ -2534,7 +2534,7 @@ tạo mới giao diện /ess/infoApply/viewOverTimeLimtShenPiList - Theo dõi t�
 				HR.LOCAL_NAME                                                                                                      AS LOCAL_NAME,
 .
 
-Tạo mới lại cho tôi giao diện /ess/viewDept/viewDeptPersonalInfoManageList - Thông tin nhân sự với dạng Angular + NG-ZORRO  (Frontend). giao diện tham khảo hình ảnh. đây là một cách hiển thị khác của manage-emp-position-info
+Tạo mới lại cho tôi giao diện /ar/countAttendance/empWorkingTimefoList - Theo dõi tình trạng quẹt thẻ với dạng Angular + NG-ZORRO  (Frontend). chỉ lấy những nhân viên có dữ liệu OUT ở bảng AR_MAC_RECORDS_HTSV liên tiếp 13 ngày trở lên, đồng thời có dữ liệu trong bảng AR_DETAIL_HTSV.
 
 Tôi đang thực hiện việc chuyển đổi dự án HR ở dự án D:\Java\WorkSpace\Hanwha_HTSV sang dự án này. Tạo mới cho tôi giao diện /sys/affirmSpecial/viewAffirmSpecialList - Phê duyệt đặc biệt với dạng Angular + NG-ZORRO  (Frontend). chức năng giống như /sys/affirmSpecial/viewAffirmSpecialList ở dự án D:\Java\WorkSpace\Hanwha_HTSV. chỉ là giao diện được chuyển sang Angular + NG-ZORRO  (Frontend) và tương thích với dự án mới này.
 
@@ -2553,4 +2553,7 @@ Tôi đang thực hiện việc chuyển đổi dự án HR ở dự án D:\Java
 Tương tự Tạo mới cho tôi giao diện /edu/trainfile/trainCalendar, /report/ar/viewTrainReport và /edu/traineducation/trainArchives với dạng Angular + NG-ZORRO  (Frontend). chức năng giống như các giao diện tương ứng ở dự án D:\Java\WorkSpace\Hanwha_HTSV. chỉ là giao diện được chuyển sang Angular + NG-ZORRO  (Frontend) và tương thích với dự án mới này.
 
 
-/hrm/empinfo/viewHTSVCardInfoList.
+viết tiếp cho tôi chức năng đồng bộ giống như SynchronizationApprovalStatus của SendEmailTask.java trong dự án D:\Java\WorkSpace\Hanwha_HAE sang dự án này.
+
+
+Ở giao diện view-pa-work-flow - Quy trình tính lương này, khi tick vào Tính lương và bấm thực hiện thì hệ thống sẽ gọi đến package PKG_PA_WORK_FLOW và sau đó gọi đến parocedure PA_MONTH_CAL_P để thực hiện tính lương. nội dung 2 package và procedure tôi đang để trong đường dẫn D:\Java\WorkSpace\New_HR\HVV-VHR\oracle. hiện tại hệ thống đang tính lương theo tháng, tức là lấy dữ liệu từ bảng PA_PARAM_DATA và Pa_Param_Data_Other dựa theo START_MONTH và END_MONTH với định dạng là MMYYYY, giờ tôi muốn chuyển đổi thành START_DATE và END_DATE thì làm thế nào. vì lương nhân viên có nhiều trường hợp giữa tháng thay đổi, nên phải tính theo ngày, không thể tính theo tháng được

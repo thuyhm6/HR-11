@@ -1,0 +1,316 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- Quản lý đổi đồng phục nhân viên: HR_UNIFORM_ITEM / HR_UNIFORM_CHANGE / HR_UNIFORM_CHANGE_DETAIL
+     (script tạo bảng: resources/sql/create_hr_uniform_tables.sql). -->
+<mapper namespace="com.ait.hrm.uniform.mapper.HrUniformMapper">
+
+    <resultMap id="ItemResultMap" type="com.ait.hrm.uniform.dto.HrUniformItemDto">
+        <id     property="itemNo"      column="ITEM_NO"/>
+        <result property="itemName"    column="ITEM_NAME"/>
+        <result property="hasSize"     column="HAS_SIZE"/>
+        <result property="hasQuantity" column="HAS_QUANTITY"/>
+        <result property="orderNo"     column="ORDERNO"/>
+        <result property="remark"      column="REMARK"/>
+        <result property="activity"    column="ACTIVITY"/>
+    </resultMap>
+
+    <resultMap id="ChangeResultMap" type="com.ait.hrm.uniform.dto.HrUniformChangeDto">
+        <id     property="changeNo"         column="CHANGE_NO"/>
+        <result property="personId"         column="PERSON_ID"/>
+        <result property="empId"            column="EMPID"/>
+        <result property="localName"        column="LOCAL_NAME"/>
+        <result property="deptName"         column="DEPT_NAME"/>
+        <result property="postGradeName"    column="POST_GRADE_NAME"/>
+        <result property="sexName"          column="SEX_NAME"/>
+        <result property="dateStarted"      column="DATE_STARTED"/>
+        <result property="changeDate"       column="CHANGE_DATE"/>
+        <result property="changeMonth"      column="CHANGE_MONTH"/>
+        <result property="reason"           column="REASON"/>
+        <result property="remark"           column="REMARK"/>
+        <result property="nextEligibleDate" column="NEXT_ELIGIBLE_DATE"/>
+    </resultMap>
+
+    <resultMap id="MonthQtyResultMap" type="com.ait.hrm.uniform.dto.HrUniformMonthQtyDto">
+        <result property="personId"    column="PERSON_ID"/>
+        <result property="changeMonth" column="CHANGE_MONTH"/>
+        <result property="totalQty"    column="TOTAL_QTY"/>
+    </resultMap>
+
+    <resultMap id="DetailResultMap" type="com.ait.hrm.uniform.dto.HrUniformChangeDetailDto">
+        <result property="changeNo" column="CHANGE_NO"/>
+        <result property="itemNo"   column="ITEM_NO"/>
+        <result property="itemSize" column="ITEM_SIZE"/>
+        <result property="quantity" column="QUANTITY"/>
+    </resultMap>
+
+    <resultMap id="EmpInfoResultMap" type="com.ait.hrm.uniform.dto.HrUniformEmpInfoDto">
+        <result property="personId"         column="PERSON_ID"/>
+        <result property="empId"            column="EMPID"/>
+        <result property="localName"        column="LOCAL_NAME"/>
+        <result property="deptName"         column="DEPT_NAME"/>
+        <result property="postGradeName"    column="POST_GRADE_NAME"/>
+        <result property="sexName"          column="SEX_NAME"/>
+        <result property="dateStarted"      column="DATE_STARTED"/>
+        <result property="lastChangeDate"   column="LAST_CHANGE_DATE"/>
+        <result property="nextEligibleDate" column="NEXT_ELIGIBLE_DATE"/>
+    </resultMap>
+
+    <!-- ==================== Danh mục đồng phục ==================== -->
+
+    <select id="selectItemList" resultMap="ItemResultMap">
+        SELECT I.ITEM_NO, I.ITEM_NAME, I.HAS_SIZE, I.HAS_QUANTITY, I.ORDERNO, I.REMARK, I.ACTIVITY
+          FROM HR_UNIFORM_ITEM I
+         WHERE I.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+        <choose>
+            <when test="activeOnly">
+           AND I.ACTIVITY = 1
+            </when>
+            <otherwise>
+           AND I.ACTIVITY IN (0, 1)
+            </otherwise>
+        </choose>
+         ORDER BY I.ACTIVITY DESC, I.ORDERNO, I.ITEM_NO
+    </select>
+
+    <select id="selectNextItemNo" resultType="java.lang.Long">
+        SELECT HR_UNIFORM_ITEM_SEQ.NEXTVAL FROM DUAL
+    </select>
+
+    <insert id="insertItem" parameterType="com.ait.hrm.uniform.dto.HrUniformItemDto">
+        INSERT INTO HR_UNIFORM_ITEM (
+            ITEM_NO, CPNY_ID, ITEM_NAME, HAS_SIZE, HAS_QUANTITY, ORDERNO, REMARK, ACTIVITY,
+            CREATE_DATE, CREATED_BY, UPDATE_DATE, UPDATED_BY
+        ) VALUES (
+            #{itemNo, jdbcType=NUMERIC}, #{cpnyId, jdbcType=VARCHAR}, #{itemName, jdbcType=VARCHAR},
+            #{hasSize, jdbcType=CHAR}, #{hasQuantity, jdbcType=CHAR}, #{orderNo, jdbcType=NUMERIC},
+            #{remark, jdbcType=VARCHAR}, #{activity, jdbcType=NUMERIC},
+            SYSDATE, #{adminID, jdbcType=VARCHAR}, SYSDATE, #{adminID, jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <update id="updateItem" parameterType="com.ait.hrm.uniform.dto.HrUniformItemDto">
+        UPDATE HR_UNIFORM_ITEM
+           SET ITEM_NAME    = #{itemName, jdbcType=VARCHAR},
+               HAS_SIZE     = #{hasSize, jdbcType=CHAR},
+               HAS_QUANTITY = #{hasQuantity, jdbcType=CHAR},
+               ORDERNO      = #{orderNo, jdbcType=NUMERIC},
+               REMARK       = #{remark, jdbcType=VARCHAR},
+               ACTIVITY     = #{activity, jdbcType=NUMERIC},
+               UPDATE_DATE  = SYSDATE,
+               UPDATED_BY   = #{adminID, jdbcType=VARCHAR}
+         WHERE ITEM_NO = #{itemNo, jdbcType=NUMERIC}
+           AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+    </update>
+
+    <!-- Xóa mềm: vẫn giữ để hiển thị chi tiết các lần đổi cũ đã dùng item này. -->
+    <update id="deleteItem">
+        UPDATE HR_UNIFORM_ITEM
+           SET ACTIVITY    = -1,
+               UPDATE_DATE = SYSDATE,
+               UPDATED_BY  = #{adminID, jdbcType=VARCHAR}
+         WHERE ITEM_NO = #{itemNo, jdbcType=NUMERIC}
+           AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+    </update>
+
+    <select id="countItemByName" resultType="int">
+        SELECT COUNT(*)
+          FROM HR_UNIFORM_ITEM I
+         WHERE I.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+           AND I.ACTIVITY IN (0, 1)
+           AND CONVERTTOUNSIGN(UPPER(TRIM(I.ITEM_NAME))) = CONVERTTOUNSIGN(UPPER(TRIM(#{itemName, jdbcType=VARCHAR})))
+        <if test="excludeItemNo != null">
+           AND I.ITEM_NO &lt;&gt; #{excludeItemNo, jdbcType=NUMERIC}
+        </if>
+    </select>
+
+    <!-- ==================== Danh sách đổi đồng phục theo tháng ==================== -->
+
+    <!-- Cột thông tin 1 lần đổi (dùng chung danh sách theo tháng + popup chi tiết 1 tháng trước đó). -->
+    <sql id="changeColumns">
+                SELECT C.CHANGE_NO,
+                       C.PERSON_ID,
+                       HE.EMPID,
+                       HE.LOCAL_NAME,
+                       GET_DEPT_NAME(HE.DEPTNO, #{lang, jdbcType=VARCHAR})          AS DEPT_NAME,
+                       GET_GLOBAL_NAME(HE.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}) AS POST_GRADE_NAME,
+                       (SELECT GET_GLOBAL_NAME(MAX(PI.SEXCODE), #{lang, jdbcType=VARCHAR})
+                          FROM HR_PERSONAL_INFO PI
+                         WHERE PI.PERSON_ID = HE.PERSON_ID)                          AS SEX_NAME,
+                       TO_CHAR(HE.DATE_STARTED, 'DD/MM/YYYY')                       AS DATE_STARTED,
+                       TO_CHAR(C.CHANGE_DATE, 'DD/MM/YYYY')                         AS CHANGE_DATE,
+                       TO_CHAR(C.CHANGE_DATE, 'MM/YYYY')                            AS CHANGE_MONTH,
+                       C.REASON,
+                       C.REMARK,
+                       TO_CHAR(ADD_MONTHS(C.CHANGE_DATE, #{intervalMonths, jdbcType=NUMERIC}), 'DD/MM/YYYY') AS NEXT_ELIGIBLE_DATE
+    </sql>
+
+    <!-- Chỉ các lần đổi trong tháng đã chọn; 6 tháng trước đó tổng hợp riêng ở selectPrevMonthQty. -->
+    <sql id="changeFromWhere">
+          FROM HR_UNIFORM_CHANGE C
+         INNER JOIN HR_EMPLOYEE HE ON HE.PERSON_ID = C.PERSON_ID
+         WHERE C.ACTIVITY = 1
+           AND C.CPNY_ID  = #{cpnyId, jdbcType=VARCHAR}
+           AND C.CHANGE_DATE &gt;= TO_DATE(#{month, jdbcType=VARCHAR}, 'YYYY-MM')
+           AND C.CHANGE_DATE &lt; ADD_MONTHS(TO_DATE(#{month, jdbcType=VARCHAR}, 'YYYY-MM'), 1)
+        <if test="keyword != null and keyword != ''">
+           AND (
+               UPPER(HE.EMPID) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%'
+               OR CONVERTTOUNSIGN(UPPER(HE.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{keyword, jdbcType=VARCHAR})) || '%'
+               OR CONVERTTOUNSIGN(UPPER(C.REASON)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{keyword, jdbcType=VARCHAR})) || '%'
+           )
+        </if>
+    </sql>
+
+    <select id="countChangeList" resultType="int"
+            parameterType="com.ait.hrm.uniform.dto.HrUniformChangeSearchDto">
+        SELECT COUNT(*)
+        <include refid="changeFromWhere"/>
+    </select>
+
+    <select id="selectChangeListPage" resultMap="ChangeResultMap"
+            parameterType="com.ait.hrm.uniform.dto.HrUniformChangeSearchDto">
+        SELECT * FROM (
+            SELECT INNER_Q.*, ROWNUM AS RN FROM (
+                <include refid="changeColumns"/>
+                <include refid="changeFromWhere"/>
+                 ORDER BY C.CHANGE_DATE DESC, HE.EMPID, C.CHANGE_NO DESC
+            ) INNER_Q
+            WHERE ROWNUM &lt;= #{start, jdbcType=NUMERIC} + #{length, jdbcType=NUMERIC}
+        ) WHERE RN &gt; #{start, jdbcType=NUMERIC}
+    </select>
+
+    <!-- Tổng số lượng đã đổi theo từng tháng trong #{intervalMonths} tháng trước tháng tra cứu (không gồm tháng tra cứu). -->
+    <select id="selectPrevMonthQty" resultMap="MonthQtyResultMap">
+        SELECT C.PERSON_ID,
+               TO_CHAR(C.CHANGE_DATE, 'YYYY-MM') AS CHANGE_MONTH,
+               SUM(NVL(D.QUANTITY, 0))           AS TOTAL_QTY
+          FROM HR_UNIFORM_CHANGE C
+          LEFT JOIN HR_UNIFORM_CHANGE_DETAIL D ON D.CHANGE_NO = C.CHANGE_NO
+         WHERE C.ACTIVITY = 1
+           AND C.CPNY_ID  = #{cpnyId, jdbcType=VARCHAR}
+           AND C.CHANGE_DATE &gt;= ADD_MONTHS(TO_DATE(#{month, jdbcType=VARCHAR}, 'YYYY-MM'), 0 - #{intervalMonths, jdbcType=NUMERIC})
+           AND C.CHANGE_DATE &lt; TO_DATE(#{month, jdbcType=VARCHAR}, 'YYYY-MM')
+           AND C.PERSON_ID IN
+        <foreach collection="personIds" item="pid" open="(" separator="," close=")">
+               #{pid, jdbcType=VARCHAR}
+        </foreach>
+         GROUP BY C.PERSON_ID, TO_CHAR(C.CHANGE_DATE, 'YYYY-MM')
+    </select>
+
+    <!-- Các lần đổi của 1 nhân viên trong 1 tháng (popup khi bấm ô tháng trước). -->
+    <select id="selectPersonMonthChanges" resultMap="ChangeResultMap">
+        <include refid="changeColumns"/>
+          FROM HR_UNIFORM_CHANGE C
+         INNER JOIN HR_EMPLOYEE HE ON HE.PERSON_ID = C.PERSON_ID
+         WHERE C.ACTIVITY  = 1
+           AND C.CPNY_ID   = #{cpnyId, jdbcType=VARCHAR}
+           AND C.PERSON_ID = #{personId, jdbcType=VARCHAR}
+           AND C.CHANGE_DATE &gt;= TO_DATE(#{month, jdbcType=VARCHAR}, 'YYYY-MM')
+           AND C.CHANGE_DATE &lt; ADD_MONTHS(TO_DATE(#{month, jdbcType=VARCHAR}, 'YYYY-MM'), 1)
+         ORDER BY C.CHANGE_DATE, C.CHANGE_NO
+    </select>
+
+    <select id="selectChangeDetailList" resultMap="DetailResultMap">
+        SELECT D.CHANGE_NO, D.ITEM_NO, D.ITEM_SIZE, D.QUANTITY
+          FROM HR_UNIFORM_CHANGE_DETAIL D
+         WHERE D.CHANGE_NO IN
+        <foreach collection="changeNos" item="no" open="(" separator="," close=")">
+            #{no, jdbcType=NUMERIC}
+        </foreach>
+    </select>
+
+    <!-- ==================== Nhân viên + quy tắc 6 tháng/1 lần ==================== -->
+
+    <select id="selectEmpInfo" resultMap="EmpInfoResultMap">
+        SELECT HE.PERSON_ID,
+               HE.EMPID,
+               HE.LOCAL_NAME,
+               GET_DEPT_NAME(HE.DEPTNO, #{lang, jdbcType=VARCHAR})          AS DEPT_NAME,
+               GET_GLOBAL_NAME(HE.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}) AS POST_GRADE_NAME,
+               (SELECT GET_GLOBAL_NAME(MAX(PI.SEXCODE), #{lang, jdbcType=VARCHAR})
+                  FROM HR_PERSONAL_INFO PI
+                 WHERE PI.PERSON_ID = HE.PERSON_ID)                          AS SEX_NAME,
+               TO_CHAR(HE.DATE_STARTED, 'DD/MM/YYYY')                       AS DATE_STARTED,
+               TO_CHAR(L.LAST_DATE, 'DD/MM/YYYY')                           AS LAST_CHANGE_DATE,
+               TO_CHAR(ADD_MONTHS(L.LAST_DATE, #{intervalMonths, jdbcType=NUMERIC}), 'DD/MM/YYYY') AS NEXT_ELIGIBLE_DATE
+          FROM HR_EMPLOYEE HE
+          LEFT JOIN (SELECT C.PERSON_ID, MAX(C.CHANGE_DATE) AS LAST_DATE
+                       FROM HR_UNIFORM_CHANGE C
+                      WHERE C.ACTIVITY = 1
+                        AND C.CPNY_ID  = #{cpnyId, jdbcType=VARCHAR}
+                      GROUP BY C.PERSON_ID) L ON L.PERSON_ID = HE.PERSON_ID
+         WHERE UPPER(HE.EMPID) = UPPER(TRIM(#{empId, jdbcType=VARCHAR}))
+           AND HE.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+           AND ROWNUM = 1
+    </select>
+
+    <!-- Vi phạm quy tắc: đã có lần đổi khác cách ngày đổi mới chưa đủ #{intervalMonths} tháng (cả trước và sau). -->
+    <select id="selectConflictChangeDate" resultType="java.lang.String">
+        SELECT TO_CHAR(MAX(C.CHANGE_DATE), 'DD/MM/YYYY')
+          FROM HR_UNIFORM_CHANGE C
+         WHERE C.ACTIVITY  = 1
+           AND C.CPNY_ID   = #{cpnyId, jdbcType=VARCHAR}
+           AND C.PERSON_ID = #{personId, jdbcType=VARCHAR}
+           AND C.CHANGE_DATE &gt; ADD_MONTHS(TO_DATE(#{changeDate, jdbcType=VARCHAR}, 'DD/MM/YYYY'), 0 - #{intervalMonths, jdbcType=NUMERIC})
+           AND C.CHANGE_DATE &lt; ADD_MONTHS(TO_DATE(#{changeDate, jdbcType=VARCHAR}, 'DD/MM/YYYY'), #{intervalMonths, jdbcType=NUMERIC})
+        <if test="excludeChangeNo != null">
+           AND C.CHANGE_NO &lt;&gt; #{excludeChangeNo, jdbcType=NUMERIC}
+        </if>
+    </select>
+
+    <!-- ==================== Thêm / sửa / xóa lần đổi ==================== -->
+
+    <select id="selectNextChangeNo" resultType="java.lang.Long">
+        SELECT HR_UNIFORM_CHANGE_SEQ.NEXTVAL FROM DUAL
+    </select>
+
+    <insert id="insertChange">
+        INSERT INTO HR_UNIFORM_CHANGE (
+            CHANGE_NO, CPNY_ID, PERSON_ID, CHANGE_DATE, REASON, REMARK, ACTIVITY,
+            CREATE_DATE, CREATED_BY, CREATE_IP, UPDATE_DATE, UPDATED_BY, UPDATE_IP
+        ) VALUES (
+            #{changeNo, jdbcType=NUMERIC}, #{cpnyId, jdbcType=VARCHAR}, #{personId, jdbcType=VARCHAR},
+            TO_DATE(#{changeDate, jdbcType=VARCHAR}, 'DD/MM/YYYY'),
+            #{reason, jdbcType=VARCHAR}, #{remark, jdbcType=VARCHAR}, 1,
+            SYSDATE, #{adminID, jdbcType=VARCHAR}, #{adminIP, jdbcType=VARCHAR},
+            SYSDATE, #{adminID, jdbcType=VARCHAR}, #{adminIP, jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <update id="updateChange">
+        UPDATE HR_UNIFORM_CHANGE
+           SET CHANGE_DATE = TO_DATE(#{changeDate, jdbcType=VARCHAR}, 'DD/MM/YYYY'),
+               REASON      = #{reason, jdbcType=VARCHAR},
+               REMARK      = #{remark, jdbcType=VARCHAR},
+               UPDATE_DATE = SYSDATE,
+               UPDATED_BY  = #{adminID, jdbcType=VARCHAR},
+               UPDATE_IP   = #{adminIP, jdbcType=VARCHAR}
+         WHERE CHANGE_NO = #{changeNo, jdbcType=NUMERIC}
+           AND CPNY_ID   = #{cpnyId, jdbcType=VARCHAR}
+           AND ACTIVITY  = 1
+    </update>
+
+    <update id="deleteChange">
+        UPDATE HR_UNIFORM_CHANGE
+           SET ACTIVITY    = 0,
+               UPDATE_DATE = SYSDATE,
+               UPDATED_BY  = #{adminID, jdbcType=VARCHAR},
+               UPDATE_IP   = #{adminIP, jdbcType=VARCHAR}
+         WHERE CHANGE_NO = #{changeNo, jdbcType=NUMERIC}
+           AND CPNY_ID   = #{cpnyId, jdbcType=VARCHAR}
+    </update>
+
+    <delete id="deleteChangeDetail">
+        DELETE FROM HR_UNIFORM_CHANGE_DETAIL
+         WHERE CHANGE_NO = #{changeNo, jdbcType=NUMERIC}
+    </delete>
+
+    <insert id="insertChangeDetail" parameterType="com.ait.hrm.uniform.dto.HrUniformChangeDetailDto">
+        INSERT INTO HR_UNIFORM_CHANGE_DETAIL (CHANGE_NO, ITEM_NO, ITEM_SIZE, QUANTITY)
+        VALUES (#{changeNo, jdbcType=NUMERIC}, #{itemNo, jdbcType=NUMERIC},
+                #{itemSize, jdbcType=VARCHAR}, #{quantity, jdbcType=NUMERIC})
+    </insert>
+
+</mapper>

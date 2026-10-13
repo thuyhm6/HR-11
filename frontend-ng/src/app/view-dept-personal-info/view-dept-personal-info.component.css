@@ -5,10 +5,11 @@
   width: 90px;
 }
 
-/* Mỗi dòng nz-table là 1 thẻ nhân viên - bỏ padding/hover mặc định của nz-table */
+/* Mỗi dòng nz-table là 1 thẻ nhân viên - bỏ padding/hover và màu sọc dòng chẵn/lẻ chung của nz-table */
 :host ::ng-deep .vdpi-card-list .ant-table-tbody > tr > td.vdpi-card-cell {
   padding: 0 0 12px 0;
   border-bottom: none;
+  background: transparent;
 }
 :host ::ng-deep .vdpi-card-list .ant-table-tbody > tr:hover > td.vdpi-card-cell {
   background: transparent;

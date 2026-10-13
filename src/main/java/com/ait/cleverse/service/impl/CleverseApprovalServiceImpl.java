@@ -5,11 +5,20 @@ import com.ait.cleverse.dto.CleverseApprovalSignerDto;
 import com.ait.cleverse.mapper.CleverseApprovalMapper;
 import com.ait.cleverse.service.CleverseApprovalService;
 import com.ait.cleverse.util.TLS12SocketFactory;
+import com.ait.sy.syAffirm.mapper.SyAffirmEmailMapper;
 import hanwha.neo.branch.ss.approval.axisws.ApprovalServiceProxy;
 import hanwha.neo.branch.ss.approval.vo.ApprovalDocument;
+import hanwha.neo.branch.ss.approval.vo.ApprovalDocumentStatus;
+import hanwha.neo.branch.ss.approval.vo.MisKey;
 import hanwha.neo.branch.ss.approval.vo.ReceiverInfo;
 import hanwha.neo.branch.ss.approval.vo.SignerInfo;
 import hanwha.neo.branch.ss.approval.vo.WsApAttachFile;
+import hanwha.neo.branch.ss.common.vo.WsAttachFile;
+import hanwha.neo.branch.ss.common.vo.WsException;
+import org.apache.axis.AxisFault;
+import hanwha.neo.branch.ss.mail.service.MailServiceProxy;
+import hanwha.neo.branch.ss.mail.service.WsMailInfo;
+import hanwha.neo.branch.ss.mail.service.WsRecipient;
 import hanwha.neo.branch.ss.org.service.NeoOrgWsProxy;
 import hanwha.neo.branch.ss.org.vo.OrgUserVO;
 import jakarta.annotation.PostConstruct;
@@ -20,8 +29,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.util.HtmlUtils;
 
 import java.io.IOException;
@@ -34,8 +45,8 @@ import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * Port từ Hanwha_HAE: MailSendApprovalManager.sendAffirmInfoEmailApproval / sendApproval
- * và SendEmailSerImpl.getAffirmInfoEmailApproval.
+ * Port từ Hanwha_HAE: MailSendApprovalManager.sendAffirmInfoEmailApproval / sendApproval,
+ * SendEmailSerImpl.getAffirmInfoEmailApproval và SendEmailSerImpl.synchronizationApprovalStatus.
  * <p>
  * Endpoint, systemId, companyId, tiền tố MISDOCID lấy từ application.properties (bản gốc hardcode).
  */
@@ -64,13 +75,16 @@ public class CleverseApprovalServiceImpl implements CleverseApprovalService {
     @Value("${cleverse.approval.org-endpoint}")
     private String orgEndpoint;
 
-    @Value("${cleverse.approval.system-id:HAE_VHR}")
+    @Value("${cleverse.approval.system-id:VISION_VHR}")
     private String systemId;
 
-    @Value("${cleverse.approval.company-id:D11}")
+    @Value("${cleverse.approval.company-id:517}")
     private String companyId;
 
-    @Value("${cleverse.approval.mis-doc-id-prefix:HAEVHR_001_}")
+    @Value("${cleverse.approval.form-code:VISION_VHR}")
+    private String formCode;
+
+    @Value("${cleverse.approval.mis-doc-id-prefix:VISION_VHR_001_}")
     private String misDocIdPrefix;
 
     /** Mã NV dùng để kiểm tra kết nối NeoOrgWs trước khi gửi (bản gốc hardcode 20100196) */
@@ -79,6 +93,33 @@ public class CleverseApprovalServiceImpl implements CleverseApprovalService {
 
     @Value("${cleverse.approval.trust-all:true}")
     private boolean trustAll;
+
+    /** Mã công ty dùng khi đồng bộ từ scheduler (không có session) - bản gốc hardcode 'HAE' */
+    @Value("${cleverse.approval.cpny-id:HAE}")
+    private String syncCpnyId;
+
+    /** adminIP ghi vào PR_AFFIRM_EXECUTE để phân biệt duyệt từ Cleverse (bản gốc: hanwha.eagleoffice) */
+    @Value("${cleverse.approval.sync-admin-ip:hanwha.eagleoffice}")
+    private String syncAdminIp;
+
+    /** 1: gửi mail báo bảo vệ qua Cleverse MailService, 0: không gửi nhưng vẫn đánh dấu ATTENDACE_FLAG (MAIL_SEND_FLAG bản gốc) */
+    @Value("${cleverse.mail.send-flag:0}")
+    private String mailSendFlag;
+
+    @Value("${cleverse.mail.endpoint:https://epdev.cleverse.hanwha.com/soap/mail/axis/services/MailService}")
+    private String mailEndpoint;
+
+    @Value("${cleverse.mail.from:techwin.chr@hanwha.com}")
+    private String mailFrom;
+
+    @Value("${cleverse.mail.security-email:hae.security@hanwha.com}")
+    private String securityEmail;
+
+    @Autowired
+    private SyAffirmEmailMapper affirmEmailMapper;
+
+    @Autowired
+    private PlatformTransactionManager transactionManager;
 
     private volatile String template;
 
@@ -139,16 +180,207 @@ public class CleverseApprovalServiceImpl implements CleverseApprovalService {
         }
     }
 
+    /**
+     * Không mở transaction bao ngoài vì phải gọi web service Cleverse cho từng đơn; mỗi đơn được
+     * cập nhật trong transaction riêng (TransactionTemplate) để 1 đơn lỗi không rollback đơn khác.
+     */
+    @Override
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    public int synchronizationApprovalStatus() {
+        if (!"1".equals(sendFlag)) {
+            log.debug("[Cleverse-Sync] skipped (send-flag={})", sendFlag);
+            return 0;
+        }
+        try {
+            Map<String, Object> params = new HashMap<>();
+            params.put("cpnyId", syncCpnyId);
+            List<CleverseApprovalApplyDto> approvalList = mapper.selectSyncApprovalList(params);
+            if (approvalList == null || approvalList.isEmpty()) {
+                log.info("[Cleverse-Sync] No apply to synchronize");
+                return 0;
+            }
+            log.info("[Cleverse-Sync] Apply count to synchronize: {}", approvalList.size());
+
+            // Map MISDOCID (Cleverse) -> đơn trong HR để khớp O(1)
+            Map<String, CleverseApprovalApplyDto> applyByMisDocId = new HashMap<>();
+            for (CleverseApprovalApplyDto apply : approvalList) {
+                applyByMisDocId.put(misDocIdPrefix + safe(apply.getMisDocId()), apply);
+            }
+
+            ApprovalServiceProxy proxy = new ApprovalServiceProxy(approvalEndpoint);
+            TransactionTemplate txTemplate = new TransactionTemplate(transactionManager);
+            int processed = 0;
+            for (Map.Entry<String, CleverseApprovalApplyDto> entry : applyByMisDocId.entrySet()) {
+                CleverseApprovalApplyDto apply = entry.getValue();
+                ApprovalDocumentStatus docStatus = getApprovalStatus(proxy, entry.getKey());
+                // WS lỗi -> null / không có misDocId; status 4: bỏ qua (giữ logic bản gốc)
+                if (docStatus == null || docStatus.getMisDocId() == null || docStatus.getStatus() == 4) {
+                    continue;
+                }
+                try {
+                    syncApprovalByApply(apply, docStatus.getSignerInfos(), txTemplate);
+                    processed++;
+                } catch (Exception e) {
+                    log.error("[Cleverse-Sync] Error, applyNo={}", apply.getApplyNo(), e);
+                }
+            }
+            log.info("[Cleverse-Sync] Done: {}/{} processed", processed, approvalList.size());
+            return processed;
+        } catch (Exception e) {
+            log.error("[Cleverse-Sync] synchronizationApprovalStatus error", e);
+            return 0;
+        }
+    }
+
+    /** Port MailSendApprovalManager.getApprovalStatusByMisId - lỗi WS trả về null. */
+    private ApprovalDocumentStatus getApprovalStatus(ApprovalServiceProxy proxy, String misDocId) {
+        try {
+            MisKey misKey = new MisKey();
+            misKey.setSystemId(systemId);
+            misKey.setMisDocId(misDocId);
+            return proxy.getStatusByMisId(misKey);
+        } catch (Exception e) {
+            log.error("[Cleverse-Sync] getStatusByMisId error, misDocId={}, systemId={}{}", misDocId, systemId,
+                    describeWsError(e), e);
+            return null;
+        }
+    }
+
+    /** Port SendEmailSerImpl.syncApprovalByApply: cập nhật trạng thái duyệt của 1 đơn vào SY_AFFIRM_EMAIL. */
+    private void syncApprovalByApply(CleverseApprovalApplyDto apply, SignerInfo[] signerInfos,
+                                     TransactionTemplate txTemplate) {
+        if (signerInfos == null || signerInfos.length == 0) {
+            return;
+        }
+        String applyNo = apply.getApplyNo();
+        Map<String, Object> params = new HashMap<>();
+        params.put("applyNo", applyNo);
+        // Query đã lọc AFFIRM_FLAG = 0 và sắp xếp theo AFFIRM_LEVEL tăng dần
+        List<CleverseApprovalSignerDto> affirmList = mapper.selectAffirmListByApplyNo(params);
+        if (affirmList == null || affirmList.isEmpty()) {
+            return;
+        }
+
+        // Báo bảo vệ 1 lần/đơn khi cấp 2 còn chờ duyệt và đơn nghỉ bắt đầu sau giờ vào ca
+        if ("1".equals(apply.getTimeFlag())
+                && affirmList.stream().anyMatch(a -> "2".equals(safe(a.getAffirmLevel())))) {
+            sendAttendanceEmail(applyNo);
+            mapper.updateAttendanceFlag(params);
+        }
+
+        txTemplate.executeWithoutResult(status -> {
+            for (CleverseApprovalSignerDto affirm : affirmList) {
+                if (!"1".equals(safe(affirm.getAffirmType()))) {
+                    continue;
+                }
+                SignerInfo signer = findSigner(affirm, signerInfos);
+                // Không tìm thấy hoặc người duyệt chưa xử lý (status 0) trên Cleverse
+                if (signer == null || signer.getStatus() == 0) {
+                    continue;
+                }
+                Map<String, Object> execParams = new HashMap<>();
+                execParams.put("applyNo", applyNo);
+                execParams.put("applyType", safe(affirm.getApplyType()));
+                execParams.put("applyFlag", safe(affirm.getApplyFlag()));
+                execParams.put("flag", signer.getStatus());
+                execParams.put("affirmContent", safe(signer.getComment()));
+                execParams.put("adminID", "");
+                execParams.put("adminIP", syncAdminIp);
+                execParams.put("affirmLevel", safe(affirm.getAffirmLevel()));
+                execParams.put("message", "");
+                affirmEmailMapper.callAffirmExecute(execParams);
+                log.info("[Cleverse-Sync] applyNo={}, affirmLevel={}, affirmFlag={}, message={}",
+                        applyNo, affirm.getAffirmLevel(), signer.getStatus(), execParams.get("message"));
+            }
+        });
+    }
+
+    /**
+     * Tìm signer trên Cleverse tương ứng với 1 dòng duyệt trong HR (port findSigner bản gốc).
+     * Ưu tiên khớp email; chỉ fallback theo sequence (AFFIRM_LEVEL) khi sequence đó là duy nhất
+     * (tránh nhầm khi duyệt song song).
+     */
+    private SignerInfo findSigner(CleverseApprovalSignerDto affirm, SignerInfo[] signerInfos) {
+        String email = safe(affirm.getEmail()).trim();
+        if (!email.isEmpty()) {
+            for (SignerInfo signer : signerInfos) {
+                if (signer != null && email.equalsIgnoreCase(safe(signer.getEmailAddr()).trim())) {
+                    return signer;
+                }
+            }
+        }
+        String level = safe(affirm.getAffirmLevel());
+        SignerInfo matched = null;
+        for (SignerInfo signer : signerInfos) {
+            if (signer != null && level.equals(String.valueOf(signer.getSequence()))) {
+                if (matched != null) {
+                    return null; // nhiều signer cùng sequence -> không xác định được
+                }
+                matched = signer;
+            }
+        }
+        return matched;
+    }
+
+    /** Port SendEmailSerImpl.sendAttendanceEmail + MailManager.sendMailWebService: báo bảo vệ về đơn nghỉ. */
+    private void sendAttendanceEmail(String applyNo) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("applyNo", applyNo);
+        List<CleverseApprovalApplyDto> leaveList = mapper.selectApplyLeaveData(params);
+        if (leaveList == null || leaveList.isEmpty()) {
+            return;
+        }
+        for (CleverseApprovalApplyDto leave : leaveList) {
+            String personInfo = "<tr>" + td(leave.getLocalName()) + td(leave.getEmpId())
+                    + td(leave.getDeptName()) + td(leave.getPositionName()) + "</tr>";
+            String attInfo = "<tr>" + td(safe(leave.getApplyTypeNameKo()) + " / " + safe(leave.getApplyTypeNameVi()))
+                    + td(leave.getFromTime()) + td(leave.getToTime())
+                    + td(leave.getApplyLength()) + td(leave.getRemark()) + "</tr>";
+            String content = getTemplate()
+                    .replace("[APPLY_PERSON_INFO]", personInfo)
+                    .replace("[APPAL_ATT_INFO]", attInfo);
+            sendMail("Thông báo xin nghỉ phép", content, securityEmail);
+        }
+    }
+
+    private void sendMail(String title, String content, String address) {
+        if (!"1".equals(mailSendFlag)) {
+            log.info("[Cleverse-Mail] skipped (mail send-flag={}), to={}, title={}", mailSendFlag, address, title);
+            return;
+        }
+        try {
+            WsMailInfo mailInfo = new WsMailInfo();
+            mailInfo.setSubject(title);
+            mailInfo.setSenderEmail(mailFrom);
+            mailInfo.setHtmlContent(true);
+            mailInfo.setMhtContent(false);
+            mailInfo.setImportant(false);
+            mailInfo.setAttachCount(0);
+
+            WsRecipient receiver = new WsRecipient();
+            receiver.setSeqID(1);
+            receiver.setRecvType("TO");
+            receiver.setRecvEmail(address);
+            receiver.setDept(false);
+
+            MailServiceProxy mailProxy = new MailServiceProxy(mailEndpoint);
+            String result = mailProxy.sendMISMail(content, mailInfo, new WsRecipient[] { receiver }, new WsAttachFile[0]);
+            log.info("[Cleverse-Mail] Sent to={}, title={}, result={}", address, title, result);
+        } catch (Exception e) {
+            log.error("[Cleverse-Mail] sendMISMail error, to={}{}", address, describeWsError(e), e);
+        }
+    }
+
     private boolean checkOrgConnection(NeoOrgWsProxy orgProxy) {
         try {
             OrgUserVO[] users = orgProxy.searchUserByEmpolyeeNo(healthCheckEmpId);
+            // Chỉ cần WS phản hồi được; empId kiểm tra có thể không tồn tại trên Cleverse DEV (type=517)
             if (users == null || users.length == 0) {
-                log.warn("[Cleverse] NeoOrgWs health check returned no user for empId={}, skip sending", healthCheckEmpId);
-                return false;
+                log.warn("[Cleverse] NeoOrgWs health check returned no user for empId={}", healthCheckEmpId);
             }
             return true;
         } catch (Exception e) {
-            log.error("[Cleverse] NeoOrgWs unreachable ({}), skip sending", orgEndpoint, e);
+            log.error("[Cleverse] NeoOrgWs unreachable ({}), skip sending{}", orgEndpoint, describeWsError(e), e);
             return false;
         }
     }
@@ -201,7 +433,7 @@ public class CleverseApprovalServiceImpl implements CleverseApprovalService {
                         log.warn("[Cleverse] No Cleverse user for empId={}", empId);
                     }
                 } catch (Exception e) {
-                    log.error("[Cleverse] searchUserByEmpolyeeNo error, empId={}", empId, e);
+                    log.error("[Cleverse] searchUserByEmpolyeeNo error, empId={}{}", empId, describeWsError(e), e);
                 }
                 userKeyCache.put(empId, userKey);
             }
@@ -221,6 +453,9 @@ public class CleverseApprovalServiceImpl implements CleverseApprovalService {
             doc.setMisDocId(misDocIdPrefix + misDocId);
             doc.setSystemId(systemId);
             doc.setCompanyId(companyId);
+            if (!isBlank(formCode)) {
+                doc.setFormCode(formCode);
+            }
             doc.setFlowCase("customized");             // customized: bắt buộc truyền signerInfos
 
             int approverSize = approverList.size();
@@ -255,12 +490,63 @@ public class CleverseApprovalServiceImpl implements CleverseApprovalService {
 
             ApprovalServiceProxy proxy = new ApprovalServiceProxy(approvalEndpoint);
             String message = proxy.submitApproval(doc);
-            log.debug("[Cleverse] submitApproval misDocId={} response={}", misDocId, message);
+            log.info("[Cleverse] submitApproval misDocId={} response={}", misDocId, message);
             return true;
         } catch (Exception e) {
-            log.error("[Cleverse] submitApproval error, misDocId={}", misDocId, e);
+            log.error("[Cleverse] submitApproval error, misDocId={}{}\n  request: endpoint={}, systemId={}, companyId={},"
+                            + " formCode={}, flowCase=customized, title={}\n  signers: {}\n  receivers: {}",
+                    misDocIdPrefix + misDocId, describeWsError(e), approvalEndpoint, systemId, companyId, formCode,
+                    title, describeSigners(approverList), describeSigners(receiverList), e);
             return false;
         }
+    }
+
+    /**
+     * Trích thông tin lỗi SOAP: WsException (exceptionCode/Message/Actor do Cleverse trả về) và
+     * AxisFault (faultCode/faultString) - toString() mặc định của 2 class này không in các trường đó.
+     */
+    private static String describeWsError(Exception e) {
+        StringBuilder sb = new StringBuilder();
+        if (e instanceof WsException) {
+            WsException ws = (WsException) e;
+            sb.append("\n  WsException: code=").append(ws.getExceptionCode())
+              .append(", message=").append(ws.getExceptionMessage())
+              .append(", actor=").append(ws.getExceptionActor());
+        }
+        if (e instanceof AxisFault) {
+            AxisFault fault = (AxisFault) e;
+            sb.append("\n  AxisFault: faultCode=").append(fault.getFaultCode())
+              .append(", faultString=").append(fault.getFaultString());
+            if (fault.getFaultReason() != null && !fault.getFaultReason().equals(fault.getFaultString())) {
+                sb.append(", faultReason=").append(fault.getFaultReason());
+            }
+            Throwable cause = fault.detail;
+            if (cause != null) {
+                sb.append(", cause=").append(cause);
+            }
+        } else if (e.getMessage() != null) {
+            sb.append("\n  message=").append(e.getMessage());
+        }
+        return sb.toString();
+    }
+
+    /** Tóm tắt người duyệt/nhận gửi sang Cleverse - userKey=null nghĩa là không tra được user trên Cleverse. */
+    private static String describeSigners(List<CleverseApprovalSignerDto> signers) {
+        if (signers == null || signers.isEmpty()) {
+            return "[]";
+        }
+        StringBuilder sb = new StringBuilder("[");
+        for (CleverseApprovalSignerDto s : signers) {
+            if (sb.length() > 1) {
+                sb.append("; ");
+            }
+            sb.append("empId=").append(s.getAffirmEmpId())
+              .append(", level=").append(s.getAffirmLevel())
+              .append(s.getAssignType() != null ? ", assignType=" + s.getAssignType() : "")
+              .append(s.getReceiverType() != null ? ", roleType=" + s.getReceiverType() : "")
+              .append(", userKey=").append(s.getUserKey());
+        }
+        return sb.append("]").toString();
     }
 
     /** Port updateApplySendFlag: APPLY_NO duy nhất giữa các bảng nên update cả 5 bảng. */

@@ -22,6 +22,15 @@ public interface CleverseApprovalMapper {
     /** Danh sách người nhận thông báo (AFFIRM_TYPE IN (3,4)) của đơn - params: applyNo */
     List<CleverseApprovalSignerDto> selectReceiverListByApplyNo(Map<String, Object> params);
 
+    /** Các đơn đã gửi Cleverse và chưa kết thúc, cần đồng bộ trạng thái duyệt - params: cpnyId */
+    List<CleverseApprovalApplyDto> selectSyncApprovalList(Map<String, Object> params);
+
+    /** Thông tin đơn nghỉ chưa báo bảo vệ (ATTENDACE_FLAG IS NULL) - params: applyNo */
+    List<CleverseApprovalApplyDto> selectApplyLeaveData(Map<String, Object> params);
+
+    /** Đánh dấu đơn nghỉ đã báo bảo vệ - params: applyNo */
+    int updateAttendanceFlag(Map<String, Object> params);
+
     int updateAttApplySendFlag(Map<String, Object> params);
 
     int updateOtApplySendFlag(Map<String, Object> params);

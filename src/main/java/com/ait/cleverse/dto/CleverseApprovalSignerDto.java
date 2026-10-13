@@ -15,6 +15,10 @@ public class CleverseApprovalSignerDto {
     private String affirmEmpId;
     private String affirmPersonId;
     private String affirmLevel;
+    /** Email người duyệt - dùng để khớp với SignerInfo.emailAddr khi đồng bộ trạng thái */
+    private String email;
+    private String applyType;
+    private String applyFlag;
     /** userKey trên Cleverse, lấy qua NeoOrgWs.searchUserByEmpolyeeNo (không lấy từ DB) */
     private String userKey;
 
@@ -38,6 +42,15 @@ public class CleverseApprovalSignerDto {
 
     public String getAffirmLevel() { return affirmLevel; }
     public void setAffirmLevel(String affirmLevel) { this.affirmLevel = affirmLevel; }
+
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+
+    public String getApplyType() { return applyType; }
+    public void setApplyType(String applyType) { this.applyType = applyType; }
+
+    public String getApplyFlag() { return applyFlag; }
+    public void setApplyFlag(String applyFlag) { this.applyFlag = applyFlag; }
 
     public String getUserKey() { return userKey; }
     public void setUserKey(String userKey) { this.userKey = userKey; }

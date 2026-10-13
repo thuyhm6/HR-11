@@ -28,6 +28,7 @@
         <result property="otTotalMonth" column="OT_TOTAIL_MONTH"/>
         <result property="remark" column="REMARK"/>
         <result property="misDocId" column="MISDOCID"/>
+        <result property="timeFlag" column="TIME_FLAG"/>
     </resultMap>
 
     <resultMap id="CleverseApprovalSignerResultMap" type="com.ait.cleverse.dto.CleverseApprovalSignerDto">
@@ -38,6 +39,9 @@
         <result property="affirmEmpId" column="AFFIRM_EMPID"/>
         <result property="affirmPersonId" column="AFFIRM_PERSON_ID"/>
         <result property="affirmLevel" column="AFFIRM_LEVEL"/>
+        <result property="email" column="EMAIL"/>
+        <result property="applyType" column="APPLY_TYPE"/>
+        <result property="applyFlag" column="APPLY_FLAG"/>
     </resultMap>
 
     <!-- Port sys.endEmail.getWaitSendApplyInfoList: interLanguage -> #{lang}, interCpnyID / 'HAE' -> #{cpnyId} -->
@@ -211,7 +215,10 @@
                NULL RECEIVER_TYPE,
                E.EMPID AFFIRM_EMPID,
                S.AFFIRM_PERSON_ID,
-               S.AFFIRM_LEVEL
+               S.AFFIRM_LEVEL,
+               (SELECT P.EMAIL FROM HR_PERSONAL_INFO P WHERE P.PERSON_ID = E.PERSON_ID) EMAIL,
+               S.APPLY_TYPE,
+               S.APPLY_FLAG
           FROM SY_AFFIRM_EMAIL S, HR_EMPLOYEE E
          WHERE S.AFFIRM_PERSON_ID = E.PERSON_ID
            AND S.APPLY_NO = #{applyNo, jdbcType=VARCHAR}
@@ -236,6 +243,102 @@
            AND S.AFFIRM_TYPE IN (3, 4)
          ORDER BY S.AFFIRM_LEVEL
     </select>
+
+    <!-- Port sys.endEmail.getSynchronizationApprovalList: các đơn đã gửi Cleverse (SEND_EMAIL_FLAG = 1)
+         và chưa kết thúc (khác 14014308/09/10). Chạy từ scheduler (không có session) nên cpnyId truyền
+         tường minh từ cấu hình cleverse.approval.cpny-id (bản gốc hardcode 'HAE').
+         TIME_FLAG = 1: giờ bắt đầu nghỉ muộn hơn giờ vào ca đầu tiên -> cần báo bảo vệ. -->
+    <select id="selectSyncApprovalList" resultMap="CleverseApprovalApplyResultMap">
+        <![CDATA[
+        SELECT A.*
+          FROM (SELECT ATT.APPLY_NO,
+                       ATT.PERSON_ID,
+                       ATT.LEAVE_TYPE_NO APPLY_TYPE_NO,
+                       ATT.LEAVE_TYPE_CODE APPLY_TYPE_CODE,
+                       CASE WHEN TO_DATE(TO_CHAR(ATT.LEAVE_FROM_TIME, 'HH24:MI'), 'HH24:MI') >
+                                 TO_DATE(SUBSTR(SUBSTR(GET_AR_SHIFT_TIME(GET_AR_SHIFTNO(ATT.PERSON_ID, TO_CHAR(ATT.LEAVE_FROM_TIME, 'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}),
+                                                                         TO_CHAR(ATT.LEAVE_FROM_TIME, 'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, 'FIRST'), 0, 16), 12, 16), 'HH24:MI')
+                            THEN '1' ELSE '0' END TIME_FLAG,
+                       ATT.MISDOCID
+                  FROM ESS_LEAVE_APPLY_TB ATT
+                 WHERE ATT.AFFIRM_FLAG NOT IN ('14014308', '14014309', '14014310')
+                   AND ATT.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+                   AND ATT.ACTIVITY = 1
+                   AND ATT.SEND_EMAIL_FLAG = 1
+                   AND ATT.MISDOCID IS NOT NULL
+                UNION ALL
+                SELECT OT.APPLY_NO,
+                       OT.PERSON_ID,
+                       OT.OT_TYPE_NO APPLY_TYPE_NO,
+                       OT.OT_TYPE_CODE APPLY_TYPE_CODE,
+                       '0' TIME_FLAG,
+                       OT.MISDOCID
+                  FROM ESS_APPLY_OT OT
+                 WHERE OT.AFFIRM_FLAG NOT IN ('14014308', '14014309', '14014310')
+                   AND OT.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+                   AND OT.ACTIVITY = 1
+                   AND OT.SEND_EMAIL_FLAG = 1
+                   AND OT.MISDOCID IS NOT NULL
+                UNION ALL
+                SELECT OTO.APPLY_NO,
+                       OTO.PERSON_ID,
+                       OTO.OT_TYPE_NO APPLY_TYPE_NO,
+                       OTO.OT_TYPE_CODE APPLY_TYPE_CODE,
+                       '0' TIME_FLAG,
+                       OTO.MISDOCID
+                  FROM ESS_APPLY_OT_OVER OTO
+                 WHERE OTO.AFFIRM_FLAG NOT IN ('14014308', '14014309', '14014310')
+                   AND OTO.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+                   AND OTO.ACTIVITY = 1
+                   AND OTO.SEND_EMAIL_FLAG = 1
+                   AND OTO.MISDOCID IS NOT NULL
+                UNION ALL
+                SELECT CARD.APPLY_NO,
+                       CARD.PERSON_ID,
+                       '218197' APPLY_TYPE_NO,
+                       CARD.ITEM_NO APPLY_TYPE_CODE,
+                       '0' TIME_FLAG,
+                       CARD.MISDOCID
+                  FROM ESS_CARD_APPLY_TB CARD
+                 WHERE CARD.AFFIRM_FLAG NOT IN ('14014308', '14014309', '14014310')
+                   AND CARD.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+                   AND CARD.ACTIVITY = '1'
+                   AND CARD.SEND_EMAIL_FLAG = 1
+                   AND CARD.MISDOCID IS NOT NULL) A
+         ORDER BY A.APPLY_NO
+        ]]>
+    </select>
+
+    <!-- Port sys.endEmail.getApplyLeaveData: đơn nghỉ chưa báo bảo vệ (ATTENDACE_FLAG IS NULL) -->
+    <select id="selectApplyLeaveData" resultMap="CleverseApprovalApplyResultMap">
+        SELECT ATT.APPLY_NO,
+               ATT.PERSON_ID,
+               HR.LOCAL_NAME,
+               HR.EMPID,
+               GET_DEPT_NAME(HR.DEPTNO, 'vi') DEPT_NAME,
+               GET_GLOBAL_NAME(HR.POSITION_NO, 'vi') POSITION_NAME,
+               ATT.LEAVE_TYPE_NO APPLY_TYPE_NO,
+               ATT.LEAVE_TYPE_CODE APPLY_TYPE_CODE,
+               GET_GLOBAL_NAME(ATT.LEAVE_TYPE_CODE, 'vi') APPLY_TYPE_NAME_VI,
+               GET_GLOBAL_NAME(ATT.LEAVE_TYPE_CODE, 'ko') APPLY_TYPE_NAME_KO,
+               TO_CHAR(ATT.APPLY_TIME, 'DD/MM/YYYY') APPLY_TIME,
+               TO_CHAR(ATT.LEAVE_FROM_TIME, 'DD/MM/YYYY HH24:MI') FROM_TIME,
+               TO_CHAR(ATT.LEAVE_TO_TIME, 'DD/MM/YYYY HH24:MI') TO_TIME,
+               ATT.APPLY_LENGTH,
+               ATT.LEAVE_REASON REMARK,
+               ATT.MISDOCID
+          FROM ESS_LEAVE_APPLY_TB ATT, HR_EMPLOYEE HR
+         WHERE ATT.PERSON_ID = HR.PERSON_ID
+           AND ATT.APPLY_NO = #{applyNo, jdbcType=VARCHAR}
+           AND ATT.ATTENDACE_FLAG IS NULL
+    </select>
+
+    <!-- Port sys.endEmail.updateAttendace: đánh dấu đã báo bảo vệ (tên cột ATTENDACE_FLAG giữ nguyên theo DB) -->
+    <update id="updateAttendanceFlag">
+        UPDATE ESS_LEAVE_APPLY_TB
+           SET ATTENDACE_FLAG = 1
+         WHERE APPLY_NO = #{applyNo, jdbcType=VARCHAR}
+    </update>
 
     <!-- APPLY_NO là duy nhất giữa các bảng đơn nên gọi lần lượt cả 5 update (giống updateApplySendFlag bản gốc) -->
     <update id="updateAttApplySendFlag">

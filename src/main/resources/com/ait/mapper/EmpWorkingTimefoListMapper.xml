@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- Theo dõi tình trạng quẹt thẻ (empWorkingTimefoList): nhân viên có dữ liệu OUT ở AR_MAC_RECORDS_HTSV
+     liên tiếp từ #{minDays} (>= 13) ngày trở lên, đồng thời có dữ liệu ở AR_DETAIL_HTSV trong chuỗi ngày đó. -->
+<mapper namespace="com.ait.ar.countAttendance.mapper.EmpWorkingTimefoListMapper">
+
+    <resultMap id="StreakResultMap" type="com.ait.ar.countAttendance.dto.EmpWorkingTimefoDto">
+        <result property="personId"       column="PERSON_ID"/>
+        <result property="empId"          column="EMPID"/>
+        <result property="localName"      column="LOCAL_NAME"/>
+        <result property="deptNo"         column="DEPTNO"/>
+        <result property="deptName"       column="DEPT_NAME"/>
+        <result property="postGradeName"  column="POST_GRADE_NAME"/>
+        <result property="streakFrom"     column="STREAK_FROM"/>
+        <result property="streakTo"       column="STREAK_TO"/>
+        <result property="dayCount"       column="DAY_COUNT"/>
+        <result property="detailDayCount" column="DETAIL_DAY_COUNT"/>
+    </resultMap>
+
+    <resultMap id="StreakDayResultMap" type="com.ait.ar.countAttendance.dto.EmpWorkingTimefoDayDto">
+        <result property="arDate"     column="AR_DATE"/>
+        <result property="shiftName"  column="SHIFT_NAME"/>
+        <result property="inTime"     column="IN_TIME"/>
+        <result property="outTime"    column="OUT_TIME"/>
+        <result property="swipeCount" column="SWIPE_COUNT"/>
+        <result property="hasDetail"  column="HAS_DETAIL"/>
+    </resultMap>
+
+    <!-- Phân quyền dữ liệu: phòng ban do người đăng nhập quản lý (kể cả cấp con) hoặc được phân công
+         giám sát chấm công - giống ArCardRecordMapper.baseQuery. -->
+    <sql id="authDeptFilter">
+           AND EXISTS (
+               SELECT B1.DEPTID
+                 FROM HR_DEPARTMENT B1
+                WHERE B1.DEPTNO = HE.DEPTNO
+                START WITH B1.DEPTNO IN (
+                    SELECT HRD.DEPTID
+                      FROM HR_DEPARTMENT HRD
+                     WHERE HRD.MANAGER_EMP_ID = #{adminID, jdbcType=VARCHAR}
+                )
+               CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+               UNION
+               SELECT SI.DEPTNO
+                 FROM AR_SUPERVISOR_INFO SI
+                WHERE SI.DEPTNO = HE.DEPTNO
+                  AND SI.PERSON_ID = #{adminID, jdbcType=VARCHAR}
+           )
+    </sql>
+
+    <!-- Gaps-and-islands: AR_DATE - ROW_NUMBER() không đổi trong 1 dãy ngày liên tiếp => GROUP BY ra từng chuỗi. -->
+    <sql id="streakCte">
+        WITH OUT_DAYS AS (
+            SELECT DISTINCT AR.PERSON_ID, AR.AR_DATE_STR
+              FROM AR_MAC_RECORDS_HTSV AR
+             WHERE AR.ACTIVITY  = 1
+               AND AR.DOOR_TYPE = 'OUT'
+               AND AR.AR_DATE_STR &gt;= TO_CHAR(TO_DATE(#{fromDate, jdbcType=VARCHAR}, 'YYYY-MM-DD'), 'YYYY/MM/DD')
+               AND AR.AR_DATE_STR &lt;= TO_CHAR(TO_DATE(#{toDate,   jdbcType=VARCHAR}, 'YYYY-MM-DD'), 'YYYY/MM/DD')
+        ),
+        OUT_GROUPS AS (
+            SELECT OD.PERSON_ID,
+                   TO_DATE(REPLACE(OD.AR_DATE_STR, '/', '-'), 'YYYY-MM-DD') AS AR_DATE,
+                   TO_DATE(REPLACE(OD.AR_DATE_STR, '/', '-'), 'YYYY-MM-DD')
+                     - ROW_NUMBER() OVER (PARTITION BY OD.PERSON_ID ORDER BY OD.AR_DATE_STR) AS GRP_KEY
+              FROM OUT_DAYS OD
+        ),
+        STREAKS AS (
+            SELECT OG.PERSON_ID,
+                   MIN(OG.AR_DATE) AS STREAK_FROM,
+                   MAX(OG.AR_DATE) AS STREAK_TO,
+                   COUNT(*)        AS DAY_COUNT
+              FROM OUT_GROUPS OG
+             GROUP BY OG.PERSON_ID, OG.GRP_KEY
+            HAVING COUNT(*) &gt;= #{minDays, jdbcType=NUMERIC}
+        ),
+        STREAK_DETAIL AS (
+            SELECT S.PERSON_ID,
+                   S.STREAK_FROM,
+                   S.STREAK_TO,
+                   S.DAY_COUNT,
+                   (SELECT COUNT(DISTINCT D.AR_DATE_STR)
+                      FROM AR_DETAIL_HTSV D
+                     WHERE D.PERSON_ID = S.PERSON_ID
+                       AND D.AR_DATE_STR &gt;= TO_CHAR(S.STREAK_FROM, 'YYYY/MM/DD')
+                       AND D.AR_DATE_STR &lt;= TO_CHAR(S.STREAK_TO,   'YYYY/MM/DD')) AS DETAIL_DAY_COUNT
+              FROM STREAKS S
+        )
+    </sql>
+
+    <sql id="streakFromWhere">
+          FROM STREAK_DETAIL SD
+         INNER JOIN HR_EMPLOYEE HE ON HE.PERSON_ID = SD.PERSON_ID
+         WHERE SD.DETAIL_DAY_COUNT &gt; 0
+           AND HE.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+        <if test="keyword != null and keyword != ''">
+           AND (
+               UPPER(HE.EMPID) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%'
+               OR CONVERTTOUNSIGN(UPPER(HE.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{keyword, jdbcType=VARCHAR})) || '%'
+           )
+        </if>
+        <if test="deptNos != null and deptNos != ''">
+           AND INSTR(',' || #{deptNos, jdbcType=VARCHAR} || ',', ',' || HE.DEPTNO || ',') &gt; 0
+        </if>
+        <include refid="authDeptFilter"/>
+    </sql>
+
+    <select id="countStreakList" resultType="int"
+            parameterType="com.ait.ar.countAttendance.dto.EmpWorkingTimefoSearchDto">
+        <include refid="streakCte"/>
+        SELECT COUNT(*)
+        <include refid="streakFromWhere"/>
+    </select>
+
+    <select id="selectStreakListPage" resultMap="StreakResultMap"
+            parameterType="com.ait.ar.countAttendance.dto.EmpWorkingTimefoSearchDto">
+        <include refid="streakCte"/>
+        SELECT * FROM (
+            SELECT INNER_Q.*, ROWNUM AS RN FROM (
+                SELECT SD.PERSON_ID,
+                       HE.EMPID,
+                       HE.LOCAL_NAME,
+                       HE.DEPTNO,
+                       GET_DEPT_NAME(HE.DEPTNO, #{lang, jdbcType=VARCHAR})          AS DEPT_NAME,
+                       GET_GLOBAL_NAME(HE.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}) AS POST_GRADE_NAME,
+                       TO_CHAR(SD.STREAK_FROM, 'DD/MM/YYYY')                        AS STREAK_FROM,
+                       TO_CHAR(SD.STREAK_TO,   'DD/MM/YYYY')                        AS STREAK_TO,
+                       SD.DAY_COUNT,
+                       SD.DETAIL_DAY_COUNT
+                <include refid="streakFromWhere"/>
+                 ORDER BY SD.DAY_COUNT DESC, SD.STREAK_TO DESC, HE.DEPTNO, HE.EMPID
+            ) INNER_Q
+            WHERE ROWNUM &lt;= #{start, jdbcType=NUMERIC} + #{length, jdbcType=NUMERIC}
+        ) WHERE RN &gt; #{start, jdbcType=NUMERIC}
+    </select>
+
+    <select id="selectStreakDayList" resultMap="StreakDayResultMap">
+        SELECT TO_CHAR(TO_DATE(REPLACE(AR.AR_DATE_STR, '/', '-'), 'YYYY-MM-DD'), 'DD/MM/YYYY') AS AR_DATE,
+               (SELECT GET_GLOBAL_NAME(MAX(SH.SHIFT_NO), #{lang, jdbcType=VARCHAR})
+                  FROM AR_SCHEDULE_HTSV SH
+                 WHERE SH.PERSON_ID   = AR.PERSON_ID
+                   AND SH.AR_DATE_STR = AR.AR_DATE_STR)                                 AS SHIFT_NAME,
+               TO_CHAR(MIN(CASE WHEN AR.DOOR_TYPE = 'IN'  THEN AR.R_TIME END), 'DD/MM/YYYY HH24:MI') AS IN_TIME,
+               TO_CHAR(MAX(CASE WHEN AR.DOOR_TYPE = 'OUT' THEN AR.R_TIME END), 'DD/MM/YYYY HH24:MI') AS OUT_TIME,
+               COUNT(*)                                                                 AS SWIPE_COUNT,
+               CASE WHEN EXISTS (SELECT 1
+                                   FROM AR_DETAIL_HTSV D
+                                  WHERE D.PERSON_ID   = AR.PERSON_ID
+                                    AND D.AR_DATE_STR = AR.AR_DATE_STR)
+                    THEN 'Y' ELSE 'N' END                                               AS HAS_DETAIL
+          FROM AR_MAC_RECORDS_HTSV AR
+         INNER JOIN HR_EMPLOYEE HE ON HE.PERSON_ID = AR.PERSON_ID
+         WHERE AR.ACTIVITY  = 1
+           AND AR.PERSON_ID = #{personId, jdbcType=VARCHAR}
+           AND AR.AR_DATE_STR &gt;= TO_CHAR(TO_DATE(#{streakFrom, jdbcType=VARCHAR}, 'DD/MM/YYYY'), 'YYYY/MM/DD')
+           AND AR.AR_DATE_STR &lt;= TO_CHAR(TO_DATE(#{streakTo,   jdbcType=VARCHAR}, 'DD/MM/YYYY'), 'YYYY/MM/DD')
+           AND HE.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+        <include refid="authDeptFilter"/>
+         GROUP BY AR.PERSON_ID, AR.AR_DATE_STR
+         ORDER BY AR.AR_DATE_STR
+    </select>
+
+</mapper>

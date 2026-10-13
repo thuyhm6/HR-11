@@ -7,10 +7,20 @@ import { vi_VN, provideNzI18n } from 'ng-zorro-antd/i18n';
 import { registerLocaleData } from '@angular/common';
 import vi from '@angular/common/locales/vi';
 import { provideNzDateFnsAdapter } from 'ng-zorro-antd/core/time';
+import { NzConfig, provideNzConfig } from 'ng-zorro-antd/core/config';
 
 // Ngôn ngữ mặc định của toàn dự án là tiếng Việt (xem CLAUDE.md) - NG-ZORRO cần locale riêng cho
 // i18n nội bộ của các component (DatePicker, Pagination...) và Angular cần locale data cho pipe.
 registerLocaleData(vi);
+
+/**
+ * Cấu hình mặc định dùng chung cho các component NG-ZORRO. nz-table: luôn có đường kẻ chia cột (nzBordered)
+ * theo format chuẩn của trang Đổi đồng phục; padding / màu dòng chẵn-lẻ xem biến --app-table-* trong styles.css.
+ * Bảng nào không cần kẻ ô thì khai báo [nzBordered]="false" trên chính nz-table đó.
+ */
+const NZ_GLOBAL_CONFIG: NzConfig = {
+  table: { nzBordered: true },
+};
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -24,5 +34,6 @@ export const appConfig: ApplicationConfig = {
     { provide: RouteReuseStrategy, useClass: TabRouteReuseStrategy },
     provideNzI18n(vi_VN),
     provideNzDateFnsAdapter(),
+    provideNzConfig(NZ_GLOBAL_CONFIG),
   ],
 };

@@ -54,7 +54,7 @@
       <!-- nz-table: mỗi dòng là 1 thẻ nhân viên (ẩn thead), phân trang client-side -->
       <nz-table #vdpiTable [nzData]="filteredRows()" [nzLoading]="loading()" [nzPageSize]="pageSize"
                 [(nzPageIndex)]="pageIndex" [nzShowTotal]="vdpiTotalTpl" nzSize="small"
-                [nzNoResult]="vdpiNoDataTpl" class="vdpi-card-list">
+                [nzNoResult]="vdpiNoDataTpl" [nzBordered]="false" class="vdpi-card-list">
         <tbody>
           <tr *ngFor="let row of vdpiTable.data">
             <td class="vdpi-card-cell">

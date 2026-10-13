@@ -1,0 +1,7 @@
+table td, table th {
+  white-space: nowrap;
+}
+
+.uil-hint { font-size: .82rem; color: #64748b; }
+.uil-hint .bx { color: #f59e0b; vertical-align: middle; }
+.uil-required::after { content: ' *'; color: #ef4444; }

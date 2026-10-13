@@ -95,6 +95,15 @@ export class ViewAffirmSearchListComponent implements OnInit, OnDestroy {
 
   onEmpKeywordChange(value: string): void {
     this.empKeyword = value;
+    // nz-autocomplete ghi nhãn option vào ô nhập (phát ngModelChange) ngay sau khi chọn -> không được xóa NV vừa chọn
+    const current = this.selectedEmp();
+    if (current && value === this.empLabel(current)) return;
+    // Giá trị trùng nhãn 1 gợi ý đang hiển thị -> coi như đã chọn NV đó (không phụ thuộc thứ tự sự kiện selectionChange)
+    const matched = this.empOptions().find((o) => this.empLabel(o) === value);
+    if (matched) {
+      this.selectedEmp.set(matched);
+      return;
+    }
     this.selectedEmp.set(null);
     if (this.empTimer) clearTimeout(this.empTimer);
     const keyword = (value ?? '').trim();
@@ -114,7 +123,45 @@ export class ViewAffirmSearchListComponent implements OnInit, OnDestroy {
     this.selectedEmp.set(opt);
     this.empOptions.set([]);
     // nz-autocomplete ghi nzValue vào ô nhập sau sự kiện chọn - đặt lại nhãn đầy đủ ở tick kế tiếp
-    setTimeout(() => (this.empKeyword = `${opt.empId} - ${opt.localName}`));
+    setTimeout(() => (this.empKeyword = this.empLabel(opt)));
+  }
+
+  private empLabel(opt: EmployeeOption): string {
+    return `${opt.empId} - ${opt.localName}`;
+  }
+
+  /**
+   * Người dùng gõ mã NV rồi bấm Tìm kiếm mà không chọn từ gợi ý -> tự tìm NV theo từ khóa:
+   * ưu tiên khớp đúng mã NV, nếu chỉ có 1 kết quả thì lấy luôn kết quả đó.
+   */
+  private resolveEmpFromKeyword(done: (emp: EmployeeOption | null) => void): void {
+    if (this.empTimer) clearTimeout(this.empTimer);
+    const keyword = (this.empKeyword ?? '').split(' - ')[0].trim();
+    if (!keyword) {
+      done(null);
+      return;
+    }
+    const upper = keyword.toUpperCase();
+    const pick = (items: EmployeeOption[]): EmployeeOption | null =>
+      items.find((e) => (e.empId ?? '').trim().toUpperCase() === upper) ?? (items.length === 1 ? items[0] : null);
+    const apply = (emp: EmployeeOption | null) => {
+      if (emp) {
+        this.selectedEmp.set(emp);
+        this.empOptions.set([]);
+        this.empKeyword = this.empLabel(emp);
+      }
+      done(emp);
+    };
+    // Ưu tiên danh sách gợi ý đang có, chưa có mới gọi API
+    const cached = pick(this.empOptions());
+    if (cached) {
+      apply(cached);
+      return;
+    }
+    this.empApi.searchEmployees(keyword).subscribe({
+      next: (list) => apply(pick(list ?? [])),
+      error: () => apply(null),
+    });
   }
 
   // ==================== Loại thông tin -> loại đơn ====================
@@ -136,7 +183,11 @@ export class ViewAffirmSearchListComponent implements OnInit, OnDestroy {
     const t = (key: string, fallback: string) => this.i18n.t(key, fallback);
     const emp = this.selectedEmp();
     if (!emp) {
-      this.message.warning(t('vasr.msg.chooseEmp', 'Vui lòng chọn nhân viên!'));
+      // Chưa chọn từ gợi ý nhưng đã gõ mã -> thử tự xác định NV rồi tra cứu tiếp
+      this.resolveEmpFromKeyword((found) => {
+        if (found) this.search();
+        else this.message.warning(t('vasr.msg.chooseEmp', 'Vui lòng chọn nhân viên!'));
+      });
       return;
     }
     if (!this.applyTypeNo) {

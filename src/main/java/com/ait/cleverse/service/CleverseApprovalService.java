@@ -15,4 +15,15 @@ public interface CleverseApprovalService {
      * @return số đơn gửi thành công
      */
     int sendAffirmInfoEmailApproval();
+
+    /**
+     * Port SendEmailSerImpl.synchronizationApprovalStatus (chạy định kỳ từ CleverseApprovalScheduler):
+     * lấy trạng thái phê duyệt trên Cleverse của các đơn đã gửi và chưa kết thúc, với mỗi người duyệt
+     * đã xử lý trên Cleverse thì gọi PKG_AFFIRM_EMAIL.PR_AFFIRM_EXECUTE để cập nhật vào HR.
+     * Đơn nghỉ bắt đầu sau giờ vào ca (TIME_FLAG = 1) được báo mail cho bảo vệ 1 lần.
+     * Không ném exception - lỗi được ghi log, 1 đơn lỗi không dừng cả lô.
+     *
+     * @return số đơn đã xử lý đồng bộ
+     */
+    int synchronizationApprovalStatus();
 }

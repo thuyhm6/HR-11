@@ -1,0 +1,308 @@
+<div class="row">
+  <div class="col-12">
+    <!-- Điều kiện tìm kiếm - đứng im khi cuộn (xem .sticky-filter-card trong styles.css) -->
+    <nz-card class="mb-3 sticky-filter-card">
+      <form class="row g-3 align-items-end" (ngSubmit)="search()">
+        <div class="col-md-2">
+          <label class="form-label">{{ 'hrm.uniform.month' | translate:'Tháng đổi' }}</label>
+          <nz-date-picker class="w-100" nzMode="month" nzFormat="MM/yyyy" [nzAllowClear]="false"
+                          [(ngModel)]="month" name="month" (ngModelChange)="search()"></nz-date-picker>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'common.search.empIdOrName' | translate:'Mã nhân viên / Họ tên' }}</label>
+          <input nz-input [(ngModel)]="keyword" name="keyword"
+                 [placeholder]="'hrm.uniform.keywordPlaceholder' | translate:'Mã NV, họ tên hoặc lý do'">
+        </div>
+        <div class="col-12 d-flex align-items-center gap-2 flex-wrap">
+          <span class="ucl-hint">
+            <i class="bx bx-info-circle"></i>
+            {{ 'hrm.uniform.hint' | translate:'Mỗi nhân viên chỉ được đổi đồng phục 6 tháng / 1 lần. Các cột cuối là tổng số lượng nhân viên đã đổi trong từng tháng của 6 tháng trước, bấm vào số để xem chi tiết.' }}
+          </span>
+          <div class="ms-auto d-flex gap-2 flex-wrap">
+            <button nz-button nzType="primary" type="submit">
+              <i class="bx bx-search"></i> {{ 'common.search' | translate:'Tra cứu' }}
+            </button>
+            <button nz-button type="button" (click)="clearSearch()">
+              <i class="bx bx-x"></i> {{ 'common.clearFilter' | translate:'Xóa lọc' }}
+            </button>
+            <button nz-button type="button" (click)="openAdd()">
+              <i class="bx bx-plus"></i> {{ 'common.addNew' | translate:'Thêm mới' }}
+            </button>
+            <button nz-button type="button" (click)="downloadTemplate()">
+              <i class="bx bx-download"></i> {{ 'common.downloadTemplate' | translate:'Tải File Mẫu' }}
+            </button>
+            <button nz-button type="button" [nzLoading]="importLoading()" (click)="uclFileInput.click()">
+              <i class="bx bx-upload"></i> {{ 'common.importExcel' | translate:'Import Excel' }}
+            </button>
+            <input #uclFileInput type="file" hidden accept=".xlsx,.xls" (change)="onFileSelected($event)">
+            <button nz-button type="button" [nzLoading]="exporting()" (click)="exportExcel()" [disabled]="recordsTotal() === 0">
+              <i class="bx bx-export"></i> {{ 'common.exportExcel' | translate:'Xuất Excel' }}
+            </button>
+          </div>
+        </div>
+      </form>
+    </nz-card>
+
+    <nz-card>
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+      <nz-table [nzData]="viewRows()" [nzFrontPagination]="false" [nzLoading]="loading()"
+                [nzTotal]="recordsTotal()" [nzPageIndex]="pageIndex" [nzPageSize]="pageSize"
+                [nzPageSizeOptions]="pageSizeOptions" nzShowSizeChanger [nzShowTotal]="uclTotalTpl"
+                (nzPageIndexChange)="onPageIndexChange($event)" (nzPageSizeChange)="onPageSizeChange($event)"
+                [nzScroll]="{ x: tableScrollX(), y: 'calc(100vh - 430px)' }"
+                nzBordered nzSize="small" class="table-nowrap ucl-table">
+        <thead>
+          <tr>
+            <th rowspan="2" class="text-center" nzWidth="50px" nzLeft>{{ 'common.stt' | translate:'STT' }}</th>
+            <th rowspan="2" class="text-center" nzWidth="100px" nzLeft>{{ 'common.empId' | translate:'Mã nhân viên' }}</th>
+            <th rowspan="2" nzWidth="170px" nzLeft>{{ 'common.empName' | translate:'Họ tên' }}</th>
+            <th rowspan="2" nzWidth="180px">{{ 'common.deptName' | translate:'Phòng ban' }}</th>
+            <th rowspan="2" nzWidth="110px">{{ 'common.position' | translate:'Chức vụ' }}</th>
+            <th rowspan="2" class="text-center" nzWidth="70px">{{ 'hrm.uniform.gender' | translate:'Giới tính' }}</th>
+            <th rowspan="2" class="text-center" nzWidth="100px">{{ 'hrm.uniform.hireDate' | translate:'Ngày vào' }}</th>
+            <th rowspan="2" class="text-center ucl-th-key" nzWidth="100px">{{ 'hrm.uniform.changeDate' | translate:'Ngày đổi' }}</th>
+            <th rowspan="2" class="text-center" nzWidth="120px">{{ 'hrm.uniform.nextEligibleDate' | translate:'Được đổi lại từ' }}</th>
+            <th rowspan="2" class="ucl-th-reason" nzWidth="130px">{{ 'common.reason' | translate:'Lý do' }}</th>
+            <th *ngFor="let item of displayItems()" class="text-center ucl-th-item"
+                [colspan]="(item.hasSize === 'Y' ? 1 : 0) + (item.hasQuantity === 'Y' ? 1 : 0)">
+              {{ item.itemName }}
+            </th>
+            <th rowspan="2" nzWidth="150px">{{ 'common.remark' | translate:'Ghi chú' }}</th>
+            <th class="text-center ucl-th-prev" [colspan]="prevMonths().length + 1">
+              {{ 'hrm.uniform.prevMonths' | translate:'Số lượng đã đổi 6 tháng trước' }}
+            </th>
+            <th rowspan="2" class="text-center" nzWidth="90px" nzRight>{{ 'common.action' | translate:'Thao tác' }}</th>
+          </tr>
+          <tr>
+            <ng-container *ngFor="let item of displayItems()">
+              <th *ngIf="item.hasSize === 'Y'" class="text-center ucl-th-item" nzWidth="70px">{{ 'hrm.uniform.size' | translate:'Size' }}</th>
+              <th *ngIf="item.hasQuantity === 'Y'" class="text-center ucl-th-item" nzWidth="80px">{{ 'hrm.uniform.quantity' | translate:'Số lượng' }}</th>
+            </ng-container>
+            <th *ngFor="let m of prevMonths()" class="text-center ucl-th-prev" nzWidth="80px">{{ m.label }}</th>
+            <th class="text-center ucl-th-prev" nzWidth="80px">{{ 'hrm.uniform.history.total' | translate:'Tổng' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of viewRows(); let i = index" (dblclick)="openEdit(row)">
+            <td class="text-center" nzLeft>{{ (pageIndex - 1) * pageSize + i + 1 }}</td>
+            <td class="text-center" nzLeft>{{ row.empId }}</td>
+            <td nzLeft [attr.title]="row.localName || null">{{ row.localName }}</td>
+            <td [attr.title]="row.deptName || null">{{ row.deptName }}</td>
+            <td [attr.title]="row.postGradeName || null">{{ row.postGradeName }}</td>
+            <td class="text-center">{{ row.sexName }}</td>
+            <td class="text-center">{{ row.dateStarted }}</td>
+            <td class="text-center">{{ row.changeDate }}</td>
+            <td class="text-center">{{ row.nextEligibleDate }}</td>
+            <td [attr.title]="row.reason || null">{{ row.reason }}</td>
+            <ng-container *ngFor="let item of displayItems()">
+              <td *ngIf="item.hasSize === 'Y'" class="text-center">{{ row.byItem[item.itemNo!]?.itemSize }}</td>
+              <td *ngIf="item.hasQuantity === 'Y'" class="text-center">{{ row.byItem[item.itemNo!]?.quantity }}</td>
+            </ng-container>
+            <td [attr.title]="row.remark || null">{{ row.remark }}</td>
+            <td *ngFor="let m of prevMonths()" class="text-center ucl-prev-cell">
+              <a *ngIf="prevQty(row, m) > 0; else uclZeroTpl" class="ucl-prev-link"
+                 (click)="openHistory(row, m); $event.stopPropagation()" (dblclick)="$event.stopPropagation()">
+                {{ prevQty(row, m) }}
+              </a>
+            </td>
+            <td class="text-center ucl-prev-cell"><b *ngIf="prevTotal(row) > 0">{{ prevTotal(row) }}</b></td>
+            <td class="text-center" nzRight>
+              <button nz-button nzType="text" nzSize="small" (click)="openEdit(row)"
+                      [title]="'common.edit' | translate:'Sửa'">
+                <i class="bx bx-edit text-primary"></i>
+              </button>
+              <button nz-button nzType="text" nzSize="small" nz-popconfirm
+                      [nzPopconfirmTitle]="'common.confirmDelete' | translate:'Bạn có chắc muốn xóa không?'"
+                      [nzOkText]="'common.yes' | translate:'Có'" [nzCancelText]="'common.no' | translate:'Không'"
+                      (nzOnConfirm)="deleteRow(row)" [title]="'common.delete' | translate:'Xóa'">
+                <i class="bx bx-trash text-danger"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+        <ng-template #uclTotalTpl let-total>
+          {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+        </ng-template>
+        <ng-template #uclZeroTpl><span class="text-muted">-</span></ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>
+
+<!-- ===== Modal chi tiết đổi đồng phục của 1 nhân viên trong 1 tháng trước đó ===== -->
+<nz-modal [nzVisible]="historyVisible()" nzWidth="760px" [nzTitle]="uclHistoryTitleTpl"
+          [nzFooter]="uclHistoryFooterTpl" (nzOnCancel)="closeHistory()">
+  <ng-template #uclHistoryTitleTpl>
+    {{ 'hrm.uniform.history.title' | translate:'Chi tiết đổi đồng phục' }} - {{ historyTitle() }}
+  </ng-template>
+  <ng-container *nzModalContent>
+    <nz-table [nzData]="historyRows()" [nzLoading]="historyLoading()" [nzFrontPagination]="false"
+              nzSize="small" nzBordered [nzScroll]="{ y: '55vh' }"
+              [nzNoResult]="'hrm.uniform.history.empty' | translate:'Không có dữ liệu đổi đồng phục trong tháng này'">
+      <thead>
+        <tr>
+          <th class="text-center" nzWidth="100px">{{ 'hrm.uniform.changeDate' | translate:'Ngày đổi' }}</th>
+          <th nzWidth="130px">{{ 'common.reason' | translate:'Lý do' }}</th>
+          <th>{{ 'hrm.uniform.import.items' | translate:'Đồng phục' }}</th>
+          <th class="text-center" nzWidth="80px">{{ 'hrm.uniform.size' | translate:'Size' }}</th>
+          <th class="text-center" nzWidth="90px">{{ 'hrm.uniform.quantity' | translate:'Số lượng' }}</th>
+          <th nzWidth="150px">{{ 'common.remark' | translate:'Ghi chú' }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let h of historyRows()">
+          <td *ngIf="h.first" [attr.rowspan]="h.span" class="text-center">{{ h.change.changeDate }}</td>
+          <td *ngIf="h.first" [attr.rowspan]="h.span" class="ucl-wrap">{{ h.change.reason }}</td>
+          <td>{{ h.itemName }}</td>
+          <td class="text-center">{{ h.itemSize }}</td>
+          <td class="text-center">{{ h.quantity }}</td>
+          <td *ngIf="h.first" [attr.rowspan]="h.span" class="ucl-wrap">{{ h.change.remark }}</td>
+        </tr>
+        <tr *ngIf="historyRows().length > 0" class="ucl-history-total">
+          <td colspan="4" class="text-end">{{ 'hrm.uniform.history.total' | translate:'Tổng' }}</td>
+          <td class="text-center">{{ historyTotal() }}</td>
+          <td></td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </ng-container>
+  <ng-template #uclHistoryFooterTpl>
+    <button nz-button type="button" (click)="closeHistory()">{{ 'common.close' | translate:'Đóng' }}</button>
+  </ng-template>
+</nz-modal>
+
+<!-- ===== Modal thêm / sửa lần đổi đồng phục ===== -->
+<nz-modal [nzVisible]="formVisible()" nzWidth="760px" [nzMaskClosable]="false"
+          [nzTitle]="(formChangeNo == null ? 'hrm.uniform.form.addTitle' : 'hrm.uniform.form.editTitle') | translate:(formChangeNo == null ? 'Thêm lần đổi đồng phục' : 'Sửa lần đổi đồng phục')"
+          [nzFooter]="uclFormFooterTpl" (nzOnCancel)="closeForm()">
+  <ng-container *nzModalContent>
+    <div class="row g-3">
+      <div class="col-md-4">
+        <label class="form-label ucl-required">{{ 'common.empId' | translate:'Mã nhân viên' }}</label>
+        <div class="d-flex gap-1">
+          <input nz-input [(ngModel)]="formEmpId" [disabled]="formChangeNo != null"
+                 (keydown.enter)="lookupEmp()" (blur)="lookupEmp()">
+          <button nz-button type="button" [nzLoading]="formEmpLoading()" [disabled]="formChangeNo != null"
+                  (click)="lookupEmp()" [title]="'hrm.uniform.form.check' | translate:'Kiểm tra'">
+            <i class="bx bx-search"></i>
+          </button>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label ucl-required">{{ 'hrm.uniform.changeDate' | translate:'Ngày đổi' }}</label>
+        <nz-date-picker class="w-100" nzFormat="dd/MM/yyyy" [(ngModel)]="formDate"></nz-date-picker>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">{{ 'common.reason' | translate:'Lý do' }}</label>
+        <input nz-input [(ngModel)]="formReason" maxlength="500">
+      </div>
+
+      <div class="col-12" *ngIf="formEmp() as emp">
+        <div class="ucl-emp-box">
+          <div><b>{{ emp.empId }} - {{ emp.localName }}</b> · {{ emp.deptName }} · {{ emp.postGradeName }}
+            · {{ emp.sexName }} · {{ 'hrm.uniform.hireDate' | translate:'Ngày vào' }}: {{ emp.dateStarted }}</div>
+          <div>
+            {{ 'hrm.uniform.form.lastChange' | translate:'Lần đổi gần nhất' }}:
+            <ng-container *ngIf="emp.lastChangeDate; else uclNeverTpl">
+              <b>{{ emp.lastChangeDate }}</b> · {{ 'hrm.uniform.nextEligibleDate' | translate:'Được đổi lại từ' }}:
+              <b>{{ emp.nextEligibleDate }}</b>
+            </ng-container>
+            <ng-template #uclNeverTpl>{{ 'hrm.uniform.form.neverChanged' | translate:'Chưa đổi lần nào' }}</ng-template>
+          </div>
+        </div>
+        <nz-alert *ngIf="formNotEligible()" nzType="warning" nzShowIcon class="mt-2"
+                  [nzMessage]="'hrm.uniform.form.notEligible' | translate:'Nhân viên chưa đủ 6 tháng kể từ lần đổi gần nhất, không thể lưu.'"></nz-alert>
+      </div>
+
+      <div class="col-12">
+        <label class="form-label">{{ 'hrm.uniform.form.items' | translate:'Đồng phục đổi' }}</label>
+        <nz-table #uclFormItemTable [nzData]="formItems()" [nzFrontPagination]="false" nzSize="small" nzBordered
+                  [nzScroll]="{ y: '40vh' }">
+          <thead>
+            <tr>
+              <th>{{ 'common.name' | translate:'Tên' }}</th>
+              <th nzWidth="160px">{{ 'hrm.uniform.size' | translate:'Size' }}</th>
+              <th nzWidth="140px">{{ 'hrm.uniform.quantity' | translate:'Số lượng' }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of uclFormItemTable.data">
+              <td>{{ item.itemName }}</td>
+              <td>
+                <input *ngIf="item.hasSize === 'Y'" nz-input nzSize="small" [(ngModel)]="formDetails[item.itemNo!].size" maxlength="30">
+              </td>
+              <td>
+                <nz-input-number *ngIf="item.hasQuantity === 'Y'" class="w-100" nzSize="small" [nzMin]="0" [nzMax]="999"
+                                 [nzStep]="1" [nzPrecision]="0" [(ngModel)]="formDetails[item.itemNo!].quantity"></nz-input-number>
+              </td>
+            </tr>
+          </tbody>
+        </nz-table>
+      </div>
+
+      <div class="col-12">
+        <label class="form-label">{{ 'common.remark' | translate:'Ghi chú' }}</label>
+        <textarea nz-input rows="2" [(ngModel)]="formRemark" maxlength="1000"></textarea>
+      </div>
+    </div>
+  </ng-container>
+  <ng-template #uclFormFooterTpl>
+    <button nz-button type="button" (click)="closeForm()">{{ 'common.cancel' | translate:'Hủy' }}</button>
+    <button nz-button nzType="primary" type="button" [nzLoading]="formSaving()" (click)="saveForm()">
+      <i class="bx bx-save"></i> {{ 'common.save' | translate:'Lưu' }}
+    </button>
+  </ng-template>
+</nz-modal>
+
+<!-- ===== Modal xem trước kết quả upload ===== -->
+<nz-modal [nzVisible]="importVisible()" nzWidth="1100px" [nzMaskClosable]="false"
+          [nzTitle]="uclImportTitleTpl" [nzFooter]="uclImportFooterTpl" (nzOnCancel)="closeImport()">
+  <ng-template #uclImportTitleTpl>
+    {{ 'hrm.uniform.import.title' | translate:'Kết quả kiểm tra file upload' }} - {{ importFileName() }}
+  </ng-template>
+  <ng-container *nzModalContent>
+    <ng-container *ngIf="importResult() as res">
+      <nz-alert [nzType]="res.errorCount > 0 ? 'warning' : 'success'" nzShowIcon class="mb-2"
+                [nzMessage]="importSummary()"></nz-alert>
+      <nz-alert *ngFor="let w of res.warnings" nzType="info" nzShowIcon class="mb-2" [nzMessage]="w"></nz-alert>
+    </ng-container>
+    <nz-table #uclImportTable [nzData]="importResult()?.rows ?? []" [nzLoading]="importLoading()"
+              [nzFrontPagination]="true" [nzPageSize]="50" nzSize="small" nzBordered
+              [nzScroll]="{ x: '1050px', y: '50vh' }">
+      <thead>
+        <tr>
+          <th class="text-center" nzWidth="60px">{{ 'hrm.uniform.import.row' | translate:'Dòng' }}</th>
+          <th class="text-center" nzWidth="100px">{{ 'common.empId' | translate:'Mã nhân viên' }}</th>
+          <th nzWidth="160px">{{ 'common.empName' | translate:'Họ tên' }}</th>
+          <th class="text-center" nzWidth="100px">{{ 'hrm.uniform.changeDate' | translate:'Ngày đổi' }}</th>
+          <th nzWidth="110px">{{ 'common.reason' | translate:'Lý do' }}</th>
+          <th nzWidth="240px">{{ 'hrm.uniform.import.items' | translate:'Đồng phục' }}</th>
+          <th>{{ 'common.status' | translate:'Trạng thái' }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let r of uclImportTable.data" [class.ucl-import-error]="r.errors?.length">
+          <td class="text-center">{{ r.rowNum }}</td>
+          <td class="text-center">{{ r.empId }}</td>
+          <td>{{ r.localName || r.fileLocalName }}</td>
+          <td class="text-center">{{ r.changeDate }}</td>
+          <td>{{ r.reason }}</td>
+          <td class="ucl-wrap">{{ detailSummary(r.details) }}</td>
+          <td class="ucl-wrap">
+            <nz-tag *ngIf="!r.errors?.length" nzColor="green">{{ 'hrm.uniform.import.ok' | translate:'Hợp lệ' }}</nz-tag>
+            <div *ngFor="let e of r.errors" class="text-danger">• {{ e }}</div>
+          </td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </ng-container>
+  <ng-template #uclImportFooterTpl>
+    <button nz-button type="button" (click)="closeImport()">{{ 'common.close' | translate:'Đóng' }}</button>
+    <button nz-button nzType="primary" type="button" [nzLoading]="importSaving()"
+            [disabled]="!importResult()?.validCount" (click)="saveImport()">
+      <i class="bx bx-save"></i> {{ 'hrm.uniform.import.saveValid' | translate:'Lưu các dòng hợp lệ' }}
+      ({{ importResult()?.validCount ?? 0 }})
+    </button>
+  </ng-template>
+</nz-modal>
