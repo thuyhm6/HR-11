@@ -1,0 +1,142 @@
+<div #ladPrintArea class="lad-wrap" *ngIf="data() as d">
+  <div class="lad-print-title">{{ 'ess.infoApply.attendance_application' | translate:'[Xin nghỉ phép]' }}</div>
+
+  <!-- Tiêu đề + người xin phép -->
+  <table class="lad-table mb-3">
+    <tbody>
+      <tr>
+        <th class="lad-label" style="width:20%">{{ 'ess.title.Title' | translate:'Tiêu đề' }}</th>
+        <td>{{ header().title }}</td>
+      </tr>
+      <tr>
+        <th class="lad-label">{{ 'public.title.qianzhe' | translate:'Người xin phép' }}</th>
+        <td>{{ header().applyPersonInfo }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Trình tự duyệt (viewAffirmList) + dòng HR xác nhận (viewAffirmList2) -->
+  <div class="table-responsive mb-3">
+    <nz-table #ladApprovalTable [nzData]="d.approvalList || []" [nzShowPagination]="false" [nzFrontPagination]="false"
+              nzSize="small" nzBordered>
+      <thead>
+        <tr>
+          <th class="text-center" style="width:6%">{{ 'ess.infoApply.in_order' | translate:'STT' }}</th>
+          <th class="text-center" style="width:11%">{{ 'ess.infoApply.approval_distinction' | translate:'Trình tự duyệt' }}</th>
+          <th class="text-center" style="width:12%">{{ 'ess.infoApply.approval_status' | translate:'Trạng thái duyệt' }}</th>
+          <th class="text-center" style="width:15%">{{ 'org.title.LOCAL_NAME' | translate:'Họ tên' }}</th>
+          <th class="text-center" style="width:22%">{{ 'ess.infoApply.comment' | translate:'Ý kiến' }}</th>
+          <th class="text-center" style="width:16%">{{ 'ess.infoApply.dealing_with_transactions' | translate:'Thời gian thực hiện' }}</th>
+          <th class="text-center" style="width:18%">{{ 'ess.infoApply.DEPT_NAME' | translate:'Phòng ban' }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngIf="!d.approvalList?.length">
+          <td colspan="7" class="text-center text-muted">{{ 'arOtf.noApprovalData' | translate:'Không có dữ liệu phê duyệt' }}</td>
+        </tr>
+        <tr *ngFor="let item of ladApprovalTable.data; let i = index">
+          <td class="text-center">{{ stt(item, i) }}</td>
+          <td class="text-center">{{ typeLabel(item) }}</td>
+          <td class="text-center">
+            <ng-container *ngIf="status(item) as st">
+              <nz-tag class="lad-tag m-0" [nzColor]="st.color">{{ st.label }}</nz-tag>
+            </ng-container>
+          </td>
+          <td class="text-center">{{ item.affirmName }}</td>
+          <td class="lad-pre">
+            <input *ngIf="opinionEditable()(item); else ladOpinionText" nz-input nzSize="small"
+                   [ngModel]="opinion()" (ngModelChange)="opinion.set($event)" [ngModelOptions]="{ standalone: true }">
+            <ng-template #ladOpinionText>{{ item.affirmContent }}</ng-template>
+          </td>
+          <td class="text-center">{{ item.updateDate }}</td>
+          <td class="text-center">{{ item.deptName }}</td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </div>
+
+  <!-- Thông tin nhân viên -->
+  <div class="lad-section-title">{{ 'ess.infoApply.applicant_information' | translate:'Thông tin nhân viên' }}</div>
+  <table class="lad-table mb-3">
+    <tbody>
+      <tr>
+        <th class="lad-label" style="width:15%">{{ 'org.title.LOCAL_NAME' | translate:'Họ tên' }}</th>
+        <td style="width:35%">{{ emp()['localName'] }}</td>
+        <th class="lad-label" style="width:15%">{{ 'ess.infoApply.EMP_ID' | translate:'Mã nhân viên' }}</th>
+        <td style="width:35%">{{ emp()['empId'] }}</td>
+      </tr>
+      <tr>
+        <th class="lad-label">{{ 'ess.infoApply.DEPT' | translate:'Phòng ban' }}</th>
+        <td>{{ emp()['deptName'] }}</td>
+        <th class="lad-label">{{ 'ess.infoApply.Rank' | translate:'Chức vụ' }}</th>
+        <td>{{ emp()['postGradeName'] }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Thông tin phép năm - chỉ khi loại nghỉ là phép năm -->
+  <ng-container *ngIf="isAnnualLeave()">
+    <div class="lad-section-title">{{ 'ess.infoApply.year_leave_information' | translate:'Thông tin nghỉ phép năm' }}</div>
+    <table class="lad-table lad-vac-table mb-3">
+      <thead>
+        <tr>
+          <th class="text-center">{{ 'ess.infoApply.sum_year_leave_days' | translate:'Tổng phép năm' }}</th>
+          <th class="text-center">{{ 'ess.infoApply.already_used' | translate:'Đã sử dụng' }}</th>
+          <th class="text-center">{{ 'ess.infoApply.Remainder' | translate:'Còn lại' }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="text-center">{{ num(d.vacInfo?.TOT_VAC_CNT) }}</td>
+          <td class="text-center">{{ num(d.vacInfo?.USE_VAC) }}</td>
+          <td class="text-center">{{ num(d.vacInfo?.REMAIN_VAC) }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </ng-container>
+
+  <!-- Thông tin xin phép -->
+  <div class="lad-section-title">{{ 'ess.infoApply.application_information' | translate:'Thông tin xin phép' }}</div>
+  <div class="table-responsive mb-3">
+    <table class="lad-table">
+      <thead>
+        <tr>
+          <th class="text-center" style="width:16%">{{ 'ess.infoApply.attendance_type' | translate:'Loại nghỉ phép' }}</th>
+          <th class="text-center" style="width:16%">{{ 'ess.infoApply.attendance_start_time' | translate:'Thời gian bắt đầu' }}</th>
+          <th class="text-center" style="width:16%">{{ 'ess.infoApply.attendance_end_time' | translate:'Thời gian kết thúc' }}</th>
+          <th class="text-center" style="width:16%">{{ 'ess.infoApply.attendance_time' | translate:'Thời lượng' }}</th>
+          <th class="text-center">{{ 'ess.infoApply.Reason' | translate:'Lý do' }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngIf="d.leaveInfo as lv">
+          <td class="text-center">{{ lv['leaveTypeName'] }}</td>
+          <td class="text-center">{{ lv['leaveFromTime'] }}</td>
+          <td class="text-center">{{ lv['leaveToTime'] }}</td>
+          <td class="text-center">{{ duration() }}</td>
+          <td class="lad-pre">{{ lv['leaveReason'] }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- File đính kèm -->
+  <div class="lad-section-title">{{ 'hr.viewBadArchives.title.FILE' | translate:'File' }}</div>
+  <table class="lad-table">
+    <thead>
+      <tr>
+        <th class="text-center" style="width:10%">No</th>
+        <th class="text-center">{{ 'hr.viewBadArchives.title.FILE' | translate:'File' }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngIf="!d.fileList?.length">
+        <td colspan="2" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+      </tr>
+      <tr *ngFor="let f of d.fileList; let i = index">
+        <td class="text-center">{{ i + 1 }}</td>
+        <td><a [href]="fileUrl(f)" target="_blank" rel="noopener">{{ f.fileName }}</a></td>
+      </tr>
+    </tbody>
+  </table>
+</div>

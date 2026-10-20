@@ -3,12 +3,12 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import {
   AuthDeptNode,
-  CardApplyDetail,
   CheckAttendanceExRow,
   CheckAttendanceExSearchParams,
   CodeItem,
   ShiftOption,
 } from './check-attendance-ex-for-batch.model';
+import { AttendanceExApplyDetail } from '../shared/attendance-ex-apply-detail/attendance-ex-apply-detail.model';
 
 const API_BASE = '/ess/infoApplyAttendance/api/checkAttendanceEx';
 
@@ -28,10 +28,10 @@ export class CheckAttendanceExForBatchService {
     return this.http.get<CheckAttendanceExRow[]>(`${API_BASE}/list`, { params: httpParams, withCredentials: true });
   }
 
-  getDetail(applyNo: string, applyType: string): Observable<CardApplyDetail> {
+  getDetail(applyNo: string, applyType: string): Observable<AttendanceExApplyDetail> {
     let httpParams = new HttpParams().set('applyNo', applyNo);
     if (applyType) httpParams = httpParams.set('applyType', applyType);
-    return this.http.get<CardApplyDetail>(`${API_BASE}/detail`, { params: httpParams, withCredentials: true });
+    return this.http.get<AttendanceExApplyDetail>(`${API_BASE}/detail`, { params: httpParams, withCredentials: true });
   }
 
   getShiftOptions(): Observable<ShiftOption[]> {

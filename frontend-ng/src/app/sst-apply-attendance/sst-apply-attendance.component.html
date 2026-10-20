@@ -1,7 +1,7 @@
 <div class="row">
   <div class="col-12">
 
-    <!-- ===== Thông tin nhân viên (tương đương fragments/essEmpInfoCard.html) ===== -->
+    <!-- ===== Thông tin nhân viên (viewPersonalInfoHead_ess.jsp bản gốc) ===== -->
     <div class="card mb-3" *ngIf="basicInfo() as info">
       <div class="card-body p-0">
         <table class="table table-bordered table-sm align-middle mb-0" style="table-layout:fixed;">
@@ -43,43 +43,60 @@
       <div class="card-body p-0">
         <table class="table table-bordered table-sm align-middle mb-0" style="table-layout:fixed;">
           <colgroup>
-            <col style="width:15%;"><col style="width:85%;">
+            <col style="width:20%;"><col style="width:30%;"><col style="width:50%;">
           </colgroup>
           <tbody>
             <tr>
-              <th class="table-light text-center">{{ 'sa.label.leaveType' | translate:'Loại nghỉ phép' }}</th>
+              <th class="table-light text-end">{{ 'ess.infoApply.attendance_type' | translate:'Loại nghỉ phép' }}</th>
               <td>
-                <div class="d-flex align-items-center flex-wrap gap-2">
-                  <nz-select style="width:220px;" [(ngModel)]="leaveTypeCode" (ngModelChange)="onLeaveTypeChange()"
-                             nzAllowClear [nzPlaceHolder]="'sa.placeholder.leaveType' | translate:'-- Chọn loại nghỉ --'">
-                    <nz-option *ngFor="let c of leaveTypeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+                <nz-select class="w-100" [ngModel]="leaveTypeCode" (ngModelChange)="onLeaveTypeChange($event)" nzAllowClear nzShowSearch
+                           [nzPlaceHolder]="'hr.viewCondSql.title.QINGXUANZE' | translate:'Lựa chọn'">
+                  <nz-option *ngFor="let c of leaveTypeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+                </nz-select>
+              </td>
+              <td>
+                <!-- Thông tin phép năm chỉ hiện khi chọn phép năm (view_vac_sub bản gốc) -->
+                <span *ngIf="leaveTypeCode === LEAVE_ANNUAL" class="small">{{ vacText() }}</span>
+              </td>
+            </tr>
+            <tr>
+              <th class="table-light text-end">{{ 'ess.infoApply.title.startTime' | translate:'Thời gian bắt đầu' }}</th>
+              <td colspan="2">
+                <div class="d-flex align-items-center gap-1">
+                  <nz-date-picker [(ngModel)]="fromDate" (ngModelChange)="onTimeChange()" nzFormat="dd/MM/yyyy" [nzAllowClear]="false"></nz-date-picker>
+                  <nz-select class="ssta-hm" [(ngModel)]="fromHour" (ngModelChange)="onTimeChange()">
+                    <nz-option *ngFor="let h of hours" [nzValue]="h" [nzLabel]="h"></nz-option>
                   </nz-select>
-                  <span class="text-muted small">{{ vacationInfoText() }}</span>
+                  <span>:</span>
+                  <nz-select class="ssta-hm" [(ngModel)]="fromMinute" (ngModelChange)="onTimeChange()">
+                    <nz-option *ngFor="let m of minutes" [nzValue]="m" [nzLabel]="m"></nz-option>
+                  </nz-select>
                 </div>
               </td>
             </tr>
             <tr>
-              <th class="table-light text-center">{{ 'sa.label.startTime' | translate:'Thời gian bắt đầu' }}</th>
-              <td>
-                <nz-date-picker style="width:220px;" [(ngModel)]="fromTime" (ngModelChange)="onTimeChange()"
-                                 nzFormat="yyyy-MM-dd HH:mm" [nzShowTime]="{ nzFormat: 'HH:mm' }"></nz-date-picker>
+              <th class="table-light text-end">{{ 'ess.infoApply.end_time' | translate:'Thời gian kết thúc' }}</th>
+              <td colspan="2">
+                <div class="d-flex align-items-center gap-1">
+                  <nz-date-picker [(ngModel)]="toDate" (ngModelChange)="onTimeChange()" nzFormat="dd/MM/yyyy" [nzAllowClear]="false"></nz-date-picker>
+                  <nz-select class="ssta-hm" [(ngModel)]="toHour" (ngModelChange)="onTimeChange()">
+                    <nz-option *ngFor="let h of hours" [nzValue]="h" [nzLabel]="h"></nz-option>
+                  </nz-select>
+                  <span>:</span>
+                  <nz-select class="ssta-hm" [(ngModel)]="toMinute" (ngModelChange)="onTimeChange()">
+                    <nz-option *ngFor="let m of minutes" [nzValue]="m" [nzLabel]="m"></nz-option>
+                  </nz-select>
+                </div>
               </td>
             </tr>
             <tr>
-              <th class="table-light text-center">{{ 'sa.label.endTime' | translate:'Thời gian kết thúc' }}</th>
-              <td>
-                <nz-date-picker style="width:220px;" [(ngModel)]="toTime" (ngModelChange)="onTimeChange()"
-                                 nzFormat="yyyy-MM-dd HH:mm" [nzShowTime]="{ nzFormat: 'HH:mm' }"></nz-date-picker>
-              </td>
+              <th class="table-light text-end">{{ 'ar.viewArAdjustRest.title.APPLYLENGTH' | translate:'Thời lượng' }}</th>
+              <td colspan="2">{{ durationText() }}</td>
             </tr>
             <tr>
-              <th class="table-light text-center">{{ 'sa.label.duration' | translate:'Thời lượng' }}</th>
-              <td>{{ duration() }}</td>
-            </tr>
-            <tr>
-              <th class="table-light text-center">{{ 'sa.label.reason' | translate:'Lý do' }}</th>
-              <td>
-                <textarea nz-input [(ngModel)]="reason" rows="4" style="resize:vertical;"></textarea>
+              <th class="table-light text-end">{{ 'ess.infoApply.Reason' | translate:'Lý do' }}</th>
+              <td colspan="2">
+                <textarea nz-input [(ngModel)]="reason" rows="4" style="resize:none; max-width:500px;"></textarea>
               </td>
             </tr>
           </tbody>
@@ -87,31 +104,50 @@
       </div>
     </div>
 
-    <!-- ===== Danh sách người phê duyệt ===== -->
-    <nz-table [nzData]="approvers()" [nzLoading]="approversLoading()" [nzShowPagination]="false"
-              nzSize="small" class="mb-3" #saApproverTable>
+    <!-- ===== File đính kèm ===== -->
+    <div class="d-flex gap-2 mb-2">
+      <button nz-button nzSize="small" type="button" (click)="sstaFileInput.click()">
+        <i class="bx bx-paperclip"></i> {{ 'hrm.recruitManage.ATTACHED_FILE' | translate:'Chèn file' }}
+      </button>
+      <button nz-button nzSize="small" nzDanger type="button" (click)="removeCheckedFiles()">
+        <i class="bx bx-trash"></i> {{ 'public.title.delete' | translate:'Xóa' }}
+      </button>
+      <input #sstaFileInput type="file" hidden multiple (change)="onFilesSelected($event)">
+    </div>
+    <nz-table [nzData]="attachments()" [nzShowPagination]="false" nzSize="small" class="mb-3" #sstaFileTable>
       <thead>
         <tr>
-          <th class="text-center" style="width:50px">{{ 'sa.col.stt' | translate:'STT' }}</th>
-          <th>{{ 'sa.col.approver' | translate:'Người duyệt' }}</th>
-          <th class="text-center" style="width:130px">{{ 'sa.col.empId' | translate:'Mã nhân viên' }}</th>
-          <th>{{ 'sa.col.dept' | translate:'Phòng ban' }}</th>
-          <th>{{ 'sa.col.position' | translate:'Chức danh' }}</th>
+          <th class="text-center" style="width:10%">V</th>
+          <th>{{ 'hr.viewBadArchives.title.FILE' | translate:'File' }}</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngIf="!approversLoading() && saApproverTable.data.length === 0">
-          <td colspan="5" class="text-center text-muted">
-            {{ (approversLoaded() ? 'sa.msg.noApprovalData' : 'sa.msg.selectLeaveTypeFirst')
-               | translate: (approversLoaded() ? 'Không có dữ liệu phê duyệt' : 'Chọn loại nghỉ phép để xem người phê duyệt') }}
-          </td>
+        <tr *ngFor="let a of sstaFileTable.data">
+          <td class="text-center"><label nz-checkbox [(ngModel)]="a.checked"></label></td>
+          <td>{{ a.file.name }}</td>
         </tr>
-        <tr *ngFor="let item of saApproverTable.data; let i = index">
-          <td class="text-center">{{ item.affirmLevel || i + 1 }}</td>
-          <td>{{ item.localName }}</td>
+      </tbody>
+    </nz-table>
+
+    <!-- ===== Danh sách người phê duyệt ===== -->
+    <nz-table [nzData]="approvers()" [nzLoading]="approversLoading()" [nzShowPagination]="false"
+              nzSize="small" nzBordered class="mb-3" #sstaApproverTable>
+      <thead>
+        <tr>
+          <th class="text-center" style="width:5%">NO</th>
+          <th class="text-center">{{ 'sys.affirm.title.affirmPerson' | translate:'Người duyệt' }}</th>
+          <th class="text-center">{{ 'hr.enpinfo.title.EMP.EMPNUMBER' | translate:'Mã nhân viên' }}</th>
+          <th class="text-center">{{ 'hr.viewPersonalInfo.title.DEPTNAME' | translate:'Phòng ban' }}</th>
+          <th class="text-center">{{ 'hrm.contract.POSITION_NO' | translate:'Chức danh' }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of sstaApproverTable.data; let i = index">
+          <td class="text-center">{{ i + 1 }}</td>
+          <td class="text-center">{{ item.localName }}</td>
           <td class="text-center">{{ item.empId }}</td>
-          <td>{{ item.deptName }}</td>
-          <td>{{ item.postionName || item.positionName }}</td>
+          <td class="text-center">{{ item.deptName }}</td>
+          <td class="text-center">{{ item.positionName || item.postionName }}</td>
         </tr>
       </tbody>
     </nz-table>
@@ -119,7 +155,7 @@
     <!-- ===== Nút xin phép ===== -->
     <div class="text-end mb-3">
       <button nz-button nzType="primary" [nzLoading]="submitting()" (click)="submit()">
-        {{ 'sa.btn.submit' | translate:'Xin phép' }}
+        {{ 'ess.infoApply.title.apply' | translate:'Xin phép' }}
       </button>
     </div>
 

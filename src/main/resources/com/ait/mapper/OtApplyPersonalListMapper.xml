@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ait.ess.viewDept.mapper.OtApplyPersonalListMapper">
+
+    <resultMap id="OtApplyPersonalListResultMap" type="com.ait.ess.viewDept.dto.OtApplyPersonalListDto">
+        <result column="PERSON_ID"         property="personId"       jdbcType="VARCHAR" />
+        <result column="EMPID"             property="empId"          jdbcType="VARCHAR" />
+        <result column="LOCAL_NAME"        property="localName"      jdbcType="VARCHAR" />
+        <result column="DEPTNO"            property="deptNo"         jdbcType="VARCHAR" />
+        <result column="DEPT_NAME"         property="deptName"       jdbcType="VARCHAR" />
+        <result column="POST_GRADE_NO"     property="postGradeNo"    jdbcType="VARCHAR" />
+        <result column="POST_NAME"         property="postName"       jdbcType="VARCHAR" />
+        <result column="SHIFT_NAME"        property="shiftName"      jdbcType="VARCHAR" />
+        <result column="OT_TOTAL"          property="otTotal"        jdbcType="NUMERIC" />
+        <result column="WEEKDAY_OT_TOTAL"  property="weekdayOtTotal" jdbcType="NUMERIC" />
+        <result column="WEEKEND_OT_TOTAL"  property="weekendOtTotal" jdbcType="NUMERIC" />
+        <result column="HOLIDAY_OT_TOTAL"  property="holidayOtTotal" jdbcType="NUMERIC" />
+        <result column="MEAL_OT_INCEN"     property="mealOtIncen"    jdbcType="NUMERIC" />
+        <result column="NIGHT_INCEN"       property="nightIncen"     jdbcType="NUMERIC" />
+        <result column="SATURDAY_INCEN"    property="saturdayIncen"  jdbcType="NUMERIC" />
+    </resultMap>
+
+    <resultMap id="OtApplyPersonalListDetailResultMap" type="com.ait.ess.viewDept.dto.OtApplyPersonalListDetailDto">
+        <result column="PERSON_ID"        property="personId"       jdbcType="VARCHAR" />
+        <result column="EMPID"            property="empId"          jdbcType="VARCHAR" />
+        <result column="LOCAL_NAME"       property="localName"      jdbcType="VARCHAR" />
+        <result column="SHIFT_NO"         property="shiftNo"        jdbcType="VARCHAR" />
+        <result column="SHIFT_NAME"       property="shiftName"      jdbcType="VARCHAR" />
+        <result column="SHIFT_START_TIME" property="shiftStartTime" jdbcType="VARCHAR" />
+        <result column="SHIFT_END_TIME"   property="shiftEndTime"   jdbcType="VARCHAR" />
+        <result column="AR_DATE_STR"      property="arDateStr"      jdbcType="VARCHAR" />
+        <result column="ITEM_NO"          property="itemNo"         jdbcType="VARCHAR" />
+        <result column="ITEM_NAME"        property="itemName"       jdbcType="VARCHAR" />
+        <result column="INDOOR_TIME"      property="indoorTime"     jdbcType="VARCHAR" />
+        <result column="OUTDOOR_TIME"     property="outdoorTime"    jdbcType="VARCHAR" />
+        <result column="FROM_TIME"        property="fromTime"       jdbcType="VARCHAR" />
+        <result column="TO_TIME"          property="toTime"         jdbcType="VARCHAR" />
+        <result column="APPLY_LENGTH"     property="applyLength"    jdbcType="NUMERIC" />
+    </resultMap>
+
+    <!-- startDate / endDate truyền lên dạng DD/MM/YYYY (giống JSP cũ) -> YYYY/MM/DD để so với AR_DATE_STR -->
+    <sql id="startYmd">TO_CHAR(TO_DATE(#{startDate, jdbcType=VARCHAR}, 'DD/MM/YYYY'), 'YYYY/MM/DD')</sql>
+    <sql id="endYmd">TO_CHAR(TO_DATE(#{endDate, jdbcType=VARCHAR}, 'DD/MM/YYYY'), 'YYYY/MM/DD')</sql>
+
+    <!--
+        Phạm vi xem: cây phòng ban mình quản lý (MANAGER_EMP_ID) + phòng ban phụ trách chấm công
+        (AR_SUPERVISOR_INFO) - giữ nguyên điều kiện "过滤权限" của sqlDeptPer.xml cũ, thống nhất với
+        UseOfAnnualLeaveMapper. Yêu cầu bảng HR_EMPLOYEE đặt alias HR.
+    -->
+    <sql id="authScopeCondition">
+        AND EXISTS (
+            SELECT B1.DEPTID
+            FROM HR_DEPARTMENT B1
+            WHERE B1.DEPTNO = HR.DEPTNO
+            START WITH B1.DEPTNO IN (
+                SELECT HRD.DEPTID
+                FROM HR_DEPARTMENT HRD
+                WHERE HRD.MANAGER_EMP_ID = #{adminID, jdbcType=VARCHAR}
+            )
+            CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+            UNION
+            SELECT ASI.DEPTNO
+            FROM AR_SUPERVISOR_INFO ASI
+            WHERE ASI.DEPTNO = HR.DEPTNO
+              AND ASI.PERSON_ID = #{adminID, jdbcType=VARCHAR}
+        )
+    </sql>
+
+    <!--
+        Tình hình tăng ca - chuyển đổi từ sqlDeptPer.xml#viewOtApplyPersonalList (Hanwha_HTSV).
+        Mã loại GET_AR_OT_TOTAIL_INTERVAL giữ NGUYÊN như bản cũ:
+          '200' tổng | '141444' ngày thường | '141445' cuối tuần | '141446' ngày lễ
+          '315' hỗ trợ ăn ca | '316' hỗ trợ làm đêm | '317' hỗ trợ làm thứ 7
+        Khác bản cũ: lọc nhiều phòng ban (deptNos - frontend đã mở rộng xuống phòng ban con) thay cho
+        1 phòng ban + START WITH/CONNECT BY.
+    -->
+    <select id="selectSummaryList" parameterType="com.ait.ess.viewDept.dto.OtApplyPersonalListDto"
+            resultMap="OtApplyPersonalListResultMap">
+        SELECT HR.PERSON_ID,
+               HR.EMPID,
+               HR.LOCAL_NAME,
+               HR.DEPTNO,
+               GET_DEPT_NAME(HR.DEPTNO, #{lang, jdbcType=VARCHAR})          AS DEPT_NAME,
+               HR.POST_GRADE_NO,
+               GET_GLOBAL_NAME(HR.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}) AS POST_NAME,
+               GET_GLOBAL_NAME(HR.SHIFT_NO, #{lang, jdbcType=VARCHAR})      AS SHIFT_NAME,
+               NVL(GET_AR_OT_TOTAIL_INTERVAL(<include refid="startYmd"/>, <include refid="endYmd"/>, HR.CPNY_ID, HR.PERSON_ID, '200'), 0)    AS OT_TOTAL,
+               NVL(GET_AR_OT_TOTAIL_INTERVAL(<include refid="startYmd"/>, <include refid="endYmd"/>, HR.CPNY_ID, HR.PERSON_ID, '141444'), 0) AS WEEKDAY_OT_TOTAL,
+               NVL(GET_AR_OT_TOTAIL_INTERVAL(<include refid="startYmd"/>, <include refid="endYmd"/>, HR.CPNY_ID, HR.PERSON_ID, '141445'), 0) AS WEEKEND_OT_TOTAL,
+               NVL(GET_AR_OT_TOTAIL_INTERVAL(<include refid="startYmd"/>, <include refid="endYmd"/>, HR.CPNY_ID, HR.PERSON_ID, '141446'), 0) AS HOLIDAY_OT_TOTAL,
+               NVL(GET_AR_OT_TOTAIL_INTERVAL(<include refid="startYmd"/>, <include refid="endYmd"/>, HR.CPNY_ID, HR.PERSON_ID, '315'), 0)    AS MEAL_OT_INCEN,
+               NVL(GET_AR_OT_TOTAIL_INTERVAL(<include refid="startYmd"/>, <include refid="endYmd"/>, HR.CPNY_ID, HR.PERSON_ID, '316'), 0)    AS NIGHT_INCEN,
+               NVL(GET_AR_OT_TOTAIL_INTERVAL(<include refid="startYmd"/>, <include refid="endYmd"/>, HR.CPNY_ID, HR.PERSON_ID, '317'), 0)    AS SATURDAY_INCEN
+        FROM HR_EMPLOYEE HR
+        INNER JOIN HR_DEPARTMENT HD ON HR.DEPTNO = HD.DEPTNO
+        WHERE HR.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+          AND HR.EMPID NOT LIKE '%11111%'
+          AND (HR.DATE_LEFT IS NULL OR TO_CHAR(HR.DATE_LEFT, 'YYYY/MM/DD') &gt;= <include refid="endYmd"/>)
+          <include refid="authScopeCondition"/>
+        <if test="deptNos != null and deptNos != ''">
+          AND INSTR(',' || #{deptNos, jdbcType=VARCHAR} || ',', ',' || HR.DEPTNO || ',') &gt; 0
+        </if>
+        <if test="empTypeCode != null and empTypeCode != ''">
+          AND HR.EMP_TYPE_CODE = #{empTypeCode, jdbcType=VARCHAR}
+        </if>
+        <if test="shiftNo != null and shiftNo != ''">
+          AND HR.SHIFT_NO = #{shiftNo, jdbcType=VARCHAR}
+        </if>
+        <if test="keyword != null and keyword != ''">
+          AND (
+              HR.EMPID LIKE '%' || #{keyword, jdbcType=VARCHAR} || '%'
+              OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{keyword, jdbcType=VARCHAR})) || '%'
+              OR HR.ENGLISH_NAME LIKE '%' || #{keyword, jdbcType=VARCHAR} || '%'
+          )
+        </if>
+        ORDER BY HR.EMPID ASC
+    </select>
+
+    <!--
+        Chi tiết tăng ca 1 nhân viên theo nhóm ITEM_NO - chuyển đổi từ sqlDeptPer.xml#viewOtApplySingleList
+        (Hanwha_HTSV). ITEM_NO bind bằng foreach #{} thay cho $ITEM_NO$ nối chuỗi của bản cũ.
+        Áp cùng phạm vi xem như danh sách để không xem được chi tiết nhân viên ngoài quyền.
+    -->
+    <select id="selectDetailList" parameterType="com.ait.ess.viewDept.dto.OtApplyPersonalListDetailDto"
+            resultMap="OtApplyPersonalListDetailResultMap">
+        SELECT D.PERSON_ID,
+               HR.EMPID,
+               HR.LOCAL_NAME,
+               D.SHIFT_NO,
+               GET_GLOBAL_NAME(D.SHIFT_NO, #{lang, jdbcType=VARCHAR})                     AS SHIFT_NAME,
+               TO_CHAR(TO_DATE(GET_AR_SHIFT_START_TIME(D.PERSON_ID, D.AR_DATE_STR, #{cpnyId, jdbcType=VARCHAR}),
+                               'YYYY-MM-DD HH24:MI'), 'HH24:MI')                          AS SHIFT_START_TIME,
+               TO_CHAR(TO_DATE(GET_AR_SHIFT_END_TIME(D.PERSON_ID, D.AR_DATE_STR, #{cpnyId, jdbcType=VARCHAR}),
+                               'YYYY-MM-DD HH24:MI'), 'HH24:MI')                          AS SHIFT_END_TIME,
+               TO_CHAR(TO_DATE(D.AR_DATE_STR, 'YYYY/MM/DD'), 'DD/MM/YYYY')                AS AR_DATE_STR,
+               D.ITEM_NO,
+               GET_GLOBAL_NAME(D.ITEM_NO, #{lang, jdbcType=VARCHAR})                      AS ITEM_NAME,
+               GET_AR_TIME_BY_CPNYID(D.PERSON_ID, D.AR_DATE_STR, 'IN',  #{cpnyId, jdbcType=VARCHAR}) AS INDOOR_TIME,
+               GET_AR_TIME_BY_CPNYID(D.PERSON_ID, D.AR_DATE_STR, 'OUT', #{cpnyId, jdbcType=VARCHAR}) AS OUTDOOR_TIME,
+               TO_CHAR(D.FROM_TIME, 'HH24:MI')                                            AS FROM_TIME,
+               TO_CHAR(D.TO_TIME,   'HH24:MI')                                            AS TO_TIME,
+               D.QUANTITY                                                                 AS APPLY_LENGTH
+        FROM AR_DETAIL_HTSV D
+        INNER JOIN HR_EMPLOYEE HR ON D.PERSON_ID = HR.PERSON_ID
+        WHERE D.PERSON_ID = #{personId, jdbcType=VARCHAR}
+          AND D.PERSON_ID NOT LIKE '111111%'
+          AND D.QUANTITY &lt;&gt; 0
+          AND D.ITEM_NO IN
+          <foreach collection="itemNos" item="itemNo" open="(" separator="," close=")">
+              #{itemNo, jdbcType=VARCHAR}
+          </foreach>
+          <include refid="authScopeCondition"/>
+        <if test="startDate != null and startDate != ''">
+          AND D.AR_DATE_STR &gt;= <include refid="startYmd"/>
+        </if>
+        <if test="endDate != null and endDate != ''">
+          AND D.AR_DATE_STR &lt;= <include refid="endYmd"/>
+        </if>
+        ORDER BY D.AR_DATE_STR ASC, D.FROM_TIME ASC
+    </select>
+
+</mapper>

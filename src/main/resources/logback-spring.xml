@@ -4,9 +4,13 @@
     <!-- Custom converter: chỉ hiển thị frame com.ait.* và root cause -->
     <conversionRule conversionWord="cex" class="com.ait.config.CompactExceptionConverter"/>
 
+    <!-- Charset console: mặc định UTF-8 (cửa sổ cmd phải ở code page 65001 - chcp 65001).
+         Đổi bằng property logging.charset.console hoặc biến môi trường LOGGING_CHARSET_CONSOLE nếu cần. -->
+    <springProperty scope="context" name="consoleCharset" source="logging.charset.console" defaultValue="UTF-8"/>
+
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <charset>UTF-8</charset>
+            <charset>${consoleCharset}</charset>
             <pattern>%d{HH:mm:ss.SSS} %-5level [%logger{30}] %msg%n%cex</pattern>
         </encoder>
     </appender>

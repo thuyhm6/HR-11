@@ -6,17 +6,17 @@ import {
   EmpDefaultInfoMap,
   EmployeeOption,
   LeaveApplyApiRow,
-  LeaveApplyDetailResponse,
   LeaveApplySearchParams,
   SaveResult,
 } from './apply-attendance-batch-info.model';
+import { LeaveApplyDetail } from '../shared/leave-apply-detail/leave-apply-detail.model';
 
 const API_BASE = '/ar/attendanceMintenance/api/leaveApply';
 const EXCEL_TEMPLATE_NAME = 'AttendanceApply_add_Template';
 
 /**
- * Gọi lại nguyên các API JSON đã có sẵn ở EssLeaveApplyController (không đổi backend) - bản Angular
- * của ess/infoApplyAttendance/viewApplyAttenanceBatchInfoList.html (Thymeleaf + DataTables + jQuery).
+ * Service dùng chung cho các trang nghỉ phép (component riêng của thư mục này đã bỏ - menu chuyển sang
+ * PiciLeaveAffirmBatchComponent): chi tiết đơn, tải mẫu / import Excel nghỉ phép (EssLeaveApplyController).
  */
 @Injectable({ providedIn: 'root' })
 export class ApplyAttendanceBatchInfoService {
@@ -30,10 +30,10 @@ export class ApplyAttendanceBatchInfoService {
     return this.http.get<LeaveApplyApiRow[]>(`${API_BASE}/list`, { params: httpParams, withCredentials: true });
   }
 
-  getDetail(applyNo: string, applyType: string): Observable<LeaveApplyDetailResponse> {
+  getDetail(applyNo: string, applyType: string): Observable<LeaveApplyDetail> {
     let httpParams = new HttpParams().set('applyNo', applyNo);
     if (applyType) httpParams = httpParams.set('applyType', applyType);
-    return this.http.get<LeaveApplyDetailResponse>(`${API_BASE}/detail`, { params: httpParams, withCredentials: true });
+    return this.http.get<LeaveApplyDetail>(`${API_BASE}/detail`, { params: httpParams, withCredentials: true });
   }
 
   getEmpDefaultInfo(personId: string): Observable<EmpDefaultInfoMap> {

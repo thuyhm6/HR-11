@@ -1,0 +1,33 @@
+.poab-table th,
+.poab-table td {
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+/* Cột cho phép sửa trực tiếp - tương ứng class titleColor bản gốc */
+.poab-table th.poab-edit-col {
+  color: #1677ff;
+}
+
+.poab-table td.poab-affirm {
+  white-space: normal;
+  line-height: 1.4;
+}
+
+.poab-table tr.poab-row-selected > td {
+  background: #e6f4ff;
+}
+
+/* Ô Mã NV + nút tìm (popup tìm nhân viên) */
+.poab-emp-input {
+  display: flex;
+  gap: 4px;
+}
+
+.poab-picker-row {
+  cursor: pointer;
+}
+
+.poab-picker-row:hover > td {
+  background: #fafafa;
+}

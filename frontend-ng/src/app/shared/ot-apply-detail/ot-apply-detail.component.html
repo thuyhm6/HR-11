@@ -1,0 +1,140 @@
+<div #otdPrintArea class="otd-wrap" *ngIf="data() as d">
+  <div class="otd-print-title">【{{ 'ess.infoApply.title.overtimeApply' | translate:'Xin tăng ca' }}】</div>
+
+  <!-- Tiêu đề + người xin phép -->
+  <table class="otd-table mb-3">
+    <tbody>
+      <tr>
+        <th class="otd-label" style="width:20%">{{ 'ess.title.Title' | translate:'Tiêu đề' }}</th>
+        <td>{{ header().title }}</td>
+      </tr>
+      <tr>
+        <th class="otd-label">{{ 'public.title.qianzhe' | translate:'Người xin phép' }}</th>
+        <td>{{ header().applyPersonInfo }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Trình tự duyệt -->
+  <div class="table-responsive mb-3">
+    <nz-table #otdApprovalTable [nzData]="d.approvalList || []" [nzShowPagination]="false" [nzFrontPagination]="false"
+              nzSize="small" nzBordered>
+      <thead>
+        <tr>
+          <th class="text-center" style="width:6%">{{ 'ess.infoApply.in_order' | translate:'STT' }}</th>
+          <th class="text-center" style="width:11%">{{ 'ess.infoApply.approval_distinction' | translate:'Trình tự duyệt' }}</th>
+          <th class="text-center" style="width:12%">{{ 'ess.infoApply.approval_status' | translate:'Trạng thái duyệt' }}</th>
+          <th class="text-center" style="width:15%">{{ 'org.title.LOCAL_NAME' | translate:'Họ tên' }}</th>
+          <th class="text-center" style="width:22%">{{ 'ess.infoApply.comment' | translate:'Ý kiến' }}</th>
+          <th class="text-center" style="width:16%">{{ 'ess.infoApply.dealing_with_transactions' | translate:'Thời gian thực hiện' }}</th>
+          <th class="text-center" style="width:18%">{{ 'ess.infoApply.DEPT_NAME' | translate:'Phòng ban' }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngIf="!d.approvalList?.length">
+          <td colspan="7" class="text-center text-muted">{{ 'arOtf.noApprovalData' | translate:'Không có dữ liệu phê duyệt' }}</td>
+        </tr>
+        <tr *ngFor="let item of otdApprovalTable.data; let i = index">
+          <td class="text-center">{{ stt(item, i) }}</td>
+          <td class="text-center">{{ typeLabel(item) }}</td>
+          <td class="text-center">
+            <ng-container *ngIf="status(item) as st">
+              <nz-tag class="otd-tag m-0" [nzColor]="st.color">{{ st.label }}</nz-tag>
+            </ng-container>
+          </td>
+          <td class="text-center">{{ item.affirmName }}</td>
+          <td class="otd-pre">
+            <input *ngIf="opinionEditable()(item); else otdOpinionText" nz-input nzSize="small"
+                   [ngModel]="opinion()" (ngModelChange)="opinion.set($event)" [ngModelOptions]="{ standalone: true }">
+            <ng-template #otdOpinionText>{{ item.affirmContent }}</ng-template>
+          </td>
+          <td class="text-center">{{ item.updateDate }}</td>
+          <td class="text-center">{{ item.deptName }}</td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </div>
+
+  <!-- Thông tin nhân viên -->
+  <div class="otd-section-title">{{ 'ess.infoApply.applicant_information' | translate:'Thông tin nhân viên' }}</div>
+  <table class="otd-table mb-3">
+    <tbody>
+      <tr>
+        <th class="otd-label" style="width:15%">{{ 'org.title.LOCAL_NAME' | translate:'Họ tên' }}</th>
+        <td style="width:35%">{{ (d.employeeInfo || d.otInfo)?.['localName'] }}</td>
+        <th class="otd-label" style="width:15%">{{ 'ess.infoApply.EMP_ID' | translate:'Mã nhân viên' }}</th>
+        <td style="width:35%">{{ (d.employeeInfo || d.otInfo)?.['empId'] }}</td>
+      </tr>
+      <tr>
+        <th class="otd-label">{{ 'ess.infoApply.DEPT' | translate:'Phòng ban' }}</th>
+        <td>{{ (d.employeeInfo || d.otInfo)?.['deptName'] }}</td>
+        <th class="otd-label">{{ 'ess.infoApply.Rank' | translate:'Chức vụ' }}</th>
+        <td>{{ (d.employeeInfo || d.otInfo)?.['postGradeName'] }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Thông tin xin phép -->
+  <div class="otd-section-title">{{ 'ess.infoApply.application_information' | translate:'Thông tin xin phép' }}</div>
+  <div class="table-responsive mb-3">
+    <table class="otd-table">
+      <thead>
+        <tr>
+          <th class="text-center" style="width:10%">{{ 'ar.viewardetail.title.date' | translate:'Ngày' }}</th>
+          <th class="text-center" style="width:8%">{{ 'ess.infoApply.week' | translate:'Thứ' }}</th>
+          <th class="text-center" style="width:10%">{{ 'ess.infoApply.overtime_type' | translate:'Tăng ca' }}</th>
+          <th class="text-center" style="width:12%">{{ 'ess.infoApply.overtime_start_time' | translate:'Thời gian bắt đầu tăng ca' }}</th>
+          <th class="text-center" style="width:12%">{{ 'ess.infoApply.end_time' | translate:'Thời gian kết thúc' }}</th>
+          <th class="text-center" style="width:8%">{{ 'ess.infoApply.overtime_hours' | translate:'Thời lượng' }}</th>
+          <th class="text-center" style="width:8%">{{ 'ess.viewSSTOtApplyInfo.BENNIANLEIJIJIABAN.b' | translate:'Năm nay' }}</th>
+          <th class="text-center" style="width:8%">{{ 'ess.viewSSTOtApplyInfo.BENYUELEIJIJIABAN.b' | translate:'Tháng này' }}</th>
+          <th class="text-center">{{ 'ess.infoApply.Reason' | translate:'Lý do' }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngIf="d.otInfo as ot">
+          <td class="text-center">{{ fmtDate(ot['applyOtDate']) }}</td>
+          <td class="text-center">{{ weekday(ot['applyOtDate']) }}</td>
+          <td class="text-center">{{ ot['otTypeName'] }}</td>
+          <td class="text-center">{{ fmtDate(ot['otFromTime']) }}</td>
+          <td class="text-center">{{ fmtDate(ot['otToTime']) }}</td>
+          <td class="text-center">{{ ot['otApplyHour'] }} {{ 'ar.viewsummaryparameteritem.title.hour' | translate:'Tiếng' }}</td>
+          <td class="text-center">{{ ot['otTotalYear'] }} {{ 'ar.viewsummaryparameteritem.title.hour' | translate:'Tiếng' }}</td>
+          <td class="text-center">{{ ot['otTotalMonth'] }} {{ 'ar.viewsummaryparameteritem.title.hour' | translate:'Tiếng' }}</td>
+          <td class="otd-pre">{{ ot['applyOtRemark'] }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Báo cơm (suất ăn quẹt thẻ trong ngày tăng ca) -->
+  <div class="otd-section-title">{{ 'ess.viewSSTOtApplyInfo.DEDUCT_MEAL_TIME_YN.b' | translate:'Báo cơm' }}</div>
+  <div class="table-responsive">
+    <nz-table #otdMealTable [nzData]="d.mealList || []" [nzShowPagination]="false" [nzFrontPagination]="false"
+              nzSize="small" nzBordered>
+      <thead>
+        <tr>
+          <th class="text-center" style="width:6%">No.</th>
+          <th class="text-center" style="width:16%">{{ 'ar.viewArCardRecord.DAKARIQI.b' | translate:'Ngày quẹt thẻ' }}</th>
+          <th class="text-center" style="width:16%">{{ 'ess.infoApply.card_clock_time' | translate:'Thời gian quẹt thẻ' }}</th>
+          <th class="text-center">{{ 'inct.salesman.eval.detail' | translate:'Chi tiết' }}</th>
+          <th class="text-center" style="width:16%">{{ 'inct.salesman.classify' | translate:'Phân loại' }}</th>
+          <th class="text-center" style="width:10%">{{ 'ess.viewApplyAttendanceBatchInfoDetail.SHULIANG.b' | translate:'Số lượng' }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngIf="!d.mealList?.length">
+          <td colspan="6" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+        </tr>
+        <tr *ngFor="let m of otdMealTable.data; let i = index">
+          <td class="text-center">{{ i + 1 }}</td>
+          <td class="text-center">{{ m.rDate }}</td>
+          <td class="text-center">{{ m.rTime }}</td>
+          <td class="text-center">{{ m.eatName }}</td>
+          <td class="text-center">{{ m.eatDate }}</td>
+          <td class="text-center">{{ m.amount }}</td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </div>
+</div>

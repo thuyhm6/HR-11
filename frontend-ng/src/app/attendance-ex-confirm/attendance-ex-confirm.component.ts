@@ -1,5 +1,5 @@
 import { CommonModule, formatDate } from '@angular/common';
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, ViewChild, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzCardModule } from 'ng-zorro-antd/card';
@@ -15,8 +15,10 @@ import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { AttendanceExConfirmService } from './attendance-ex-confirm.service';
-import { AttendanceExConfirmUiRow, AttendanceExDetailResponse } from './attendance-ex-confirm.model';
+import { AttendanceExConfirmUiRow } from './attendance-ex-confirm.model';
 import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
+import { AttendanceExApplyDetailComponent } from '../shared/attendance-ex-apply-detail/attendance-ex-apply-detail.component';
+import { AttendanceExApplyDetail } from '../shared/attendance-ex-apply-detail/attendance-ex-apply-detail.model';
 
 /** Các key message.properties dùng trong trang này - tải trước 1 lần ở ngOnInit (xem I18nService).
  *  Namespace "aec" đã được tạo sẵn riêng cho trang này (chỉ thiếu 4 key msg.confirm* dùng cho nội dung
@@ -29,16 +31,14 @@ const I18N_KEYS = [
   'lc.col.affirmStatus', 'lc.col.hrConfirm', 'lc.col.hrComment', 'lc.dialog.hrComment',
   'lc.msg.selectApply', 'lc.msg.approveSuccess', 'lc.msg.rejectSuccess', 'lc.msg.hrCommentRequired',
   'applyAtt.search.confirmFlag', 'applyAtt.confirmFlag.notConfirmed', 'applyAtt.confirmFlag.confirmed',
-  'applyAtt.confirmFlag.rejected', 'applyAtt.applicant', 'applyAtt.subject', 'applyAtt.approvalSeq',
-  'applyAtt.approvalStatus', 'applyAtt.opinion', 'applyAtt.actionTime', 'applyAtt.empInfo', 'applyAtt.leaveInfo',
-  'applyAtt.leaveTypeFull', 'applyAtt.leaveDuration', 'applyAtt.loadingData', 'applyAtt.noApprovalData',
-  'applyAtt.loadFailed', 'applyAtt.sendError',
+  'applyAtt.confirmFlag.rejected', 'applyAtt.applicant', 'applyAtt.loadingData', 'applyAtt.loadFailed',
+  'applyAtt.sendError',
   'common.search.empIdOrName', 'common.placeholder.empId', 'common.fromDate', 'common.toDate', 'common.no.serial',
-  'common.empId', 'common.empName', 'common.deptName', 'common.position', 'common.reason', 'common.selectAll',
-  'common.clearFilter', 'common.search', 'common.no', 'common.close', 'common.confirm', 'common.stt',
-  'common.totalRows', 'common.loadFail', 'common.noData', 'common.startTime', 'common.endTime',
+  'common.empId', 'common.deptName', 'common.position', 'common.reason', 'common.selectAll',
+  'common.clearFilter', 'common.search', 'common.no', 'common.close', 'common.confirm',
+  'common.totalRows', 'common.loadFail', 'common.noData',
   'ps.col.indoorTime', 'ps.col.outdoorTime',
-  'ck.modal.title',
+  'ess.infoApply.check_error_attendance', 'common.print',
 ];
 
 const CONFIRM_FLAG_OPTIONS: { value: string; labelKey: string; fallback: string }[] = [
@@ -82,6 +82,7 @@ const DEFAULT_CONFIRM_FLAG = '0';
     NzTagModule,
     NzModalModule,
     NzAlertModule,
+    AttendanceExApplyDetailComponent,
     TranslatePipe,
   ],
   templateUrl: './attendance-ex-confirm.component.html',
@@ -111,7 +112,9 @@ export class AttendanceExConfirmComponent implements OnInit {
   readonly detailVisible = signal(false);
   readonly detailLoading = signal(false);
   readonly detailErrorMessage = signal<string | null>(null);
-  readonly detailData = signal<AttendanceExDetailResponse | null>(null);
+  readonly detailData = signal<AttendanceExApplyDetail | null>(null);
+
+  @ViewChild(AttendanceExApplyDetailComponent) private aedDetail?: AttendanceExApplyDetailComponent;
 
   constructor(
     private readonly api: AttendanceExConfirmService,
@@ -316,7 +319,7 @@ export class AttendanceExConfirmComponent implements OnInit {
     this.detailData.set(null);
     this.api.getDetail(row.applyNo, row.itemNo).subscribe({
       next: (res) => {
-        this.detailData.set(res);
+        this.detailData.set(res ? { ...res, approvalList: res.approvalList ?? [] } : null);
         this.detailLoading.set(false);
       },
       error: () => {
@@ -330,41 +333,8 @@ export class AttendanceExConfirmComponent implements OnInit {
     this.detailVisible.set(false);
   }
 
-  detailInfo(d: AttendanceExDetailResponse): Record<string, any> {
-    return d.leaveInfo || {};
-  }
-
-  detailEmployeeInfo(d: AttendanceExDetailResponse): Record<string, any> {
-    return d.employeeInfo || this.detailInfo(d);
-  }
-
-  detailModalTitle(d: AttendanceExDetailResponse | null): string {
-    if (!d) return '';
-    const info = this.detailInfo(d);
-    return `[${info['leaveTypeName'] || this.i18n.t('ck.modal.title', 'Thông tin phê duyệt')}]`;
-  }
-
-  /** Dòng "Tiêu đề" trong modal - đúng atexRenderData() bản gốc. */
-  detailApplyTitle(d: AttendanceExDetailResponse): string {
-    const info = this.detailInfo(d);
-    const typeName = info['leaveTypeName'];
-    const fromTime = info['leaveFromTime'];
-    const toTime = info['leaveToTime'];
-    const localName = info['localName'] || '';
-    if (!typeName && !localName && !fromTime && !toTime) return '';
-    return `${typeName || ''}/Apply(${localName})[Date: ${fromTime || ''} ~ ${toTime || ''}]`;
-  }
-
-  detailApplicant(d: AttendanceExDetailResponse): string {
-    const emp = this.detailEmployeeInfo(d);
-    return `${emp['localName'] || ''}/${emp['postGradeName'] || ''}/${emp['deptName'] || ''}`;
-  }
-
-  /** STT hàng phê duyệt - dòng tổng hợp xác nhận của HR có affirmLevel='100' hiển thị là 'HR' thay vì
-   *  số thứ tự thô, đúng vaotRenderApprovalRows() bản gốc. */
-  approvalStt(affirmLevel: string, index: number): string {
-    const stt = affirmLevel || String(index + 1);
-    return stt === '100' ? 'HR' : stt;
+  printDetail(): void {
+    this.aedDetail?.print();
   }
 
   // ==================== Helpers ====================

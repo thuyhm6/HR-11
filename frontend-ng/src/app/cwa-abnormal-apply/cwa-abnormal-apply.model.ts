@@ -35,13 +35,18 @@ export interface EssCwaAbnormalDto {
   lockYn: string;
 }
 
-/** 1 dòng trong bảng - bọc thêm state chọn dòng + giờ vào/ra/lý do đang chỉnh sửa (dữ liệu client-side,
- *  không có trong response backend) ngoài field trả về từ EssCwaAbnormalDto. */
+/** 1 dòng trong bảng - giờ vào/ra nhập tách ngày + giờ + phút đúng bản gốc (ngày mặc định theo ca, giờ/phút để
+ *  trống bắt buộc nhập), kèm tuyến duyệt dự kiến. */
 export interface CwaAbnormalDisplayRow extends EssCwaAbnormalDto {
   selected: boolean;
-  inTime: Date | null;
-  outTime: Date | null;
+  inDate: Date | null;
+  inHour: string;
+  inMinute: string;
+  outDate: Date | null;
+  outHour: string;
+  outMinute: string;
   remark: string;
+  affirmStr: string;
 }
 
 export interface CwaAbnormalSearchParams {
@@ -60,16 +65,19 @@ export interface ApproverInfo {
   postionName: string;
 }
 
-/** Tương ứng với các field của EssAttendanceExForBatchDto.java mà trang gốc gửi lên (chỉ các field
- *  scaSubmit() bản gốc thực sự set). */
+/** Payload POST /ess/infoApplyAttendance/api/attendanceEx/apply (EssAttendanceExForBatchDto) - các field
+ *  addCwaAbnormalApply bản gốc gửi lên: ngày công 'yyyy/MM/dd', FROM/TO = giờ quẹt thẻ gốc, IN/OUT = giờ nhập. */
 export interface AttendanceExApplyItem {
   applyNo: string;
   personId: string;
+  empId: string;
   localName: string;
   itemNo: string;
   arDateStr: string;
   fromDateTime: string;
   toDateTime: string;
+  inTime: string;
+  outTime: string;
   workHour: string;
   remark: string;
 }

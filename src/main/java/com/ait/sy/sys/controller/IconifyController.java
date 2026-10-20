@@ -30,7 +30,12 @@ public class IconifyController {
     @Autowired
     private IconifyService iconifyService;
 
-    @GetMapping(value = "/assets/iconify/{prefix}.json", produces = MediaType.APPLICATION_JSON_VALUE)
+    // "/api/iconify/{prefix}" (không đuôi .json, không nằm dưới /assets/) là URL chính, được
+    // iconify-offline.js dùng - tránh web server/reverse proxy đứng trước WAS (WebtoB, Apache, IIS, Nginx...)
+    // coi /assets/** hoặc *.json là file tĩnh rồi tự trả 404 thay vì chuyển vào Spring.
+    // "/assets/iconify/{prefix}.json" giữ lại để tương thích bản index.html cũ đang bị cache.
+    @GetMapping(value = { "/api/iconify/{prefix}", "/assets/iconify/{prefix}.json" },
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ObjectNode> getIcons(@PathVariable("prefix") String prefix,
             @RequestParam(value = "icons", defaultValue = "") String icons) {
         List<String> iconNames = Arrays.stream(icons.split(","))

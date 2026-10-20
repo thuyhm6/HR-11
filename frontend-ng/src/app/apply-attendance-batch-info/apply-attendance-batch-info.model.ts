@@ -79,23 +79,3 @@ export interface EmpDefaultInfoMap {
   SHIFT_NAME?: string;
   DEPT_NAME?: string;
 }
-
-export interface LeaveApplyDetailResponse {
-  leaveInfo: Record<string, any> | null;
-  employeeInfo: Record<string, any> | null;
-  approvalList: ApprovalInfo[];
-}
-
-export interface ApprovalInfo {
-  affirmLevel: string;
-  /** Loại dòng duyệt (Approval/Agreement/Announcement/Proposal) - cột "Trình tự duyệt" trong bảng,
-   *  trả nguyên text tiếng Anh từ backend (DECODE cứng trong SQL, không qua GET_GLOBAL_NAME). */
-  affirmTypeName: string;
-  /** Trạng thái duyệt (Pending/Approved/Rejected...) - cột "Trạng thái duyệt". */
-  affirmFlagName: string;
-  affirmName: string;
-  deptName: string;
-  applyAffirmFlag: string;
-  updateDate: string;
-  affirmContent: string;
-}

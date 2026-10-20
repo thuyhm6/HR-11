@@ -328,15 +328,26 @@
         <result property="affirmLevel"   column="AFFIRM_LEVEL"/>
     </resultMap>
 
+    <!-- Chưa có applyTypeCode (vd. dòng đơn mới chưa chọn loại nghỉ) thì dùng mặc định '18135' và
+         applyLength = '0' - đúng InfoApplySerImpl.getAffirmorListByString bản gốc (Hanwha_HTSV),
+         tránh truyền NULL xuống PKG_AFFIRM_EMAIL.GET_AFFIRMOR_LIST_IMPROVE. -->
     <select id="getAffirmorList" statementType="CALLABLE" parameterType="java.util.Map">
         { #{resultList, mode=OUT, jdbcType=CURSOR, javaType=java.sql.ResultSet, resultMap=AffirmorListResultMap} =
           call PKG_AFFIRM_EMAIL.GET_AFFIRMOR_LIST_IMPROVE(
             #{applyTypeNo, mode=IN, jdbcType=VARCHAR},
             #{personId, mode=IN, jdbcType=VARCHAR},
+          <choose>
+            <when test="applyTypeCode != null and applyTypeCode != ''">
             #{applyTypeCode, mode=IN, jdbcType=VARCHAR},
             #{applyLength, mode=IN, jdbcType=VARCHAR},
+            </when>
+            <otherwise>
+            '18135',
+            '0',
+            </otherwise>
+          </choose>
             #{lang, mode=IN, jdbcType=VARCHAR}
-          ) 
+          )
         }
     </select>
 

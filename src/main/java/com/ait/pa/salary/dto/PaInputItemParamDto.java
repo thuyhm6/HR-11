@@ -23,6 +23,8 @@ public class PaInputItemParamDto {
     private String distinctField2ndName;
     private Integer itemType;
     private Integer activity;
+    // Cách gộp dữ liệu trong kỳ: 0=Cộng dồn, 1=Lấy giá trị sau cùng, 2=Chia theo ngày lịch, 3=Chia theo ngày công
+    private Integer prorateType;
 
     // Search conditions
     private Integer itemTypeSearch;

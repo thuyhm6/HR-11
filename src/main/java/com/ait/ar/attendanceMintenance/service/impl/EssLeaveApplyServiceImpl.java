@@ -6,7 +6,9 @@ import com.ait.sy.syAffirm.dto.SyAffirmEmailDto;
 import com.ait.sy.syAffirm.mapper.SyAffirmEmailMapper;
 import com.ait.ar.attendanceMintenance.mapper.EssLeaveApplyMapper;
 import com.ait.ar.attendanceMintenance.service.EssLeaveApplyService;
+import com.ait.ess.empinfo.dto.EssFileDto;
 import com.ait.ess.empinfo.dto.EssPersonalInfoDto;
+import com.ait.ess.empinfo.mapper.EssFileMapper;
 import com.ait.ess.empinfo.mapper.EssPersonalInfoMapper;
 
 import org.slf4j.Logger;
@@ -29,9 +31,16 @@ public class EssLeaveApplyServiceImpl implements EssLeaveApplyService {
     private static final String APPLY_TYPE_NO = "21";
     //private static final String APPLY_TYPE_NO = "31";
     private static final String APPLY_AFFIRM_FLAG = "14014306";
+    /** Mã loại nghỉ phép năm - popup chi tiết hiển thị thêm bảng thông tin phép năm. */
+    private static final String ANNUAL_LEAVE_TYPE_CODE = "26";
+    /** ESS_FILE.APPLY_TYPE của file đính kèm đơn nghỉ phép. */
+    private static final String LEAVE_FILE_APPLY_TYPE = "LEAVE_APPLY";
 
     @Autowired
     private EssLeaveApplyMapper essLeaveApplymapper;
+
+    @Autowired
+    private EssFileMapper essFileMapper;
 
     @Autowired
     private SyAffirmEmailMapper affirmorMapper;
@@ -84,10 +93,34 @@ public class EssLeaveApplyServiceImpl implements EssLeaveApplyService {
         List<SyAffirmEmailDto> approvalList = essLeaveApplymapper.selectApprovalInfo(resolvedApplyNo,
                 resolvedApplyType);
 
+        // Thông tin phép năm của người xin phép - bản gốc (viewApprovaledLeaveInfo.jsp) chỉ hiển thị khi
+        // loại nghỉ là phép năm (LEAVE_TYPE_CODE = '26').
+        Map<String, Object> vacInfo = null;
+        if (leaveInfo != null && ANNUAL_LEAVE_TYPE_CODE.equals(toTrimmedString(leaveInfo.getLeaveTypeCode()))) {
+            try {
+                vacInfo = getMyVacationInfo(leaveInfo.getPersonId());
+            } catch (Exception e) {
+                log.error("getLeaveApplyDetail - lỗi lấy thông tin phép năm applyNo={}: {}", resolvedApplyNo, e.getMessage(), e);
+            }
+        }
+
+        // File đính kèm của đơn (ESS_FILE, APPLY_TYPE = 'LEAVE_APPLY') - như getEssFileList bản gốc.
+        List<EssFileDto> fileList = Collections.emptyList();
+        try {
+            List<EssFileDto> files = essFileMapper.selectFilesByApply(LEAVE_FILE_APPLY_TYPE, resolvedApplyNo);
+            if (files != null) {
+                fileList = files;
+            }
+        } catch (Exception e) {
+            log.error("getLeaveApplyDetail - lỗi lấy file đính kèm applyNo={}: {}", resolvedApplyNo, e.getMessage(), e);
+        }
+
         Map<String, Object> result = new HashMap<>();
         result.put("leaveInfo", leaveInfo);
         result.put("employeeInfo", leaveInfo);
         result.put("approvalList", approvalList == null ? Collections.emptyList() : approvalList);
+        result.put("vacInfo", vacInfo);
+        result.put("fileList", fileList);
         return result;
     }
 

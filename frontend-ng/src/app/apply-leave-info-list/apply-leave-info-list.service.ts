@@ -3,12 +3,12 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import {
   CancelResult,
-  CardApplyDetailResponse,
   CardApplySearchParams,
   CodeItem,
   EssBasicInfoDto,
   EssCardApplyListDto,
 } from './apply-leave-info-list.model';
+import { AttendanceExApplyDetail } from '../shared/attendance-ex-apply-detail/attendance-ex-apply-detail.model';
 
 const API_BASE = '/ess/infoApplyLeave/api/myCardApply';
 
@@ -49,9 +49,9 @@ export class ApplyLeaveInfoListService {
     return this.http.post<CancelResult>(`${API_BASE}/cancel`, applyNos, { withCredentials: true });
   }
 
-  getDetail(applyNo: string, applyType: string): Observable<CardApplyDetailResponse> {
+  getDetail(applyNo: string, applyType: string): Observable<AttendanceExApplyDetail> {
     let httpParams = new HttpParams().set('applyNo', applyNo);
     if (applyType) httpParams = httpParams.set('applyType', applyType);
-    return this.http.get<CardApplyDetailResponse>(DETAIL_URL, { params: httpParams, withCredentials: true });
+    return this.http.get<AttendanceExApplyDetail>(DETAIL_URL, { params: httpParams, withCredentials: true });
   }
 }

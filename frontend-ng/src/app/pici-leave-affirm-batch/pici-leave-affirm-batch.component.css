@@ -1,0 +1,33 @@
+.plab-table th,
+.plab-table td {
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+/* Cột cho phép sửa trực tiếp - tương ứng class titleColor bản gốc */
+.plab-table th.plab-edit-col {
+  color: #1677ff;
+}
+
+.plab-table td.plab-wrap {
+  white-space: normal;
+  line-height: 1.4;
+}
+
+.plab-table tr.plab-row-selected > td {
+  background: #e6f4ff;
+}
+
+/* Ô Mã NV + nút tìm (popup tìm nhân viên) */
+.plab-emp-input {
+  display: flex;
+  gap: 4px;
+}
+
+.plab-picker-row {
+  cursor: pointer;
+}
+
+.plab-picker-row:hover > td {
+  background: #fafafa;
+}

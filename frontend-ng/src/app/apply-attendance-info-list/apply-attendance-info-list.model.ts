@@ -59,21 +59,3 @@ export interface CancelResult {
   error?: string;
   count?: number;
 }
-
-/** Tương ứng với response GET /ar/attendanceMintenance/api/leaveApply/detail (giống hệt
- *  LeaveApplyDetailResponse ở apply-attendance-batch-info.model.ts - cùng 1 API). */
-export interface LeaveApplyDetailResponse {
-  leaveInfo: Record<string, any> | null;
-  employeeInfo: Record<string, any> | null;
-  approvalList: ApprovalInfo[];
-}
-
-export interface ApprovalInfo {
-  affirmLevel: string;
-  affirmTypeName: string;
-  affirmFlagName: string;
-  affirmName: string;
-  deptName: string;
-  updateDate: string;
-  affirmContent: string;
-}

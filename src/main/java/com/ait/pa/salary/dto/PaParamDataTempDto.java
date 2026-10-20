@@ -13,6 +13,9 @@ public class PaParamDataTempDto {
     private String returnValue;
     private String startMonth;
     private String endMonth;
+    // Ngày hiệu lực (YYYY-MM-DD) - import theo ngày, hoặc package quy đổi từ tháng
+    private String startDate;
+    private String endDate;
     private String remark;
     private String localName;
     private String uploadErrorMsg;

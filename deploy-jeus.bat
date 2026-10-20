@@ -198,7 +198,7 @@ echo  -- Ghi bien moi truong vao setenv.bat...
     echo set "DB_PASSWORD=%DB_PASSWORD%"
     echo set "PHOTO_UPLOAD_PATH=%PHOTO_UPLOAD_PATH%"
     echo set "SESSION_COOKIE_SECURE=%SESSION_COOKIE_SECURE%"
-    echo set "JAVA_OPTS=-Xms512m -Xmx1024m -Dfile.encoding=UTF-8"
+    echo set "JAVA_OPTS=-Xms512m -Xmx1024m -Dfile.encoding=UTF-8 -Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8"
 ) > "%TOMCAT_HOME%\bin\setenv.bat"
 echo  [OK] Ghi xong: %TOMCAT_HOME%\bin\setenv.bat
 echo.
@@ -235,9 +235,10 @@ if %ERRORLEVEL% GEQ 8 (
 echo  [OK] Copy thanh cong: %TOMCAT_HOME%\webapps\%TOMCAT_APP_NAME%\
 echo.
 
-:: Khoi dong Tomcat
+:: Khoi dong Tomcat trong cua so console UTF-8 (chcp 65001) de log tieng Viet khong bi loi font
+:: (startup.bat mo cua so moi voi code page mac dinh 437 -> log UTF-8 hien thi sai)
 echo  -- Khoi dong Tomcat...
-start "" "%TOMCAT_HOME%\bin\startup.bat"
+start "HR-11 Tomcat" cmd /k "chcp 65001 >nul & "%TOMCAT_HOME%\bin\catalina.bat" run"
 echo.
 echo  ================================================
 echo    DEPLOY TOMCAT THANH CONG!

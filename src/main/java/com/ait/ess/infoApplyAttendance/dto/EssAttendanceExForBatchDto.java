@@ -38,6 +38,10 @@ public class EssAttendanceExForBatchDto {
     private String shiftNo;
     private String shiftName;
     private String remark;
+    /** Giờ vào / ra thực tế người dùng nhập (IN_TIME / OUT_TIME), dạng 'YYYY/MM/DD HH24:MI'.
+     *  fromDateTime/toDateTime giữ giờ bất thường gốc của AR_DETAIL_HTSV (FROM_TIME/TO_TIME) - đúng bản gốc. */
+    private String inTime;
+    private String outTime;
 
     private String keyword;
     private String deptNos;

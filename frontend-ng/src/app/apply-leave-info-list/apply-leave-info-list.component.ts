@@ -1,5 +1,5 @@
 import { CommonModule, formatDate } from '@angular/common';
-import { Component, OnInit, computed, signal } from '@angular/core';
+import { Component, OnInit, ViewChild, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzInputModule } from 'ng-zorro-antd/input';
@@ -10,36 +10,30 @@ import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
-import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
 import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { ApplyLeaveInfoListService } from './apply-leave-info-list.service';
 import {
-  CardApplyDetailResponse,
   CardApplyDisplayRow,
   CodeItem,
   EssBasicInfoDto,
 } from './apply-leave-info-list.model';
 import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
+import { AttendanceExApplyDetailComponent } from '../shared/attendance-ex-apply-detail/attendance-ex-apply-detail.component';
+import { AttendanceExApplyDetail } from '../shared/attendance-ex-apply-detail/attendance-ex-apply-detail.model';
 
 /** Các key message.properties dùng trong trang này (toàn bộ tái sử dụng từ namespace essLeave, essCommon,
  *  common đã có sẵn - không thêm key mới) - tải trước 1 lần ở ngOnInit (xem I18nService). */
 const I18N_KEYS = [
   'essEmpCard.localName', 'essEmpCard.empId', 'essEmpCard.deptName', 'essEmpCard.headDept',
   'essEmpCard.postFamily', 'essEmpCard.postGrade', 'essEmpCard.positionName', 'essEmpCard.dateStarted',
-  'essLeave.startDate', 'essLeave.endDate', 'essLeave.approvalStatus', 'essLeave.search',
-  'essLeave.cancelBtn', 'essLeave.approvalInfo',
+  'essLeave.startDate', 'essLeave.endDate', 'essLeave.approvalStatus', 'essLeave.search', 'essLeave.cancelBtn',
   'essCommon.quickFilter', 'essCommon.attendanceDate', 'essCommon.category', 'essCommon.cardSwipeTime',
-  'essCommon.shift', 'essCommon.workTime', 'essCommon.hrOpinion', 'essCommon.title', 'essCommon.applicant',
-  'essCommon.approvalOrder', 'essCommon.fullName', 'essCommon.opinion', 'essCommon.executionTime',
-  'essCommon.empInfo', 'essCommon.position', 'essCommon.applyInfo', 'essCommon.leaveType',
-  'essCommon.startTime', 'essCommon.endTime', 'essCommon.reason', 'essCommon.noData',
-  'essCommon.cancelSuccess', 'essCommon.cancelFail', 'essCommon.selectAtLeastOne',
-  'essCommon.confirmCancel1', 'essCommon.confirmCancel2',
-  'essCwa.inLabel', 'essCwa.outLabel',
-  'essOt.timeRange',
-  'common.remark', 'common.stt', 'common.deptName', 'common.empId', 'common.hours', 'common.close',
-  'common.totalRows', 'common.selectAll', 'common.loadFail',
+  'essCommon.shift', 'essCommon.workTime', 'essCommon.hrOpinion', 'essCommon.cancelSuccess',
+  'essCommon.cancelFail', 'essCommon.selectAtLeastOne', 'essCommon.confirmCancel1', 'essCommon.confirmCancel2',
+  'essCwa.inLabel', 'essCwa.outLabel', 'essOt.timeRange', 'common.remark', 'common.stt', 'common.close',
+  'common.totalRows', 'common.selectAll', 'common.loadFail', 'common.print',
+  'ess.infoApply.check_error_attendance',
 ];
 
 /** applyNo chỉ hủy được khi AFFIRM_FLAG thuộc nhóm này (Gửi/Đang duyệt/Đã duyệt) - đúng danh sách
@@ -59,8 +53,8 @@ const CANCELABLE_FLAGS = ['14014306', '14014307', '14014308'];
  * infoApplyAttendance khác - đúng như aliOpenDetail() bản gốc). Dùng nz-table (BE trả toàn bộ danh
  * sách theo bộ lọc) thay bảng HTML tự build chuỗi jQuery - tương tự manage-emp-position-info. Lọc
  * nhanh (quick filter) làm client-side qua computed filteredRows() - đúng hành vi aliQuickFilter() bản
- * gốc. Modal chi tiết giữ nguyên đủ nội dung bản gốc (khối "Tiêu đề"/"Người xin phép" tổng hợp +
- * trình tự duyệt + thông tin nhân viên + thông tin xin phép).
+ * gốc. Modal chi tiết dùng chung AttendanceExApplyDetailComponent (bản Angular của
+ * /ess/infoApply/viewAttendanceEx dự án Hanwha_HTSV).
  */
 @Component({
   selector: 'app-apply-leave-info-list',
@@ -76,7 +70,7 @@ const CANCELABLE_FLAGS = ['14014306', '14014307', '14014308'];
     NzCheckboxModule,
     NzModalModule,
     NzAlertModule,
-    NzDescriptionsModule,
+    AttendanceExApplyDetailComponent,
     TranslatePipe,
   ],
   templateUrl: './apply-leave-info-list.component.html',
@@ -113,7 +107,9 @@ export class ApplyLeaveInfoListComponent implements OnInit {
   readonly detailVisible = signal(false);
   readonly detailLoading = signal(false);
   readonly detailErrorMessage = signal<string | null>(null);
-  readonly detailData = signal<CardApplyDetailResponse | null>(null);
+  readonly detailData = signal<AttendanceExApplyDetail | null>(null);
+
+  @ViewChild(AttendanceExApplyDetailComponent) private aedDetail?: AttendanceExApplyDetailComponent;
 
   affirmFlag: string | null = null;
   startDate: Date | null = null;
@@ -209,7 +205,7 @@ export class ApplyLeaveInfoListComponent implements OnInit {
     this.detailData.set(null);
     this.api.getDetail(String(row.applyNo), row.itemNo).subscribe({
       next: (res) => {
-        this.detailData.set(res);
+        this.detailData.set(res ? { ...res, approvalList: res.approvalList ?? [] } : null);
         this.detailLoading.set(false);
       },
       error: () => {
@@ -223,31 +219,8 @@ export class ApplyLeaveInfoListComponent implements OnInit {
     this.detailVisible.set(false);
   }
 
-  /** "[Loại nghỉ/tên hạng mục]" - dùng làm nzTitle của modal, đúng cách gán ali_applyDetailTitle bản gốc. */
-  modalTitle(): string {
-    const info = this.detailData()?.leaveInfo;
-    const leaveTypeName = info?.['leaveTypeName'] || info?.['itemName'];
-    return `[${leaveTypeName || this.i18n.t('essLeave.approvalInfo', 'Thông tin phê duyệt')}]`;
-  }
-
-  /** "{loại/tên}/Apply({họ tên})[Date: {từ} ~ {đến}]" - đúng aliBuildTitle() bản gốc. */
-  applyTitleText(): string {
-    const info = this.detailData()?.leaveInfo;
-    if (!info) return '';
-    return `${info['leaveTypeName'] || info['itemName'] || ''}/Apply(${info['localName'] || ''})`
-      + `[Date: ${info['leaveFromTime'] || ''} ~ ${info['leaveToTime'] || ''}]`;
-  }
-
-  /** "{họ tên}/{chức vụ}/{phòng ban}" - đúng ali_modalApplicant bản gốc. */
-  applicantText(): string {
-    const info = this.detailData()?.employeeInfo;
-    if (!info) return '';
-    return `${info['localName'] || ''}/${info['postGradeName'] || ''}/${info['deptName'] || ''}`;
-  }
-
-  /** STT dòng phê duyệt - affirmLevel=100 là dòng xác nhận của HR (aliRenderApprovalRows() bản gốc). */
-  approvalSeqLabel(item: { affirmLevel: string }): string {
-    return String(item.affirmLevel) === '100' ? 'HR' : item.affirmLevel;
+  printDetail(): void {
+    this.aedDetail?.print();
   }
 
   /** Tách "từ ~ đến" thành 2 dòng - đúng aliFormatWorkTime() bản gốc. */

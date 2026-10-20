@@ -146,7 +146,7 @@ public class EssInfoApplyController {
         return ResponseEntity.ok(essPersonOtInfoService.getOtItemList());
     }
 
-    // Trang Thymeleaf viewPiciOtAffirmLBatchList.html đã được thay bằng Angular route /ot-apply-batch-info
+    // Trang viewPiciOtAffirmLBatchList đã được thay bằng Angular route /pici-ot-affirm-batch (API: EssPiciOtAffirmController)
 
     // Trang Thymeleaf viewApprovalEmail.html đã được thay bằng Angular route /view-approval-email
 

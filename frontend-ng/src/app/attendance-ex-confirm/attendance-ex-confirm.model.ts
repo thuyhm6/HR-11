@@ -59,24 +59,3 @@ export interface ConfirmResult {
   success: boolean;
   error?: string;
 }
-
-/** 1 dòng trong bảng trình tự duyệt (approvalList) trả về từ API chi tiết. */
-export interface AttendanceExApprovalItem {
-  affirmLevel: string;
-  affirmPersonId: string;
-  affirmFlag: string;
-  affirmTypeName: string;
-  affirmFlagName: string;
-  affirmName: string;
-  deptName: string;
-  updateDate: string;
-  affirmContent: string;
-}
-
-/** Response của API GET checkAttendanceEx/detail - dùng chung field leaveInfo với modal chi tiết đơn
- *  nghỉ phép (xem ApplyDetailResponse ở view-approval-email.model.ts). */
-export interface AttendanceExDetailResponse {
-  leaveInfo?: Record<string, any>;
-  employeeInfo?: Record<string, any>;
-  approvalList: AttendanceExApprovalItem[];
-}

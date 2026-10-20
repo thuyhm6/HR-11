@@ -17,6 +17,8 @@ import com.ait.ess.viewDept.dto.ManageCountInfoSummaryDto;
 import com.ait.ess.viewDept.dto.ManageEvsResultEmpDto;
 import com.ait.ess.viewDept.dto.ManageEmpPositionInfoDto;
 import com.ait.ess.viewDept.dto.ManageEmpPositionInsideDto;
+import com.ait.ess.viewDept.dto.OtApplyPersonalListDetailDto;
+import com.ait.ess.viewDept.dto.OtApplyPersonalListDto;
 import com.ait.ess.viewDept.dto.OtApplyPersonalSelfDetailDto;
 import com.ait.ess.viewDept.dto.OtApplyPersonalSelfDto;
 import com.ait.ess.viewDept.dto.UseOfAnnualLeaveDto;
@@ -28,6 +30,7 @@ import com.ait.ess.viewDept.service.EssEntryInfoListService;
 import com.ait.ess.viewDept.service.ManageCountInfoService;
 import com.ait.ess.viewDept.service.ManageEvsResultEmpService;
 import com.ait.ess.viewDept.service.ManageEmpPositionInfoService;
+import com.ait.ess.viewDept.service.OtApplyPersonalListService;
 import com.ait.ess.viewDept.service.OtApplyPersonalSelfService;
 import com.ait.ess.viewDept.service.UseOfAnnualLeaveService;
 import com.ait.ess.viewDept.service.WeeklyHrReportService;
@@ -101,6 +104,9 @@ public class EssViewDeptController {
 
     @Autowired
     private OtApplyPersonalSelfService otApplyPersonalSelfService;
+
+    @Autowired
+    private OtApplyPersonalListService otApplyPersonalListService;
 
     @Autowired
     private YearUseInfoService yearUseInfoService;
@@ -298,8 +304,31 @@ public class EssViewDeptController {
         return ResponseEntity.ok(useOfAnnualLeaveService.getList(params));
     }
 
+    // Trang JSP viewOtApplyPersonalList (Hanwha_HTSV) được chuyển sang Angular route /view-ot-apply-personal-list
+
+    @GetMapping("/api/otApplyPersonalList/summary")
+    @ResponseBody
+    public ResponseEntity<List<OtApplyPersonalListDto>> getOtApplyPersonalListSummary(OtApplyPersonalListDto params) {
+        return ResponseEntity.ok(otApplyPersonalListService.getSummaryList(params));
+    }
+
+    /** Chi tiết khi click số giờ (thay popup JSP cũ /ess/viewDept/viewOtApplySingleList). */
+    @GetMapping("/api/otApplyPersonalList/detail")
+    @ResponseBody
+    public ResponseEntity<List<OtApplyPersonalListDetailDto>> getOtApplyPersonalListDetail(
+            @RequestParam String personId,
+            @RequestParam String otType,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate) {
+        OtApplyPersonalListDetailDto params = new OtApplyPersonalListDetailDto();
+        params.setPersonId(personId);
+        params.setOtType(otType);
+        params.setStartDate(startDate);
+        params.setEndDate(endDate);
+        return ResponseEntity.ok(otApplyPersonalListService.getDetailList(params));
+    }
+
     // Trang Thymeleaf viewArPersonalList.html đã được thay bằng Angular route /view-ar-personal-list
-    // Trang Thymeleaf viewOtApplyPersonalList.html đã được thay bằng Angular route /view-ot-apply-personal-list
 
     @GetMapping("/api/arPersonalList/items")
     @ResponseBody

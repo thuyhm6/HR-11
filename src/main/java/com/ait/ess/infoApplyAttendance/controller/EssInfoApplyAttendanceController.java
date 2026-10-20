@@ -3,12 +3,18 @@ package com.ait.ess.infoApplyAttendance.controller;
 import com.ait.ar.attendanceMintenance.controller.EssLeaveApplyController;
 import com.ait.ar.attendanceMintenance.dto.EssLeaveApplyDto;
 import com.ait.ar.attendanceMintenance.service.EssLeaveApplyService;
+import com.ait.cleverse.service.CleverseApprovalService;
 import com.ait.ess.infoApplyAttendance.dto.EssAttendanceExForBatchDto;
 import com.ait.ess.infoApplyAttendance.dto.EssAttendancePersonalInfoDto;
 import com.ait.ess.infoApplyAttendance.dto.EssCoordApplyAttendanceDto;
 import com.ait.ess.infoApplyAttendance.service.EssAttendanceExForBatchService;
 import com.ait.ess.infoApplyAttendance.service.EssAttendancePersonalInfoService;
 import com.ait.ess.infoApplyAttendance.service.EssCoordApplyAttendanceService;
+import com.ait.ess.infoApplyAttendance.service.EssSstApplyAttendanceService;
+import com.ait.util.I18nUtil;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.web.multipart.MultipartFile;
 import com.ait.sy.sys.dto.DataTablesResponse;
 
 import jakarta.servlet.http.HttpSession;
@@ -27,6 +33,12 @@ import java.util.Map;
 @RequestMapping("/ess/infoApplyAttendance")
 public class EssInfoApplyAttendanceController {
         private static final Logger log = LoggerFactory.getLogger(EssLeaveApplyController.class);
+
+    @Autowired
+    private EssSstApplyAttendanceService sstApplyService;
+
+    @Autowired
+    private CleverseApprovalService cleverseApprovalService;
 
     @Autowired
     private EssAttendanceExForBatchService service;
@@ -210,13 +222,66 @@ public class EssInfoApplyAttendanceController {
         return ResponseEntity.ok(coordApplyAttendanceService.getPageList(dto));
     }
 
+    // ===== Xin nghỉ phép cá nhân (viewSSTApplyAttendance.jsp bản gốc) - Angular route /sst-apply-attendance =====
+
+    /** Loại nghỉ chỉ dành cho nam / nữ - đúng getLeaveDateSST bản gốc. */
+    @GetMapping("/api/sstApply/check-leave-type")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> checkSstLeaveType(@RequestParam(required = false) String applyType, HttpSession session) {
+        Map<String, Object> response = new HashMap<>();
+        Object adminId = session.getAttribute("adminID");
+        String message = sstApplyService.checkLeaveType(adminId == null ? null : adminId.toString(), applyType);
+        response.put("success", message == null);
+        if (message != null) {
+            response.put("error", message);
+        }
+        return ResponseEntity.ok(response);
+    }
+
+    /** Lưu đơn nghỉ của chính người đăng nhập + file đính kèm (multipart: data = JSON đơn, attachFiles = file). */
+    @PostMapping("/api/sstApply/save")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> saveSstApply(@RequestParam("data") String data,
+            @RequestParam(value = "attachFiles", required = false) List<MultipartFile> attachFiles, HttpSession session) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            Map<String, Object> params = new ObjectMapper().readValue(data, new TypeReference<Map<String, Object>>() { });
+            Object adminId = session.getAttribute("adminID");
+            if (adminId != null) {
+                params.put("personId", adminId.toString());
+            }
+            String applyNo = sstApplyService.save(params, attachFiles);
+            response.put("success", true);
+            response.put("applyNo", applyNo);
+            response.put("message", I18nUtil.getMessage("alert.message.save_success"));
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            response.put("success", false);
+            response.put("error", e.getMessage());
+        } catch (Exception e) {
+            log.error("Failed to save SST leave apply", e);
+            response.put("success", false);
+            response.put("error", I18nUtil.getMessage("alert.message.add_fail"));
+        }
+        if (Boolean.TRUE.equals(response.get("success"))) {
+            cleverseApprovalService.sendAffirmInfoEmailApproval();
+        }
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/api/attendanceEx/affirmor-preview")
+    @ResponseBody
+    public ResponseEntity<Map<String, String>> getAttendanceExAffirmorPreview(@RequestBody List<String> personIds) {
+        return ResponseEntity.ok(service.getAffirmorPreview(personIds));
+    }
+
     @PostMapping("/api/attendanceEx/apply")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> applyAttendanceExForBatch(
-            @RequestBody List<EssAttendanceExForBatchDto> selectedRows) {
+            @RequestBody List<EssAttendanceExForBatchDto> selectedRows, HttpSession session) {
         Map<String, Object> response = new HashMap<>();
         try {
-            int successCount = service.applyAttendanceExForBatch(selectedRows);
+            Object adminId = session.getAttribute("adminID");
+            int successCount = service.applyAttendanceExForBatch(selectedRows, adminId == null ? null : adminId.toString());
             response.put("success", true);
             response.put("count", successCount);
             response.put("message", "Xin phép thành công " + successCount + " dòng.");
@@ -226,6 +291,10 @@ public class EssInfoApplyAttendanceController {
             response.put("error", e.getMessage() == null || e.getMessage().isBlank()
                     ? "Xin phép thất bại."
                     : e.getMessage());
+        }
+        // Đồng bộ sang hộp phê duyệt Cleverse sau khi transaction lưu đơn đã commit (giống các trang xin phép khác).
+        if (Boolean.TRUE.equals(response.get("success"))) {
+            cleverseApprovalService.sendAffirmInfoEmailApproval();
         }
         return ResponseEntity.ok(response);
     }

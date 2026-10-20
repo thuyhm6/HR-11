@@ -1,0 +1,44 @@
+.aed-wrap {
+  font-size: 13px;
+}
+
+/* Tiêu đề 【Xác nhận chấm công】 chỉ dùng khi in (modal đã có tiêu đề riêng) */
+.aed-print-title {
+  display: none;
+}
+
+.aed-section-title {
+  font-weight: 600;
+  margin: 4px 0 6px;
+}
+
+.aed-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+/* Bảng thông tin người xin phép hẹp như bản gốc (width 70%) */
+.aed-emp-table {
+  max-width: 900px;
+}
+
+.aed-table th,
+.aed-table td {
+  border: 1px solid #f0f0f0;
+  padding: 6px 8px;
+}
+
+.aed-table th,
+.aed-table .aed-label {
+  background: #fafafa;
+  font-weight: 600;
+}
+
+.aed-table .aed-label {
+  text-align: right;
+}
+
+.aed-pre {
+  white-space: pre-line;
+  word-break: break-word;
+}

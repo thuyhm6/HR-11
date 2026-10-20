@@ -6,9 +6,9 @@ import {
   DataTablesResponse,
   LeaveConfirmRow,
   LeaveConfirmSearchParams,
-  LeaveDetailResponse,
   LeaveTypeOption,
 } from './leave-confirm.model';
+import { LeaveApplyDetail } from '../shared/leave-apply-detail/leave-apply-detail.model';
 
 const API_BASE = '/ess/arConfirm/api/leaveConfirm';
 const DETAIL_URL = '/ar/attendanceMintenance/api/leaveApply/detail';
@@ -46,9 +46,9 @@ export class LeaveConfirmService {
     );
   }
 
-  getDetail(applyNo: string): Observable<LeaveDetailResponse> {
+  getDetail(applyNo: string): Observable<LeaveApplyDetail> {
     const params = new HttpParams().set('applyNo', applyNo).set('applyType', '');
-    return this.http.get<LeaveDetailResponse>(DETAIL_URL, { params, withCredentials: true });
+    return this.http.get<LeaveApplyDetail>(DETAIL_URL, { params, withCredentials: true });
   }
 
   getLeaveTypeOptions(): Observable<LeaveTypeOption[]> {

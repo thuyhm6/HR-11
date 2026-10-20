@@ -1,0 +1,111 @@
+<div #aedPrintArea class="aed-wrap" *ngIf="data() as d">
+  <div class="aed-print-title">【{{ 'ess.infoApply.check_error_attendance' | translate:'Xác nhận chấm công' }}】</div>
+
+  <!-- Tiêu đề + người xin phép -->
+  <table class="aed-table mb-3">
+    <tbody>
+      <tr>
+        <th class="aed-label" style="width:20%">{{ 'ess.title.Title' | translate:'Tiêu đề' }}</th>
+        <td>{{ header().title }}</td>
+      </tr>
+      <tr>
+        <th class="aed-label">{{ 'public.title.qianzhe' | translate:'Người xin phép' }}</th>
+        <td>{{ header().applyPersonInfo }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Trình tự duyệt (viewAffirmList) + dòng HR xác nhận -->
+  <div class="table-responsive mb-3">
+    <nz-table #aedApprovalTable [nzData]="d.approvalList || []" [nzShowPagination]="false" [nzFrontPagination]="false"
+              nzSize="small" nzBordered>
+      <thead>
+        <tr>
+          <th class="text-center" style="width:5%">{{ 'ess.infoApply.in_order' | translate:'STT' }}</th>
+          <th class="text-center" style="width:10%">{{ 'ess.infoApply.approval_distinction' | translate:'Trình tự duyệt' }}</th>
+          <th class="text-center" style="width:10%">{{ 'ess.infoApply.approval_status' | translate:'Trạng thái duyệt' }}</th>
+          <th class="text-center" style="width:15%">{{ 'ess.infoApply.NAME' | translate:'Họ tên' }}</th>
+          <th class="text-center" style="width:25%">{{ 'ess.infoApply.comment' | translate:'Ý kiến' }}</th>
+          <th class="text-center" style="width:15%">{{ 'ess.infoApply.dealing_with_transactions' | translate:'Thời gian thực hiện' }}</th>
+          <th class="text-center" style="width:20%">{{ 'ess.infoApply.DEPT_NAME' | translate:'Phòng ban' }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngIf="!d.approvalList?.length">
+          <td colspan="7" class="text-center text-muted">{{ 'arOtf.noApprovalData' | translate:'Không có dữ liệu phê duyệt' }}</td>
+        </tr>
+        <tr *ngFor="let item of aedApprovalTable.data; let i = index">
+          <td class="text-center">{{ stt(item, i) }}</td>
+          <td class="text-center">{{ typeLabel(item) }}</td>
+          <td class="text-center">
+            <ng-container *ngIf="status(item) as st">
+              <nz-tag class="aed-tag m-0" [nzColor]="st.color">{{ st.label }}</nz-tag>
+            </ng-container>
+          </td>
+          <td class="text-center">{{ item.affirmName }}</td>
+          <td class="aed-pre">
+            <input *ngIf="opinionEditable()(item); else aedOpinionText" nz-input nzSize="small"
+                   [ngModel]="opinion()" (ngModelChange)="opinion.set($event)" [ngModelOptions]="{ standalone: true }">
+            <ng-template #aedOpinionText>{{ item.affirmContent }}</ng-template>
+          </td>
+          <td class="text-center">{{ item.updateDate }}</td>
+          <td class="text-center">{{ item.deptName }}</td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </div>
+
+  <!-- Thông tin người xin phép -->
+  <div class="aed-section-title">{{ 'ess.infoApply.applicant_information' | translate:'Thông tin nhân viên' }}</div>
+  <table class="aed-table aed-emp-table mb-3">
+    <tbody>
+      <tr>
+        <th class="aed-label" style="width:15%">{{ 'ess.infoApply.NAME' | translate:'Họ tên' }}</th>
+        <td style="width:35%">{{ info().localName }}</td>
+        <th class="aed-label" style="width:15%">{{ 'ess.infoApply.EMP_ID' | translate:'Mã nhân viên' }}</th>
+        <td style="width:35%">{{ info().empId }}</td>
+      </tr>
+      <tr>
+        <th class="aed-label">{{ 'ess.infoApply.DEPT' | translate:'Phòng ban' }}</th>
+        <td>{{ info().deptName }}</td>
+        <th class="aed-label">{{ 'ess.infoApply.Rank' | translate:'Chức vụ' }}</th>
+        <td>{{ info().postGradeName }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Thông tin xin phép (xác nhận chấm công) -->
+  <div class="aed-section-title">{{ 'ess.infoApply.application_information' | translate:'Thông tin xin phép' }}</div>
+  <div class="table-responsive">
+    <table class="aed-table">
+      <thead>
+        <tr>
+          <th class="text-center" style="width:10%">{{ 'ess.infoApply.attendance_date' | translate:'Ngày công' }}</th>
+          <th class="text-center" style="width:12%">{{ 'ess.infoApply.attendance_type' | translate:'Loại nghỉ phép' }}</th>
+          <th class="text-center" style="width:16%">{{ 'ess.infoApply.card_clock_time' | translate:'Thời gian quẹt thẻ' }}</th>
+          <th class="text-center" style="width:16%">{{ 'ess.infoApply.time_quantum' | translate:'Thời gian' }}</th>
+          <th class="text-center" style="width:10%">{{ 'ess.message.work_shift' | translate:'Ca' }}</th>
+          <th class="text-center" style="width:12%">{{ 'ess.infoApply.working_hours' | translate:'Thời gian làm việc' }}</th>
+          <th class="text-center">{{ 'ess.infoApply.Reason' | translate:'Lý do' }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="text-center">{{ info().arDateStr }}</td>
+          <td class="text-center">{{ info().itemName }}</td>
+          <td class="text-center">
+            {{ 'ess.infoApply.in_door_card' | translate:'Vào:' }} {{ info().indoorTime }}<br>
+            {{ 'ess.infoApply.out_door_card' | translate:'Ra:' }} {{ info().outdoorTime }}
+          </td>
+          <td class="text-center">
+            {{ 'ess.infoApply.in_door_card' | translate:'Vào:' }} {{ info().inTime }}<br>
+            {{ 'ess.infoApply.out_door_card' | translate:'Ra:' }} {{ info().outTime }}
+          </td>
+          <td class="text-center">{{ info().shiftName }}</td>
+          <td class="text-center">{{ shiftTime() }}</td>
+          <td class="aed-pre">{{ info().applyReason }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

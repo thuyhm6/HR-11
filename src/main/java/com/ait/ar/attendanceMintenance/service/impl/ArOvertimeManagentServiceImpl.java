@@ -1,7 +1,9 @@
 package com.ait.ar.attendanceMintenance.service.impl;
 
+import com.ait.ar.attendanceMintenance.dto.ArMacRecordEatDto;
 import com.ait.ar.attendanceMintenance.dto.ArOvertimeImportTempDto;
 import com.ait.ar.attendanceMintenance.dto.ArOvertimeManagentDto;
+import com.ait.ar.attendanceMintenance.mapper.ArMacRecordEatMapper;
 import com.ait.ar.attendanceMintenance.mapper.ArOvertimeManagentMapper;
 import com.ait.ar.attendanceMintenance.service.ArOvertimeManagentService;
 import com.ait.ess.empinfo.dto.EssPersonalInfoDto;
@@ -37,6 +39,9 @@ public class ArOvertimeManagentServiceImpl implements ArOvertimeManagentService 
     private SyAffirmEmailMapper affirmEmailMapper;
 
     @Autowired
+    private ArMacRecordEatMapper macRecordEatMapper;
+
+    @Autowired
     private EssPersonalInfoMapper essPersonalInfoMapper;
 
     @Override
@@ -53,6 +58,7 @@ public class ArOvertimeManagentServiceImpl implements ArOvertimeManagentService 
             empty.put("otInfo", null);
             empty.put("employeeInfo", null);
             empty.put("approvalList", Collections.emptyList());
+            empty.put("mealList", Collections.emptyList());
             return empty;
         }
 
@@ -68,7 +74,20 @@ public class ArOvertimeManagentServiceImpl implements ArOvertimeManagentService 
         result.put("otInfo", otInfo);
         result.put("employeeInfo", otInfo);
         result.put("approvalList", approvalList == null ? Collections.emptyList() : approvalList);
+        result.put("mealList", getMealListSafe(resolvedApplyNo));
         return result;
+    }
+
+    /** Danh sách suất ăn trong ngày tăng ca - chỉ là thông tin tham khảo nên lỗi truy vấn
+     *  (vd. thiếu dữ liệu ca) không được làm hỏng cả popup chi tiết. */
+    private List<ArMacRecordEatDto> getMealListSafe(String applyNo) {
+        try {
+            List<ArMacRecordEatDto> list = macRecordEatMapper.selectListByOtApplyNo(applyNo);
+            return list == null ? Collections.emptyList() : list;
+        } catch (Exception e) {
+            log.error("Load meal list for OT applyNo={} failed: {}", applyNo, e.getMessage(), e);
+            return Collections.emptyList();
+        }
     }
 
     @Override

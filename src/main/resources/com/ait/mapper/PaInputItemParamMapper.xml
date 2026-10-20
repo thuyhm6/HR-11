@@ -17,6 +17,7 @@
         <result column="DISTINCT_FIELD_2ND_NAME" property="distinctField2ndName" jdbcType="VARCHAR" />
         <result column="ITEM_TYPE"             property="itemType"            jdbcType="NUMERIC" />
         <result column="ACTIVITY"              property="activity"            jdbcType="NUMERIC" />
+        <result column="PRORATE_TYPE"          property="prorateType"         jdbcType="NUMERIC" />
     </resultMap>
 
     <!-- ── SQL cốt lõi cho danh sách ───────────────────────────────────────── -->
@@ -33,7 +34,8 @@
                SY1.CONTENT          AS DISTINCT_FIELD_NAME,
                SY2.CONTENT          AS DISTINCT_FIELD_2ND_NAME,
                PI.ITEM_TYPE,
-               T.ACTIVITY
+               T.ACTIVITY,
+               NVL(T.PRORATE_TYPE, 0) AS PRORATE_TYPE
           FROM PA_PARAM_ITEM_PARAM T,
                PA_PARAM_ITEM       PI,
                SY_GLOBAL_NAME      SY1,
@@ -80,7 +82,7 @@
             resultMap="PaInputItemParamResultMap">
         SELECT PARAM_NO, DISTINCT_FIELD, DISTINCT_FIELD_2ND, PARAM_ITEM_NO,
                DEFAULT_VAL, PARAM_ITEM_ID, ALIAS_NAME, CPNY_ID, CPNY_NAME,
-               DISTINCT_FIELD_NAME, DISTINCT_FIELD_2ND_NAME, ITEM_TYPE, ACTIVITY
+               DISTINCT_FIELD_NAME, DISTINCT_FIELD_2ND_NAME, ITEM_TYPE, ACTIVITY, PRORATE_TYPE
         FROM (
             SELECT a.*, ROWNUM AS RN
             FROM (
@@ -105,7 +107,8 @@
                T.CPNY_ID,
                T.CPNY_ID   AS CPNY_NAME,
                PI.ITEM_TYPE,
-               T.ACTIVITY
+               T.ACTIVITY,
+               NVL(T.PRORATE_TYPE, 0) AS PRORATE_TYPE
           FROM PA_PARAM_ITEM_PARAM T,
                PA_PARAM_ITEM       PI,
                SY_GLOBAL_NAME      SY3
@@ -115,13 +118,14 @@
            AND T.PARAM_NO = #{paramNo, jdbcType=VARCHAR}
     </select>
 
-    <!-- ── Cập nhật DISTINCT_FIELD, DISTINCT_FIELD_2ND, DEFAULT_VAL, ACTIVITY ── -->
+    <!-- ── Cập nhật DISTINCT_FIELD, DISTINCT_FIELD_2ND, DEFAULT_VAL, ACTIVITY, PRORATE_TYPE ── -->
     <update id="updateOne" parameterType="com.ait.pa.salary.dto.PaInputItemParamDto">
         UPDATE PA_PARAM_ITEM_PARAM
            SET DISTINCT_FIELD     = #{distinctField,   jdbcType=VARCHAR},
                DISTINCT_FIELD_2ND = #{distinctField2nd, jdbcType=VARCHAR},
                DEFAULT_VAL        = #{defaultVal,      jdbcType=VARCHAR},
                ACTIVITY           = #{activity,        jdbcType=NUMERIC},
+               PRORATE_TYPE       = NVL(#{prorateType, jdbcType=NUMERIC}, 0),
                UPDATED_BY         = #{adminID,         jdbcType=VARCHAR},
                UPDATE_DATE        = SYSDATE
          WHERE PARAM_NO = #{paramNo, jdbcType=VARCHAR}

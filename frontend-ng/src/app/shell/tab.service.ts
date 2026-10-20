@@ -29,6 +29,10 @@ const HOME_TAB: TabItem = { path: '/dashboard', title: 'Trang chủ', closable: 
 export class TabService {
   readonly tabs = signal<TabItem[]>([HOME_TAB]);
   readonly activePath = signal<string>(HOME_TAB.path);
+  /** Path của tab Trang chủ theo "chế độ" hiện tại: '/dashboard' (ESS) hoặc '/hrm-dashboard' (HR
+   *  Management System) - AppShellComponent cập nhật qua setHomePath() mỗi khi sysType đổi. Đóng tab /
+   *  đóng tất cả tab sẽ quay về đúng trang chủ của chế độ đang dùng thay vì luôn về /dashboard (ESS). */
+  readonly homePath = signal<string>(HOME_TAB.path);
 
   readonly externalTabs = computed(() => this.tabs().filter((t) => t.kind === 'external'));
   readonly activeTabKind = computed<TabKind>(() => {
@@ -45,6 +49,19 @@ export class TabService {
     this.router.events.pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd)).subscribe((e) => {
       this.activePath.set(e.urlAfterRedirects);
     });
+  }
+
+  /** Đổi path của tab Trang chủ (tab không đóng được) - bỏ luôn tab thường trùng path mới (nếu có)
+   *  để không hiện 2 tab cùng trỏ 1 trang. */
+  setHomePath(path: string): void {
+    const oldPath = this.homePath();
+    if (oldPath === path) return;
+    this.homePath.set(path);
+    this.tabs.update((tabs) =>
+      tabs
+        .filter((t) => !(t.closable && t.path === path))
+        .map((t) => (!t.closable && t.path === oldPath ? { ...t, path } : t))
+    );
   }
 
   /** Mở tab từ menu - nếu tab 'external' đã mở sẵn thì load lại nội dung mới nhất (giống hành vi gốc).
@@ -94,8 +111,8 @@ export class TabService {
     this.tabs.set(next);
 
     if (this.activePath() === path) {
-      const fallback = next[Math.max(0, idx - 1)] ?? HOME_TAB;
-      this.switchTab(fallback.path);
+      const fallback = next[Math.max(0, idx - 1)]?.path ?? this.homePath();
+      this.switchTab(fallback);
     }
   }
 
@@ -103,7 +120,7 @@ export class TabService {
   closeAllTabs(): void {
     const activeClosing = this.tabs().find((t) => t.path === this.activePath())?.closable ?? false;
     this.tabs.update((tabs) => tabs.filter((t) => !t.closable));
-    if (activeClosing) this.switchTab(HOME_TAB.path);
+    if (activeClosing) this.switchTab(this.homePath());
   }
 
   /** Đóng tất cả tab (đóng được) nằm bên trái tab `path`. */

@@ -61,6 +61,32 @@
         <result property="postGradeName" column="POST_GRADE_NAME" />
     </resultMap>
 
+    <resultMap id="AttendanceExDetailResultMap" type="com.ait.ess.infoApplyAttendance.dto.EssAttendanceExDetailDto">
+        <id property="applyNo" column="APPLY_NO" />
+        <result property="personId" column="PERSON_ID" />
+        <result property="empId" column="EMPID" />
+        <result property="localName" column="LOCAL_NAME" />
+        <result property="deptNo" column="DEPT_NO" />
+        <result property="deptName" column="DEPT_NAME" />
+        <result property="postGradeName" column="POST_GRADE_NAME" />
+        <result property="itemNo" column="ITEM_NO" />
+        <result property="itemName" column="ITEM_NAME" />
+        <result property="arDateStr" column="AR_DATE_STR" />
+        <result property="applyReason" column="APPLY_REASON" />
+        <result property="applyTime" column="APPLY_TIME" />
+        <result property="affirmFlag" column="AFFIRM_FLAG" />
+        <result property="affirmFlagName" column="AFFIRM_FLAG_NAME" />
+        <result property="confirmFlag" column="CONFIRM_FLAG" />
+        <result property="inTime" column="IN_TIME" />
+        <result property="outTime" column="OUT_TIME" />
+        <result property="indoorTime" column="INDOOR_TIME" />
+        <result property="outdoorTime" column="OUTDOOR_TIME" />
+        <result property="shiftName" column="SHIFT_NAME" />
+        <result property="shiftStartTime" column="SHIFT_START_TIME" />
+        <result property="shiftEndTime" column="SHIFT_END_TIME" />
+        <result property="workHour" column="WORK_HOUR" />
+    </resultMap>
+
     <resultMap id="CardApprovalInfoResultMap" type="com.ait.sy.syAffirm.dto.SyAffirmEmailDto">
         <result property="seq" column="SEQ" />
         <result property="affirmType" column="AFFIRM_TYPE" />
@@ -154,7 +180,8 @@
         <if test="keyword != null and keyword != ''">
             AND (
                 UPPER(HR.EMPID) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%'
-                OR UPPER(HR.LOCAL_NAME) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%'
+                OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{keyword, jdbcType=VARCHAR})) || '%'
+                OR UPPER(HR.ENGLISH_NAME) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%'
             )
         </if>
         <if test="deptNos != null and deptNos != ''">
@@ -281,6 +308,39 @@
             '' AS DETAIL_TYPE_NAME,
             TO_CHAR(ESS.ACTIVITY) AS ACTIVITY,
             TO_CHAR(ESS.CONFIRM_FLAG) AS CONFIRM_FLAG
+        FROM ESS_CARD_APPLY_TB ESS
+        INNER JOIN HR_EMPLOYEE HE ON ESS.PERSON_ID = HE.PERSON_ID
+        WHERE TO_CHAR(ESS.APPLY_NO) = #{applyNo, jdbcType=VARCHAR}
+    </select>
+
+    <!-- Chi tiết đơn xác nhận chấm công - đúng sqlInfoApply.xml#getAttendanceExList (/ess/infoApply/viewAttendanceEx)
+         bản gốc: giờ quẹt thẻ thực tế (INDOOR/OUTDOOR), giờ xin xác nhận (IN/OUT), ca và giờ làm việc của ca.
+         Bỏ điều kiện ACTIVITY = 1 của bản gốc để vẫn xem được đơn đã hủy (cùng cách selectCardApplyInfo). -->
+    <select id="selectAttendanceExDetail" resultMap="AttendanceExDetailResultMap">
+        SELECT
+            TO_CHAR(ESS.APPLY_NO) AS APPLY_NO,
+            HE.PERSON_ID,
+            HE.EMPID,
+            HE.LOCAL_NAME,
+            HE.DEPTNO AS DEPT_NO,
+            GET_DEPT_NAME(HE.DEPTNO, #{lang, jdbcType=VARCHAR}) AS DEPT_NAME,
+            GET_GLOBAL_NAME(HE.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}) AS POST_GRADE_NAME,
+            ESS.ITEM_NO,
+            GET_GLOBAL_NAME(ESS.ITEM_NO, #{lang, jdbcType=VARCHAR}) AS ITEM_NAME,
+            TO_CHAR(TO_DATE(ESS.AR_DATE_STR, 'YYYY/MM/DD'), 'DD/MM/YYYY') AS AR_DATE_STR,
+            ESS.APPLY_REASON,
+            TO_CHAR(ESS.APPLY_TIME, 'DD/MM/YYYY') AS APPLY_TIME,
+            ESS.AFFIRM_FLAG,
+            GET_GLOBAL_NAME(ESS.AFFIRM_FLAG, #{lang, jdbcType=VARCHAR}) AS AFFIRM_FLAG_NAME,
+            TO_CHAR(ESS.CONFIRM_FLAG) AS CONFIRM_FLAG,
+            TO_CHAR(ESS.IN_TIME, 'HH24:MI') AS IN_TIME,
+            TO_CHAR(ESS.OUT_TIME, 'HH24:MI') AS OUT_TIME,
+            GET_AR_TIME_BY_CPNYID(HE.PERSON_ID, ESS.AR_DATE_STR, 'IN', HE.CPNY_ID) AS INDOOR_TIME,
+            GET_AR_TIME_BY_CPNYID(HE.PERSON_ID, ESS.AR_DATE_STR, 'OUT', HE.CPNY_ID) AS OUTDOOR_TIME,
+            SUBSTR(GET_AR_SHIFT_START_TIME(HE.PERSON_ID, ESS.AR_DATE_STR, HE.CPNY_ID), 12, 16) AS SHIFT_START_TIME,
+            SUBSTR(GET_AR_SHIFT_END_TIME(HE.PERSON_ID, ESS.AR_DATE_STR, HE.CPNY_ID), 12, 16) AS SHIFT_END_TIME,
+            GET_GLOBAL_NAME(GET_AR_SHIFTNO(HE.PERSON_ID, ESS.AR_DATE_STR, HE.CPNY_ID), #{lang, jdbcType=VARCHAR}) AS SHIFT_NAME,
+            TO_CHAR(ESS.WORK_HOUR) AS WORK_HOUR
         FROM ESS_CARD_APPLY_TB ESS
         INNER JOIN HR_EMPLOYEE HE ON ESS.PERSON_ID = HE.PERSON_ID
         WHERE TO_CHAR(ESS.APPLY_NO) = #{applyNo, jdbcType=VARCHAR}
@@ -416,14 +476,15 @@
             '14014306',
             #{itemNo, jdbcType=VARCHAR},
             #{arDateStr, jdbcType=VARCHAR},
+            <!-- FROM/TO = giờ bất thường gốc, IN/OUT = giờ thực tế nhập - đúng insertEssCardApplyNotConfirm bản gốc -->
             TO_DATE(#{fromDateTime, jdbcType=VARCHAR}, 'YYYY/MM/DD HH24:MI'),
             TO_DATE(#{toDateTime, jdbcType=VARCHAR}, 'YYYY/MM/DD HH24:MI'),
             SYSDATE,
             #{adminID, jdbcType=VARCHAR},
             1,
             SYSDATE,
-            TO_DATE(#{fromDateTime, jdbcType=VARCHAR}, 'YYYY/MM/DD HH24:MI'),
-            TO_DATE(#{toDateTime, jdbcType=VARCHAR}, 'YYYY/MM/DD HH24:MI'),
+            TO_DATE(#{inTime, jdbcType=VARCHAR}, 'YYYY/MM/DD HH24:MI'),
+            TO_DATE(#{outTime, jdbcType=VARCHAR}, 'YYYY/MM/DD HH24:MI'),
             #{workHour, jdbcType=VARCHAR},
             #{adminIP, jdbcType=VARCHAR},
             ESS_APPLY_SEQ.NEXTVAL,

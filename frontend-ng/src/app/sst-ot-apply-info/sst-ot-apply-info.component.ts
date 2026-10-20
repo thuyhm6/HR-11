@@ -106,18 +106,19 @@ export class SstOtApplyInfoComponent implements OnInit {
       this.personId = data?.personId || '';
       this.localName = data?.localName || '';
       this.empId = data?.empId || '';
+      // loadApprovers() được gọi bên trong loadDateInfo() sau khi đã có OT_TYPE_CODE
       this.loadDateInfo();
-      this.loadApprovers();
     });
   }
 
   onDateChange(): void {
     this.loadDateInfo();
-    this.loadApprovers();
   }
 
   onTimeChange(): void {
     this.calcDuration();
+    // Bản gốc gọi lại getAffirmor_OT mỗi lần tính lại thời lượng (applyLength thay đổi)
+    this.loadApprovers();
   }
 
   onMealCheckChange(): void {
@@ -206,6 +207,8 @@ export class SstOtApplyInfoComponent implements OnInit {
     this.outdoorTime.set('**:**');
     this.otTypeName.set('...');
     this.otTypeCode = '';
+    this.approvers.set([]);
+    this.approversLoaded.set(false);
 
     this.api.getOtDateInfo(this.formatYmd(this.applyDate)).subscribe({
       next: (d) => {
@@ -240,6 +243,8 @@ export class SstOtApplyInfoComponent implements OnInit {
         this.otLimit100Enabled.set(String(d.OT_LIMIT_100) === '1');
 
         this.calcDuration();
+        // applyTypeCode (32/33/34) chỉ có sau khi API trả về - phải gọi ở đây, không gọi song song
+        this.loadApprovers();
       },
       error: () => this.clearDateInfo(),
     });
@@ -261,7 +266,8 @@ export class SstOtApplyInfoComponent implements OnInit {
   }
 
   private loadApprovers(): void {
-    if (!this.personId) return;
+    // Chưa xác định loại tăng ca thì PKG_AFFIRM_EMAIL.GET_AFFIRMOR_LIST_IMPROVE sẽ trả sai tuyến duyệt
+    if (!this.personId || !this.otTypeCode) return;
     this.approversLoading.set(true);
     this.approversLoaded.set(false);
     const diff = this.otFromTime && this.otToTime && this.otToTime > this.otFromTime

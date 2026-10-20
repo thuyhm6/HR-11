@@ -4,10 +4,10 @@ import { Observable } from 'rxjs';
 import {
   AttendanceExConfirmRow,
   AttendanceExConfirmSearchParams,
-  AttendanceExDetailResponse,
   ConfirmResult,
   DataTablesResponse,
 } from './attendance-ex-confirm.model';
+import { AttendanceExApplyDetail } from '../shared/attendance-ex-apply-detail/attendance-ex-apply-detail.model';
 
 const API_BASE = '/ess/arConfirm/api/attendanceExConfirm';
 const DETAIL_URL = '/ess/infoApplyAttendance/api/checkAttendanceEx/detail';
@@ -43,8 +43,8 @@ export class AttendanceExConfirmService {
     );
   }
 
-  getDetail(applyNo: string, applyType: string): Observable<AttendanceExDetailResponse> {
+  getDetail(applyNo: string, applyType: string): Observable<AttendanceExApplyDetail> {
     const params = new HttpParams().set('applyNo', applyNo).set('applyType', applyType || '');
-    return this.http.get<AttendanceExDetailResponse>(DETAIL_URL, { params, withCredentials: true });
+    return this.http.get<AttendanceExApplyDetail>(DETAIL_URL, { params, withCredentials: true });
   }
 }

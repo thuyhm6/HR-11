@@ -1,0 +1,28 @@
+.cwaa-table th,
+.cwaa-table td {
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.cwaa-table td.cwaa-affirm {
+  white-space: normal;
+  line-height: 1.4;
+}
+
+.cwaa-table tr.cwaa-row-selected > td {
+  background: #e6f4ff;
+}
+
+.cwaa-hm {
+  width: 72px;
+}
+
+.cwaa-num {
+  width: 48px;
+  text-align: center;
+}
+
+.cwaa-io {
+  display: inline-block;
+  width: 32px;
+}

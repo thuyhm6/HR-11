@@ -14,8 +14,8 @@ import {
 const API_BASE = '/ess/infoApplyAttendance/api/attendanceEx';
 
 /**
- * Gọi lại nguyên các API JSON đã có sẵn ở EssInfoApplyAttendanceController (không đổi backend) - bản
- * Angular của ess/infoApplyAttendance/viewAttendanceExForBatchInfoList.html (Thymeleaf + DataTables + jQuery).
+ * API ở EssInfoApplyAttendanceController - bản Angular của ess/infoApplyAttendance/viewAttendanceExForBatchInfoList.jsp
+ * (Hanwha_HTSV). getShiftOptions/getCodeList/getAuthorizedDepartments được các trang xin phép hàng loạt khác dùng lại.
  */
 @Injectable({ providedIn: 'root' })
 export class AttendanceExBatchInfoService {
@@ -31,6 +31,11 @@ export class AttendanceExBatchInfoService {
 
   apply(rows: ApplyPayloadRow[]): Observable<ApplyResult> {
     return this.http.post<ApplyResult>(`${API_BASE}/apply`, rows, { withCredentials: true });
+  }
+
+  /** Tuyến duyệt dự kiến theo NV (personId -> chuỗi HTML) - getAffirmor_ess3434 bản gốc, gọi 1 lần cho cả trang. */
+  getAffirmorPreview(personIds: string[]): Observable<Record<string, string>> {
+    return this.http.post<Record<string, string>>(`${API_BASE}/affirmor-preview`, personIds, { withCredentials: true });
   }
 
   getShiftOptions(): Observable<ShiftOption[]> {

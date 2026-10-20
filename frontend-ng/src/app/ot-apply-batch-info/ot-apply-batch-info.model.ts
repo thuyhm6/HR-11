@@ -74,18 +74,5 @@ export interface CancelBatchResult extends SaveResult {
   count?: number;
 }
 
-export interface OtDetailResponse {
-  otInfo: Record<string, any> | null;
-  employeeInfo: Record<string, any> | null;
-  approvalList: ApprovalInfo[];
-}
-
-export interface ApprovalInfo {
-  affirmLevel: string;
-  affirmTypeName: string;
-  affirmFlagName: string;
-  affirmName: string;
-  deptName: string;
-  updateDate: string;
-  affirmContent: string;
-}
+/** Chi tiết đơn - dùng chung kiểu với popup OtApplyDetailComponent. */
+export type { OtApplyDetail as OtDetailResponse } from '../shared/ot-apply-detail/ot-apply-detail.model';

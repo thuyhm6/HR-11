@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, ViewChild, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { NzTableModule } from 'ng-zorro-antd/table';
@@ -14,6 +14,12 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
+import { OtApplyDetailComponent } from '../shared/ot-apply-detail/ot-apply-detail.component';
+import { OtApplyDetail, OtApprovalItem } from '../shared/ot-apply-detail/ot-apply-detail.model';
+import { LeaveApplyDetailComponent } from '../shared/leave-apply-detail/leave-apply-detail.component';
+import { LeaveApplyDetail } from '../shared/leave-apply-detail/leave-apply-detail.model';
+import { AttendanceExApplyDetailComponent } from '../shared/attendance-ex-apply-detail/attendance-ex-apply-detail.component';
+import { AttendanceExApplyDetail } from '../shared/attendance-ex-apply-detail/attendance-ex-apply-detail.model';
 import {
   AffirmContext,
   ApplyDetailKind,
@@ -25,7 +31,7 @@ import { ViewApprovalEmailService } from './view-approval-email.service';
 import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
 /** Các key message.properties dùng trong trang này - tải trước 1 lần ở ngOnInit (xem I18nService).
- *  Toàn bộ key bên dưới đã tồn tại sẵn (namespace vae, arOtf, applyAtt, ck.modal.title) - không cần
+ *  Toàn bộ key bên dưới đã tồn tại sẵn (namespace vae, arOtf, applyAtt, ess.infoApply) - không cần
  *  thêm key mới trong message properties. */
 const I18N_KEYS = [
   'vae.search.title', 'vae.search.applyType', 'vae.search.applyType.all', 'vae.search.applyType.ot',
@@ -34,17 +40,8 @@ const I18N_KEYS = [
   'vae.col.affirmStatus', 'vae.modal.approve.title', 'vae.modal.reject.title', 'vae.modal.remarkLabel',
   'vae.modal.remarkPlaceholder', 'vae.msg.noSelect', 'vae.msg.approveSuccess', 'vae.msg.rejectSuccess',
   'vae.msg.executeFail', 'vae.msg.noData', 'vae.msg.loadError', 'common.close', 'common.confirm',
-  'common.stt', 'common.empName', 'common.empId', 'common.deptName', 'common.hours', 'common.reason',
-  'common.startTime', 'common.endTime', 'common.position', 'common.totalRows',
-  'arOtf.applyOt', 'arOtf.applyTitle', 'arOtf.applicant', 'arOtf.approvalSeq', 'arOtf.approvalStatus',
-  'arOtf.opinion', 'arOtf.actionTime', 'arOtf.empInfo', 'arOtf.otInfo', 'arOtf.otType', 'arOtf.otDate',
-  'arOtf.otBegin', 'arOtf.otEnd', 'arOtf.loadingData', 'arOtf.noApprovalData', 'arOtf.loadFailed',
-  'arOtf.msg.noApplyNo',
-  'applyAtt.subject', 'applyAtt.applicant', 'applyAtt.approvalSeq', 'applyAtt.approvalStatus',
-  'applyAtt.opinion', 'applyAtt.actionTime', 'applyAtt.empInfo', 'applyAtt.leaveInfo',
-  'applyAtt.leaveTypeFull', 'applyAtt.leaveDuration', 'applyAtt.loadingData', 'applyAtt.noApprovalData',
-  'applyAtt.loadFailed', 'applyAtt.applyTitleFallback', 'applyAtt.msg.noApplyNo',
-  'ck.modal.title',
+  'common.totalRows', 'arOtf.applyOt', 'arOtf.loadingData', 'arOtf.loadFailed', 'arOtf.msg.noApplyNo',
+  'applyAtt.applyTitleFallback', 'common.print', 'ess.infoApply.check_error_attendance',
 ];
 
 const APPLY_TYPE_OPTIONS: { value: string; labelKey: string; fallback: string }[] = [
@@ -81,6 +78,9 @@ const APPLY_TYPE_OPTIONS: { value: string; labelKey: string; fallback: string }[
     NzModalModule,
     NzAlertModule,
     TranslatePipe,
+    OtApplyDetailComponent,
+    LeaveApplyDetailComponent,
+    AttendanceExApplyDetailComponent,
   ],
   templateUrl: './view-approval-email.component.html',
   styleUrl: './view-approval-email.component.css',
@@ -104,6 +104,13 @@ export class ViewApprovalEmailComponent implements OnInit {
   readonly detailLoading = signal(false);
   readonly detailErrorMessage = signal<string | null>(null);
   readonly detailData = signal<ApplyDetailResponse | null>(null);
+  @ViewChild(OtApplyDetailComponent) private otdDetail?: OtApplyDetailComponent;
+  @ViewChild(LeaveApplyDetailComponent) private ladDetail?: LeaveApplyDetailComponent;
+  @ViewChild(AttendanceExApplyDetailComponent) private aedDetail?: AttendanceExApplyDetailComponent;
+  /** Dòng duyệt của chính người đang duyệt (chưa duyệt) hiển thị ô nhập ý kiến trong popup đơn tăng ca /
+   *  nghỉ phép (dùng chung cho OtApplyDetailComponent và LeaveApplyDetailComponent). */
+  readonly approvalOpinionEditable = (item: Pick<OtApprovalItem, 'affirmPersonId' | 'affirmFlag'>): boolean =>
+    this.isPendingApprovalRow(item.affirmPersonId ?? '', item.affirmFlag);
   detailKind: ApplyDetailKind | null = null;
   pendingOpinion = '';
 
@@ -282,6 +289,28 @@ export class ViewApprovalEmailComponent implements OnInit {
     });
   }
 
+  /** Dữ liệu chi tiết đơn tăng ca cho OtApplyDetailComponent (cùng API /overtime/detail). */
+  otDetail(d: ApplyDetailResponse): OtApplyDetail {
+    return d as unknown as OtApplyDetail;
+  }
+
+  /** Dữ liệu chi tiết đơn nghỉ phép cho LeaveApplyDetailComponent (cùng API /leaveApply/detail). */
+  leaveDetail(d: ApplyDetailResponse): LeaveApplyDetail {
+    return d as unknown as LeaveApplyDetail;
+  }
+
+  /** Dữ liệu chi tiết đơn xác nhận chấm công cho AttendanceExApplyDetailComponent (API /checkAttendanceEx/detail). */
+  attendanceExDetail(d: ApplyDetailResponse): AttendanceExApplyDetail {
+    return d as unknown as AttendanceExApplyDetail;
+  }
+
+  /** In popup chi tiết đơn tăng ca / nghỉ phép / xác nhận chấm công (printDialog() bản gốc). */
+  printDetail(): void {
+    if (this.detailKind === 'ot') this.otdDetail?.print();
+    else if (this.detailKind === 'leave') this.ladDetail?.print();
+    else if (this.detailKind === 'attendanceEx') this.aedDetail?.print();
+  }
+
   closeDetail(): void {
     this.detailVisible.set(false);
   }
@@ -289,10 +318,6 @@ export class ViewApprovalEmailComponent implements OnInit {
   /** Thông tin nghiệp vụ của đơn (otInfo cho tăng ca, leaveInfo cho nghỉ phép/điều chỉnh chấm công). */
   detailInfo(d: ApplyDetailResponse): Record<string, any> {
     return (this.detailKind === 'ot' ? d.otInfo : d.leaveInfo) || {};
-  }
-
-  detailEmployeeInfo(d: ApplyDetailResponse): Record<string, any> {
-    return d.employeeInfo || this.detailInfo(d);
   }
 
   detailModalTitle(d: ApplyDetailResponse | null): string {
@@ -304,48 +329,9 @@ export class ViewApprovalEmailComponent implements OnInit {
     const fallback =
       this.detailKind === 'leave'
         ? this.i18n.t('applyAtt.applyTitleFallback', 'Xin nghỉ phép')
-        : this.i18n.t('ck.modal.title', 'Thông tin phê duyệt');
+        : this.i18n.t('ess.infoApply.check_error_attendance', 'Xác nhận chấm công');
+    if (this.detailKind === 'attendanceEx') return `【${fallback}】`;
     return `[${info['leaveTypeName'] || fallback}]`;
-  }
-
-  /** Dòng "Tiêu đề" trong modal - đúng vaotBuildApplyTitle()/valBuildApplyTitle() bản gốc. */
-  detailApplyTitle(d: ApplyDetailResponse): string {
-    const info = this.detailInfo(d);
-    const typeName = this.detailKind === 'ot' ? info['otTypeName'] : info['leaveTypeName'];
-    const fromTime = this.detailKind === 'ot' ? info['detailFromDateTime'] : info['leaveFromTime'];
-    const toTime = this.detailKind === 'ot' ? info['detailToDateTime'] : info['leaveToTime'];
-    const localName = info['localName'] || '';
-    if (!typeName && !localName && !fromTime && !toTime) return '';
-    return `${typeName || ''}/Apply(${localName})[Date: ${fromTime || ''} ~ ${toTime || ''}]`;
-  }
-
-  detailApplicant(d: ApplyDetailResponse): string {
-    const emp = this.detailEmployeeInfo(d);
-    return `${emp['localName'] || ''}/${emp['postGradeName'] || ''}/${emp['deptName'] || ''}`;
-  }
-
-  /** Thời lượng nghỉ phép - đúng valFormatDuration() bản gốc (quy đổi ra Ngày/Giờ theo dayHours). Chỉ
-   *  áp dụng cho đơn nghỉ phép; đơn điều chỉnh chấm công (attendanceEx) hiển thị applyLength thô, đúng
-   *  atexRenderData() bản gốc (không có hàm quy đổi). */
-  detailDuration(d: ApplyDetailResponse): string {
-    const info = this.detailInfo(d);
-    if (this.detailKind !== 'leave') return info['applyLength'] || '';
-    const len = parseFloat(info['applyLength']);
-    const dh = parseFloat(info['dayHours']);
-    if (isNaN(len) || isNaN(dh) || dh === 0) return info['applyLength'] || '';
-    const days = Math.floor(len / dh);
-    const hours = len - days * dh;
-    let text = '';
-    if (days > 0) text += `${days} Ngày`;
-    if (hours > 0) text += (text ? ' ' : '') + `${hours} Giờ`;
-    return text || String(len);
-  }
-
-  /** STT hàng phê duyệt - dòng tổng hợp xác nhận của HR có affirmLevel='100' hiển thị là 'HR' thay vì
-   *  số thứ tự thô, đúng vaotRenderApprovalRows() bản gốc. */
-  approvalStt(affirmLevel: string, index: number): string {
-    const stt = affirmLevel || String(index + 1);
-    return stt === '100' ? 'HR' : stt;
   }
 
   /** Người dùng hiện tại có đúng là người đang chờ duyệt ở mức hiện tại của đơn đang xem không - đúng

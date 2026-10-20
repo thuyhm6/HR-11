@@ -16,8 +16,7 @@ const LEAVE_APPLY_API_BASE = '/ar/attendanceMintenance/api/leaveApply';
 const LEAVE_APPLY_TYPE_NO = '21';
 
 /**
- * Gọi lại nguyên các API JSON đã có sẵn (không đổi backend) - bản Angular của
- * ess/infoApplyAttendance/viewSSTApplyAttendance.html (Thymeleaf + jQuery). getBasicInfo dùng chung
+ * Bản Angular của ess/infoApplyAttendance/viewSSTApplyAttendance.jsp (Hanwha_HTSV). getBasicInfo dùng chung
  * endpoint /api/personalInfo/myInfo mà fragments/essEmpInfoCard.html gốc gọi qua loadEssEmpInfoCard().
  * getApprovers/save gọi thẳng sang EssLeaveApplyController (/ar/attendanceMintenance/api/leaveApply/**)
  * - đúng 2 endpoint mà trang gốc dùng (POST form-urlencoded cho approvers, JSON cho save).
@@ -52,12 +51,12 @@ export class SstApplyAttendanceService {
 
   /** Endpoint gốc nhận @RequestParam (không phải @RequestBody JSON) nên phải gửi dạng
    *  application/x-www-form-urlencoded - đúng cách $.post() của jQuery bản gốc gửi lên. */
-  getApprovers(personId: string, leaveTypeCode: string): Observable<ApproverInfo[]> {
+  getApprovers(personId: string, leaveTypeCode: string, applyLength: string): Observable<ApproverInfo[]> {
     const body = new HttpParams()
       .set('applyTypeNo', LEAVE_APPLY_TYPE_NO)
       .set('personId', personId)
       .set('applyTypeCode', leaveTypeCode || '')
-      .set('applyLength', '0');
+      .set('applyLength', applyLength || '0');
     const headers = new HttpHeaders().set('Content-Type', 'application/x-www-form-urlencoded');
     return this.http.post<ApproverInfo[]>(`${LEAVE_APPLY_API_BASE}/approvers`, body.toString(), {
       headers,
@@ -65,7 +64,19 @@ export class SstApplyAttendanceService {
     });
   }
 
-  save(payload: Record<string, unknown>): Observable<SaveResult> {
-    return this.http.post<SaveResult>(`${LEAVE_APPLY_API_BASE}/save`, payload, { withCredentials: true });
+  /** Loại nghỉ chỉ dành cho nam / nữ (getLeaveDateSST bản gốc). */
+  checkLeaveType(applyType: string): Observable<SaveResult> {
+    return this.http.get<SaveResult>('/ess/infoApplyAttendance/api/sstApply/check-leave-type', {
+      params: new HttpParams().set('applyType', applyType),
+      withCredentials: true,
+    });
+  }
+
+  /** Lưu đơn + file đính kèm (multipart) - EssInfoApplyAttendanceController /api/sstApply/save. */
+  save(payload: Record<string, unknown>, files: File[]): Observable<SaveResult> {
+    const fd = new FormData();
+    fd.append('data', JSON.stringify(payload));
+    files.forEach((f) => fd.append('attachFiles', f));
+    return this.http.post<SaveResult>('/ess/infoApplyAttendance/api/sstApply/save', fd, { withCredentials: true });
   }
 }

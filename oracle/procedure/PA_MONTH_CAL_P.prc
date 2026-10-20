@@ -51,6 +51,9 @@
   VAR_L_SCHEDULE_NO NUMBER;--上月支付计划No
   VAR_APPLY_TYPE NUMBER :=1;--工资项目区分1为工资2为春节金3为中秋金
   VAR_UPDATE_STR    VARCHAR2(20000); --计算表达式
+  VAR_PARAM_START_DATE  VARCHAR2(10); -- Kỳ hiệu lực tham số lương (YYYY/MM/DD) - tính theo ngày
+  VAR_PARAM_END_DATE    VARCHAR2(10);
+  V_CHECK_MSG           VARCHAR2(4000); -- Kết quả kiểm tra chồng lấn ngày hiệu lực
 
   -- 人事表游标
   CURSOR CUS_HR IS
@@ -79,7 +82,8 @@
            DISTINCT_FIELD_2ND,
            DATA_TYPE,
            DEFAULT_VAL,
-           PA_PARAM_ITEM.PARAM_ITEM_ID
+           PA_PARAM_ITEM.PARAM_ITEM_ID,
+           NVL(PA_PARAM_ITEM_PARAM.PRORATE_TYPE, 0) PRORATE_TYPE
       FROM PA_PARAM_ITEM, PA_PARAM_ITEM_PARAM
      WHERE PA_PARAM_ITEM.PARAM_ITEM_NO = PA_PARAM_ITEM_PARAM.PARAM_ITEM_NO
        AND CPNY_ID = IN_CPNY_ID
@@ -183,6 +187,20 @@ BEGIN
   FROM PA_PAY_SCHEDULE PPS
   WHERE PPS.PAY_SCHEDULE_NO = IN_PAY_SCHEDULE_NO
   AND PPS.ACTIVITY = 1;
+
+  /* Kỳ hiệu lực tham số lương: kỳ HR của lương thường trong tháng PAY_DATE
+     (= HR_START_DATE..HR_END_DATE với lương thường; giữ đúng ý nghĩa "tháng lương" cũ với lương khác) */
+  VAR_PARAM_START_DATE := TO_CHAR(PA_GET_PERIOD_DATE_F(TO_CHAR(TO_DATE(VAR_PAY_DATE,'YYYY-MM-DD'),'MMYYYY'), IN_CPNY_ID, 'S'), 'YYYY/MM/DD');
+  VAR_PARAM_END_DATE   := TO_CHAR(PA_GET_PERIOD_DATE_F(TO_CHAR(TO_DATE(VAR_PAY_DATE,'YYYY-MM-DD'),'MMYYYY'), IN_CPNY_ID, 'E'), 'YYYY/MM/DD');
+
+  /* Kiểm tra dữ liệu tham số chia theo ngày bị chồng lấn (sẽ bị cộng 2 lần) */
+  V_CHECK_MSG := PA_CHECK_PARAM_OVERLAP_F(IN_PAY_SCHEDULE_NO, IN_CPNY_ID, NULL,
+                     LEAST(TO_DATE(VAR_PARAM_START_DATE,'YYYY/MM/DD'), TO_DATE(VAR_DATE_START,'YYYY/MM/DD')),
+                     GREATEST(TO_DATE(VAR_PARAM_END_DATE,'YYYY/MM/DD'), TO_DATE(VAR_DATE_END,'YYYY/MM/DD')));
+  IF V_CHECK_MSG IS NOT NULL THEN
+    -- Raise (không RETURN) để PKG_PA_WORK_FLOW rollback, không đánh dấu PA_CAL_FLAG = 1
+    RAISE_APPLICATION_ERROR(-20103, V_CHECK_MSG);
+  END IF;
 
   /*BEGIN
     --根据工资区分获取同样的工资区分下的上一次工资的支付计划No
@@ -491,11 +509,14 @@ BEGIN
      PA_WORKER_SALARY_TABLE_HTSV_P(IN_PAY_SCHEDULE_NO,VAR_PAY_DATE,VAR_DATE_START); -- VAR_DATE_END
 
     INSERT INTO PA_PARAM_DATA(PARAM_DATA_NO,PARAM_NO,PERSON_ID,RETURN_VALUE,START_MONTH,END_MONTH
+                                          ,START_DATE,END_DATE
                                           ,CPNY_ID,CREATE_DATE,CREATED_BY,ACTIVITY)
       SELECT PA_PARAM_DATA_SEQ.NEXTVAL,
                '12',HRE.PERSON_ID,1,
                TO_CHAR(TO_DATE(VAR_PAY_DATE,'YYYY-MM-DD'),'MMYYYY'),
                TO_CHAR(TO_DATE(VAR_PAY_DATE,'YYYY-MM-DD'),'MMYYYY'),
+               TO_DATE(VAR_PARAM_START_DATE,'YYYY/MM/DD'),
+               TO_DATE(VAR_PARAM_END_DATE,'YYYY/MM/DD'),
                IN_CPNY_ID,SYSDATE,'FORPA',1
          FROM HR_EMPLOYEE HRE
         WHERE HRE.PERSON_ID IN(
@@ -509,11 +530,14 @@ BEGIN
            );
   ELSIF IN_CPNY_ID = 'HAE' THEN
     INSERT INTO PA_PARAM_DATA(PARAM_DATA_NO,PARAM_NO,PERSON_ID,RETURN_VALUE,START_MONTH,END_MONTH
+                                          ,START_DATE,END_DATE
                                           ,CPNY_ID,CREATE_DATE,CREATED_BY,ACTIVITY)
       SELECT PA_PARAM_DATA_SEQ.NEXTVAL,
                '1007',HRE.PERSON_ID,1,
                TO_CHAR(TO_DATE(VAR_PAY_DATE,'YYYY-MM-DD'),'MMYYYY'),
                TO_CHAR(TO_DATE(VAR_PAY_DATE,'YYYY-MM-DD'),'MMYYYY'),
+               TO_DATE(VAR_PARAM_START_DATE,'YYYY/MM/DD'),
+               TO_DATE(VAR_PARAM_END_DATE,'YYYY/MM/DD'),
                IN_CPNY_ID,SYSDATE,'FORPA',1
          FROM HR_EMPLOYEE HRE
         WHERE HRE.PERSON_ID IN(
@@ -537,93 +561,21 @@ BEGIN
                        ' ----------    THIS IS THE CALCULATE PARAM DATA STRING ----------');
   END IF;
   FOR PAR_VAL IN CUS_PARAM(VAR_APPLY_TYPE) LOOP
-    IF PAR_VAL.DATA_TYPE LIKE 'VARC%' THEN
-      V_PSTR := 'UPDATE ' || V_TABLE_NAME || ' T SET T.' ||
-              PAR_VAL.PARAM_ITEM_ID || ' = NVL(' ||
-              ' (SELECT MAX(NVL(p.return_value,0)) ' ||
-
-              -- [XỬ LÝ ƯU TIÊN CHO MAX] --
-              (CASE
-                WHEN VAR_SALARY_DISTIN_NO = '14015083' AND PAR_VAL.DISTINCT_FIELD = 'PERSON_ID' THEN
-                 ' KEEP (DENSE_RANK FIRST ORDER BY CASE WHEN P.REMARK = ''Employee Resign'' THEN 1 ELSE 2 END ASC) '
-                ELSE
-                 ''
-              END) ||
-
-              ' FROM ' ||
-              (CASE PAR_VAL.DISTINCT_FIELD
-                WHEN 'PERSON_ID' THEN
-                 'PA_PARAM_DATA'
-                ELSE
-                 'PA_PARAM_DATA_OTHER'
-              END) || ' P WHERE CPNY_ID = ''' || IN_CPNY_ID || ''' ' ||
-
-              -- [THẦY THỦY THÊM MỚI TẠI ĐÂY - LỌC IS_APPLY = 'N'] --
-              (CASE
-                WHEN VAR_SALARY_DISTIN_NO = '14015083' AND PAR_VAL.DISTINCT_FIELD = 'PERSON_ID' THEN
-                 ' AND NVL(P.IS_APPLY, ''Y'') <> ''N'' '
-                ELSE
-                 ''
-              END) ||
-              -- [KẾT THÚC LỌC IS_APPLY] --
-
-              ' AND T.' || PAR_VAL.DISTINCT_FIELD || (CASE PAR_VAL.DISTINCT_FIELD
-                WHEN 'PERSON_ID' THEN
-                 ' = P.PERSON_ID'
-                ELSE
-                 ' = P.FIELD1_VALUE '
-              END) || CASE
-                WHEN TRIM(PAR_VAL.DISTINCT_FIELD_2ND) IS NOT NULL THEN
-                 ' AND T.' || PAR_VAL.DISTINCT_FIELD_2ND ||
-                 ' = P.FIELD2_VALUE '
-              END || ' AND P.PARAM_NO=' || TO_CHAR(PAR_VAL.PARAM_NO) ||
-              ' AND P.ACTIVITY = 1 AND ''' || TO_DATE(TO_CHAR(TO_DATE(VAR_PAY_DATE,'YYYY/MM/DD'),'MMYYYY'),'MMYYYY') ||
-              ''' BETWEEN TO_DATE(START_MONTH,''MMYYYY'') AND NVL(TO_DATE(END_MONTH,''MMYYYY''),TO_DATE(''129999'',''MMYYYY'')) ' ||
-              ' ),''' || PAR_VAL.DEFAULT_VAL || ''')';
-    ELSE
-      V_PSTR := 'UPDATE ' || V_TABLE_NAME || ' T SET T.' ||
-              PAR_VAL.PARAM_ITEM_ID || ' = NVL(' ||
-              ' (SELECT SUM(NVL(p.return_value,0)) ' ||
-
-              -- [XỬ LÝ ƯU TIÊN CHO SUM] --
-              (CASE
-                WHEN VAR_SALARY_DISTIN_NO = '14015083' AND PAR_VAL.DISTINCT_FIELD = 'PERSON_ID' THEN
-                 ' KEEP (DENSE_RANK FIRST ORDER BY CASE WHEN P.REMARK = ''Employee Resign'' THEN 1 ELSE 2 END ASC) '
-                ELSE
-                 ''
-              END) ||
-
-              ' FROM ' ||
-              (CASE PAR_VAL.DISTINCT_FIELD
-                WHEN 'PERSON_ID' THEN
-                 'PA_PARAM_DATA'
-                ELSE
-                 'PA_PARAM_DATA_OTHER'
-              END) || ' P WHERE CPNY_ID = ''' || IN_CPNY_ID || ''' ' ||
-
-              -- [THẦY THỦY THÊM MỚI TẠI ĐÂY - LỌC IS_APPLY = 'N'] --
-              (CASE
-                WHEN VAR_SALARY_DISTIN_NO = '14015083' AND PAR_VAL.DISTINCT_FIELD = 'PERSON_ID' THEN
-                 ' AND NVL(P.IS_APPLY, ''Y'') <> ''N'' '
-                ELSE
-                 ''
-              END) ||
-              -- [KẾT THÚC LỌC IS_APPLY] --
-
-              ' AND T.' || PAR_VAL.DISTINCT_FIELD || (CASE PAR_VAL.DISTINCT_FIELD
-                WHEN 'PERSON_ID' THEN
-                 ' = P.PERSON_ID'
-                ELSE
-                 ' = P.FIELD1_VALUE '
-              END) || CASE
-                WHEN TRIM(PAR_VAL.DISTINCT_FIELD_2ND) IS NOT NULL THEN
-                 ' AND T.' || PAR_VAL.DISTINCT_FIELD_2ND ||
-                 ' = P.FIELD2_VALUE '
-              END || ' AND P.PARAM_NO=' || TO_CHAR(PAR_VAL.PARAM_NO) ||
-              ' AND P.ACTIVITY = 1 AND ''' || TO_DATE(TO_CHAR(TO_DATE(VAR_PAY_DATE,'YYYY/MM/DD'),'MMYYYY'),'MMYYYY') ||
-              ''' BETWEEN TO_DATE(START_MONTH,''MMYYYY'') AND NVL(TO_DATE(END_MONTH,''MMYYYY''),TO_DATE(''129999'',''MMYYYY'')) ' ||
-              ' ),''' || PAR_VAL.DEFAULT_VAL || ''')';
-    END IF;
+    -- Lọc dữ liệu theo START_DATE/END_DATE + cách gộp PRORATE_TYPE (xem PA_BUILD_PARAM_UPDATE_F)
+    V_PSTR := PA_BUILD_PARAM_UPDATE_F(V_TABLE_NAME,
+                                      IN_CPNY_ID,
+                                      VAR_SALARY_DISTIN_NO,
+                                      TO_CHAR(PAR_VAL.PARAM_NO),
+                                      PAR_VAL.PARAM_ITEM_ID,
+                                      PAR_VAL.DISTINCT_FIELD,
+                                      PAR_VAL.DISTINCT_FIELD_2ND,
+                                      PAR_VAL.DATA_TYPE,
+                                      PAR_VAL.DEFAULT_VAL,
+                                      PAR_VAL.PRORATE_TYPE,
+                                      VAR_PARAM_START_DATE,
+                                      VAR_PARAM_END_DATE,
+                                      VAR_DATE_START,
+                                      VAR_DATE_END);
 
     I := 0;
 

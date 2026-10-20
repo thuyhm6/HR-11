@@ -4,6 +4,7 @@ import com.ait.ar.attendanceMintenance.service.ArCardRecordForSelfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -23,12 +24,19 @@ public class ArCardRecordForSelfScheduler {
     @Autowired
     private ArCardRecordForSelfService arCardRecordForSelfService;
 
+    /** 1: chạy, 0: tắt (máy không truy cập được SQL Server máy chấm công 10.43.7.249, vd. máy dev) */
+    @Value(\"${ar.device.import-flag:1}\")
+    private String importFlag;
+
     /**
      * Chạy lúc 03:00 hàng ngày, đọc dữ liệu quẹt thẻ của ngày hôm trước.
      * cron: giây phút giờ ngày tháng thứ
      */
     @Scheduled(cron = "0 0 3 * * *")
     public void autoImportCardRecordForSelf() {
+        if (!"1".equals(importFlag)) {
+            return;
+        }
         if (!running.compareAndSet(false, true)) {
             log.warn("[AutoImportForSelf] Lần chạy trước chưa hoàn tất, bỏ qua lần này.");
             return;

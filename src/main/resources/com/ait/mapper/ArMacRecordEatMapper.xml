@@ -98,6 +98,34 @@
         ORDER BY A.R_TIME DESC, A.EMPID
     </select>
 
+    <!-- Suất ăn của nhân viên trong ngày tăng ca (popup chi tiết đơn OT) - tương ứng getArCardRecordMealList
+         (nhánh APPLY_NO) bản gốc: ca đêm (14015595, 90000447, 80000003) lấy suất ăn của ngày hôm sau. -->
+    <select id="selectListByOtApplyNo" resultMap="DtoResultMap">
+        SELECT A.SEQ,
+               A.EMPID,
+               A.EAT_DATE,
+               A.EAT_NAME,
+               NVL(B.LOCAL_NAME, A.EMPLOYEE_NAME) AS LOCAL_NAME,
+               TO_CHAR(A.R_TIME, 'DD/MM/YYYY')   AS R_DATE,
+               TO_CHAR(A.R_TIME, 'HH24:MI:SS')   AS R_TIME,
+               A.AMOUNT
+          FROM AR_MAC_RECORDS_HTSV_EAT A
+          INNER JOIN HR_EMPLOYEE B ON A.EMPID = B.EMPID
+          INNER JOIN (
+                SELECT ES.PERSON_ID,
+                       CASE WHEN GET_AR_SHIFTNO(ES.PERSON_ID, TO_CHAR(ES.APPLY_OT_DATE, 'YYYY/MM/DD'), ES.CPNY_ID)
+                                 IN ('14015595', '90000447', '80000003')
+                            THEN TRUNC(ES.APPLY_OT_DATE) + 1
+                            ELSE TRUNC(ES.APPLY_OT_DATE) END AS EAT_DAY
+                  FROM ESS_APPLY_OT ES
+                 WHERE TO_CHAR(ES.APPLY_NO) = #{applyNo, jdbcType=VARCHAR}
+                   AND ROWNUM = 1
+          ) OT ON OT.PERSON_ID = B.PERSON_ID
+         WHERE A.R_TIME &gt;= OT.EAT_DAY
+           AND A.R_TIME &lt; OT.EAT_DAY + 1
+         ORDER BY A.R_TIME
+    </select>
+
     <!-- Kiểm tra trùng: cùng EMPID + CARD_TIME + DOOR_NAME -->
     <select id="countDuplicateEat" resultType="int"
             parameterType="com.ait.ar.attendanceMintenance.dto.ArMacRecordEatDto">

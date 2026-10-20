@@ -49,12 +49,13 @@
             <th nzWidth="150px">{{ 'pa.inputItemParam.distinctField2' | translate:'Hạng mục phân biệt 2' }}</th>
             <th class="text-center" nzWidth="130px">{{ 'pa.inputItemParam.defaultVal' | translate:'Giá trị mặc định' }}</th>
             <th>{{ 'pa.inputItemParam.itemName' | translate:'Tên hạng mục' }}</th>
+            <th nzWidth="190px">{{ 'pa.inputItemParam.prorateType' | translate:'Cách gộp dữ liệu trong kỳ' }}</th>
             <th class="text-center" nzWidth="130px">{{ 'pa.inputItemParam.activity' | translate:'Tình trạng sử dụng' }}</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngIf="!loading() && rows().length === 0">
-            <td colspan="9" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+            <td colspan="10" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
           </tr>
           <tr *ngFor="let row of vpiipTable.data; let i = index" class="vpiip-row-clickable" (click)="openEditModal(row)">
             <td class="text-center" (click)="$event.stopPropagation()">
@@ -67,6 +68,7 @@
             <td [attr.title]="row.distinctField2ndName || null">{{ row.distinctField2ndName }}</td>
             <td class="text-center">{{ row.defaultVal }}</td>
             <td [attr.title]="row.aliasName || null">{{ row.aliasName }}</td>
+            <td>{{ prorateTypeLabel(row.prorateType) }}</td>
             <td class="text-center">
               <nz-tag [nzColor]="row.activity === 1 ? 'success' : 'default'">
                 {{ row.activity === 1 ? ('pa.inputItemParam.activity.use' | translate:'Sử dụng') : ('pa.inputItemParam.activity.notUse' | translate:'Không sử dụng') }}
@@ -122,6 +124,15 @@
           <nz-option [nzValue]="1" [nzLabel]="'pa.inputItemParam.activity.use' | translate:'Sử dụng'"></nz-option>
           <nz-option [nzValue]="0" [nzLabel]="'pa.inputItemParam.activity.notUse' | translate:'Không sử dụng'"></nz-option>
         </nz-select>
+      </div>
+      <div class="col-12">
+        <label class="form-label fw-semibold">{{ 'pa.inputItemParam.prorateType' | translate:'Cách gộp dữ liệu trong kỳ' }}</label>
+        <nz-select class="w-100" [(ngModel)]="form.prorateType" name="vpiipFormProrateType">
+          <nz-option *ngFor="let p of prorateTypes" [nzValue]="p.value" [nzLabel]="i18n.t(p.key, p.fallback)"></nz-option>
+        </nz-select>
+        <small class="text-muted d-block mt-1">
+          {{ 'pa.inputItemParam.prorateType.hint' | translate:'Áp dụng khi trong kỳ lương có nhiều bản ghi (thay đổi giữa tháng). Lương cơ bản nên chọn Chia theo ngày công thực tế.' }}
+        </small>
       </div>
     </div>
   </ng-container>

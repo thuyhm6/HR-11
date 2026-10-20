@@ -1,37 +1,52 @@
-/** Tương ứng với ArPersonalListDto.java (chỉ phần dùng cho items API - header cột động). */
-export interface OtApplyPersonalListItem {
-  itemId: string;
-  itemName: string;
+/** Tương ứng với OtApplyPersonalListDto.java (phần kết quả). */
+export interface OtApplyPersonalListRow {
+  personId: string;
+  empId: string;
+  localName: string;
+  deptNo: string;
+  deptName: string;
+  postGradeNo: string;
+  postName: string;
+  shiftName: string;
+  otTotal: number | null;
+  weekdayOtTotal: number | null;
+  weekendOtTotal: number | null;
+  holidayOtTotal: number | null;
+  mealOtIncen: number | null;
+  nightIncen: number | null;
+  saturdayIncen: number | null;
 }
 
-/** Tương ứng với response GET .../summary - List<Map<String,Object>> phẳng, key là tên cột Oracle
- *  uppercase. Cột cố định: PERSON_ID, EMPID, LOCAL_NAME, DEPT_NAME, POSITION_NAME, EMP_TYPE_CODE.
- *  Cột động: key = OtApplyPersonalListItem.itemId (AR_ITEM thuộc nhóm tăng ca 1433). */
-export type OtApplyPersonalListSummaryRow = Record<string, string | number | null>;
+/** Tham số GET .../otApplyPersonalList/summary - ngày dạng DD/MM/YYYY (giống JSP cũ). */
+export interface OtApplyPersonalListSearchParams {
+  keyword: string;
+  deptNos: string;
+  empTypeCode: string;
+  shiftNo: string;
+  startDate: string;
+  endDate: string;
+}
 
-/** Tương ứng với ArPersonalListDetailDto.java (chỉ phần dữ liệu trả về của detail API). */
+/** Nhóm cột có link xem chi tiết - backend map sang danh sách ITEM_NO (OtApplyPersonalListServiceImpl). */
+export type OtType = 'WEEKDAY' | 'WEEKEND' | 'HOLIDAY' | 'MEAL' | 'NIGHT' | 'SATURDAY';
+
+/** Tương ứng với OtApplyPersonalListDetailDto.java (phần kết quả). */
 export interface OtApplyPersonalListDetailRow {
-  pkNo: string;
   personId: string;
   empId: string;
   localName: string;
   shiftNo: string;
   shiftName: string;
+  shiftStartTime: string;
+  shiftEndTime: string;
   arDateStr: string;
   itemNo: string;
   itemName: string;
-  fromTimeStr: string;
-  toTimeStr: string;
-  quantity: string;
-}
-
-export interface OtApplyPersonalListSearchParams {
-  keyword: string;
-  deptNos: string;
-  empTypeCode: string;
-  startDate: string;
-  endDate: string;
-  itemGroup: string;
+  indoorTime: string;
+  outdoorTime: string;
+  fromTime: string;
+  toTime: string;
+  applyLength: number | null;
 }
 
 /** Tương ứng với response GET /sys/api/getCode/list?parentCodeNo=... */

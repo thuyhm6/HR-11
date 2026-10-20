@@ -88,4 +88,7 @@ public interface EssPersonalInfoService {
      * Lấy danh sách phân trang các apply của nhân viên
      */
     List<EssApplyInfoDto> getMyApplyListPage(EssApplyInfoDto dto);
+
+    /** Lưu 1 file đính kèm vào thư mục upload + bảng ESS_FILE (APPLY_NO / APPLY_TYPE) - dùng chung cho các đơn xin phép. */
+    void saveApplyFile(MultipartFile file, String applyNo, String applyType) throws java.io.IOException;
 }

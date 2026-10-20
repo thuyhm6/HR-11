@@ -1,0 +1,346 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- Xin phép tăng ca hàng loạt - port từ Hanwha_HTSV (ess/infoApply/viewPiciOtAffirmLBatchList.jsp,
+     sqlInfoApplyLeave.xml getNullBatchOTTSTOAffirmInfoList, sqlInfoApply.xml addOtApplyAffirm/getValidateInfo/
+     updateOtApplyAffirmForSpc). Ngày nhận/trả dạng 'DD/MM/YYYY', giờ dạng 'HH24:MI' đúng bản gốc. -->
+<mapper namespace="com.ait.ess.infoApply.mapper.EssPiciOtAffirmMapper">
+
+    <resultMap id="PiciOtAffirmResultMap" type="com.ait.ess.infoApply.dto.EssPiciOtAffirmDto">
+        <result column="APPLY_NO" property="applyNo" />
+        <result column="PERSON_ID" property="personId" />
+        <result column="EMPID" property="empId" />
+        <result column="LOCAL_NAME" property="localName" />
+        <result column="DEPTNO" property="deptNo" />
+        <result column="DEPTNAME" property="deptName" />
+        <result column="SHIFT_NAME" property="shiftName" />
+        <result column="POST_FAMILY" property="postFamily" />
+        <result column="DUTY_NO" property="dutyNo" />
+        <result column="OT_LIMIT" property="otLimit" />
+        <result column="APPLY_OT_DATE" property="applyOtDate" />
+        <result column="OT_FROM_TIME" property="otFromTime" />
+        <result column="OT_TO_TIME" property="otToTime" />
+        <result column="OT_APPLY_HOUR" property="otApplyHour" />
+        <result column="OT_TYPE_CODE" property="otTypeCode" />
+        <result column="OT_TYPE_CODE_NAME" property="otTypeName" />
+        <result column="APPLY_OT_REMARK" property="applyOtRemark" />
+        <result column="DEDUCT_YN" property="deductYn" />
+        <result column="OFFSET_YN" property="offsetYn" />
+        <result column="AFFIRM_FLAG" property="affirmFlag" />
+        <result column="AFFIRM_FLAG_NAME" property="affirmFlagName" />
+        <result column="SHIFT_START_TIME" property="shiftStartTime" />
+        <result column="SHIFT_END_TIME" property="shiftEndTime" />
+        <result column="INDOOR_TIME" property="indoorTime" />
+        <result column="OUTDOOR_TIME" property="outdoorTime" />
+        <result column="WEEKDAY_OT_TOTAIL" property="weekdayOtTotal" />
+        <result column="WEEKEND_OT_TOTAIL" property="weekendOtTotal" />
+        <result column="HOILDAY_OT_TOTAIL" property="holidayOtTotal" />
+        <result column="OT_TOTAIL" property="otTotal" />
+        <result column="OT_TOTAIL_MONTH" property="otTotalMonth" />
+        <result column="AFFIRM_STR" property="affirmStr" />
+        <result column="CREATED_BY" property="createdBy" />
+        <result column="CREATE_DATE" property="createDate" />
+        <result column="UPDATED_BY" property="updatedBy" />
+        <result column="UPDATE_DATE" property="updateDate" />
+    </resultMap>
+
+    <resultMap id="ValidateInfoResultMap" type="com.ait.ess.infoApply.dto.EssPiciOtAffirmDto">
+        <result column="OT_TYPE_CODE" property="otTypeCode" />
+        <result column="OT_TYPE_CODE_NAME" property="otTypeName" />
+        <result column="OT_LENGTH" property="otApplyHour" />
+        <result column="DATETYPE" property="dateType" />
+        <result column="SHIFT_START_TIME" property="shiftStartTime" />
+        <result column="SHIFT_END_TIME" property="shiftEndTime" />
+        <result column="SHIFT_END_TIME_2" property="shiftEndTime2" />
+        <result column="INDOOR_TIME" property="indoorTime" />
+        <result column="OUTDOOR_TIME" property="outdoorTime" />
+        <result column="OT_SHIFT_LENGTH" property="otShiftLength" />
+    </resultMap>
+
+    <resultMap id="EmpOtInfoResultMap" type="com.ait.ess.infoApply.dto.EssPiciOtAffirmDto">
+        <result column="SHIFT_NAME" property="shiftName" />
+        <result column="POST_FAMILY" property="postFamily" />
+        <result column="DUTY_NO" property="dutyNo" />
+        <result column="OT_LIMIT" property="otLimit" />
+        <result column="WEEKDAY_OT_TOTAIL" property="weekdayOtTotal" />
+        <result column="WEEKEND_OT_TOTAIL" property="weekendOtTotal" />
+        <result column="HOILDAY_OT_TOTAIL" property="holidayOtTotal" />
+        <result column="OT_TOTAIL" property="otTotal" />
+        <result column="OT_TOTAIL_MONTH" property="otTotalMonth" />
+    </resultMap>
+
+    <resultMap id="DefaultTimeResultMap" type="com.ait.ess.infoApply.dto.EssPiciOtAffirmDto">
+        <result column="DATETYPE" property="dateType" />
+        <result column="SHIFT_START_TIME" property="shiftStartTime" />
+        <result column="SHIFT_END_TIME" property="shiftEndTime" />
+        <result column="SHIFT_END_TIME_2" property="shiftEndTime2" />
+    </resultMap>
+
+    <!-- Cột của 1 dòng danh sách - đúng getNullBatchOTTSTOAffirmInfoList bản gốc -->
+    <sql id="listColumns">
+        TO_CHAR(OT.APPLY_NO) AS APPLY_NO,
+        OT.PERSON_ID,
+        HR.EMPID,
+        HR.LOCAL_NAME,
+        HR.DEPTNO,
+        GET_DEPT_NAME(HR.DEPTNO, #{lang, jdbcType=VARCHAR}) AS DEPTNAME,
+        GET_GLOBAL_NAME(GET_AR_SHIFTNO(HR.PERSON_ID, TO_CHAR(OT.APPLY_OT_DATE, 'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}), #{lang, jdbcType=VARCHAR}) AS SHIFT_NAME,
+        TO_CHAR(HR.POST_FAMILY) AS POST_FAMILY,
+        TO_CHAR(HR.DUTY_NO) AS DUTY_NO,
+        TO_CHAR(HR.OT_LIMIT) AS OT_LIMIT,
+        TO_CHAR(OT.APPLY_OT_DATE, 'DD/MM/YYYY') AS APPLY_OT_DATE,
+        TO_CHAR(OT.OT_FROM_TIME, 'HH24:MI') AS OT_FROM_TIME,
+        TO_CHAR(OT.OT_TO_TIME, 'HH24:MI') AS OT_TO_TIME,
+        TO_CHAR(OT.OT_APPLY_HOUR) AS OT_APPLY_HOUR,
+        TO_CHAR(OT.OT_TYPE_CODE) AS OT_TYPE_CODE,
+        GET_CODE_NAME(OT.OT_TYPE_CODE, #{lang, jdbcType=VARCHAR}) AS OT_TYPE_CODE_NAME,
+        OT.APPLY_OT_REMARK,
+        TO_CHAR(OT.DEDUCT_YN) AS DEDUCT_YN,
+        TO_CHAR(OT.OFFSET_YN) AS OFFSET_YN,
+        TO_CHAR(OT.AFFIRM_FLAG) AS AFFIRM_FLAG,
+        GET_GLOBAL_NAME(OT.AFFIRM_FLAG, #{lang, jdbcType=VARCHAR}) AS AFFIRM_FLAG_NAME,
+        TO_CHAR(TO_DATE(GET_AR_SHIFT_START_TIME(OT.PERSON_ID, TO_CHAR(OT.APPLY_OT_DATE, 'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}), 'YYYY-MM-DD HH24:MI'), 'HH24:MI') AS SHIFT_START_TIME,
+        TO_CHAR(TO_DATE(GET_AR_SHIFT_END_TIME(OT.PERSON_ID, TO_CHAR(OT.APPLY_OT_DATE, 'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}), 'YYYY-MM-DD HH24:MI'), 'HH24:MI') AS SHIFT_END_TIME,
+        GET_AR_TIME_BY_CPNYID(OT.PERSON_ID, TO_CHAR(OT.APPLY_OT_DATE, 'YYYY/MM/DD'), 'IN', #{cpnyId, jdbcType=VARCHAR}) AS INDOOR_TIME,
+        GET_AR_TIME_BY_CPNYID(OT.PERSON_ID, TO_CHAR(OT.APPLY_OT_DATE, 'YYYY/MM/DD'), 'OUT', #{cpnyId, jdbcType=VARCHAR}) AS OUTDOOR_TIME,
+        GET_AR_OT_TOTAIL(TO_CHAR(OT.APPLY_OT_DATE, 'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, OT.PERSON_ID, '141444') AS WEEKDAY_OT_TOTAIL,
+        GET_AR_OT_TOTAIL(TO_CHAR(OT.APPLY_OT_DATE, 'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, OT.PERSON_ID, '141445') AS WEEKEND_OT_TOTAIL,
+        GET_AR_OT_TOTAIL(TO_CHAR(OT.APPLY_OT_DATE, 'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, OT.PERSON_ID, '141446') AS HOILDAY_OT_TOTAIL,
+        GET_AR_OT_TOTAIL(TO_CHAR(OT.APPLY_OT_DATE, 'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, OT.PERSON_ID, '200') AS OT_TOTAIL,
+        GET_AR_OT_TOTAIL(TO_CHAR(OT.APPLY_OT_DATE, 'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, OT.PERSON_ID, '30') AS OT_TOTAIL_MONTH,
+        <!-- Người duyệt dạng "1 [EMPID]Tên<br>..." - đúng getAgoAffirmor_ess3403() bản gốc -->
+        (SELECT LISTAGG(S.AFFIRM_LEVEL || ' [' || HE.EMPID || ']' || HE.LOCAL_NAME || '&lt;br&gt;', '')
+                    WITHIN GROUP (ORDER BY S.AFFIRM_LEVEL)
+           FROM SY_AFFIRM_EMAIL S, HR_EMPLOYEE HE
+          WHERE S.AFFIRM_PERSON_ID = HE.PERSON_ID
+            AND S.APPLY_NO = OT.APPLY_NO
+            AND S.AFFIRM_LEVEL &gt; 0) AS AFFIRM_STR,
+        GET_UPDATED_INFO(OT.CREATED_BY) AS CREATED_BY,
+        TO_CHAR(OT.CREATE_DATE, 'DD/MM/YYYY HH24:MI') AS CREATE_DATE,
+        GET_UPDATED_INFO(OT.UPDATED_BY) AS UPDATED_BY,
+        TO_CHAR(OT.UPDATE_DATE, 'DD/MM/YYYY HH24:MI') AS UPDATE_DATE
+    </sql>
+
+    <select id="selectList" parameterType="com.ait.ess.infoApply.dto.EssPiciOtAffirmDto" resultMap="PiciOtAffirmResultMap">
+        SELECT
+            <include refid="listColumns" />
+        FROM ESS_APPLY_OT OT, HR_EMPLOYEE HR
+        WHERE OT.PERSON_ID = HR.PERSON_ID(+)
+          AND OT.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+          AND (OT.PERSON_ID NOT LIKE '111111%' OR (OT.PERSON_ID IS NULL AND OT.CREATED_BY = #{adminID, jdbcType=VARCHAR}))
+          AND OT.ACTIVITY = '1'
+          AND OT.BATCH_YN &lt;&gt; 2
+          <!-- Phạm vi dữ liệu: phòng ban người đăng nhập làm trưởng (cả cây con) hoặc được phân quyền
+               AR_SUPERVISOR_INFO; dòng trống (PERSON_ID rỗng) luôn hiển thị cho người tạo -->
+          AND (EXISTS (SELECT B1.DEPTID
+                         FROM HR_DEPARTMENT B1
+                        WHERE B1.DEPTNO = HR.DEPTNO
+                        START WITH B1.DEPTNO IN (SELECT HRD.DEPTID
+                                                   FROM HR_DEPARTMENT HRD
+                                                  WHERE HRD.MANAGER_EMP_ID = #{adminID, jdbcType=VARCHAR})
+                      CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+                       UNION
+                       SELECT AR_SUPERVISOR_INFO.DEPTNO
+                         FROM AR_SUPERVISOR_INFO
+                        WHERE AR_SUPERVISOR_INFO.DEPTNO = HR.DEPTNO
+                          AND AR_SUPERVISOR_INFO.PERSON_ID = #{adminID, jdbcType=VARCHAR})
+               OR OT.PERSON_ID IS NULL)
+        <if test="deptNos != null and deptNos != ''">
+          AND INSTR(',' || #{deptNos, jdbcType=VARCHAR} || ',', ',' || HR.DEPTNO || ',') &gt; 0
+        </if>
+        <if test="keyword != null and keyword != ''">
+          AND (HR.EMPID LIKE '%' || #{keyword, jdbcType=VARCHAR} || '%'
+               OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{keyword, jdbcType=VARCHAR})) || '%'
+               OR UPPER(HR.ENGLISH_NAME) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%')
+        </if>
+        <if test="searchOtTypeCode != null and searchOtTypeCode != ''">
+          AND TO_CHAR(OT.OT_TYPE_CODE) = #{searchOtTypeCode, jdbcType=VARCHAR}
+        </if>
+        <if test="shiftNo != null and shiftNo != ''">
+          AND GET_AR_SHIFTNO(HR.PERSON_ID, TO_CHAR(OT.APPLY_OT_DATE, 'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}) = #{shiftNo, jdbcType=VARCHAR}
+        </if>
+        <if test="searchAffirmFlag != null and searchAffirmFlag != ''">
+          AND TO_CHAR(OT.AFFIRM_FLAG) = #{searchAffirmFlag, jdbcType=VARCHAR}
+        </if>
+        <if test="cancelFlag != null and cancelFlag != ''">
+          AND NVL(TO_CHAR(OT.AFFIRM_FLAG), ' ') &lt;&gt; '14014310'
+        </if>
+        <if test="startDate != null and startDate != ''">
+          AND OT.APPLY_OT_DATE &gt;= TO_DATE(#{startDate, jdbcType=VARCHAR}, 'DD/MM/YYYY')
+        </if>
+        <if test="endDate != null and endDate != ''">
+          AND OT.APPLY_OT_DATE &lt; TO_DATE(#{endDate, jdbcType=VARCHAR}, 'DD/MM/YYYY') + 1
+        </if>
+        <!-- APPLY_TIME rỗng (dòng trống chưa lưu) đứng đầu - đúng ORDER BY OT.APPLY_TIME DESC bản gốc -->
+        ORDER BY OT.APPLY_TIME DESC NULLS FIRST, OT.APPLY_NO DESC
+    </select>
+
+    <select id="selectByApplyNo" resultMap="PiciOtAffirmResultMap">
+        SELECT
+            <include refid="listColumns" />
+        FROM ESS_APPLY_OT OT, HR_EMPLOYEE HR
+        WHERE OT.PERSON_ID = HR.PERSON_ID(+)
+          AND OT.APPLY_NO = #{applyNo, jdbcType=VARCHAR}
+    </select>
+
+    <delete id="deleteEmptyApplyByCreator">
+        DELETE FROM ESS_APPLY_OT
+         WHERE PERSON_ID IS NULL
+           AND CREATED_BY = #{adminID, jdbcType=VARCHAR}
+    </delete>
+
+    <select id="getNextApplySeq" resultType="java.lang.Long">
+        SELECT ESS_APPLY_SEQ.NEXTVAL FROM DUAL
+    </select>
+
+    <insert id="insertEmptyApply">
+        INSERT INTO ESS_APPLY_OT (
+            APPLY_NO,
+            APPLY_OT_DATE,
+            OT_FROM_TIME,
+            OT_TO_TIME,
+            OT_APPLY_HOUR,
+            OT_TYPE_NO,
+            OT_TYPE_CODE,
+            CONFIRM_FLAG,
+            ADJUST_YN,
+            SPECIAL_YN,
+            OFFSET_YN,
+            DEDUCT_YN,
+            ACTIVITY,
+            CREATE_DATE,
+            CREATED_BY,
+            CREATED_IP,
+            CPNY_ID,
+            BATCH_YN,
+            SEND_EMAIL_FLAG
+        ) VALUES (
+            #{applyNo, jdbcType=VARCHAR},
+            TRUNC(SYSDATE),
+            TO_DATE('00:00', 'HH24:MI'),
+            TO_DATE('00:00', 'HH24:MI'),
+            '0',
+            '31',
+            (SELECT P.OT_TYPE_CODE
+               FROM ESS_APPLY_OT_PARAM P
+              WHERE P.TYPE_ID = GET_AR_DATETYPE(#{adminID, jdbcType=VARCHAR}, TO_CHAR(SYSDATE, 'YYYY-MM-DD'), #{cpnyId, jdbcType=VARCHAR})
+                AND P.ADJUST_YN = 0
+                AND P.SPECIAL_YN = 0
+                AND P.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+                AND ROWNUM = 1),
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            SYSDATE,
+            #{adminID, jdbcType=VARCHAR},
+            #{adminIP, jdbcType=VARCHAR},
+            #{cpnyId, jdbcType=VARCHAR},
+            '1',
+            0
+        )
+    </insert>
+
+    <!-- Đúng ess.infoApply.getValidateInfo: ngày truyền vào GET_OT_LENGTH_SPC/GET_OT_TYPE_CODE dạng
+         'YYYY.MM.DD', các hàm giờ ca dạng 'YYYY/MM/DD' (REPLACE '.' -> '/' như bản gốc) -->
+    <select id="selectValidateInfo" parameterType="com.ait.ess.infoApply.dto.EssPiciOtAffirmDto" resultMap="ValidateInfoResultMap">
+        WITH P AS (
+            SELECT TO_CHAR(TO_DATE(#{applyOtDate, jdbcType=VARCHAR}, 'DD/MM/YYYY'), 'YYYY.MM.DD') AS D_DOT,
+                   TO_CHAR(TO_DATE(#{applyOtDate, jdbcType=VARCHAR}, 'DD/MM/YYYY'), 'YYYY/MM/DD') AS D_SLASH
+              FROM DUAL
+        ),
+        T AS (
+            SELECT P.D_DOT, P.D_SLASH,
+                   GET_OT_TYPE_CODE(#{personId, jdbcType=VARCHAR}, #{cpnyId, jdbcType=VARCHAR}, P.D_DOT, 0, 0) AS OT_TYPE_CODE
+              FROM P
+        )
+        SELECT T.OT_TYPE_CODE,
+               GET_GLOBAL_NAME(T.OT_TYPE_CODE, #{lang, jdbcType=VARCHAR}) AS OT_TYPE_CODE_NAME,
+               GET_OT_LENGTH_SPC(#{personId, jdbcType=VARCHAR}, #{cpnyId, jdbcType=VARCHAR}, T.D_DOT, T.OT_TYPE_CODE,
+                                 #{otFromTime, jdbcType=VARCHAR}, #{otToTime, jdbcType=VARCHAR}, #{deductYn, jdbcType=VARCHAR}) AS OT_LENGTH,
+               GET_AR_DATETYPE(#{personId, jdbcType=VARCHAR}, T.D_SLASH, #{cpnyId, jdbcType=VARCHAR}) AS DATETYPE,
+               TO_CHAR(TO_DATE(GET_AR_SHIFT_START_TIME(#{personId, jdbcType=VARCHAR}, T.D_SLASH, #{cpnyId, jdbcType=VARCHAR}), 'YYYY-MM-DD HH24:MI'), 'HH24:MI') AS SHIFT_START_TIME,
+               TO_CHAR(TO_DATE(GET_AR_SHIFT_END_TIME(#{personId, jdbcType=VARCHAR}, T.D_SLASH, #{cpnyId, jdbcType=VARCHAR}), 'YYYY-MM-DD HH24:MI'), 'HH24:MI') AS SHIFT_END_TIME,
+               TO_CHAR(TO_DATE(GET_AR_SHIFT_END_TIME(#{personId, jdbcType=VARCHAR}, T.D_SLASH, #{cpnyId, jdbcType=VARCHAR}), 'YYYY-MM-DD HH24:MI') + 1/12, 'HH24:MI') AS SHIFT_END_TIME_2,
+               GET_AR_TIME_BY_CPNYID(#{personId, jdbcType=VARCHAR}, T.D_SLASH, 'IN', #{cpnyId, jdbcType=VARCHAR}) AS INDOOR_TIME,
+               GET_AR_TIME_BY_CPNYID(#{personId, jdbcType=VARCHAR}, T.D_SLASH, 'OUT', #{cpnyId, jdbcType=VARCHAR}) AS OUTDOOR_TIME,
+               GET_OT_LENGTH_SPC(#{personId, jdbcType=VARCHAR}, #{cpnyId, jdbcType=VARCHAR}, T.D_DOT, T.OT_TYPE_CODE,
+                                 TO_CHAR(TO_DATE(GET_AR_SHIFT_START_TIME(#{personId, jdbcType=VARCHAR}, T.D_SLASH, #{cpnyId, jdbcType=VARCHAR}), 'YYYY-MM-DD HH24:MI'), 'HH24:MI'),
+                                 TO_CHAR(TO_DATE(GET_AR_SHIFT_END_TIME(#{personId, jdbcType=VARCHAR}, T.D_SLASH, #{cpnyId, jdbcType=VARCHAR}), 'YYYY-MM-DD HH24:MI'), 'HH24:MI'),
+                                 #{deductYn, jdbcType=VARCHAR}) AS OT_SHIFT_LENGTH
+          FROM T
+    </select>
+
+    <select id="selectEmpOtInfo" resultMap="EmpOtInfoResultMap">
+        SELECT GET_GLOBAL_NAME(GET_AR_SHIFTNO(HR.PERSON_ID, TO_CHAR(TO_DATE(#{applyOtDate, jdbcType=VARCHAR}, 'DD/MM/YYYY'), 'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}), #{lang, jdbcType=VARCHAR}) AS SHIFT_NAME,
+               TO_CHAR(HR.POST_FAMILY) AS POST_FAMILY,
+               TO_CHAR(HR.DUTY_NO) AS DUTY_NO,
+               TO_CHAR(HR.OT_LIMIT) AS OT_LIMIT,
+               GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{applyOtDate, jdbcType=VARCHAR}, 'DD/MM/YYYY'), 'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '141444') AS WEEKDAY_OT_TOTAIL,
+               GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{applyOtDate, jdbcType=VARCHAR}, 'DD/MM/YYYY'), 'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '141445') AS WEEKEND_OT_TOTAIL,
+               GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{applyOtDate, jdbcType=VARCHAR}, 'DD/MM/YYYY'), 'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '141446') AS HOILDAY_OT_TOTAIL,
+               GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{applyOtDate, jdbcType=VARCHAR}, 'DD/MM/YYYY'), 'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '200') AS OT_TOTAIL,
+               GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{applyOtDate, jdbcType=VARCHAR}, 'DD/MM/YYYY'), 'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '30') AS OT_TOTAIL_MONTH
+          FROM HR_EMPLOYEE HR
+         WHERE HR.PERSON_ID = #{personId, jdbcType=VARCHAR}
+    </select>
+
+    <select id="selectDefaultTime" resultMap="DefaultTimeResultMap">
+        SELECT GET_AR_DATETYPE(#{adminID, jdbcType=VARCHAR}, D.D_DASH, #{cpnyId, jdbcType=VARCHAR}) AS DATETYPE,
+               TO_CHAR(TO_DATE(GET_AR_SHIFT_START_TIME(#{adminID, jdbcType=VARCHAR}, D.D_DASH, #{cpnyId, jdbcType=VARCHAR}), 'YYYY.MM.DD HH24:MI'), 'HH24:MI') AS SHIFT_START_TIME,
+               TO_CHAR(TO_DATE(GET_AR_SHIFT_END_TIME(#{adminID, jdbcType=VARCHAR}, D.D_DASH, #{cpnyId, jdbcType=VARCHAR}), 'YYYY.MM.DD HH24:MI'), 'HH24:MI') AS SHIFT_END_TIME,
+               TO_CHAR(TO_DATE(GET_AR_SHIFT_END_TIME(#{adminID, jdbcType=VARCHAR}, D.D_DASH, #{cpnyId, jdbcType=VARCHAR}), 'YYYY.MM.DD HH24:MI') + 2/24, 'HH24:MI') AS SHIFT_END_TIME_2
+          FROM (SELECT TO_CHAR(TO_DATE(#{applyOtDate, jdbcType=VARCHAR}, 'DD/MM/YYYY'), 'YYYY-MM-DD') AS D_DASH FROM DUAL) D
+    </select>
+
+    <!-- Giờ truyền vào dạng 'YYYY-MM-DD HH24:MI' cùng ngày tăng ca, qua đêm thể hiện bằng OFFSET_YN - đúng bản gốc -->
+    <select id="checkOtClash" parameterType="com.ait.ess.infoApply.dto.EssPiciOtAffirmDto" resultType="int">
+        SELECT AR_GET_OT_CLASH(
+                   #{applyNo, jdbcType=VARCHAR},
+                   #{personId, jdbcType=VARCHAR},
+                   TO_CHAR(TO_DATE(#{applyOtDate, jdbcType=VARCHAR}, 'DD/MM/YYYY'), 'YYYY-MM-DD') || ' ' || #{otFromTime, jdbcType=VARCHAR},
+                   TO_CHAR(TO_DATE(#{applyOtDate, jdbcType=VARCHAR}, 'DD/MM/YYYY'), 'YYYY-MM-DD') || ' ' || #{otToTime, jdbcType=VARCHAR},
+                   #{offsetYn, jdbcType=VARCHAR})
+          FROM DUAL
+    </select>
+
+    <!-- Đúng ess.infoApply.updateOtApplyAffirmForSpc; thêm SEND_EMAIL_FLAG = 0 + MISDOCID mới để đơn được
+         gửi (lại) sang hộp phê duyệt Cleverse như các đơn tăng ca khác của dự án mới -->
+    <update id="updateOtApply" parameterType="com.ait.ess.infoApply.dto.EssPiciOtAffirmDto">
+        UPDATE ESS_APPLY_OT
+           SET PERSON_ID = #{personId, jdbcType=VARCHAR},
+               APPLY_TIME = SYSDATE,
+               OFFSET_YN = #{offsetYn, jdbcType=VARCHAR},
+               DEDUCT_YN = #{deductYn, jdbcType=VARCHAR},
+               OT_APPLY_HOUR = #{otApplyHour, jdbcType=VARCHAR},
+               OT_TYPE_CODE = #{otTypeCode, jdbcType=VARCHAR},
+               OT_FROM_TIME = TO_DATE(#{applyOtDate, jdbcType=VARCHAR} || ' ' || #{otFromTime, jdbcType=VARCHAR}, 'DD/MM/YYYY HH24:MI'),
+               OT_TO_TIME = TO_DATE(#{applyOtDate, jdbcType=VARCHAR} || ' ' || #{otToTime, jdbcType=VARCHAR}, 'DD/MM/YYYY HH24:MI'),
+               APPLY_OT_REMARK = #{applyOtRemark, jdbcType=VARCHAR},
+               AFFIRM_FLAG = 14014306,
+               APPLY_OT_DATE = TO_DATE(#{applyOtDate, jdbcType=VARCHAR}, 'DD/MM/YYYY'),
+               UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+               UPDATED_IP = #{adminIP, jdbcType=VARCHAR},
+               UPDATE_DATE = SYSDATE,
+               CONFIRM_FLAG = 0,
+               CONFIRM_DATE = NULL,
+               CONFIRM_BY = NULL,
+               CONFIRM_IP = NULL,
+               ACTIVITY = 1,
+               BATCH_NO = 0,
+               CPNY_ID = #{cpnyId, jdbcType=VARCHAR},
+               SEND_EMAIL_FLAG = 0,
+               MISDOCID = #{misDocId, jdbcType=VARCHAR}
+         WHERE APPLY_NO = #{applyNo, jdbcType=VARCHAR}
+    </update>
+
+    <!-- Khóa tài liệu Cleverse mới (cùng công thức insertOvertimeApply ở ArOvertimeManagentMapper.xml).
+         Lấy riêng vì trong câu UPDATE, MISDOCID.NEXTVAL dễ bị nhầm với cột MISDOCID của bảng. -->
+    <select id="selectNextMisDocId" resultType="java.lang.String">
+        SELECT TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS') || LPAD(MISDOCID.NEXTVAL, 7, 0) FROM DUAL
+    </select>
+
+</mapper>

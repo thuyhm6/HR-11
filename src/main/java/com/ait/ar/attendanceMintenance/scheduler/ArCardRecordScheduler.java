@@ -4,6 +4,7 @@ import com.ait.ar.attendanceMintenance.service.ArCardRecordService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -24,6 +25,10 @@ public class ArCardRecordScheduler {
     @Autowired
     private ArCardRecordService arCardRecordService;
 
+    /** 1: chạy, 0: tắt (máy không truy cập được SQL Server máy chấm công 10.43.7.249, vd. máy dev) */
+    @Value(\"${ar.device.import-flag:1}\")
+    private String importFlag;
+
     /**
      * Chạy vào phút thứ 5 của mỗi giờ (08:05, 09:05, ...).
      * Chỉ đọc dữ liệu trong ngày hiện tại và 2 ngày trước để tránh tải dữ liệu cũ.
@@ -31,6 +36,9 @@ public class ArCardRecordScheduler {
      */
     @Scheduled(cron = "0 5 * * * *")
     public void autoImportCardRecord() {
+        if (!"1".equals(importFlag)) {
+            return;
+        }
         if (!running.compareAndSet(false, true)) {
             log.warn("[AutoImport] Lần chạy trước chưa hoàn tất, bỏ qua lần này.");
             return;

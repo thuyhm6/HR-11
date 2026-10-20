@@ -73,4 +73,8 @@
         ORDER BY AIP.ITEM_NO
     </select>
 
+    <select id="selectSexCode" resultType="java.lang.String">
+        SELECT TO_CHAR(SEXCODE) FROM HR_PERSONAL_INFO WHERE PERSON_ID = #{personId, jdbcType=VARCHAR}
+    </select>
+
 </mapper>

@@ -23,7 +23,30 @@ public interface PaInputItemDataMapper {
 
     void updateParamData(PaInputItemDataDto dto);
 
+    long countOverlapParamData(PaInputItemDataDto dto);
+
     void deleteParamData(@Param("paramDataNo") Long paramDataNo);
+
+    // PA_PARAM_DATA_OTHER (DISTINCT_FIELD khác PERSON_ID)
+    PaInputItemDataDto selectParamItemOne(@Param("paramNo") String paramNo);
+
+    long countParamDataOtherList(PaInputItemDataDto dto);
+
+    List<PaInputItemDataDto> selectParamDataOtherListPage(PaInputItemDataDto dto);
+
+    PaInputItemDataDto selectParamDataOtherOne(@Param("paramDataNo") Long paramDataNo);
+
+    void insertParamDataOther(PaInputItemDataDto dto);
+
+    void updateParamDataOther(PaInputItemDataDto dto);
+
+    void deleteParamDataOther(@Param("paramDataNo") Long paramDataNo);
+
+    long countOverlapParamDataOther(PaInputItemDataDto dto);
+
+    void callCreateParamDataList(@Param("paramNo") String paramNo);
+
+    List<PaInputItemDataDto> selectDistinctValueList(@Param("fieldId") String fieldId);
 
     // Import Excel -> PA_PARAM_DATA_TEMP
     void deleteParamDataTemp(Map<String, Object> params);

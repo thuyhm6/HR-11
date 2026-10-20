@@ -56,23 +56,3 @@ export interface CancelResult {
   error?: string;
   count?: number;
 }
-
-/** Tương ứng với response GET /ess/infoApplyAttendance/api/checkAttendanceEx/detail - leaveInfo và
- *  employeeInfo cùng trỏ về 1 object EssLeaveApplyDto (xem getCardApplyDetail() ở
- *  EssAttendanceExForBatchServiceImpl.java) - giống cấu trúc LeaveApplyDetailResponse ở
- *  apply-attendance-info-list.model.ts (khác API backend). */
-export interface CardApplyDetailResponse {
-  leaveInfo: Record<string, any> | null;
-  employeeInfo: Record<string, any> | null;
-  approvalList: ApprovalInfo[];
-}
-
-export interface ApprovalInfo {
-  affirmLevel: string;
-  affirmTypeName: string;
-  affirmFlagName: string;
-  affirmName: string;
-  deptName: string;
-  updateDate: string;
-  affirmContent: string;
-}

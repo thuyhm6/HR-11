@@ -61,35 +61,3 @@ export interface AuthDeptNode {
   text: string;
   parent: string;
 }
-
-/** leaveInfo/employeeInfo trong response GET .../checkAttendanceEx/detail đều trỏ về cùng 1 object
- *  EssLeaveApplyDto (xem EssAttendanceExForBatchServiceImpl#getCardApplyDetail) - chỉ khai field
- *  modal chi tiết cần hiển thị. */
-export interface CardLeaveInfo {
-  leaveTypeName: string;
-  localName: string;
-  empId: string;
-  deptName: string;
-  postGradeName: string;
-  leaveFromTime: string;
-  leaveToTime: string;
-  applyLength: string;
-  leaveReason: string;
-}
-
-/** Tương ứng với SyAffirmEmailDto.java - 1 dòng trình tự phê duyệt. */
-export interface CardApprovalRow {
-  affirmLevel: string;
-  affirmTypeName: string;
-  affirmFlagName: string;
-  affirmName: string;
-  affirmContent: string;
-  updateDate: string;
-  deptName: string;
-}
-
-export interface CardApplyDetail {
-  leaveInfo: CardLeaveInfo | null;
-  employeeInfo: CardLeaveInfo | null;
-  approvalList: CardApprovalRow[];
-}

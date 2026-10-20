@@ -113,89 +113,21 @@
   </div>
 </div>
 
-<!-- Modal chi tiết phê duyệt - mở khi click tên nhân viên (đúng atexOpenApplyDetail() bản gốc). -->
+<!-- Modal chi tiết phê duyệt - mở khi click tên nhân viên; nội dung theo /ess/infoApply/viewAttendanceEx bản gốc
+     (dùng chung AttendanceExApplyDetailComponent). -->
 <nz-modal [nzVisible]="detailVisible()"
-          [nzTitle]="(detailLeaveInfo()?.leaveTypeName ? '[' + detailLeaveInfo()!.leaveTypeName + ']' : ('ck.modal.title' | translate:'Thông tin phê duyệt'))"
-          nzWidth="60vw" [nzBodyStyle]="{ 'max-height': '75vh', 'overflow-y': 'auto' }"
-          (nzOnCancel)="closeDetail()" [nzFooter]="null">
+          [nzTitle]="'ess.infoApply.check_error_attendance' | translate:'Xác nhận chấm công'"
+          nzWidth="70vw" [nzBodyStyle]="{ 'max-height': '75vh', 'overflow-y': 'auto' }"
+          (nzOnCancel)="closeDetail()" [nzFooter]="ckDetailFooterTpl">
   <ng-container *nzModalContent>
     <nz-alert *ngIf="detailErrorMessage()" nzType="error" [nzMessage]="detailErrorMessage() ?? ''" class="mb-3"></nz-alert>
-
-    <div class="table-responsive mb-3">
-      <table class="table table-bordered table-sm align-middle mb-0">
-        <tbody>
-          <tr>
-            <th class="table-light text-center" style="width: 160px;">{{ 'ck.modal.applyTitle' | translate:'Tiêu đề' }}</th>
-            <td>{{ buildApplyTitle(detailLeaveInfo()) }}</td>
-          </tr>
-          <tr>
-            <th class="table-light text-center">{{ 'ck.modal.requester' | translate:'Người xin phép' }}</th>
-            <td>{{ buildRequesterInfo(detailEmployeeInfo()) }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="table-responsive mb-4">
-      <nz-table [nzData]="detailApprovalList()" [nzLoading]="detailLoading()" [nzShowPagination]="false" nzSize="small">
-        <thead>
-          <tr>
-            <th class="text-center" style="width: 50px;">{{ 'ck.modal.stt' | translate:'STT' }}</th>
-            <th class="text-center" style="width: 90px;">{{ 'ck.modal.approvalSeq' | translate:'Trình tự duyệt' }}</th>
-            <th class="text-center" style="width: 110px;">{{ 'ck.modal.approvalStatus' | translate:'Trạng thái duyệt' }}</th>
-            <th>{{ 'common.empName' | translate:'Họ tên' }}</th>
-            <th>{{ 'ck.modal.opinion' | translate:'Ý kiến' }}</th>
-            <th class="text-center" style="width: 170px;">{{ 'ck.modal.actionTime' | translate:'Thời gian thực hiện' }}</th>
-            <th style="width: 120px;">{{ 'common.deptName' | translate:'Phòng ban' }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngIf="!detailLoading() && detailApprovalList().length === 0">
-            <td colspan="7" class="text-center text-muted">{{ 'ck.msg.noApprovalData' | translate:'Không có dữ liệu phê duyệt' }}</td>
-          </tr>
-          <tr *ngFor="let item of detailApprovalList(); let i = index">
-            <td class="text-center">{{ approvalStt(item, i) }}</td>
-            <td class="text-center">{{ item.affirmTypeName }}</td>
-            <td class="text-center">{{ item.affirmFlagName }}</td>
-            <td>{{ item.affirmName }}</td>
-            <td>{{ item.affirmContent }}</td>
-            <td class="text-center">{{ item.updateDate }}</td>
-            <td class="text-center">{{ item.deptName }}</td>
-          </tr>
-        </tbody>
-      </nz-table>
-    </div>
-
-    <h6 class="fw-bold mb-2">{{ 'ck.modal.empInfoTitle' | translate:'Thông tin nhân viên' }}</h6>
-    <nz-descriptions nzBordered [nzColumn]="2" nzSize="small" class="mb-4">
-      <nz-descriptions-item [nzTitle]="'ck.modal.empName' | translate:'Họ tên'">{{ detailEmployeeInfo()?.localName }}</nz-descriptions-item>
-      <nz-descriptions-item [nzTitle]="'ck.modal.empId' | translate:'Mã nhân viên'">{{ detailEmployeeInfo()?.empId }}</nz-descriptions-item>
-      <nz-descriptions-item [nzTitle]="'ck.modal.empDept' | translate:'Phòng ban'">{{ detailEmployeeInfo()?.deptName }}</nz-descriptions-item>
-      <nz-descriptions-item [nzTitle]="'ck.modal.empPost' | translate:'Chức vụ'">{{ detailEmployeeInfo()?.postGradeName }}</nz-descriptions-item>
-    </nz-descriptions>
-
-    <h6 class="fw-bold mb-2">{{ 'ck.modal.applyInfo' | translate:'Thông tin xin phép' }}</h6>
-    <div class="table-responsive">
-      <table class="table table-bordered table-sm align-middle mb-0">
-        <thead class="table-light text-center">
-          <tr>
-            <th>{{ 'ck.modal.leaveType' | translate:'Loại nghỉ phép' }}</th>
-            <th style="width: 170px;">{{ 'ck.modal.leaveFrom' | translate:'Thời gian bắt đầu' }}</th>
-            <th style="width: 170px;">{{ 'ck.modal.leaveTo' | translate:'Thời gian kết thúc' }}</th>
-            <th style="width: 140px;">{{ 'ck.modal.duration' | translate:'Thời lượng' }}</th>
-            <th>{{ 'ck.modal.remark' | translate:'Lý do' }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td class="text-center">{{ detailLeaveInfo()?.leaveTypeName }}</td>
-            <td class="text-center">{{ detailLeaveInfo()?.leaveFromTime }}</td>
-            <td class="text-center">{{ detailLeaveInfo()?.leaveToTime }}</td>
-            <td class="text-center">{{ detailLeaveInfo()?.applyLength }}</td>
-            <td class="text-center">{{ detailLeaveInfo()?.leaveReason }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <div *ngIf="detailLoading()" class="text-center text-muted py-4"><i class="bx bx-loader-alt bx-spin"></i></div>
+    <app-attendance-ex-apply-detail *ngIf="!detailLoading()" [data]="detailData()"></app-attendance-ex-apply-detail>
   </ng-container>
 </nz-modal>
+<ng-template #ckDetailFooterTpl>
+  <button nz-button type="button" [disabled]="!detailData()" (click)="printDetail()">
+    <i class="bx bx-printer"></i> {{ 'common.print' | translate:'In' }}
+  </button>
+  <button nz-button type="button" (click)="closeDetail()">{{ 'common.close' | translate:'Đóng' }}</button>
+</ng-template>

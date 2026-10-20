@@ -1,5 +1,5 @@
 import { CommonModule, formatDate } from '@angular/common';
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { NzTableModule } from 'ng-zorro-antd/table';
@@ -22,6 +22,7 @@ import { TabService } from '../shell/tab.service';
 import { AuthDeptNode, CodeItem, EmployeeSearchDto } from '../change-user/change-user.model';
 import { ChangeUserService } from '../change-user/change-user.service';
 import {
+  PaDistinctValueOption,
   PaInputItemDataDto,
   PaInputItemDataSavePayload,
   PaInputItemListItem,
@@ -40,7 +41,7 @@ const I18N_KEYS = [
   'pa.inputItemData.empSearch', 'pa.inputItemData.empSearchPlaceholder', 'pa.inputItemData.addNew',
   'pa.inputItemData.delete', 'pa.inputItemData.no', 'pa.inputItemData.empId', 'pa.inputItemData.localName',
   'pa.inputItemData.deptName', 'pa.inputItemData.postGrade', 'pa.inputItemData.empOfficeName',
-  'pa.inputItemData.returnValue', 'pa.inputItemData.startMonth', 'pa.inputItemData.endMonth',
+  'pa.inputItemData.returnValue',
   'pa.inputItemData.remark', 'pa.inputItemData.addTitle', 'pa.inputItemData.editTitle',
   'pa.inputItemData.configItem', 'pa.inputItemData.personId', 'pa.inputItemData.selectItemFirst',
   'pa.inputItemData.personIdRequired', 'pa.inputItemData.valueRequired', 'pa.inputItemData.startRequired',
@@ -56,6 +57,8 @@ const I18N_KEYS = [
   'empSearch.field.empOffice', 'empSearch.btn.clearFilter', 'empSearch.col.no', 'epi.field.position',
   'vdp.search.dept.placeholder', 'mep.msg.loadDeptFailed',
   'pa.payObj.empSearch.placeholder',
+  'common.startDate', 'common.endDate', 'pa.inputItemData.startDateRequired', 'pa.inputItemData.startDateGreaterThanEnd',
+  'pa.inputItemData.distinctRequired',
 ];
 
 const EMP_OFFICE_PARENT_CODE = '15118';
@@ -64,14 +67,17 @@ interface DataForm {
   paramDataNo: number | null;
   personId: string | null;
   empDisplay: string;
+  field1Value: string | null;
+  field2Value: string | null;
   returnValue: number | null;
-  startMonth: Date | null;
-  endMonth: Date | null;
+  startDate: Date | null;
+  endDate: Date | null;
   remark: string;
 }
 
 const EMPTY_FORM: DataForm = {
-  paramDataNo: null, personId: null, empDisplay: '', returnValue: null, startMonth: null, endMonth: null, remark: '',
+  paramDataNo: null, personId: null, empDisplay: '', field1Value: null, field2Value: null, returnValue: null,
+  startDate: null, endDate: null, remark: '',
 };
 
 /**
@@ -94,6 +100,15 @@ const EMPTY_FORM: DataForm = {
  * Cây phòng ban lọc theo phòng ban được phân quyền PA (getAuthorizedDepartments - endpoint riêng
  * /pa/wagebase/api/supervisor/authorized-departments, KHÁC endpoint AR dùng chung ở các trang khác) -
  * đúng DeptTree.init({ api: ... }) ở bản gốc.
+ * Ngày hiệu lực: đổi từ Tháng bắt đầu/kết thúc (MMYYYY) sang Ngày bắt đầu/kết thúc (nz-date-picker dd/MM/yyyy,
+ * gửi BE 'YYYY-MM-DD') để tính lương theo ngày khi thay đổi giữa tháng (xem PA_BUILD_PARAM_UPDATE_F).
+ * "Tháng lương" ở điều kiện tìm kiếm vẫn theo tháng - BE lọc các bản ghi giao với kỳ lương của tháng đó.
+ * Import Excel nhập theo ngày (dd/MM/yyyy) hoặc theo tháng (MMYYYY) - PKG_WAGEBASE_EXCEL_TEMP quy đổi
+ * tháng sang ngày đầu/cuối kỳ lương và kiểm tra chồng lấn ngày hiệu lực.
+ * Hạng mục có DISTINCT_FIELD khác PERSON_ID (chức danh, chức vụ, công ty...) lưu ở PA_PARAM_DATA_OTHER
+ * (FIELD1_VALUE/FIELD2_VALUE) - đúng viewPaInputItemDataList.jsp bản gốc Hanwha_HTSV: bảng hiển thị
+ * hạng mục phân biệt 1/2 thay cho thông tin nhân viên, thêm mới chọn giá trị từ PA_PARAM_DATA_LIST
+ * (PA_PARAM_LIST_P), lọc theo hạng mục phân biệt 1, không có Import Excel/File mẫu (luồng import chỉ theo NV).
  * Import Excel giữ nguyên luồng 2 bước của bản gốc: upload trực tiếp (multipart, tham khảo
  * AddEmpShiftComponent.onExcelFileSelected) rồi mở tab kết quả /pa/salary/viewImportExcelTempPaParamList
  * (Thymeleaf, CHƯA migrate - nằm ngoài phạm vi trang này) qua TabService kiểu 'external', đúng hành vi
@@ -134,6 +149,15 @@ export class ViewPaInputItemDataComponent implements OnInit {
   readonly itemsErrorMessage = signal<string | null>(null);
   readonly currentParamNo = signal<string | null>(null);
   readonly currentParamName = signal<string | null>(null);
+  readonly currentItem = signal<PaInputItemListItem | null>(null);
+  /** true: hạng mục lưu ở PA_PARAM_DATA_OTHER (trường phân biệt khác PERSON_ID). */
+  readonly isOther = computed(() => {
+    const field = this.currentItem()?.distinctField;
+    return !!field && field !== 'PERSON_ID';
+  });
+  readonly hasField2 = computed(() => this.isOther() && !!this.currentItem()?.distinctField2nd);
+  readonly field1Options = signal<PaDistinctValueOption[]>([]);
+  readonly field2Options = signal<PaDistinctValueOption[]>([]);
 
   readonly rows = signal<PaInputItemDataDto[]>([]);
   readonly totalRecords = signal(0);
@@ -148,6 +172,7 @@ export class ViewPaInputItemDataComponent implements OnInit {
   searchEmpOffice: string | null = null;
   searchDeptNos: string[] = [];
   searchEmpSearch = '';
+  searchField1: string | null = null;
 
   readonly empOfficeOptions = signal<CodeItem[]>([]);
   readonly deptNodes = signal<NzTreeNodeOptions[]>([]);
@@ -251,6 +276,7 @@ export class ViewPaInputItemDataComponent implements OnInit {
     this.itemsErrorMessage.set(null);
     this.currentParamNo.set(null);
     this.currentParamName.set(null);
+    this.currentItem.set(null);
     this.rows.set([]);
     this.totalRecords.set(0);
     this.api.getItemList(this.itemType).subscribe({
@@ -269,7 +295,24 @@ export class ViewPaInputItemDataComponent implements OnInit {
   selectItem(item: PaInputItemListItem): void {
     this.currentParamNo.set(item.paramNo);
     this.currentParamName.set(item.paramName);
+    this.currentItem.set(item);
+    this.searchField1 = null;
+    this.field1Options.set([]);
+    this.field2Options.set([]);
+    if (this.isOther()) this.loadDistinctValues(item.paramNo);
     this.search();
+  }
+
+  /** Giá trị chọn cho hạng mục phân biệt 1/2 - dùng cho bộ lọc và modal Thêm mới (PA_PARAM_DATA_OTHER). */
+  private loadDistinctValues(paramNo: string): void {
+    this.api.getDistinctValues(paramNo).subscribe({
+      next: (res) => {
+        if (this.currentParamNo() !== paramNo) return;
+        this.field1Options.set(res?.field1 ?? []);
+        this.field2Options.set(res?.field2 ?? []);
+      },
+      error: () => this.message.error(this.i18n.t('common.loadFail', 'Tải dữ liệu thất bại!')),
+    });
   }
 
   // ==================== Tìm kiếm + phân trang server-side ====================
@@ -284,6 +327,7 @@ export class ViewPaInputItemDataComponent implements OnInit {
     this.searchEmpOffice = null;
     this.searchDeptNos = [];
     this.searchEmpSearch = '';
+    this.searchField1 = null;
     this.search();
   }
 
@@ -311,6 +355,7 @@ export class ViewPaInputItemDataComponent implements OnInit {
       empOfficeSearch: this.searchEmpOffice ?? '',
       deptNos: this.expandDeptSelection(this.searchDeptNos).join(','),
       empSearch: this.searchEmpSearch.trim(),
+      field1Search: this.isOther() ? (this.searchField1 ?? '') : '',
       draw: this.draw,
       start: (this.pageIndex - 1) * this.pageSize,
       length: this.pageSize,
@@ -376,16 +421,20 @@ export class ViewPaInputItemDataComponent implements OnInit {
   }
 
   openEditModal(row: PaInputItemDataDto): void {
-    this.api.getOne(row.paramDataNo).subscribe({
+    const paramNo = this.currentParamNo();
+    if (!paramNo) return;
+    this.api.getOne(row.paramDataNo, paramNo).subscribe({
       next: (dto) => {
         this.isNew.set(false);
         this.form = {
           paramDataNo: dto.paramDataNo,
           personId: dto.personId,
           empDisplay: `${row.empId || ''} - ${row.localName || ''}`,
+          field1Value: dto.field1Value ?? null,
+          field2Value: dto.field2Value ?? null,
           returnValue: dto.returnValue != null ? Number(dto.returnValue) : null,
-          startMonth: this.parseMmyyyy(dto.startMonth),
-          endMonth: this.parseMmyyyy(dto.endMonth),
+          startDate: this.parseIsoDate(dto.startDate),
+          endDate: this.parseIsoDate(dto.endDate),
           remark: dto.remark || '',
         };
         this.modalVisible.set(true);
@@ -399,7 +448,12 @@ export class ViewPaInputItemDataComponent implements OnInit {
   }
 
   saveForm(): void {
-    if (!this.form.personId) {
+    if (this.isOther()) {
+      if (!this.form.field1Value || (this.hasField2() && !this.form.field2Value)) {
+        this.message.warning(this.i18n.t('pa.inputItemData.distinctRequired', 'Vui lòng chọn giá trị hạng mục phân biệt!'));
+        return;
+      }
+    } else if (!this.form.personId) {
       this.message.warning(this.i18n.t('pa.inputItemData.personIdRequired', 'Vui lòng nhập mã nhân viên!'));
       return;
     }
@@ -407,12 +461,14 @@ export class ViewPaInputItemDataComponent implements OnInit {
       this.message.warning(this.i18n.t('pa.inputItemData.valueRequired', 'Vui lòng nhập giá trị!'));
       return;
     }
-    if (!this.form.startMonth) {
-      this.message.warning(this.i18n.t('pa.inputItemData.startRequired', 'Vui lòng nhập tháng bắt đầu!'));
+    if (!this.form.startDate) {
+      this.message.warning(this.i18n.t('pa.inputItemData.startDateRequired', 'Vui lòng nhập ngày bắt đầu!'));
       return;
     }
-    if (this.form.endMonth && this.form.startMonth > this.form.endMonth) {
-      this.message.warning(this.i18n.t('pa.inputItemData.startGreaterThanEnd', 'Tháng bắt đầu không được lớn hơn tháng kết thúc!'));
+    const startIso = this.formatIsoDate(this.form.startDate);
+    const endIso = this.formatIsoDate(this.form.endDate);
+    if (endIso && startIso > endIso) {
+      this.message.warning(this.i18n.t('pa.inputItemData.startDateGreaterThanEnd', 'Ngày bắt đầu không được lớn hơn ngày kết thúc!'));
       return;
     }
     const paramNo = this.currentParamNo();
@@ -421,10 +477,12 @@ export class ViewPaInputItemDataComponent implements OnInit {
     const payload: PaInputItemDataSavePayload = {
       paramDataNo: this.form.paramDataNo,
       paramNo,
-      personId: this.form.personId,
+      personId: this.isOther() ? null : this.form.personId,
+      field1Value: this.isOther() ? this.form.field1Value : null,
+      field2Value: this.hasField2() ? this.form.field2Value : null,
       returnValue: String(this.form.returnValue),
-      startMonth: this.formatMmyyyy(this.form.startMonth),
-      endMonth: this.formatMmyyyy(this.form.endMonth),
+      startDate: startIso,
+      endDate: endIso || null,
       remark: this.form.remark,
     };
     this.saving.set(true);
@@ -463,12 +521,13 @@ export class ViewPaInputItemDataComponent implements OnInit {
 
   confirmDelete(): void {
     const paramDataNos = Array.from(this.checkedParamDataNos());
-    if (paramDataNos.length === 0) {
+    const paramNo = this.currentParamNo();
+    if (paramDataNos.length === 0 || !paramNo) {
       this.deleteVisible.set(false);
       return;
     }
     this.deleting.set(true);
-    forkJoin(paramDataNos.map((no) => this.api.delete(no))).subscribe({
+    forkJoin(paramDataNos.map((no) => this.api.delete(no, paramNo))).subscribe({
       next: () => {
         this.deleting.set(false);
         this.deleteVisible.set(false);
@@ -582,18 +641,27 @@ export class ViewPaInputItemDataComponent implements OnInit {
     return d ? formatDate(d, 'MM', 'vi') + formatDate(d, 'yyyy', 'vi') : '';
   }
 
-  private parseMmyyyy(s: string | null | undefined): Date | null {
-    if (!s || s.length !== 6) return null;
-    const mm = parseInt(s.substring(0, 2), 10) - 1;
-    const yyyy = parseInt(s.substring(2), 10);
-    if (Number.isNaN(mm) || Number.isNaN(yyyy)) return null;
-    return new Date(yyyy, mm, 1);
+  private formatIsoDate(d: Date | null): string {
+    return d ? formatDate(d, 'yyyy-MM-dd', 'vi') : '';
   }
 
-  /** Chuyển 'MMYYYY' (BE) sang 'MM/yyyy' để hiển thị trong bảng (theo CLAUDE.md). */
-  toMmSlashYyyy(mmyyyy: string | null): string {
-    const d = this.parseMmyyyy(mmyyyy);
-    return d ? formatDate(d, 'MM/yyyy', 'vi') : '';
+  private parseIsoDate(s: string | null | undefined): Date | null {
+    if (!s || s.length < 10) return null;
+    const [yyyy, mm, dd] = s.substring(0, 10).split('-').map((v) => parseInt(v, 10));
+    if ([yyyy, mm, dd].some((v) => Number.isNaN(v))) return null;
+    return new Date(yyyy, mm - 1, dd);
+  }
+
+  /** Chuyển 'YYYY-MM-DD' (BE) sang 'dd/MM/yyyy' để hiển thị trong bảng (theo CLAUDE.md). */
+  /** Tên hiển thị giá trị phân biệt đang chọn (modal Sửa - FIELD1/FIELD2 không đổi). */
+  optionLabel(options: PaDistinctValueOption[], value: string | null): string {
+    if (!value) return '';
+    return options.find((o) => o.value === value)?.label ?? value;
+  }
+
+  toDdMmYyyy(iso: string | null): string {
+    const d = this.parseIsoDate(iso);
+    return d ? formatDate(d, 'dd/MM/yyyy', 'vi') : '';
   }
 
   readonly numberFormatter = (value: number): string =>

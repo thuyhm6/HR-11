@@ -1,9 +1,12 @@
 /** Tương ứng với EssAttendanceExForBatchDto.java (danh sách chấm công bất thường chờ xin phép). */
 export interface AttendanceExApiRow {
+  /** Ngày công dạng 'yyyy/MM/dd'. */
   arDateStr: string;
   dateStr: string;
+  /** PK_NO của AR_DETAIL_HTSV - dùng làm APPLY_NO khi xin phép. */
   applyNo: string | null;
   personId: string;
+  /** Giờ bất thường gốc (FROM_TIME/TO_TIME) dạng 'yyyy/MM/dd HH:mm' - gửi lại nguyên khi xin phép. */
   fromDateTime: string;
   toDateTime: string;
   workHour: string;
@@ -15,6 +18,7 @@ export interface AttendanceExApiRow {
   updatedName: string;
   inDoorTime: string;
   outDoorTime: string;
+  /** Giờ bắt đầu / kết thúc ca 'yyyy-MM-dd HH:mm' - lấy phần ngày làm mặc định cho ô ngày vào/ra. */
   shiftStartTime: string;
   shiftEndTime: string;
   empId: string;
@@ -26,18 +30,27 @@ export interface AttendanceExApiRow {
   postFamilyName: string;
   createdBy: string;
   updatedBy: string;
+  /** 'N' mới cho chọn xin phép (checkbox bản gốc chỉ hiện khi LOCK_YN = N). */
   lockYn: string;
   shiftNo: string;
   shiftName: string;
   remark: string;
 }
 
-/** Dòng hiển thị trên nz-table - bổ sung state chọn dòng + Date object cho 2 ô giờ vào/ra sửa được
- *  (mặc định lấy từ shiftStartTime/shiftEndTime, đúng hành vi exInitTable() bản gốc). */
+/**
+ * Dòng hiển thị - giờ vào/ra nhập tách ngày + giờ + phút đúng bản gốc (ngày mặc định theo ca, giờ/phút để
+ * trống bắt buộc người dùng nhập).
+ */
 export interface AttendanceExRow extends AttendanceExApiRow {
   selected: boolean;
-  fromDate: Date | null;
-  toDate: Date | null;
+  inDate: Date | null;
+  inHour: string;
+  inMinute: string;
+  outDate: Date | null;
+  outHour: string;
+  outMinute: string;
+  /** Tuyến duyệt dự kiến "1[EMPID]Tên  2[EMPID]Tên<br>...". */
+  affirmStr: string;
 }
 
 export interface AttendanceExSearchParams {
@@ -45,12 +58,10 @@ export interface AttendanceExSearchParams {
   deptNos: string;
   fromDate: string;
   toDate: string;
-  postFamily: string;
-  shiftNo: string;
   itemNo: string;
 }
 
-/** Payload gửi lên POST /api/attendanceEx/apply - đúng field exApplySelected() bản gốc thu thập. */
+/** Payload gửi lên POST /api/attendanceEx/apply - đúng field saveAttenanceExBatchInfo() bản gốc. */
 export interface ApplyPayloadRow {
   applyNo: string;
   personId: string;
@@ -60,6 +71,8 @@ export interface ApplyPayloadRow {
   arDateStr: string;
   fromDateTime: string;
   toDateTime: string;
+  inTime: string;
+  outTime: string;
   workHour: string;
   remark: string;
 }

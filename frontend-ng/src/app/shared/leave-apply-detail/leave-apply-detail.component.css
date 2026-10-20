@@ -1,0 +1,44 @@
+.lad-wrap {
+  font-size: 13px;
+}
+
+/* Tiêu đề [Xin nghỉ phép] chỉ dùng khi in (modal đã có tiêu đề riêng) */
+.lad-print-title {
+  display: none;
+}
+
+.lad-section-title {
+  font-weight: 600;
+  margin: 4px 0 6px;
+}
+
+.lad-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+/* Bảng phép năm hẹp như bản gốc (width 70%) */
+.lad-vac-table {
+  max-width: 600px;
+}
+
+.lad-table th,
+.lad-table td {
+  border: 1px solid #f0f0f0;
+  padding: 6px 8px;
+}
+
+.lad-table th,
+.lad-table .lad-label {
+  background: #fafafa;
+  font-weight: 600;
+}
+
+.lad-table .lad-label {
+  text-align: right;
+}
+
+.lad-pre {
+  white-space: pre-line;
+  word-break: break-word;
+}

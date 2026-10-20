@@ -55,20 +55,5 @@ export interface CancelResult {
   count?: number;
 }
 
-/** Tương ứng với response GET /ar/attendanceMintenance/api/overtime/detail. */
-export interface OtApplyDetailResponse {
-  otInfo: Record<string, any> | null;
-  employeeInfo: Record<string, any> | null;
-  approvalList: ApprovalInfo[];
-}
-
-/** Giống hệt ApprovalInfo ở apply-attendance-info-list.model.ts (cùng luồng phê duyệt chung). */
-export interface ApprovalInfo {
-  affirmLevel: string;
-  affirmTypeName: string;
-  affirmFlagName: string;
-  affirmName: string;
-  deptName: string;
-  updateDate: string;
-  affirmContent: string;
-}
+/** Response GET /ar/attendanceMintenance/api/overtime/detail - dùng chung kiểu với popup OtApplyDetailComponent. */
+export type { OtApplyDetail as OtApplyDetailResponse } from '../shared/ot-apply-detail/ot-apply-detail.model';

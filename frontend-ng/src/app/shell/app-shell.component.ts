@@ -123,10 +123,10 @@ export class AppShellComponent implements OnInit, OnDestroy {
     '/ess/empinfo/viewQualificationInfo': '/qualification-info',
     '/ess/empinfo/viewEssApplyInfo': '/apply-info',
     '/hrm/approve/viewEssApplyInfo': '/hrm-approve-apply-info',
-    '/ess/infoApply/viewPiciOtAffirmLBatchList': '/ot-apply-batch-info',
-    '/ar/attendanceMintenance/viewArOvertimeManagent_fast': '/ot-apply-batch-info',
-    '/ess/infoApplyAttendance/viewApplyAttenanceBatchInfoList': '/apply-attendance-batch-info',
-    '/ar/attendanceMintenance/viewApplyAttenanceManagentInfoList_new': '/apply-attendance-batch-info',
+    '/ess/infoApply/viewPiciOtAffirmLBatchList': '/pici-ot-affirm-batch',
+    '/ar/attendanceMintenance/viewArOvertimeManagent_fast': '/ot-apply-fast',
+    '/ess/infoApplyAttendance/viewApplyAttenanceBatchInfoList': '/pici-leave-affirm-batch',
+    '/ar/attendanceMintenance/viewApplyAttenanceManagentInfoList_new': '/leave-apply-manage',
     '/ess/infoApplyAttendance/viewAttendanceExForBatchInfoList': '/attendance-ex-batch-info',
     '/ess/infoApplyLeave/viewCheckAttencetanceExForBatchList': '/check-attendance-ex-for-batch',
     '/ess/infoApplyAttendance/viewCoordApplyAttendanceInfoList': '/coord-apply-attendance-info',
@@ -491,6 +491,9 @@ export class AppShellComponent implements OnInit, OnDestroy {
     if (sysType === this.currentMenuSysType) return;
     this.currentMenuSysType = sysType;
     this.menuSysType.set(sysType);
+    // Tab Trang chủ đi theo chế độ: đóng hết tab ở HR Management System phải quay về /hrm-dashboard
+    // (giữ menu SYS_TYPE=0), không phải /dashboard (route sysType '1' -> sẽ kéo sidebar về menu ESS).
+    this.tabs.setHomePath(sysType === '0' ? '/hrm-dashboard' : '/dashboard');
     this.menu.set(await this.auth.getMenu(sysType));
   }
 

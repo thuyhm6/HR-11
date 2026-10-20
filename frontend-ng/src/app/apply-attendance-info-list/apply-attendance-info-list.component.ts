@@ -1,5 +1,5 @@
 import { CommonModule, formatDate } from '@angular/common';
-import { Component, OnInit, computed, signal } from '@angular/core';
+import { Component, OnInit, ViewChild, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzInputModule } from 'ng-zorro-antd/input';
@@ -10,7 +10,7 @@ import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
-import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
+import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { TabService } from '../shell/tab.service';
@@ -18,10 +18,11 @@ import { ApplyAttendanceInfoListService } from './apply-attendance-info-list.ser
 import {
   CodeItem,
   EssBasicInfoDto,
-  LeaveApplyDetailResponse,
   MyLeaveApplyDisplayRow,
 } from './apply-attendance-info-list.model';
 import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
+import { LeaveApplyDetailComponent } from '../shared/leave-apply-detail/leave-apply-detail.component';
+import { LeaveApplyDetail } from '../shared/leave-apply-detail/leave-apply-detail.model';
 
 /** Các key message.properties dùng trong trang này - tải trước 1 lần ở ngOnInit (xem I18nService). */
 const I18N_KEYS = [
@@ -32,10 +33,7 @@ const I18N_KEYS = [
   'al.col.leaveType', 'al.col.applyDate', 'al.col.fromDate', 'al.col.fromTime', 'al.col.toDate',
   'al.col.toTime', 'al.col.duration', 'al.col.reason', 'al.col.status', 'al.col.hrComment',
   'al.col.confirm', 'al.col.inputBy',
-  'al.modal.leaveInfoTitle', 'al.modal.empInfoTitle', 'al.modal.empName', 'al.modal.empId',
-  'al.modal.empDept', 'al.modal.empPost', 'al.modal.leaveType', 'al.modal.leaveFrom', 'al.modal.leaveTo',
-  'al.modal.duration', 'al.modal.reason', 'al.modal.stt', 'al.modal.approvalSeq', 'al.modal.approvalStatus',
-  'al.modal.fullName', 'al.modal.comment', 'al.modal.actionTime', 'al.modal.department',
+  'ess.infoApply.attendance_application', 'common.print', 'common.close',
   'al.js.loading', 'al.js.loadingData', 'al.js.noData', 'al.js.loadError', 'al.js.loadDetailFail',
   'al.js.day', 'al.js.hour', 'al.js.selectRowAlert', 'al.js.cancelConfirm', 'al.js.cancelSuccess',
   'al.js.cancelFail', 'al.js.cancelError', 'al.js.noApprovalData', 'al.js.loadApprovalFail',
@@ -52,9 +50,9 @@ const CANCELABLE_FLAGS = ['14014306', '14014307', '14014308'];
  * mở modal xem chi tiết luồng phê duyệt. Gọi lại nguyên các API JSON đã có sẵn (không đổi backend) -
  * xem ApplyAttendanceInfoListService. Dùng nz-table (BE trả toàn bộ danh sách theo bộ lọc) thay bảng
  * HTML tự build chuỗi jQuery - tương tự manage-emp-position-info. Lọc nhanh (quick filter) làm
- * client-side qua computed filteredRows() - đúng hành vi alQuickFilter() bản gốc. Modal chi tiết dùng
- * chung 1 API (/ar/attendanceMintenance/api/leaveApply/detail) và layout nz-descriptions + nz-table
- * giống hệt modal ở apply-attendance-batch-info.component.html (cùng backend, khác trang nguồn gọi).
+ * client-side qua computed filteredRows() - đúng hành vi alQuickFilter() bản gốc. Popup chi tiết dùng
+ * chung LeaveApplyDetailComponent (giao diện viewApprovaledLeaveInfo bản gốc, API
+ * /ar/attendanceMintenance/api/leaveApply/detail) - giống apply-attendance-batch-info.
  * Nút "Xin nghỉ phép" mở tab route Angular /sst-apply-attendance (đã migrate) qua TabService thay vì
  * tabSystem.openTab() bản gốc.
  */
@@ -72,7 +70,8 @@ const CANCELABLE_FLAGS = ['14014306', '14014307', '14014308'];
     NzCheckboxModule,
     NzModalModule,
     NzAlertModule,
-    NzDescriptionsModule,
+    NzSpinModule,
+    LeaveApplyDetailComponent,
     TranslatePipe,
   ],
   templateUrl: './apply-attendance-info-list.component.html',
@@ -111,7 +110,8 @@ export class ApplyAttendanceInfoListComponent implements OnInit {
   readonly detailVisible = signal(false);
   readonly detailLoading = signal(false);
   readonly detailErrorMessage = signal<string | null>(null);
-  readonly detailData = signal<LeaveApplyDetailResponse | null>(null);
+  readonly detailData = signal<LeaveApplyDetail | null>(null);
+  @ViewChild(LeaveApplyDetailComponent) private ladDetail?: LeaveApplyDetailComponent;
 
   leaveTypeCode: string | null = null;
   affirmFlag: string | null = null;
@@ -229,9 +229,9 @@ export class ApplyAttendanceInfoListComponent implements OnInit {
     this.detailVisible.set(false);
   }
 
-  /** STT dòng phê duyệt - affirmLevel=100 là dòng xác nhận của HR (alRenderApprovalRows() bản gốc). */
-  approvalSeqLabel(item: { affirmLevel: string }): string {
-    return String(item.affirmLevel) === '100' ? 'HR' : item.affirmLevel;
+  /** In popup chi tiết (nút In - printDialog() bản gốc). */
+  printDetail(): void {
+    this.ladDetail?.print();
   }
 
   /** Hiển thị thời lượng dạng "X Ngày Y Giờ" - đúng alFormatDuration() bản gốc. */

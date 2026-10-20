@@ -64,23 +64,3 @@ export interface LeaveTypeOption {
   codeNo: string;
   codeName: string;
 }
-
-/** 1 dòng trong bảng trình tự duyệt (approvalList) trả về từ API chi tiết. */
-export interface LeaveApprovalItem {
-  affirmLevel: string;
-  affirmPersonId: string;
-  affirmFlag: string;
-  affirmTypeName: string;
-  affirmFlagName: string;
-  affirmName: string;
-  deptName: string;
-  updateDate: string;
-  affirmContent: string;
-}
-
-/** Response của API GET leaveApply/detail. */
-export interface LeaveDetailResponse {
-  leaveInfo?: Record<string, any>;
-  employeeInfo?: Record<string, any>;
-  approvalList: LeaveApprovalItem[];
-}

@@ -1,0 +1,39 @@
+.otd-wrap {
+  font-size: 13px;
+}
+
+/* Tiêu đề 【Xin tăng ca】 chỉ dùng khi in (modal đã có tiêu đề riêng) */
+.otd-print-title {
+  display: none;
+}
+
+.otd-section-title {
+  font-weight: 600;
+  margin: 4px 0 6px;
+}
+
+.otd-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.otd-table th,
+.otd-table td {
+  border: 1px solid #f0f0f0;
+  padding: 6px 8px;
+}
+
+.otd-table th,
+.otd-table .otd-label {
+  background: #fafafa;
+  font-weight: 600;
+}
+
+.otd-table .otd-label {
+  text-align: right;
+}
+
+.otd-pre {
+  white-space: pre-line;
+  word-break: break-word;
+}

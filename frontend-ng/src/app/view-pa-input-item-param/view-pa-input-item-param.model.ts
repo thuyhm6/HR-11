@@ -12,6 +12,8 @@ export interface PaInputItemParamDto {
   distinctField2ndName: string | null;
   itemType: number;
   activity: number;
+  /** Cách gộp dữ liệu trong kỳ khi tính lương: 0=Cộng dồn, 1=Giá trị sau cùng, 2=Theo ngày lịch, 3=Theo ngày công. */
+  prorateType: number;
 }
 
 /** Tham số tìm kiếm GET /pa/salary/inputitemparam/api/list - giữ nguyên kiểu phân trang server-side
@@ -39,12 +41,13 @@ export interface PaDistinctListItem {
   distinctFieldName: string | null;
 }
 
-/** Payload gửi lên PUT /pa/salary/inputitemparam/api/update - chỉ cập nhật 4 trường cho phép sửa
- *  (DISTINCT_FIELD, DISTINCT_FIELD_2ND, DEFAULT_VAL, ACTIVITY), xem PaInputItemParamMapper.xml#updateOne. */
+/** Payload gửi lên PUT /pa/salary/inputitemparam/api/update - chỉ cập nhật các trường cho phép sửa
+ *  (DISTINCT_FIELD, DISTINCT_FIELD_2ND, DEFAULT_VAL, ACTIVITY, PRORATE_TYPE), xem PaInputItemParamMapper.xml#updateOne. */
 export interface PaInputItemParamUpdatePayload {
   paramNo: string;
   distinctField: string | null;
   distinctField2nd: string | null;
   defaultVal: string | null;
   activity: number;
+  prorateType: number;
 }

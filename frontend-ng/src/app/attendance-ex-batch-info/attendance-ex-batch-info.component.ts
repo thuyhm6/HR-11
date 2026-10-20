@@ -11,58 +11,51 @@ import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 import { NzTreeSelectModule } from 'ng-zorro-antd/tree-select';
 import { NzTreeNodeOptions } from 'ng-zorro-antd/tree';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
+import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import * as XLSX from 'xlsx';
 import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { AttendanceExBatchInfoService } from './attendance-ex-batch-info.service';
-import { ApplyPayloadRow, AttendanceExApiRow, AttendanceExRow, AuthDeptNode, CodeItem, ShiftOption } from './attendance-ex-batch-info.model';
+import { ApplyPayloadRow, AttendanceExApiRow, AttendanceExRow, AuthDeptNode } from './attendance-ex-batch-info.model';
 import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
-/** Toàn bộ key bên dưới đã có sẵn trong message.properties (namespace "ex" - dùng riêng cho trang này,
- *  "common"/"mep" dùng chung với các trang khác) - không cần thêm key mới. */
+/** Toàn bộ là key gốc của viewAttendanceExForBatchInfoList.jsp, đã có đủ 5 file messages*.properties. */
 const I18N_KEYS = [
-  'ex.field.empIdOrName', 'ex.placeholder.empIdOrName', 'ex.field.dept', 'ex.placeholder.dept',
-  'ex.field.fromDate', 'ex.field.toDate', 'ex.field.postFamily', 'ex.field.shiftNo', 'ex.field.leaveType',
-  'ex.field.inTime', 'ex.field.outTime',
-  'ex.opt.all', 'ex.opt.select', 'ex.opt.unauthorized', 'ex.opt.earlyLeave', 'ex.opt.lateArrival', 'ex.opt.forgotSwipe',
-  'ex.btn.search', 'ex.btn.apply', 'ex.btn.export', 'ex.btn.applyAll',
-  'ex.col.no', 'ex.col.empId', 'ex.col.fullName', 'ex.col.dept', 'ex.col.position', 'ex.col.workDate',
-  'ex.col.absenceType', 'ex.col.swipeTime', 'ex.col.actualTime', 'ex.col.reason', 'ex.col.approver',
-  'ex.js.in', 'ex.js.out', 'ex.placeholder.remark',
-  'ex.msg.selectMinOne', 'ex.msg.missingData', 'ex.msg.fillTimeRequired', 'ex.msg.submitSuccess',
-  'ex.msg.submitFailed', 'ex.msg.submitError', 'ex.msg.selectMinOneBatch', 'ex.msg.enterBatchTime',
-  'ex.msg.batchApplied', 'common.loadFail', 'mep.msg.loadDeptFailed',
+  'hrm.empinfo.nameAndEmpid', 'hr.viewPersonalInfo.title.DEPTNAME', 'org.title.DATE', 'ess.infoApply.yichangleixing',
+  'org.title.PLEASE_SELECT', 'ar.monthwork.title.kuanggong', 'ar.monthwork.title.EarlyLeave', 'ar.monthwork.title.Lateness',
+  'ess.title.LOUKA', 'ess.infoApply.in_door_card', 'ess.infoApply.out_door_card', 'ess.message.all_reaction',
+  'org.title.SELECT', 'display.paecc.shenqing', 'hrm.empinfo.EXPORT', 'ess.infoApply.EMPID', 'ess.infoApply.NAME',
+  'ess.infoApply.DEPT', 'ess.infoApply.attendance_date', 'ess.infoApply.card_clock_time', 'ar.viewardetail.title.dateduan',
+  'ess.infoApply.Reason', 'hrm.contractInfo.APPROVAL_PERSON', 'ess.infoApply.PLEASE_SELECT_OPERTE.Z',
+  'ess.infoApply.PLEASE_SELECT_CORRECT_TIME.Z', 'ar.alert.message.viewardetail.choosetoadd',
+  'ar.alert.message.viewArAnnualStandard.consubmit', 'alert.message.add_fail', 'alert.message.save_success', 'common.loadFail',
+  'common.totalRows',
 ];
 
-/** Mã cha nhóm nhân viên (POST_FAMILY) dùng cho bộ lọc "Nhóm nhân viên" - đúng data-parent-code="14015812" bản gốc. */
-const POST_FAMILY_PARENT_CODE = '14015812';
-
-/** 4 loại bất thường được phép xin phép ở trang này - hardcode y hệt option cứng trong bản gốc (cũng
- *  đúng danh sách ITEM_NO IN (...) mà EssAttendanceExForBatchMapper.xml lọc sẵn ở phía backend). */
+/** 4 loại bất thường được phép xin phép - đúng <select name="seach_ITEM_NO"> bản gốc. */
 const ITEM_NO_OPTIONS: { value: string; labelKey: string; fallback: string }[] = [
-  { value: '141443', labelKey: 'ex.opt.unauthorized', fallback: 'Nghỉ không phép' },
-  { value: '141442', labelKey: 'ex.opt.earlyLeave', fallback: 'Về sớm' },
-  { value: '141441', labelKey: 'ex.opt.lateArrival', fallback: 'Đến muộn' },
-  { value: '14015448', labelKey: 'ex.opt.forgotSwipe', fallback: 'Quên quẹt thẻ' },
+  { value: '141443', labelKey: 'ar.monthwork.title.kuanggong', fallback: 'Nghỉ không phép' },
+  { value: '141442', labelKey: 'ar.monthwork.title.EarlyLeave', fallback: 'Về sớm' },
+  { value: '141441', labelKey: 'ar.monthwork.title.Lateness', fallback: 'Đến muộn' },
+  { value: '14015448', labelKey: 'ess.title.LOUKA', fallback: 'Quên quẹt thẻ' },
 ];
+
+/** Giờ 00..23 và các mốc phút của ô "Thực hiện tất cả" - đúng các <select> IN_TIME/IN_MI bản gốc. */
+const HOURS = Array.from({ length: 24 }, (_, h) => String(h).padStart(2, '0'));
+const BULK_MINUTES = ['00', '02', '15', '17', '30', '32', '45', '47'];
+
+/** Bản gốc: mở trang mặc định cả tháng, nếu quá 2000 dòng thì chỉ lấy ngày hôm qua. */
+const FIRST_LOAD_MAX_ROWS = 2000;
 
 /**
- * Bản Angular của ess/infoApplyAttendance/viewAttendanceExForBatchInfoList.html (Thymeleaf + DataTables
- * + jQuery) - Danh sách chấm công bất thường (đi muộn/về sớm/quên quẹt thẻ/nghỉ không phép) của nhân
- * viên cấp dưới, cho phép quản lý tick chọn dòng rồi "Xin phép" hàng loạt. Gọi lại nguyên các API JSON
- * đã có sẵn ở EssInfoApplyAttendanceController (xem AttendanceExBatchInfoService) - không đổi backend.
- * Kiến trúc bám theo ApplyAttendanceBatchInfoComponent/OtApplyBatchInfoComponent (nz-table thay
- * DataTables, checkbox + input inline trong <td>) cho phần bảng, và ManageEmpPositionInfoComponent
- * (nz-tree-select + expandDeptSelection) cho bộ lọc phòng ban.
+ * Xin phép chấm công bất thường hàng loạt cho cấp dưới - bản Angular của
+ * ess/infoApplyAttendance/viewAttendanceExForBatchInfoList.jsp (Hanwha_HTSV, DWZ + DataTables).
+ * Danh sách đi muộn / về sớm / quên quẹt thẻ / nghỉ không phép chưa xin phép; quản lý nhập giờ vào/ra thực
+ * tế (ngày + giờ + phút) và lý do rồi bấm "Xin phép". API ở EssInfoApplyAttendanceController.
  *
- * 2 khác biệt cố ý so với bản gốc:
- * 1) Checkbox "chọn tất cả" áp dụng cho TOÀN BỘ danh sách đang tải (không chỉ trang hiện tại như
- *    DataTables page:'current') - nz-table chỉ phân trang hiển thị phía client, chọn theo state trên
- *    từng row object nên không có khái niệm "trang hiện tại" tách biệt dữ liệu như DataTables.
- * 2) Format ngày giờ gửi lên BE giữ nguyên dạng có dấu "/" (yyyy/MM/dd, yyyy/MM/dd HH:mm) đúng như bản
- *    gốc - BẮT BUỘC vì EssAttendanceExForBatchMapper.xml so sánh AR_DATE_STR bằng chuỗi thô (không qua
- *    TO_DATE), khác với các trang migrate khác trong hệ thống dùng "-" (yyyy-MM-dd).
+ * Khác biệt cố ý: kiểm tra chốt công (AR_GET_ATT_EX_CLASH) chạy ở server nên chặn được thật sự (bản gốc gọi
+ * ajax bất đồng bộ); tuyến duyệt dự kiến lấy 1 lần cho cả trang thay vì gọi đồng bộ từng dòng.
  */
 @Component({
   selector: 'app-attendance-ex-batch-info',
@@ -79,6 +72,7 @@ const ITEM_NO_OPTIONS: { value: string; labelKey: string; fallback: string }[] =
     NzCheckboxModule,
     NzTreeSelectModule,
     NzAlertModule,
+    NzModalModule,
     TranslatePipe,
   ],
   templateUrl: './attendance-ex-batch-info.component.html',
@@ -87,59 +81,59 @@ const ITEM_NO_OPTIONS: { value: string; labelKey: string; fallback: string }[] =
 export class AttendanceExBatchInfoComponent implements OnInit {
   readonly itemNoOptions = ITEM_NO_OPTIONS;
   readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
+  readonly hours = HOURS;
+  readonly bulkMinutes = BULK_MINUTES;
 
   readonly rows = signal<AttendanceExRow[]>([]);
   readonly loading = signal(false);
   readonly errorMessage = signal<string | null>(null);
   readonly applying = signal(false);
-  readonly deptTreeErrorMessage = signal<string | null>(null);
-
   readonly deptNodes = signal<NzTreeNodeOptions[]>([]);
-  readonly postFamilyOptions = signal<CodeItem[]>([]);
-  readonly shiftOptions = signal<ShiftOption[]>([]);
 
   keyword = '';
   deptNos: string[] = [];
   fromDate: Date | null = null;
   toDate: Date | null = null;
-  postFamily: string | null = null;
-  shiftNo: string | null = null;
   itemNo: string | null = null;
 
-  bulkInTime: Date | null = null;
-  bulkOutTime: Date | null = null;
+  // "Thực hiện tất cả" - mặc định 08:00 / 17:00 đúng bản gốc
+  bulkInDate: Date | null = null;
+  bulkInHour = '08';
+  bulkInMinute = '00';
+  bulkOutDate: Date | null = null;
+  bulkOutHour = '17';
+  bulkOutMinute = '00';
 
-  /** id -> danh sách id con trực tiếp - dùng để mở rộng lựa chọn cây phòng ban khi tra cứu (xem search()). */
+  private firstLoad = true;
   private deptChildrenMap = new Map<string, string[]>();
 
   constructor(
     private readonly api: AttendanceExBatchInfoService,
     private readonly i18n: I18nService,
     private readonly message: NzMessageService,
+    private readonly modal: NzModalService,
   ) {}
 
   ngOnInit(): void {
     this.i18n.loadKeys(I18N_KEYS);
-    this.initDefaultDateRange();
+    const now = new Date();
+    this.fromDate = new Date(now.getFullYear(), now.getMonth(), 1);
+    this.toDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
     this.loadDeptTree();
-    this.api.getCodeList(POST_FAMILY_PARENT_CODE).subscribe((list) => this.postFamilyOptions.set(list ?? []));
-    this.api.getShiftOptions().subscribe((list) => this.shiftOptions.set(list ?? []));
     this.search();
   }
 
-  /** Mặc định Từ ngày/Đến ngày = tuần hiện tại (Thứ 2 - Chủ nhật) - đúng exInitDefaultDateRange() bản gốc. */
-  private initDefaultDateRange(): void {
-    const now = new Date();
-    const day = now.getDay() || 7;
-    const monday = new Date(now);
-    monday.setDate(now.getDate() - day + 1);
-    const sunday = new Date(now);
-    sunday.setDate(now.getDate() - day + 7);
-    this.fromDate = monday;
-    this.toDate = sunday;
+  private t(key: string, fallback: string): string {
+    return this.i18n.t(key, fallback);
+  }
+
+  private showError(msg: string): void {
+    this.message.error(msg, { nzDuration: 6000 });
   }
 
   search(): void {
+    const firstLoad = this.firstLoad;
+    this.firstLoad = false;
     this.loading.set(true);
     this.errorMessage.set(null);
     this.api
@@ -148,17 +142,26 @@ export class AttendanceExBatchInfoComponent implements OnInit {
         deptNos: this.expandDeptSelection(this.deptNos).join(','),
         fromDate: this.formatYmdSlash(this.fromDate),
         toDate: this.formatYmdSlash(this.toDate),
-        postFamily: this.postFamily ?? '',
-        shiftNo: this.shiftNo ?? '',
         itemNo: this.itemNo ?? '',
       })
       .subscribe({
         next: (list) => {
-          this.rows.set((list ?? []).map((r) => this.toRow(r)));
+          // Lần mở trang: quá 2000 dòng trong tháng thì chỉ lấy ngày hôm qua (đúng bản gốc)
+          if (firstLoad && (list?.length ?? 0) > FIRST_LOAD_MAX_ROWS) {
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            this.fromDate = yesterday;
+            this.toDate = yesterday;
+            this.search();
+            return;
+          }
+          const rows = (list ?? []).map((r) => this.toRow(r));
+          this.rows.set(rows);
           this.loading.set(false);
+          this.loadAffirmors(rows);
         },
         error: () => {
-          this.errorMessage.set(this.i18n.t('common.loadFail', 'Tải dữ liệu thất bại!'));
+          this.errorMessage.set(this.t('common.loadFail', 'Tải dữ liệu thất bại!'));
           this.rows.set([]);
           this.loading.set(false);
         },
@@ -166,161 +169,165 @@ export class AttendanceExBatchInfoComponent implements OnInit {
   }
 
   private toRow(r: AttendanceExApiRow): AttendanceExRow {
-    // Prefill ô "Thời gian thực tế" bằng giờ ca chuẩn (shiftStartTime/shiftEndTime), không phải
-    // fromDateTime/toDateTime (giờ chấm công bất thường gốc) - đúng exInitTable() bản gốc.
-    const fromDate = this.parseDt(r.shiftStartTime);
-    const toDate = this.parseDt(r.shiftEndTime);
     return {
       ...r,
       selected: false,
-      fromDate,
-      toDate,
-      fromDateTime: fromDate ? this.formatDt(fromDate) : '',
-      toDateTime: toDate ? this.formatDt(toDate) : '',
+      inDate: this.parseDatePart(r.shiftStartTime) ?? this.parseDatePart(r.arDateStr),
+      inHour: '',
+      inMinute: '',
+      outDate: this.parseDatePart(r.shiftEndTime) ?? this.parseDatePart(r.arDateStr),
+      outHour: '',
+      outMinute: '',
+      affirmStr: '',
     };
   }
 
-  trackByRow = (_: number, row: AttendanceExRow): string => this.rowKey(row);
+  /** Tuyến duyệt dự kiến cho từng NV (getAffirmor_ess3434 bản gốc) - 1 request cho cả danh sách. */
+  private loadAffirmors(rows: AttendanceExRow[]): void {
+    const personIds = Array.from(new Set(rows.map((r) => r.personId).filter((id) => !!id)));
+    if (!personIds.length) return;
+    this.api.getAffirmorPreview(personIds).subscribe({
+      next: (map) => {
+        rows.forEach((r) => (r.affirmStr = map?.[r.personId] ?? ''));
+        this.rows.set([...rows]);
+      },
+      error: () => undefined,
+    });
+  }
 
-  private rowKey(row: AttendanceExApiRow): string {
-    if (row.applyNo) return String(row.applyNo);
-    return [row.personId, row.arDateStr, row.empId, row.itemNo, row.shiftNo].join('|');
+  trackByRow = (_: number, row: AttendanceExRow): string =>
+    row.applyNo ? String(row.applyNo) : [row.personId, row.arDateStr, row.itemNo].join('|');
+
+  /** Chỉ dòng chưa khóa (LOCK_YN = N) mới được chọn xin phép. */
+  canSelect(row: AttendanceExRow): boolean {
+    return row.lockYn === 'N';
+  }
+
+  private selectableRows(): AttendanceExRow[] {
+    return this.rows().filter((r) => this.canSelect(r));
   }
 
   get allSelected(): boolean {
-    const rows = this.rows();
+    const rows = this.selectableRows();
     return rows.length > 0 && rows.every((r) => r.selected);
   }
 
   get someSelected(): boolean {
-    return this.rows().some((r) => r.selected) && !this.allSelected;
+    return this.selectableRows().some((r) => r.selected) && !this.allSelected;
   }
 
   toggleSelectAll(checked: boolean): void {
-    this.rows().forEach((r) => (r.selected = checked));
+    this.selectableRows().forEach((r) => (r.selected = checked));
   }
 
-  onDateChange(row: AttendanceExRow, which: 'from' | 'to', value: Date | null): void {
-    if (which === 'from') {
-      row.fromDate = value;
-      row.fromDateTime = value ? this.formatDt(value) : '';
-    } else {
-      row.toDate = value;
-      row.toDateTime = value ? this.formatDt(value) : '';
-    }
-    // Gõ/chỉnh giờ tự động tick chọn dòng - đúng hành vi input change ở exBindRowSelectionEvents() bản gốc.
-    if (value) row.selected = true;
-  }
-
+  /** Nhập lý do thì tự tick dòng - đúng editable onblur bản gốc. */
   onRemarkChange(row: AttendanceExRow, value: string): void {
     row.remark = value;
-    if (value.trim()) row.selected = true;
+    if (this.canSelect(row)) row.selected = true;
   }
 
-  // ==================== Xin phép (dòng đã chọn) ====================
+  /** Chỉ cho nhập số trong giới hạn (giờ 0-23, phút 0-59) - đúng class "digits" min/max bản gốc. */
+  normalizeNumber(value: string, max: number): string {
+    const digits = (value ?? '').replace(/\D/g, '').slice(0, 2);
+    if (!digits) return '';
+    return Number(digits) > max ? String(max) : digits;
+  }
 
-  applySelected(): void {
-    const t = (key: string, fallback: string) => this.i18n.t(key, fallback);
-    const selectedRows = this.rows().filter((r) => r.selected);
+  // ==================== Thực hiện tất cả ====================
 
-    if (!selectedRows.length) {
-      this.message.warning(t('ex.msg.selectMinOne', 'Vui lòng tick chọn ít nhất một dòng.'));
+  /** Áp ngày + giờ vào/ra cho các dòng đã tick - đúng ex_fillItem() bản gốc. */
+  fillSelected(): void {
+    const selected = this.rows().filter((r) => r.selected);
+    if (!selected.length) {
+      this.showError(this.t('ess.infoApply.PLEASE_SELECT_OPERTE.Z', 'Xin chọn đối tượng cần thực hiện'));
       return;
     }
-    for (const row of selectedRows) {
-      if (!row.personId || !row.itemNo || !row.arDateStr) {
-        this.message.warning(t('ex.msg.missingData', 'Thiếu dữ liệu bắt buộc ở dòng đã chọn: nhân viên/loại nghỉ/ngày công.'));
-        return;
-      }
-      if (!row.fromDateTime || !row.toDateTime) {
-        this.message.warning(t('ex.msg.fillTimeRequired', 'Vui lòng nhập đầy đủ thời gian vào/ra cho tất cả dòng đã chọn.'));
+    selected.forEach((row) => {
+      row.inDate = this.bulkInDate;
+      row.inHour = this.bulkInHour;
+      row.inMinute = this.bulkInMinute;
+      row.outDate = this.bulkOutDate;
+      row.outHour = this.bulkOutHour;
+      row.outMinute = this.bulkOutMinute;
+    });
+    this.rows.set([...this.rows()]);
+  }
+
+  // ==================== Xin phép ====================
+
+  applySelected(): void {
+    const selected = this.rows().filter((r) => r.selected && this.canSelect(r));
+    if (!selected.length) {
+      this.showError(this.t('ar.alert.message.viewardetail.choosetoadd', 'Xin chọn dữ liệu cần thêm'));
+      return;
+    }
+    for (const row of selected) {
+      if (!row.inDate || row.inHour === '' || !row.outDate || row.outHour === '') {
+        const label = row.localName ? `${row.localName}: ` : '';
+        this.showError(label + this.t('ess.infoApply.PLEASE_SELECT_CORRECT_TIME.Z', 'Xin chọn thời gian chính xác'));
         return;
       }
     }
+    this.modal.confirm({
+      nzTitle: this.t('display.paecc.shenqing', 'Xin phép'),
+      nzContent: this.t('ar.alert.message.viewArAnnualStandard.consubmit', 'Đồng ý lưu không?'),
+      nzOnOk: () => this.runApply(selected),
+    });
+  }
 
-    const payload: ApplyPayloadRow[] = selectedRows.map((row) => ({
+  private runApply(selected: AttendanceExRow[]): void {
+    const payload: ApplyPayloadRow[] = selected.map((row) => ({
       applyNo: row.applyNo || '',
       personId: row.personId,
       empId: row.empId,
       localName: row.localName,
       itemNo: row.itemNo,
       arDateStr: row.arDateStr,
-      fromDateTime: row.fromDateTime,
-      toDateTime: row.toDateTime,
+      fromDateTime: row.fromDateTime || '',
+      toDateTime: row.toDateTime || '',
+      inTime: this.composeDateTime(row.inDate, row.inHour, row.inMinute),
+      outTime: this.composeDateTime(row.outDate, row.outHour, row.outMinute),
       workHour: row.workHour || '',
       remark: row.remark || '',
     }));
-
     this.applying.set(true);
     this.api.apply(payload).subscribe({
       next: (res) => {
         this.applying.set(false);
-        if (res && res.success) {
-          this.message.success(res.message || t('ex.msg.submitSuccess', 'Xin phép thành công.'));
+        if (res?.success) {
+          this.message.success(this.t('alert.message.save_success', 'Lưu thành công!'));
           this.search();
         } else {
-          this.message.error((res && res.error) || t('ex.msg.submitFailed', 'Xin phép thất bại.'));
+          this.showError(res?.error || this.t('alert.message.add_fail', 'Thêm thất bại!'));
         }
       },
       error: () => {
         this.applying.set(false);
-        this.message.error(t('ex.msg.submitError', 'Lỗi khi gửi dữ liệu xin phép.'));
+        this.showError(this.t('alert.message.add_fail', 'Thêm thất bại!'));
       },
     });
   }
 
-  // ==================== Thực hiện tất cả (áp giờ hàng loạt cho dòng đã chọn - client-side) ====================
-
-  applyBatchTime(): void {
-    const t = (key: string, fallback: string) => this.i18n.t(key, fallback);
-    const selectedRows = this.rows().filter((r) => r.selected);
-
-    if (!selectedRows.length) {
-      this.message.warning(t('ex.msg.selectMinOneBatch', 'Vui lòng chọn ít nhất một dòng để thực hiện.'));
-      return;
-    }
-    if (!this.bulkInTime && !this.bulkOutTime) {
-      this.message.warning(t('ex.msg.enterBatchTime', 'Vui lòng nhập thời gian vào hoặc thời gian ra.'));
-      return;
-    }
-
-    for (const row of selectedRows) {
-      if (this.bulkInTime) {
-        row.fromDate = this.bulkInTime;
-        row.fromDateTime = this.formatDt(this.bulkInTime);
-      }
-      if (this.bulkOutTime) {
-        row.toDate = this.bulkOutTime;
-        row.toDateTime = this.formatDt(this.bulkOutTime);
-      }
-    }
-    this.rows.set([...this.rows()]);
-    this.message.success(t('ex.msg.batchApplied', 'Đã áp dụng thời gian cho các dòng đã chọn.'));
-  }
-
-  // ==================== Xuất excel (client-side, không có endpoint export riêng ở backend) ====================
+  // ==================== Xuất excel (client-side, thay /disc/autoExcel/exportLOtImportExcel?SQL_SEQMEAN=314) ====================
 
   exportExcel(): void {
-    const t = (key: string, fallback: string) => this.i18n.t(key, fallback);
-    const inLabel = t('ex.js.in', 'Vào');
-    const outLabel = t('ex.js.out', 'Ra');
+    const inLabel = this.t('ess.infoApply.in_door_card', 'Vào:');
+    const outLabel = this.t('ess.infoApply.out_door_card', 'Ra:');
     const headers = [
-      t('ex.col.no', 'No.'), t('ex.col.empId', 'Mã nhân viên'), t('ex.col.fullName', 'Họ tên'),
-      t('ex.col.dept', 'Phòng ban'), t('ex.col.position', 'Chức vụ'), t('ex.col.workDate', 'Ngày công'),
-      t('ex.col.absenceType', 'Phân loại'), t('ex.col.swipeTime', 'Thời gian quẹt thẻ'),
-      t('ex.col.actualTime', 'Thời gian thực tế'), t('ex.col.reason', 'Lý do'), t('ex.col.approver', 'Người duyệt'),
+      'NO', this.t('ess.infoApply.EMPID', 'Mã nhân viên'), this.t('ess.infoApply.NAME', 'Họ tên'),
+      this.t('ess.infoApply.DEPT', 'Phòng ban'), this.t('ess.infoApply.attendance_date', 'Ngày công'),
+      this.t('ess.infoApply.yichangleixing', 'Phân loại'), this.t('ess.infoApply.card_clock_time', 'Thời gian quẹt thẻ'),
+      this.t('ess.infoApply.Reason', 'Lý do'), this.t('hrm.contractInfo.APPROVAL_PERSON', 'Người duyệt'),
     ];
-    const dataRows = this.rows().map((r, i) => [
-      i + 1, r.empId, r.localName, r.deptName, r.postGradeName, r.arDateStr, r.itemNoName,
-      `${inLabel}: ${r.inDoorTime || ''} ${outLabel}: ${r.outDoorTime || ''}`,
-      `${inLabel}: ${r.fromDateTime || ''} ${outLabel}: ${r.toDateTime || ''}`,
-      r.remark || '', r.updatedBy || '',
+    const data = this.rows().map((r, i) => [
+      i + 1, r.empId, r.localName, r.deptName, this.displayDate(r.arDateStr), r.itemNoName,
+      `${inLabel}${r.inDoorTime || ''} ${outLabel}${r.outDoorTime || ''}`, r.remark || '',
+      (r.affirmStr || '').replace(/&nbsp;/g, ' ').replace(/<br\s*\/?>/gi, '\n').trim(),
     ]);
-
-    const worksheet = XLSX.utils.aoa_to_sheet([headers, ...dataRows]);
+    const worksheet = XLSX.utils.aoa_to_sheet([headers, ...data]);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'DanhSach');
-    XLSX.writeFile(workbook, 'attendance_ex_for_batch_export.xlsx');
+    XLSX.writeFile(workbook, `attendance_ex_for_batch_${formatDate(new Date(), 'yyyyMMddHHmm', 'vi')}.xlsx`);
   }
 
   // ==================== Cây phòng ban ====================
@@ -328,15 +335,13 @@ export class AttendanceExBatchInfoComponent implements OnInit {
   private loadDeptTree(): void {
     this.api.getAuthorizedDepartments().subscribe({
       next: (list) => this.deptNodes.set(this.buildDeptTree(list ?? [])),
-      error: () =>
-        this.deptTreeErrorMessage.set(this.i18n.t('mep.msg.loadDeptFailed', 'Lỗi khi tải danh sách phòng ban')),
+      error: () => undefined,
     });
   }
 
   private buildDeptTree(list: AuthDeptNode[]): NzTreeNodeOptions[] {
     const map = new Map<string, NzTreeNodeOptions & { parent: string }>();
     list.forEach((d) => map.set(d.id, { title: d.text, key: d.id, parent: d.parent, children: [] }));
-
     this.deptChildrenMap = new Map<string, string[]>();
     const roots: NzTreeNodeOptions[] = [];
     map.forEach((node) => {
@@ -349,20 +354,16 @@ export class AttendanceExBatchInfoComponent implements OnInit {
         roots.push(node);
       }
     });
-
-    const markLeaf = (nodes: NzTreeNodeOptions[]) => {
+    const markLeaf = (nodes: NzTreeNodeOptions[]) =>
       nodes.forEach((n) => {
         n.isLeaf = !n.children || n.children.length === 0;
         if (n.children?.length) markLeaf(n.children);
       });
-    };
     markLeaf(roots);
     return roots;
   }
 
-  /** nz-tree-select chỉ trả về key của node được tick trực tiếp - KHÔNG tự cascade xuống phòng ban con
-   *  như widget DeptTree.js gốc. Backend lọc theo INSTR(...) đúng từng mã, nên phải tự mở rộng xuống
-   *  các phòng ban con trước khi gửi deptNos lên (xem giải thích đầy đủ ở ManageEmpPositionInfoComponent). */
+  /** nz-tree-select không tự cascade xuống phòng ban con -> tự mở rộng trước khi gửi (backend lọc INSTR từng mã). */
   private expandDeptSelection(selected: string[]): string[] {
     const result = new Set<string>();
     const stack = [...selected];
@@ -376,26 +377,30 @@ export class AttendanceExBatchInfoComponent implements OnInit {
     return Array.from(result);
   }
 
-  // ==================== Helpers ngày giờ (giữ định dạng "/" đúng bản gốc - xem docblock class) ====================
+  // ==================== Helpers ngày giờ ====================
 
+  /** Ngày công 'yyyy/MM/dd' -> 'dd/MM/yyyy' (bản gốc hiển thị DD/MM/YYYY). */
+  displayDate(value: string): string {
+    const d = this.parseDatePart(value);
+    return d ? formatDate(d, 'dd/MM/yyyy', 'vi') : value ?? '';
+  }
+
+  /** Backend so sánh AR_DATE_STR bằng chuỗi thô dạng 'yyyy/MM/dd' nên phải giữ dấu "/". */
   private formatYmdSlash(d: Date | null): string {
     return d ? formatDate(d, 'yyyy/MM/dd', 'vi') : '';
   }
 
-  private formatDt(d: Date): string {
-    return formatDate(d, 'yyyy/MM/dd HH:mm', 'vi');
+  private composeDateTime(date: Date | null, hour: string, minute: string): string {
+    if (!date) return '';
+    return `${formatDate(date, 'yyyy/MM/dd', 'vi')} ${hour.padStart(2, '0')}:${(minute || '0').padStart(2, '0')}`;
   }
 
-  /** Parse 'yyyy/MM/dd HH:mm[:ss]' hoặc 'yyyy-MM-dd HH:mm[:ss]' về Date - trả null nếu chuỗi rỗng/không
-   *  hợp lệ. Chấp nhận cả 2 dấu phân cách vì GET_AR_SHIFT_START_TIME/GET_AR_SHIFT_END_TIME (dùng để
-   *  prefill ô "Thời gian thực tế") trả về dạng "-" trong khi FROM_TIME/TO_TIME của bảng dùng dạng "/"
-   *  - đúng lý do exNormalizeDateTimeValue() bản gốc cũng tự nhận diện cả 2 dạng này. */
-  private parseDt(value: string | null | undefined): Date | null {
+  /** Lấy phần ngày của chuỗi 'yyyy/MM/dd[ HH:mm]' hoặc 'yyyy-MM-dd[ HH:mm]'. */
+  private parseDatePart(value: string | null | undefined): Date | null {
     if (!value) return null;
-    const normalized = value.trim().replace('T', ' ');
-    const match = normalized.match(/^(\d{4})[/-](\d{2})[/-](\d{2}) (\d{2}):(\d{2})/);
+    const match = value.trim().match(/^(\d{4})[/-](\d{2})[/-](\d{2})/);
     if (!match) return null;
-    const [, y, mo, d, h, mi] = match;
-    return new Date(Number(y), Number(mo) - 1, Number(d), Number(h), Number(mi));
+    const [, y, mo, d] = match;
+    return new Date(Number(y), Number(mo) - 1, Number(d));
   }
 }

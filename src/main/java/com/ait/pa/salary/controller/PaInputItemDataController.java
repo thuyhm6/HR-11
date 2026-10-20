@@ -47,6 +47,7 @@ public class PaInputItemDataController {
             @RequestParam(required = false) String empOfficeSearch,
             @RequestParam(required = false) String deptNos,
             @RequestParam(required = false) String empSearch,
+            @RequestParam(required = false) String field1Search,
             @RequestParam(defaultValue = "1")  int draw,
             @RequestParam(defaultValue = "0")  int start,
             @RequestParam(defaultValue = "20") int length) {
@@ -57,6 +58,7 @@ public class PaInputItemDataController {
             params.setEmpOfficeSearch(empOfficeSearch);
             params.setDeptNos(deptNos);
             params.setEmpSearch(empSearch);
+            params.setField1Search(field1Search);
             params.setDraw(draw);
             params.setStart(start);
             params.setLength(length > 0 ? length : 20);
@@ -69,11 +71,24 @@ public class PaInputItemDataController {
         }
     }
 
+    /** Giá trị chọn cho hạng mục phân biệt 1/2 (hạng mục lưu ở PA_PARAM_DATA_OTHER). */
+    @GetMapping("/inputItemData/api/distinctValues")
+    @ResponseBody
+    public ResponseEntity<?> getDistinctValues(@RequestParam String paramNo) {
+        try {
+            return ResponseEntity.ok(paInputItemDataService.getDistinctValues(paramNo));
+        } catch (Exception e) {
+            log.error("Lỗi khi lấy giá trị hạng mục phân biệt paramNo={}: {}", paramNo, e.getMessage(), e);
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @GetMapping("/inputItemData/api/{paramDataNo}")
     @ResponseBody
-    public ResponseEntity<?> getOne(@PathVariable Long paramDataNo) {
+    public ResponseEntity<?> getOne(@PathVariable Long paramDataNo,
+                                    @RequestParam(required = false) String paramNo) {
         try {
-            PaInputItemDataDto dto = paInputItemDataService.getParamDataOne(paramDataNo);
+            PaInputItemDataDto dto = paInputItemDataService.getParamDataOne(paramDataNo, paramNo);
             if (dto == null) return ResponseEntity.notFound().build();
             return ResponseEntity.ok(dto);
         } catch (Exception e) {
@@ -89,14 +104,11 @@ public class PaInputItemDataController {
             if (dto.getParamNo() == null || dto.getParamNo().isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Chưa chọn hạng mục tiêu chuẩn!"));
             }
-            if (dto.getPersonId() == null || dto.getPersonId().isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Vui lòng nhập mã nhân viên!"));
-            }
             if (dto.getReturnValue() == null || dto.getReturnValue().isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Vui lòng nhập giá trị!"));
             }
-            if (dto.getStartMonth() == null || dto.getStartMonth().isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Vui lòng nhập tháng bắt đầu!"));
+            if (dto.getStartDate() == null || dto.getStartDate().isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Vui lòng nhập ngày bắt đầu!"));
             }
             paInputItemDataService.insertParamData(dto);
             return ResponseEntity.ok(Map.of("success", true, "message", "Thêm mới thành công"));
@@ -116,8 +128,8 @@ public class PaInputItemDataController {
             if (dto.getReturnValue() == null || dto.getReturnValue().isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Vui lòng nhập giá trị!"));
             }
-            if (dto.getStartMonth() == null || dto.getStartMonth().isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Vui lòng nhập tháng bắt đầu!"));
+            if (dto.getStartDate() == null || dto.getStartDate().isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Vui lòng nhập ngày bắt đầu!"));
             }
             paInputItemDataService.updateParamData(dto);
             return ResponseEntity.ok(Map.of("success", true, "message", "Cập nhật thành công"));
@@ -129,9 +141,10 @@ public class PaInputItemDataController {
 
     @DeleteMapping("/inputItemData/api/delete/{paramDataNo}")
     @ResponseBody
-    public ResponseEntity<?> delete(@PathVariable Long paramDataNo) {
+    public ResponseEntity<?> delete(@PathVariable Long paramDataNo,
+                                    @RequestParam(required = false) String paramNo) {
         try {
-            paInputItemDataService.deleteParamData(paramDataNo);
+            paInputItemDataService.deleteParamData(paramDataNo, paramNo);
             return ResponseEntity.ok(Map.of("success", true, "message", "Xóa thành công"));
         } catch (Exception e) {
             log.error("Lỗi khi xóa dữ liệu tiêu chuẩn paramDataNo={}: {}", paramDataNo, e.getMessage(), e);

@@ -271,7 +271,10 @@
             TO_CHAR(A.ADJUST_YN) AS ADJUST_YN,
             TO_CHAR(A.OT_FROM_TIME, 'YYYY-MM-DD HH24:MI') AS DETAIL_FROM_DATE_TIME,
             TO_CHAR(A.OT_TO_TIME, 'YYYY-MM-DD HH24:MI') AS DETAIL_TO_DATE_TIME,
-            '' AS AFFIRM_STR
+            '' AS AFFIRM_STR,
+            <!-- Lũy kế giờ OT năm (200) / tháng (30) tính tới ngày tăng ca - đúng getSSTOtInfoList bản gốc -->
+            GET_AR_OT_TOTAIL(TO_CHAR(A.APPLY_OT_DATE, 'YYYY/MM/DD'), E.CPNY_ID, E.PERSON_ID, 200) AS OT_TOTAL_YEAR,
+            GET_AR_OT_TOTAIL(TO_CHAR(A.APPLY_OT_DATE, 'YYYY/MM/DD'), E.CPNY_ID, E.PERSON_ID, 30) AS OT_TOTAL_MONTH
         FROM ESS_APPLY_OT A
         INNER JOIN HR_EMPLOYEE E ON E.PERSON_ID = A.PERSON_ID
         WHERE TO_CHAR(A.APPLY_NO) = #{applyNo, jdbcType=VARCHAR}

@@ -1,7 +1,33 @@
-table td, table th {
+.exbi-table th,
+.exbi-table td {
   white-space: nowrap;
+  vertical-align: middle;
 }
 
-table td {
-  vertical-align: middle;
+/* Cột cho phép nhập - tương ứng class titleColor bản gốc */
+.exbi-table th.exbi-edit-col {
+  color: #1677ff;
+}
+
+.exbi-table td.exbi-affirm {
+  white-space: normal;
+  line-height: 1.4;
+}
+
+.exbi-table tr.exbi-row-selected > td {
+  background: #e6f4ff;
+}
+
+.exbi-hm {
+  width: 72px;
+}
+
+.exbi-num {
+  width: 48px;
+  text-align: center;
+}
+
+.exbi-io {
+  display: inline-block;
+  width: 32px;
 }

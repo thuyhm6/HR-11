@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { AuthDeptNode } from '../change-user/change-user.model';
 import {
   DataTablesResponse,
+  PaDistinctValuesResponse,
   PaInputItemDataActionResponse,
   PaInputItemDataDto,
   PaInputItemDataImportResponse,
@@ -36,14 +37,27 @@ export class ViewPaInputItemDataService {
     if (params.empOfficeSearch) httpParams = httpParams.set('empOfficeSearch', params.empOfficeSearch);
     if (params.deptNos) httpParams = httpParams.set('deptNos', params.deptNos);
     if (params.empSearch) httpParams = httpParams.set('empSearch', params.empSearch);
+    if (params.field1Search) httpParams = httpParams.set('field1Search', params.field1Search);
     return this.http.get<DataTablesResponse<PaInputItemDataDto>>(`${API_BASE}/list`, {
       params: httpParams,
       withCredentials: true,
     });
   }
 
-  getOne(paramDataNo: number): Observable<PaInputItemDataDto> {
-    return this.http.get<PaInputItemDataDto>(`${API_BASE}/${paramDataNo}`, { withCredentials: true });
+  /** paramNo để BE chọn đúng bảng PA_PARAM_DATA / PA_PARAM_DATA_OTHER theo DISTINCT_FIELD của hạng mục. */
+  getOne(paramDataNo: number, paramNo: string): Observable<PaInputItemDataDto> {
+    return this.http.get<PaInputItemDataDto>(`${API_BASE}/${paramDataNo}`, {
+      params: new HttpParams().set('paramNo', paramNo),
+      withCredentials: true,
+    });
+  }
+
+  /** Giá trị chọn cho hạng mục phân biệt 1/2 - BE gọi PA_PARAM_LIST_P rồi đọc PA_PARAM_DATA_LIST (đúng bản gốc). */
+  getDistinctValues(paramNo: string): Observable<PaDistinctValuesResponse> {
+    return this.http.get<PaDistinctValuesResponse>(`${API_BASE}/distinctValues`, {
+      params: new HttpParams().set('paramNo', paramNo),
+      withCredentials: true,
+    });
   }
 
   insert(payload: PaInputItemDataSavePayload): Observable<PaInputItemDataActionResponse> {
@@ -54,8 +68,11 @@ export class ViewPaInputItemDataService {
     return this.http.put<PaInputItemDataActionResponse>(`${API_BASE}/update`, payload, { withCredentials: true });
   }
 
-  delete(paramDataNo: number): Observable<PaInputItemDataActionResponse> {
-    return this.http.delete<PaInputItemDataActionResponse>(`${API_BASE}/delete/${paramDataNo}`, { withCredentials: true });
+  delete(paramDataNo: number, paramNo: string): Observable<PaInputItemDataActionResponse> {
+    return this.http.delete<PaInputItemDataActionResponse>(`${API_BASE}/delete/${paramDataNo}`, {
+      params: new HttpParams().set('paramNo', paramNo),
+      withCredentials: true,
+    });
   }
 
   /** Upload trực tiếp qua multipart (paramNo + file) - đúng PaInputItemDataController#importExcel. */

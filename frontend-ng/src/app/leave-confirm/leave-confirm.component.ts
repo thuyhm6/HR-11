@@ -1,5 +1,5 @@
 import { CommonModule, formatDate } from '@angular/common';
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, ViewChild, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzCardModule } from 'ng-zorro-antd/card';
@@ -12,11 +12,14 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
+import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { LeaveConfirmService } from './leave-confirm.service';
-import { LeaveConfirmUiRow, LeaveDetailResponse, LeaveTypeOption } from './leave-confirm.model';
+import { LeaveConfirmUiRow, LeaveTypeOption } from './leave-confirm.model';
 import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
+import { LeaveApplyDetailComponent } from '../shared/leave-apply-detail/leave-apply-detail.component';
+import { LeaveApplyDetail } from '../shared/leave-apply-detail/leave-apply-detail.model';
 
 /** Các key message.properties dùng trong trang này - tải trước 1 lần ở ngOnInit (xem I18nService).
  *  Namespace "lc"/"applyAtt"/"common"/"ck" dùng chung với viewAttendanceExConfirm đã migrate
@@ -29,10 +32,8 @@ const I18N_KEYS = [
   'aec.msg.confirmApproveLine', 'aec.msg.confirmRejectLine', 'aec.msg.confirmApproveBatch', 'aec.msg.confirmRejectBatch',
   'ess.viewApply.title.length', 'applyAtt.affirmFlag.approved',
   'applyAtt.search.confirmFlag', 'applyAtt.confirmFlag.notConfirmed', 'applyAtt.confirmFlag.confirmed',
-  'applyAtt.confirmFlag.rejected', 'applyAtt.applicant', 'applyAtt.subject', 'applyAtt.approvalSeq',
-  'applyAtt.approvalStatus', 'applyAtt.opinion', 'applyAtt.actionTime', 'applyAtt.empInfo', 'applyAtt.leaveInfo',
-  'applyAtt.leaveTypeFull', 'applyAtt.leaveDuration', 'applyAtt.loadingData', 'applyAtt.noApprovalData',
-  'applyAtt.loadFailed', 'applyAtt.sendError', 'applyAtt.applyTitleFallback',
+  'applyAtt.confirmFlag.rejected', 'applyAtt.applicant', 'applyAtt.leaveTypeFull',
+  'applyAtt.loadFailed', 'applyAtt.sendError', 'applyAtt.applyTitleFallback', 'common.print', 'common.close',
   'common.search.empIdOrName', 'common.placeholder.empId', 'common.fromDate', 'common.toDate', 'common.no.serial',
   'common.empId', 'common.empName', 'common.deptName', 'common.position', 'common.reason', 'common.selectAll',
   'common.clearFilter', 'common.search', 'common.no', 'common.close', 'common.confirm', 'common.stt',
@@ -83,6 +84,8 @@ const DEFAULT_CONFIRM_FLAG = '0';
     NzTagModule,
     NzModalModule,
     NzAlertModule,
+    NzSpinModule,
+    LeaveApplyDetailComponent,
     TranslatePipe,
   ],
   templateUrl: './leave-confirm.component.html',
@@ -114,7 +117,8 @@ export class LeaveConfirmComponent implements OnInit {
   readonly detailVisible = signal(false);
   readonly detailLoading = signal(false);
   readonly detailErrorMessage = signal<string | null>(null);
-  readonly detailData = signal<LeaveDetailResponse | null>(null);
+  readonly detailData = signal<LeaveApplyDetail | null>(null);
+  @ViewChild(LeaveApplyDetailComponent) private ladDetail?: LeaveApplyDetailComponent;
 
   constructor(
     private readonly api: LeaveConfirmService,
@@ -336,43 +340,19 @@ export class LeaveConfirmComponent implements OnInit {
     this.detailVisible.set(false);
   }
 
-  detailInfo(d: LeaveDetailResponse): Record<string, any> {
-    return d.leaveInfo || {};
+  /** In popup chi tiết (nút In - printDialog() bản gốc). */
+  printDetail(): void {
+    this.ladDetail?.print();
   }
 
-  detailEmployeeInfo(d: LeaveDetailResponse): Record<string, any> {
-    return d.employeeInfo || this.detailInfo(d);
-  }
-
-  detailModalTitle(d: LeaveDetailResponse | null): string {
+  detailModalTitle(d: LeaveApplyDetail | null): string {
     if (!d) return '';
-    const info = this.detailInfo(d);
+    const info = d.leaveInfo || {};
     return `[${info['leaveTypeName'] || this.i18n.t('applyAtt.applyTitleFallback', 'Xin nghỉ phép')}]`;
   }
 
-  /** Dòng "Tiêu đề" trong modal - đúng valBuildApplyTitle() bản gốc. */
-  detailApplyTitle(d: LeaveDetailResponse): string {
-    const info = this.detailInfo(d);
-    const typeName = info['leaveTypeName'];
-    const fromTime = info['leaveFromTime'];
-    const toTime = info['leaveToTime'];
-    const localName = info['localName'] || '';
-    if (!typeName && !localName && !fromTime && !toTime) return '';
-    return `${typeName || ''}/Apply(${localName})[Date: ${fromTime || ''} ~ ${toTime || ''}]`;
-  }
-
-  detailApplicant(d: LeaveDetailResponse): string {
-    const emp = this.detailEmployeeInfo(d);
-    return `${emp['localName'] || ''}/${emp['postGradeName'] || ''}/${emp['deptName'] || ''}`;
-  }
-
-  detailDuration(d: LeaveDetailResponse): string {
-    const info = this.detailInfo(d);
-    return this.formatDuration(info['applyLength'], info['dayHours']);
-  }
-
   /** Quy đổi thời lượng nghỉ phép ra Ngày/Giờ theo dayHours - đúng lcFormatDuration() bản gốc, dùng cả
-   *  ở cột "Thời lượng" trong bảng lẫn trong modal chi tiết. */
+   *  ở cột "Thời lượng" trong bảng. */
   rowDuration(row: LeaveConfirmUiRow): string {
     return this.formatDuration(row.applyLength, row.dayHours);
   }
@@ -387,13 +367,6 @@ export class LeaveConfirmComponent implements OnInit {
     if (days > 0) text += `${days} Ngày`;
     if (hours > 0) text += (text ? ' ' : '') + `${hours} Giờ`;
     return text || String(len);
-  }
-
-  /** STT hàng phê duyệt - dòng tổng hợp xác nhận của HR có affirmLevel='100' hiển thị là 'HR' thay vì
-   *  số thứ tự thô, đúng valRenderApprovalRows() bản gốc. */
-  approvalStt(affirmLevel: string, index: number): string {
-    const stt = affirmLevel || String(index + 1);
-    return stt === '100' ? 'HR' : stt;
   }
 
   // ==================== Helpers ====================

@@ -362,6 +362,11 @@ public class EssPersonalInfoServiceImpl implements EssPersonalInfoService {
         return qualNo;
     }
 
+    @Override
+    public void saveApplyFile(MultipartFile file, String applyNo, String applyType) throws IOException {
+        saveFile(file, applyNo, applyType);
+    }
+
     private void saveFile(MultipartFile file, String applyNo, String applyType) throws IOException {
         Path uploadDir = Paths.get(fileUploadPath);
         if (!Files.exists(uploadDir)) {

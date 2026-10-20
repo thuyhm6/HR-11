@@ -37,8 +37,8 @@ public class ArOvertimeManagentController {
     @Autowired
     private CleverseApprovalService cleverseApprovalService;
 
-    // Trang Thymeleaf viewArOvertimeManagent_fast.html đã được thay bằng Angular route /ot-apply-batch-info
-    // (dùng chung component/API với /ess/infoApply/viewPiciOtAffirmLBatchList)
+    // viewArOvertimeManagent_fast -> Angular route /ot-apply-fast, viewPiciOtAffirmLBatchList -> /pici-ot-affirm-batch
+    // (cùng PiciOtAffirmBatchComponent + EssPiciOtAffirmController). Các API dưới đây vẫn được trang khác dùng.
 
     @GetMapping("/api/overtime/list")
     @ResponseBody

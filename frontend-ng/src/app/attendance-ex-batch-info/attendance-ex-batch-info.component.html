@@ -1,147 +1,147 @@
 <div class="row">
   <div class="col-12">
-    <!-- Điều kiện tìm kiếm - đứng im khi cuộn (xem .sticky-filter-card trong styles.css) -->
+    <!-- Điều kiện tìm kiếm + áp dụng hàng loạt - đứng im khi cuộn (xem .sticky-filter-card trong styles.css) -->
     <nz-card class="mb-3 sticky-filter-card">
-      <form class="row g-3 align-items-end" (ngSubmit)="search()">
+      <form class="row g-2 align-items-end" (ngSubmit)="search()">
         <div class="col-md-2">
-          <label class="form-label">{{ 'ex.field.empIdOrName' | translate:'Mã NV / Họ tên' }}</label>
-          <input nz-input [(ngModel)]="keyword" name="keyword"
-                 [placeholder]="'ex.placeholder.empIdOrName' | translate:'Nhập mã hoặc họ tên'">
+          <label class="form-label">{{ 'hrm.empinfo.nameAndEmpid' | translate:'Mã nhân viên/Họ tên' }}</label>
+          <input nz-input [(ngModel)]="keyword" name="keyword">
         </div>
-        <div class="col-md-2">
-          <label class="form-label">{{ 'ex.field.dept' | translate:'Phòng ban' }}</label>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'hr.viewPersonalInfo.title.DEPTNAME' | translate:'Phòng ban' }}</label>
           <nz-tree-select class="w-100" [nzNodes]="deptNodes()" [(ngModel)]="deptNos" name="deptNos"
-                           nzCheckable nzShowSearch nzAllowClear
-                           [nzPlaceHolder]="'ex.placeholder.dept' | translate:'Chọn phòng ban'"></nz-tree-select>
-          <div *ngIf="deptTreeErrorMessage()" class="text-danger small mt-1">{{ deptTreeErrorMessage() }}</div>
+                          nzCheckable nzShowSearch nzAllowClear [nzMaxTagCount]="2"
+                          [nzPlaceHolder]="'org.title.PLEASE_SELECT' | translate:'Lựa chọn'"></nz-tree-select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'org.title.DATE' | translate:'Thời gian' }}</label>
+          <div class="d-flex align-items-center gap-1">
+            <nz-date-picker class="flex-fill" [(ngModel)]="fromDate" name="fromDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
+            <span>~</span>
+            <nz-date-picker class="flex-fill" [(ngModel)]="toDate" name="toDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
+          </div>
         </div>
         <div class="col-md-2">
-          <label class="form-label">{{ 'ex.field.fromDate' | translate:'Ngày bắt đầu' }}</label>
-          <nz-date-picker class="w-100" [(ngModel)]="fromDate" name="fromDate" nzFormat="yyyy/MM/dd"></nz-date-picker>
-        </div>
-        <div class="col-md-2">
-          <label class="form-label">{{ 'ex.field.toDate' | translate:'Ngày kết thúc' }}</label>
-          <nz-date-picker class="w-100" [(ngModel)]="toDate" name="toDate" nzFormat="yyyy/MM/dd"></nz-date-picker>
-        </div>
-        <div class="col-md-2">
-          <label class="form-label">{{ 'ex.field.postFamily' | translate:'Nhóm nhân viên' }}</label>
-          <nz-select class="w-100" [(ngModel)]="postFamily" name="postFamily" nzAllowClear
-                     [nzPlaceHolder]="'ex.opt.all' | translate:'-- Tất cả --'">
-            <nz-option *ngFor="let c of postFamilyOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
-          </nz-select>
-        </div>
-        <div class="col-md-2">
-          <label class="form-label">{{ 'ex.field.shiftNo' | translate:'Ca làm việc' }}</label>
-          <nz-select class="w-100" [(ngModel)]="shiftNo" name="shiftNo" nzAllowClear
-                     [nzPlaceHolder]="'ex.opt.all' | translate:'-- Tất cả --'">
-            <nz-option *ngFor="let s of shiftOptions()" [nzValue]="s.shiftNo" [nzLabel]="s.nameVi || s.shiftName || ''"></nz-option>
-          </nz-select>
-        </div>
-        <div class="col-md-2">
-          <label class="form-label">{{ 'ex.field.leaveType' | translate:'Loại nghỉ phép' }}</label>
+          <label class="form-label">{{ 'ess.infoApply.yichangleixing' | translate:'Phân loại' }}</label>
           <nz-select class="w-100" [(ngModel)]="itemNo" name="itemNo" nzAllowClear
-                     [nzPlaceHolder]="'ex.opt.select' | translate:'Lựa chọn'">
+                     [nzPlaceHolder]="'org.title.PLEASE_SELECT' | translate:'Lựa chọn'">
             <nz-option *ngFor="let o of itemNoOptions" [nzValue]="o.value" [nzLabel]="o.labelKey | translate:o.fallback"></nz-option>
           </nz-select>
         </div>
-        <div class="col-md-6 d-flex align-items-end gap-2 flex-wrap">
+        <div class="col-12 d-flex align-items-end gap-2 flex-wrap">
           <button nz-button nzType="primary" type="submit">
-            <i class="bx bx-search"></i> {{ 'ex.btn.search' | translate:'Tra cứu' }}
+            <i class="bx bx-search"></i> {{ 'org.title.SELECT' | translate:'Tra cứu' }}
           </button>
-          <button nz-button nzType="default" nzDanger type="button" [nzLoading]="applying()" (click)="applySelected()">
-            <i class="bx bx-send"></i> {{ 'ex.btn.apply' | translate:'Xin phép' }}
+          <button nz-button nzType="primary" type="button" [nzLoading]="applying()" (click)="applySelected()">
+            <i class="bx bx-send"></i> {{ 'display.paecc.shenqing' | translate:'Xin phép' }}
           </button>
           <button nz-button type="button" (click)="exportExcel()">
-            <i class="bx bx-export"></i> {{ 'ex.btn.export' | translate:'Xuất excel' }}
+            <i class="bx bx-export"></i> {{ 'hrm.empinfo.EXPORT' | translate:'Xuất Excel' }}
           </button>
         </div>
       </form>
-    </nz-card>
 
-    <!-- Thao tác hàng loạt: áp thời gian vào/ra cho các dòng đã tick chọn (client-side, chưa lưu) -->
-    <nz-card class="mb-3">
-      <form class="row g-3 align-items-end" (ngSubmit)="applyBatchTime()">
-        <div class="col-md-3">
-          <label class="form-label">{{ 'ex.field.inTime' | translate:'Thời gian vào' }}</label>
-          <nz-date-picker class="w-100" [(ngModel)]="bulkInTime" name="bulkInTime" nzFormat="yyyy/MM/dd HH:mm"
-                           [nzShowTime]="{ nzFormat: 'HH:mm' }"></nz-date-picker>
+      <!-- Áp giờ vào/ra cho các dòng đã tick (ex_fillItem bản gốc) -->
+      <div class="row g-2 align-items-end mt-1 pt-2 border-top">
+        <div class="col-md-4">
+          <label class="form-label">{{ 'ess.infoApply.in_door_card' | translate:'Vào:' }}</label>
+          <div class="d-flex align-items-center gap-1">
+            <nz-date-picker class="flex-fill" [(ngModel)]="bulkInDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
+            <nz-select class="exbi-hm" [(ngModel)]="bulkInHour">
+              <nz-option *ngFor="let h of hours" [nzValue]="h" [nzLabel]="h"></nz-option>
+            </nz-select>
+            <span>:</span>
+            <nz-select class="exbi-hm" [(ngModel)]="bulkInMinute">
+              <nz-option *ngFor="let m of bulkMinutes" [nzValue]="m" [nzLabel]="m"></nz-option>
+            </nz-select>
+          </div>
         </div>
-        <div class="col-md-3">
-          <label class="form-label">{{ 'ex.field.outTime' | translate:'Thời gian ra' }}</label>
-          <nz-date-picker class="w-100" [(ngModel)]="bulkOutTime" name="bulkOutTime" nzFormat="yyyy/MM/dd HH:mm"
-                           [nzShowTime]="{ nzFormat: 'HH:mm' }"></nz-date-picker>
+        <div class="col-md-4">
+          <label class="form-label">{{ 'ess.infoApply.out_door_card' | translate:'Ra:' }}</label>
+          <div class="d-flex align-items-center gap-1">
+            <nz-date-picker class="flex-fill" [(ngModel)]="bulkOutDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
+            <nz-select class="exbi-hm" [(ngModel)]="bulkOutHour">
+              <nz-option *ngFor="let h of hours" [nzValue]="h" [nzLabel]="h"></nz-option>
+            </nz-select>
+            <span>:</span>
+            <nz-select class="exbi-hm" [(ngModel)]="bulkOutMinute">
+              <nz-option *ngFor="let m of bulkMinutes" [nzValue]="m" [nzLabel]="m"></nz-option>
+            </nz-select>
+          </div>
         </div>
-        <div class="col-md-3">
-          <button nz-button nzType="default" type="submit">
-            <i class="bx bx-check-double"></i> {{ 'ex.btn.applyAll' | translate:'Thực hiện tất cả' }}
+        <div class="col-md-2">
+          <button nz-button nzType="primary" type="button" (click)="fillSelected()">
+            <i class="bx bx-check-double"></i> {{ 'ess.message.all_reaction' | translate:'Thực hiện tất cả' }}
           </button>
         </div>
-      </form>
+      </div>
     </nz-card>
 
     <nz-card>
       <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
 
-      <nz-table [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="25" [nzShowSizeChanger]="true"
-                [nzPageSizeOptions]="pageSizeOptions"
-                [nzScroll]="{ x: '1780px', y: 'calc(100vh - 460px)' }"
-                class="table-nowrap" #exTable>
-        <!-- nzWidth khai báo cho từng cột để đồng bộ độ rộng header/body khi dùng nzScroll (xem
-             giải thích ở dept-ot-apply-info.component.html). -->
+      <nz-table #exTable [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="50" [nzShowSizeChanger]="true"
+                [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="exbiTotalTpl" nzSize="small" nzBordered
+                [nzScroll]="{ x: '1900px', y: 'calc(100vh - 430px)' }" class="exbi-table">
         <thead>
           <tr>
-            <th nzWidth="50px">
-              <label nz-checkbox [ngModel]="allSelected" [nzIndeterminate]="someSelected"
-                     (ngModelChange)="toggleSelectAll($event)"></label>
+            <th class="text-center" nzWidth="50px">NO</th>
+            <th class="text-center" nzWidth="40px">
+              <label nz-checkbox [ngModel]="allSelected" [nzIndeterminate]="someSelected" (ngModelChange)="toggleSelectAll($event)"></label>
             </th>
-            <th class="text-center" nzWidth="60px">{{ 'ex.col.no' | translate:'No.' }}</th>
-            <th nzWidth="100px">{{ 'ex.col.empId' | translate:'Mã nhân viên' }}</th>
-            <th nzWidth="160px">{{ 'ex.col.fullName' | translate:'Họ tên' }}</th>
-            <th nzWidth="180px">{{ 'ex.col.dept' | translate:'Phòng ban' }}</th>
-            <th nzWidth="140px">{{ 'ex.col.position' | translate:'Chức vụ' }}</th>
-            <th class="text-center" nzWidth="100px">{{ 'ex.col.workDate' | translate:'Ngày công' }}</th>
-            <th nzWidth="150px">{{ 'ex.col.absenceType' | translate:'Phân loại' }}</th>
-            <th nzWidth="180px">{{ 'ex.col.swipeTime' | translate:'Thời gian quẹt thẻ' }}</th>
-            <th nzWidth="260px">{{ 'ex.col.actualTime' | translate:'Thời gian thực tế' }}</th>
-            <th nzWidth="220px">{{ 'ex.col.reason' | translate:'Lý do' }}</th>
-            <th nzWidth="160px">{{ 'ex.col.approver' | translate:'Người duyệt' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'ess.infoApply.EMPID' | translate:'Mã nhân viên' }}</th>
+            <th class="text-center" nzWidth="170px">{{ 'ess.infoApply.NAME' | translate:'Họ tên' }}</th>
+            <th class="text-center" nzWidth="220px">{{ 'ess.infoApply.DEPT' | translate:'Phòng ban' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'ess.infoApply.attendance_date' | translate:'Ngày công' }}</th>
+            <th class="text-center" nzWidth="140px">{{ 'ess.infoApply.yichangleixing' | translate:'Phân loại' }}</th>
+            <th class="text-center" nzWidth="150px">{{ 'ess.infoApply.card_clock_time' | translate:'Thời gian quẹt thẻ' }}</th>
+            <th class="text-center exbi-edit-col" nzWidth="340px">{{ 'ar.viewardetail.title.dateduan' | translate:'Thời gian' }}</th>
+            <th class="text-center exbi-edit-col" nzWidth="240px">{{ 'ess.infoApply.Reason' | translate:'Lý do' }}</th>
+            <th class="text-center" nzWidth="320px">{{ 'hrm.contractInfo.APPROVAL_PERSON' | translate:'Người duyệt' }}</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let row of exTable.data; let i = index; trackBy: trackByRow">
+          <tr *ngFor="let row of exTable.data; let i = index; trackBy: trackByRow" [class.exbi-row-selected]="row.selected">
+            <td class="text-center">{{ (exTable.nzPageIndex - 1) * exTable.nzPageSize + i + 1 }}</td>
             <td class="text-center">
-              <label nz-checkbox [(ngModel)]="row.selected"></label>
+              <label *ngIf="canSelect(row)" nz-checkbox [(ngModel)]="row.selected"></label>
             </td>
-            <td class="text-center">{{ i + 1 }}</td>
-            <td [attr.title]="row.empId || null">{{ row.empId }}</td>
-            <td [attr.title]="row.localName || null">{{ row.localName }}</td>
-            <td [attr.title]="row.deptName || null">{{ row.deptName }}</td>
-            <td [attr.title]="row.postGradeName || null">{{ row.postGradeName }}</td>
-            <td class="text-center">{{ row.arDateStr }}</td>
-            <td [attr.title]="row.itemNoName || null">{{ row.itemNoName }}</td>
-            <td>
-              {{ 'ex.js.in' | translate:'Vào' }}: {{ row.inDoorTime }}<br>
-              {{ 'ex.js.out' | translate:'Ra' }}: {{ row.outDoorTime }}
+            <td class="text-center">{{ row.empId }}</td>
+            <td class="text-center">{{ row.localName }}</td>
+            <td class="text-center" [attr.title]="row.deptName || null">{{ row.deptName }}</td>
+            <td class="text-center">{{ displayDate(row.arDateStr) }}</td>
+            <td class="text-center">{{ row.itemNoName }}</td>
+            <td class="text-center">
+              {{ 'ess.infoApply.in_door_card' | translate:'Vào:' }}{{ row.inDoorTime }}<br>
+              {{ 'ess.infoApply.out_door_card' | translate:'Ra:' }}{{ row.outDoorTime }}
             </td>
             <td>
-              <div class="input-group input-group-sm mb-1">
-                <span class="input-group-text" style="width: 40px">{{ 'ex.js.in' | translate:'Vào' }}</span>
-                <nz-date-picker [ngModel]="row.fromDate" (ngModelChange)="onDateChange(row, 'from', $event)"
-                                 nzFormat="yyyy/MM/dd HH:mm" [nzShowTime]="{ nzFormat: 'HH:mm' }"></nz-date-picker>
+              <div class="d-flex align-items-center gap-1 mb-1">
+                <span class="exbi-io">{{ 'ess.infoApply.in_door_card' | translate:'Vào:' }}</span>
+                <nz-date-picker nzSize="small" [(ngModel)]="row.inDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
+                <input nz-input nzSize="small" class="exbi-num" maxlength="2" placeholder="HH"
+                       [ngModel]="row.inHour" (ngModelChange)="row.inHour = normalizeNumber($event, 23)">
+                <input nz-input nzSize="small" class="exbi-num" maxlength="2" placeholder="mm"
+                       [ngModel]="row.inMinute" (ngModelChange)="row.inMinute = normalizeNumber($event, 59)">
               </div>
-              <div class="input-group input-group-sm">
-                <span class="input-group-text" style="width: 40px">{{ 'ex.js.out' | translate:'Ra' }}</span>
-                <nz-date-picker [ngModel]="row.toDate" (ngModelChange)="onDateChange(row, 'to', $event)"
-                                 nzFormat="yyyy/MM/dd HH:mm" [nzShowTime]="{ nzFormat: 'HH:mm' }"></nz-date-picker>
+              <div class="d-flex align-items-center gap-1">
+                <span class="exbi-io">{{ 'ess.infoApply.out_door_card' | translate:'Ra:' }}</span>
+                <nz-date-picker nzSize="small" [(ngModel)]="row.outDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
+                <input nz-input nzSize="small" class="exbi-num" maxlength="2" placeholder="HH"
+                       [ngModel]="row.outHour" (ngModelChange)="row.outHour = normalizeNumber($event, 23)">
+                <input nz-input nzSize="small" class="exbi-num" maxlength="2" placeholder="mm"
+                       [ngModel]="row.outMinute" (ngModelChange)="row.outMinute = normalizeNumber($event, 59)">
               </div>
             </td>
             <td>
-              <input nz-input [ngModel]="row.remark" (ngModelChange)="onRemarkChange(row, $event)"
-                     [placeholder]="'ex.placeholder.remark' | translate:'Nhập lý do'">
+              <input nz-input nzSize="small" [ngModel]="row.remark" (ngModelChange)="onRemarkChange(row, $event)">
             </td>
-            <td [attr.title]="row.updatedBy || null">{{ row.updatedBy }}</td>
+            <td class="exbi-affirm" [innerHTML]="row.affirmStr"></td>
           </tr>
         </tbody>
+        <ng-template #exbiTotalTpl let-total>
+          {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+        </ng-template>
       </nz-table>
     </nz-card>
   </div>

@@ -28,21 +28,28 @@
           <nz-date-picker class="w-100" [(ngModel)]="searchPayMonth" name="vpidPayMonth"
                            nzMode="month" nzFormat="MM/yyyy" [nzAllowClear]="false"></nz-date-picker>
         </div>
-        <div class="col-md-2">
+        <div class="col-md-4" *ngIf="isOther()">
+          <label class="form-label">{{ currentItem()?.distinctFieldName || currentItem()?.distinctField }}</label>
+          <nz-select class="w-100" [(ngModel)]="searchField1" name="vpidField1Search" nzAllowClear nzShowSearch
+                     [nzPlaceHolder]="'common.selectAll' | translate:'-- Tất cả --'">
+            <nz-option *ngFor="let o of field1Options()" [nzValue]="o.value" [nzLabel]="o.label"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-2" *ngIf="!isOther()">
           <label class="form-label">{{ 'pa.inputItemData.empOffice' | translate:'Trạng thái làm việc' }}</label>
           <nz-select class="w-100" [(ngModel)]="searchEmpOffice" name="vpidEmpOffice" nzAllowClear
                      [nzPlaceHolder]="'common.selectAll' | translate:'-- Tất cả --'">
             <nz-option *ngFor="let c of empOfficeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
           </nz-select>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-3" *ngIf="!isOther()">
           <label class="form-label">{{ 'pa.inputItemData.dept' | translate:'Phòng ban' }}</label>
           <nz-tree-select class="w-100" [nzNodes]="deptNodes()" [(ngModel)]="searchDeptNos" name="vpidDeptNos"
                            nzCheckable nzShowSearch nzAllowClear
                            [nzPlaceHolder]="'pa.inputItemData.deptPlaceholder' | translate:'Mã / Tên phòng ban'"></nz-tree-select>
           <div *ngIf="deptTreeErrorMessage()" class="text-danger small mt-1">{{ deptTreeErrorMessage() }}</div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-3" *ngIf="!isOther()">
           <label class="form-label">{{ 'pa.inputItemData.empSearch' | translate:'Họ tên / Mã NV' }}</label>
           <input nz-input [(ngModel)]="searchEmpSearch" name="vpidEmpSearch"
                  [placeholder]="'pa.inputItemData.empSearchPlaceholder' | translate:'Họ tên hoặc mã nhân viên'">
@@ -67,10 +74,10 @@
           <button nz-button nzType="primary" type="button" (click)="openAddModal()">
             <i class="bx bx-plus"></i> {{ 'pa.inputItemData.addNew' | translate:'Thêm mới' }}
           </button>
-          <button nz-button nzType="default" type="button" (click)="downloadTemplate()">
+          <button *ngIf="!isOther()" nz-button nzType="default" type="button" (click)="downloadTemplate()">
             <i class="bx bx-download"></i> {{ 'common.downloadTemplate' | translate:'Tải File Mẫu' }}
           </button>
-          <button nz-button nzType="default" type="button" [nzLoading]="importingExcel()" (click)="vpidFileInput.click()">
+          <button *ngIf="!isOther()" nz-button nzType="default" type="button" [nzLoading]="importingExcel()" (click)="vpidFileInput.click()">
             <i class="bx bx-upload"></i> {{ 'common.importExcel' | translate:'Import Excel' }}
           </button>
           <input #vpidFileInput type="file" hidden accept=".xlsx,.xls" (change)="onExcelFileSelected($event)">
@@ -98,34 +105,46 @@
               <label nz-checkbox [ngModel]="allChecked" [nzIndeterminate]="someChecked" (ngModelChange)="toggleAllChecked($event)"></label>
             </th>
             <th class="text-center" nzWidth="50px">{{ 'pa.inputItemData.no' | translate:'STT' }}</th>
-            <th nzWidth="110px">{{ 'pa.inputItemData.empId' | translate:'Mã NV' }}</th>
-            <th nzWidth="150px">{{ 'pa.inputItemData.localName' | translate:'Họ tên' }}</th>
-            <th nzWidth="160px">{{ 'pa.inputItemData.deptName' | translate:'Phòng ban' }}</th>
-            <th nzWidth="130px">{{ 'pa.inputItemData.postGrade' | translate:'Chức danh' }}</th>
-            <th nzWidth="110px">{{ 'pa.inputItemData.empOfficeName' | translate:'Trạng thái' }}</th>
+            <ng-container *ngIf="!isOther()">
+              <th nzWidth="110px">{{ 'pa.inputItemData.empId' | translate:'Mã NV' }}</th>
+              <th nzWidth="150px">{{ 'pa.inputItemData.localName' | translate:'Họ tên' }}</th>
+              <th nzWidth="160px">{{ 'pa.inputItemData.deptName' | translate:'Phòng ban' }}</th>
+              <th nzWidth="130px">{{ 'pa.inputItemData.postGrade' | translate:'Chức danh' }}</th>
+              <th nzWidth="110px">{{ 'pa.inputItemData.empOfficeName' | translate:'Trạng thái' }}</th>
+            </ng-container>
+            <ng-container *ngIf="isOther()">
+              <th nzWidth="220px">{{ currentItem()?.distinctFieldName || currentItem()?.distinctField }}</th>
+              <th *ngIf="hasField2()" nzWidth="220px">{{ currentItem()?.distinctField2ndName || currentItem()?.distinctField2nd }}</th>
+            </ng-container>
             <th class="text-end" nzWidth="120px">{{ 'pa.inputItemData.returnValue' | translate:'Giá trị' }}</th>
-            <th class="text-center" nzWidth="110px">{{ 'pa.inputItemData.startMonth' | translate:'Tháng bắt đầu' }}</th>
-            <th class="text-center" nzWidth="110px">{{ 'pa.inputItemData.endMonth' | translate:'Tháng kết thúc' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'common.startDate' | translate:'Ngày bắt đầu' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'common.endDate' | translate:'Ngày kết thúc' }}</th>
             <th nzWidth="180px">{{ 'pa.inputItemData.remark' | translate:'Ghi chú' }}</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngIf="!loading() && rows().length === 0">
-            <td colspan="11" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+            <td [attr.colspan]="isOther() ? (hasField2() ? 8 : 7) : 11" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
           </tr>
           <tr *ngFor="let row of vpidTable.data; let i = index" class="vpid-row-clickable" (click)="openEditModal(row)">
             <td class="text-center" (click)="$event.stopPropagation()">
               <label nz-checkbox [ngModel]="isChecked(row)" (ngModelChange)="toggleChecked(row, $event)"></label>
             </td>
             <td class="text-center">{{ (pageIndex - 1) * pageSize + i + 1 }}</td>
-            <td [attr.title]="row.empId || null">{{ row.empId }}</td>
-            <td [attr.title]="row.localName || null">{{ row.localName }}</td>
-            <td [attr.title]="row.deptName || null">{{ row.deptName }}</td>
-            <td [attr.title]="row.postGradeName || null">{{ row.postGradeName }}</td>
-            <td [attr.title]="row.empOffice || null">{{ row.empOffice }}</td>
+            <ng-container *ngIf="!isOther()">
+              <td [attr.title]="row.empId || null">{{ row.empId }}</td>
+              <td [attr.title]="row.localName || null">{{ row.localName }}</td>
+              <td [attr.title]="row.deptName || null">{{ row.deptName }}</td>
+              <td [attr.title]="row.postGradeName || null">{{ row.postGradeName }}</td>
+              <td [attr.title]="row.empOffice || null">{{ row.empOffice }}</td>
+            </ng-container>
+            <ng-container *ngIf="isOther()">
+              <td [attr.title]="row.field1Name || row.field1Value || null">{{ row.field1Name || row.field1Value }}</td>
+              <td *ngIf="hasField2()" [attr.title]="row.field2Name || row.field2Value || null">{{ row.field2Name || row.field2Value }}</td>
+            </ng-container>
             <td class="text-end">{{ numberFormatter(+row.returnValue) }}</td>
-            <td class="text-center">{{ toMmSlashYyyy(row.startMonth) }}</td>
-            <td class="text-center">{{ toMmSlashYyyy(row.endMonth) }}</td>
+            <td class="text-center">{{ toDdMmYyyy(row.startDate) }}</td>
+            <td class="text-center">{{ toDdMmYyyy(row.endDate) }}</td>
             <td [attr.title]="row.remark || null">{{ row.remark }}</td>
           </tr>
         </tbody>
@@ -146,7 +165,27 @@
     <nz-alert nzType="info" class="mb-3"
               [nzMessage]="('pa.inputItemData.configItem' | translate:'Hạng mục đang nhập:') + ' ' + (currentParamName() || '')"></nz-alert>
     <div class="row g-3">
-      <div class="col-12">
+      <ng-container *ngIf="isOther()">
+        <div [class]="hasField2() ? 'col-md-6' : 'col-12'">
+          <label class="form-label">
+            {{ currentItem()?.distinctFieldName || currentItem()?.distinctField }} <span class="text-danger">*</span>
+          </label>
+          <nz-select *ngIf="isNew()" class="w-100" [(ngModel)]="form.field1Value" name="vpidField1Value" nzShowSearch>
+            <nz-option *ngFor="let o of field1Options()" [nzValue]="o.value" [nzLabel]="o.label"></nz-option>
+          </nz-select>
+          <input *ngIf="!isNew()" nz-input [value]="optionLabel(field1Options(), form.field1Value)" readonly>
+        </div>
+        <div *ngIf="hasField2()" class="col-md-6">
+          <label class="form-label">
+            {{ currentItem()?.distinctField2ndName || currentItem()?.distinctField2nd }} <span class="text-danger">*</span>
+          </label>
+          <nz-select *ngIf="isNew()" class="w-100" [(ngModel)]="form.field2Value" name="vpidField2Value" nzShowSearch>
+            <nz-option *ngFor="let o of field2Options()" [nzValue]="o.value" [nzLabel]="o.label"></nz-option>
+          </nz-select>
+          <input *ngIf="!isNew()" nz-input [value]="optionLabel(field2Options(), form.field2Value)" readonly>
+        </div>
+      </ng-container>
+      <div class="col-12" *ngIf="!isOther()">
         <label class="form-label">
           {{ 'pa.inputItemData.personId' | translate:'Mã nhân viên' }} <span class="text-danger">*</span>
         </label>
@@ -173,15 +212,15 @@
       </div>
       <div class="col-md-3">
         <label class="form-label">
-          {{ 'pa.inputItemData.startMonth' | translate:'Tháng bắt đầu' }} <span class="text-danger">*</span>
+          {{ 'common.startDate' | translate:'Ngày bắt đầu' }} <span class="text-danger">*</span>
         </label>
-        <nz-date-picker class="w-100" [(ngModel)]="form.startMonth" name="vpidStartMonth"
-                         nzMode="month" nzFormat="MM/yyyy"></nz-date-picker>
+        <nz-date-picker class="w-100" [(ngModel)]="form.startDate" name="vpidStartDate"
+                         nzFormat="dd/MM/yyyy"></nz-date-picker>
       </div>
       <div class="col-md-3">
-        <label class="form-label">{{ 'pa.inputItemData.endMonth' | translate:'Tháng kết thúc' }}</label>
-        <nz-date-picker class="w-100" [(ngModel)]="form.endMonth" name="vpidEndMonth"
-                         nzMode="month" nzFormat="MM/yyyy"></nz-date-picker>
+        <label class="form-label">{{ 'common.endDate' | translate:'Ngày kết thúc' }}</label>
+        <nz-date-picker class="w-100" [(ngModel)]="form.endDate" name="vpidEndDate"
+                         nzFormat="dd/MM/yyyy"></nz-date-picker>
       </div>
       <div class="col-12">
         <label class="form-label">{{ 'pa.inputItemData.remark' | translate:'Ghi chú' }}</label>

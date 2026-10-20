@@ -1,5 +1,5 @@
 import { CommonModule, formatDate } from '@angular/common';
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzCardModule } from 'ng-zorro-antd/card';
@@ -11,6 +11,7 @@ import { NzTreeSelectModule } from 'ng-zorro-antd/tree-select';
 import { NzTreeNodeOptions } from 'ng-zorro-antd/tree';
 import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
+import { NzMessageService } from 'ng-zorro-antd/message';
 import * as XLSX from 'xlsx';
 import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
@@ -18,41 +19,70 @@ import {
   AuthDeptNode,
   CodeItem,
   OtApplyPersonalListDetailRow,
-  OtApplyPersonalListItem,
-  OtApplyPersonalListSummaryRow,
+  OtApplyPersonalListRow,
+  OtType,
 } from './view-ot-apply-personal-list.model';
 import { ViewOtApplyPersonalListService } from './view-ot-apply-personal-list.service';
 import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
-/** Nhóm AR_ITEM dùng để build cột động (nhóm tăng ca) - giữ nguyên giá trị bản Thymeleaf gốc. */
-const ITEM_GROUP = '1433';
+/** Mã cha danh mục Loại nhân viên - đúng parentNo="13864" của JSP cũ. */
+const EMP_TYPE_PARENT_CODE = '13864';
+/** Mã cha danh mục Tổ ca (班组) - đúng parentNo="400223" của JSP cũ. */
+const SHIFT_PARENT_CODE = '400223';
 
-/** Các key message.properties dùng trong trang này - tải trước 1 lần ở ngOnInit (xem I18nService). */
+type NumField = 'otTotal' | 'weekdayOtTotal' | 'weekendOtTotal' | 'holidayOtTotal'
+  | 'mealOtIncen' | 'nightIncen' | 'saturdayIncen';
+
+interface VoaplNumCol {
+  field: NumField;
+  key: string;
+  fallback: string;
+  /** Hiển thị kèm đơn vị "Tiếng" - giống JSP cũ (chỉ 4 cột giờ tăng ca). */
+  hour: boolean;
+  /** null = không có link chi tiết (cột Tổng - giống JSP cũ). */
+  otType: OtType | null;
+  sortFn: (a: OtApplyPersonalListRow, b: OtApplyPersonalListRow) => number;
+}
+
+const numSort = (field: NumField) => (a: OtApplyPersonalListRow, b: OtApplyPersonalListRow) =>
+  (Number(a[field]) || 0) - (Number(b[field]) || 0);
+
+/** Các cột số theo đúng thứ tự JSP cũ - dùng lại đúng message key của JSP cũ (đã có đủ 5 file properties). */
+const NUM_COLS: VoaplNumCol[] = [
+  { field: 'otTotal', key: 'ess.viewpersonalpainfo.heji', fallback: 'Tổng', hour: true, otType: null },
+  { field: 'weekdayOtTotal', key: 'ar.viewitemparameter.title.pingshi', fallback: 'Ngày thường', hour: true, otType: 'WEEKDAY' },
+  { field: 'weekendOtTotal', key: 'ar.viewitemparameter.title.zhoumo', fallback: 'Cuối tuần', hour: true, otType: 'WEEKEND' },
+  { field: 'holidayOtTotal', key: 'ar.arForDeptCountInfoList.FADINGJIEJIARI.b', fallback: 'Ngày lễ', hour: true, otType: 'HOLIDAY' },
+  { field: 'mealOtIncen', key: 'ess.viewMonthDetailList.OT_INCENTIVE.b', fallback: 'Hỗ trợ ăn ca', hour: false, otType: 'MEAL' },
+  { field: 'nightIncen', key: 'ess.viewMonthDetailList.NIGHT_INCENTIVE.b', fallback: 'Hỗ trợ làm đêm', hour: false, otType: 'NIGHT' },
+  { field: 'saturdayIncen', key: 'ess.viewMonthDetailList.OT_SATURDAY_INCENTIVE.b', fallback: 'Hỗ trợ làm thứ 7', hour: false, otType: 'SATURDAY' },
+].map((c) => ({ ...c, sortFn: numSort(c.field as NumField) })) as VoaplNumCol[];
+
+/** Các key message.properties dùng trong trang - toàn bộ là key sẵn có (phần lớn dùng lại đúng key của JSP cũ). */
 const I18N_KEYS = [
-  'essDept.dept', 'vdp.search.dept.placeholder', 'essDept.keyword', 'vdp.search.empKeyword.placeholder',
-  'vapl.label.empType', 'common.selectAll', 'vapl.label.startDate', 'vapl.label.endDate',
-  'essDept.search', 'essDept.exportExcel',
-  'common.stt', 'common.empId', 'common.empName', 'common.deptName', 'common.totalRows',
-  'vapl.msg.position', 'vapl.msg.noData', 'vapl.msg.noDataExport', 'otsl.msg.loadOtFailed',
-  'otsl.modal.detailTitle', 'otsl.col.shift', 'otsl.col.date', 'otsl.col.otType',
-  'otsl.col.startTime', 'otsl.col.endTime', 'otsl.col.duration', 'otsl.msg.selectHint',
-  'otsl.msg.noDataDetail', 'otsl.msg.loadDetailFailed', 'mep.msg.loadDeptFailed',
+  'hr.viewPersonalInfo.title.DEPTNAME', 'vdp.search.dept.placeholder',
+  'hr.viewContractByInsert.title.EMPIDANDLOCALNAME', 'vdp.search.empKeyword.placeholder',
+  'ess.infoApply.employee_type', 'hr.viewPersonalInfo.title.banzu', 'common.selectAll',
+  'public.title.startDate', 'public.title.endDate',
+  'public.title.search', 'essDept.clearFilter', 'ess.infoApply.export_to_Excel', 'common.quickFilter',
+  'common.stt', 'ess.infoApply.EMPID', 'public.title.empName', 'ess.infoApply.DEPT_NAME', 'ess.infoApply.Rank',
+  'ar.viewitemparameter.title.xiaoshi', 'common.totalRows', 'otsl.msg.noData', 'otsl.msg.noDataToExport',
+  'otsl.msg.loadOtFailed', 'mep.msg.loadDeptFailed',
+  // Popup chi tiết (viewOtApplySingleList.jsp cũ)
+  'otsl.modal.detailTitle', 'ess.message.work_shift', 'ess.infoApply.working_hours', 'ess.infoApply.date',
+  'ess.infoApply.overtime_type', 'ess.infoApply.in_door_time', 'ess.infoApply.out_door_time',
+  'ess.infoApply.title.startTime', 'ess.infoApply.end_time', 'ess.infoApply.duration',
+  'ar.viewsummaryparameteritem.title.hour', 'otsl.msg.noDataDetail', 'otsl.msg.loadDetailFailed',
+  ...NUM_COLS.map((c) => c.key),
 ];
 
 /**
- * Bản Angular của ess/viewDept/viewOtApplyPersonalList.html (Thymeleaf + bảng tự viết tay), gọi lại
- * nguyên các API JSON đã có sẵn ở backend (xem ViewOtApplyPersonalListService) - không đổi backend.
- * Cấu trúc gần như giống hệt view-ar-personal-list (cùng bộ API /api/arPersonalList/*), chỉ khác
- * itemGroup='1433' (nhóm tăng ca thay vì loại trừ nhóm tăng ca) và bảng không có 2 cột tổng giờ
- * công/muộn-sớm (không thuộc phạm vi trang tăng ca - bản gốc chỉ hiển thị 2 cột này trong lúc xuất
- * excel dù không hiển thị trên bảng, có vẻ là sót lại khi copy code từ ArPersonalList; bản Angular này
- * bỏ luôn 2 cột đó khỏi excel để nhất quán với bảng hiển thị). Dùng nz-table (phân trang client-side,
- * giống hệt hành vi bản gốc: BE trả toàn bộ danh sách theo bộ lọc) thay cho bảng tự render;
- * nz-tree-select thay widget cây phòng ban tự viết (DeptTree.js), giống manage-emp-position-info;
- * nz-modal thay modal Bootstrap cho chi tiết tăng ca. Cột STT/Mã NV/Họ tên/Phòng ban giữ sticky bằng
- * CSS position:sticky thủ công (xem .component.css) vì số cột động (theo AR_ITEM) không xác định
- * trước, không hợp với cách khai nzWidth cố định của nzScroll. Xuất excel client-side bằng thư viện
- * xlsx (SheetJS) để tạo đúng file .xlsx nhị phân, thay cho trick HTML-table .xls của bản gốc.
+ * Tình hình tăng ca nhân viên (个人加班现状) - chuyển đổi từ JSP /ess/viewDept/viewOtApplyPersonalList
+ * (Hanwha_HTSV). Giữ nguyên bộ lọc (phòng ban, mã/tên NV, loại NV, từ ngày - đến ngày, tổ ca) và các cột
+ * cố định của JSP cũ (Tổng / Ngày thường / Cuối tuần / Ngày lễ / Hỗ trợ ăn ca / làm đêm / làm thứ 7);
+ * click số giờ mở popup chi tiết (thay viewOtApplySingleList.jsp). nz-table phân trang client-side
+ * (BE trả toàn bộ danh sách - giống dataTable cũ), lọc nhanh client-side thay ô "sSearch" của dataTable,
+ * export excel .xlsx client-side bằng SheetJS (thay autoExcel SQL_SEQMEAN=147).
  */
 @Component({
   selector: 'app-view-ot-apply-personal-list',
@@ -76,15 +106,26 @@ const I18N_KEYS = [
 })
 export class ViewOtApplyPersonalListComponent implements OnInit {
   readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
+  readonly numCols = NUM_COLS;
 
-  readonly items = signal<OtApplyPersonalListItem[]>([]);
-  readonly rows = signal<OtApplyPersonalListSummaryRow[]>([]);
+  readonly rows = signal<OtApplyPersonalListRow[]>([]);
   readonly loading = signal(false);
   readonly errorMessage = signal<string | null>(null);
   readonly deptTreeErrorMessage = signal<string | null>(null);
 
   readonly deptNodes = signal<NzTreeNodeOptions[]>([]);
   readonly empTypeOptions = signal<CodeItem[]>([]);
+  readonly shiftOptions = signal<CodeItem[]>([]);
+
+  /** Dùng signal để computed filteredRows tự tính lại khi gõ lọc nhanh. */
+  readonly quickFilter = signal('');
+  readonly filteredRows = computed(() => {
+    const kw = this.quickFilter().trim().toLowerCase();
+    if (!kw) return this.rows();
+    return this.rows().filter((r) =>
+      [r.empId, r.localName, r.deptName, r.postName].some((v) => (v || '').toLowerCase().includes(kw)),
+    );
+  });
 
   readonly detailVisible = signal(false);
   readonly detailTitle = signal('');
@@ -92,39 +133,48 @@ export class ViewOtApplyPersonalListComponent implements OnInit {
   readonly detailLoading = signal(false);
   readonly detailErrorMessage = signal<string | null>(null);
 
-  /** id -> danh sách id con trực tiếp - dùng để mở rộng lựa chọn cây phòng ban khi tra cứu (xem search()). */
+  /** id -> danh sách id con trực tiếp - dùng để mở rộng lựa chọn cây phòng ban khi tra cứu. */
   private deptChildrenMap = new Map<string, string[]>();
 
   keyword = '';
   deptNos: string[] = [];
   empTypeCode: string | null = null;
+  shiftNo: string | null = null;
   startDate: Date | null = null;
   endDate: Date | null = null;
+
+  /** Khoảng ngày của lần tra cứu gần nhất - popup chi tiết dùng đúng khoảng ngày của dữ liệu đang hiển thị. */
+  private searchedStart = '';
+  private searchedEnd = '';
 
   constructor(
     private readonly api: ViewOtApplyPersonalListService,
     private readonly i18n: I18nService,
+    private readonly message: NzMessageService,
   ) {}
 
   ngOnInit(): void {
     this.i18n.loadKeys(I18N_KEYS);
     this.loadDeptTree();
-    this.loadEmpTypeOptions();
+    this.api.getCodeList(EMP_TYPE_PARENT_CODE).subscribe((list) => this.empTypeOptions.set(list ?? []));
+    this.api.getCodeList(SHIFT_PARENT_CODE).subscribe((list) => this.shiftOptions.set(list ?? []));
     this.setDefaultDateRange();
-    this.loadItemsThenSearch();
+    this.search();
   }
 
   search(): void {
+    this.searchedStart = this.formatDmy(this.startDate);
+    this.searchedEnd = this.formatDmy(this.endDate);
     this.loading.set(true);
     this.errorMessage.set(null);
     this.api
       .getSummary({
-        keyword: this.keyword,
+        keyword: this.keyword.trim(),
         deptNos: this.expandDeptSelection(this.deptNos).join(','),
         empTypeCode: this.empTypeCode ?? '',
-        startDate: this.formatYmd(this.startDate),
-        endDate: this.formatYmd(this.endDate),
-        itemGroup: ITEM_GROUP,
+        shiftNo: this.shiftNo ?? '',
+        startDate: this.searchedStart,
+        endDate: this.searchedEnd,
       })
       .subscribe({
         next: (rows) => {
@@ -139,107 +189,93 @@ export class ViewOtApplyPersonalListComponent implements OnInit {
       });
   }
 
-  /** Số lượng cột động - trả về 0 nếu không lớn hơn 0, dùng để quyết định hiện link chi tiết hay không. */
-  qty(row: OtApplyPersonalListSummaryRow, itemId: string): number {
-    return parseFloat(String(row[itemId])) || 0;
+  clearSearch(): void {
+    this.keyword = '';
+    this.deptNos = [];
+    this.empTypeCode = null;
+    this.shiftNo = null;
+    this.quickFilter.set('');
+    this.setDefaultDateRange();
+    this.search();
   }
 
-  /** Định dạng số lượng: bỏ số 0 vô nghĩa, giữ tối đa 2 chữ số thập phân - giống bản Thymeleaf gốc. */
-  fmtQty(v: unknown): string {
-    const n = parseFloat(String(v));
-    if (isNaN(n) || n === 0) return '0';
+  /** Định dạng số: bỏ số 0 vô nghĩa, tối đa 2 chữ số thập phân. */
+  fmt(v: number | string | null | undefined): string {
+    const n = Number(v);
+    if (v === null || v === undefined || v === '' || isNaN(n)) return '0';
     return n % 1 === 0 ? String(n) : n.toFixed(2).replace(/\.?0+$/, '');
   }
 
-  /** arDateStr trả về từ backend theo định dạng YYYY/MM/DD (so sánh trực tiếp với AR_DATE_STR) -
-   *  chuyển sang DD/MM/YYYY để hiển thị theo quy định định dạng ngày của dự án. */
-  formatDetailDate(s: string | null | undefined): string {
-    if (!s) return '';
-    const p = s.split('/');
-    return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : s;
+  num(v: number | null | undefined): number {
+    return Number(v) || 0;
   }
 
-  openDetail(row: OtApplyPersonalListSummaryRow, item: OtApplyPersonalListItem): void {
-    const personId = String(row['PERSON_ID'] ?? '');
-    this.detailTitle.set(item.itemName);
+  // ==================== Popup chi tiết (thay viewOtApplySingleList.jsp) ====================
+
+  openDetail(row: OtApplyPersonalListRow, col: VoaplNumCol): void {
+    if (!col.otType) return;
+    this.detailTitle.set(`${this.i18n.t(col.key, col.fallback)} - ${row.empId} ${row.localName ?? ''}`);
     this.detailRows.set([]);
     this.detailErrorMessage.set(null);
     this.detailVisible.set(true);
-    if (!personId) return;
     this.detailLoading.set(true);
-    this.api
-      .getDetail(personId, item.itemId, this.formatYmd(this.startDate), this.formatYmd(this.endDate))
-      .subscribe({
-        next: (rows) => {
-          this.detailRows.set(rows ?? []);
-          this.detailLoading.set(false);
-        },
-        error: () => {
-          this.detailErrorMessage.set(this.i18n.t('otsl.msg.loadDetailFailed', 'Tải dữ liệu thất bại.'));
-          this.detailLoading.set(false);
-        },
-      });
+    this.api.getDetail(row.personId, col.otType, this.searchedStart, this.searchedEnd).subscribe({
+      next: (rows) => {
+        this.detailRows.set(rows ?? []);
+        this.detailLoading.set(false);
+      },
+      error: () => {
+        this.detailErrorMessage.set(this.i18n.t('otsl.msg.loadDetailFailed', 'Tải dữ liệu thất bại.'));
+        this.detailLoading.set(false);
+      },
+    });
   }
 
   closeDetail(): void {
     this.detailVisible.set(false);
   }
 
-  /** Xuất excel client-side (bản gốc dùng trick HTML-table .xls, không phải .xlsx thật) - dùng thư
-   *  viện xlsx (SheetJS) để tạo đúng file .xlsx nhị phân, giống view-ar-personal-list. */
+  // ==================== Xuất excel (.xlsx, đúng danh sách đang lọc trên giao diện) ====================
+
   exportExcel(): void {
-    const items = this.items();
+    const data = this.filteredRows();
+    if (!data.length) {
+      this.message.warning(this.i18n.t('otsl.msg.noDataToExport', 'Không có dữ liệu để xuất.'));
+      return;
+    }
+    const t = (key: string, fallback: string) => this.i18n.t(key, fallback);
+    const hourUnit = t('ar.viewitemparameter.title.xiaoshi', 'Tiếng');
     const headers = [
-      this.i18n.t('common.stt', 'STT'),
-      this.i18n.t('common.empId', 'Mã nhân viên'),
-      this.i18n.t('common.empName', 'Họ tên'),
-      this.i18n.t('common.deptName', 'Phòng ban'),
-      this.i18n.t('vapl.msg.position', 'Chức vụ'),
-      ...items.map((it) => it.itemName),
+      t('common.stt', 'STT'), t('ess.infoApply.EMPID', 'Mã nhân viên'), t('public.title.empName', 'Họ tên'),
+      t('ess.infoApply.DEPT_NAME', 'Phòng ban'), t('ess.infoApply.Rank', 'Chức vụ'),
+      ...NUM_COLS.map((c) => (c.hour ? `${t(c.key, c.fallback)} (${hourUnit})` : t(c.key, c.fallback))),
     ];
-    const dataRows = this.rows().map((r, i) => [
-      i + 1,
-      r['EMPID'],
-      r['LOCAL_NAME'],
-      r['DEPT_NAME'],
-      r['POSITION_NAME'],
-      ...items.map((it) => this.fmtQty(r[it.itemId])),
+    const dataRows = data.map((r, i) => [
+      i + 1, r.empId, r.localName, r.deptName, r.postName,
+      ...NUM_COLS.map((c) => this.num(r[c.field])),
     ]);
 
     const worksheet = XLSX.utils.aoa_to_sheet([headers, ...dataRows]);
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'TangCa');
-    XLSX.writeFile(workbook, 'tinh_hinh_tang_ca_nhan_vien.xlsx');
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'OT');
+    const range = `${this.searchedStart}_${this.searchedEnd}`.replace(/\//g, '');
+    XLSX.writeFile(workbook, `tinh_hinh_tang_ca_${range}.xlsx`);
   }
 
-  private loadItemsThenSearch(): void {
-    this.api.getItems(ITEM_GROUP).subscribe({
-      next: (list) => {
-        this.items.set(list ?? []);
-        this.search();
-      },
-      error: () => {
-        this.items.set([]);
-        this.search();
-      },
-    });
-  }
+  // ==================== Ngày mặc định ====================
 
-  /** Mặc định: ngày 25 tháng trước đến ngày 24 tháng này - giống bản Thymeleaf gốc (voapl_defaultDateRange). */
+  /** Giống JSP cũ: mặc định từ ngày 1 tháng hiện tại đến hôm nay. */
   private setDefaultDateRange(): void {
     const now = new Date();
-    const y = now.getFullYear();
-    const m = now.getMonth(); // 0-based
-    const prevY = m === 0 ? y - 1 : y;
-    const prevM = m === 0 ? 11 : m - 1; // tháng trước, 0-based
-
-    this.startDate = new Date(prevY, prevM, 25);
-    this.endDate = new Date(y, m, 24);
+    this.startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+    this.endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   }
 
-  private formatYmd(d: Date | null): string {
-    return d ? formatDate(d, 'yyyy/MM/dd', 'vi') : '';
+  private formatDmy(d: Date | null): string {
+    return d ? formatDate(d, 'dd/MM/yyyy', 'en-US') : '';
   }
+
+  // ==================== Cây phòng ban ====================
 
   private loadDeptTree(): void {
     this.api.getAuthorizedDepartments().subscribe({
@@ -276,9 +312,8 @@ export class ViewOtApplyPersonalListComponent implements OnInit {
     return roots;
   }
 
-  /** nz-tree-select chỉ trả về key của node được tick trực tiếp - KHÔNG tự cascade xuống phòng ban con
-   *  như widget DeptTree.js gốc, nên phải tự mở rộng xuống các phòng ban con trước khi gửi lên backend
-   *  (giống hệt lý do trong view-ar-personal-list.component.ts / manage-emp-position-info.component.ts). */
+  /** nz-tree-select chỉ trả về key node được tick trực tiếp - tự mở rộng xuống phòng ban con (giống
+   *  START WITH ... CONNECT BY của SQL cũ) trước khi gửi lên backend. */
   private expandDeptSelection(selected: string[]): string[] {
     const result = new Set<string>();
     const stack = [...selected];
@@ -290,9 +325,5 @@ export class ViewOtApplyPersonalListComponent implements OnInit {
       if (children) stack.push(...children);
     }
     return Array.from(result);
-  }
-
-  private loadEmpTypeOptions(): void {
-    this.api.getCodeList('13864').subscribe((list) => this.empTypeOptions.set(list ?? []));
   }
 }

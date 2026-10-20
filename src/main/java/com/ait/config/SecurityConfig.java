@@ -48,7 +48,7 @@ public class SecurityConfig implements WebMvcConfigurer {
                         .requestMatchers(
                                 "/", "/login", "/auth/login", "/logout",
                                 "/auth/api/csrf-token", "/auth/api/login",
-                                "/assets/**", "/static/**", "/webjars/**",
+                                "/assets/**", "/static/**", "/webjars/**", "/api/iconify/**",
                                 "/error/**", "/favicon.ico",
                                 "/actuator/health", "/api/health", "/api/csrf-token",
                                 "/change-language", "/api/current-language", "/api/supported-languages",
@@ -116,7 +116,7 @@ public class SecurityConfig implements WebMvcConfigurer {
                 .excludePathPatterns(
                         "/", "/login", "/auth/login", "/logout",
                         "/auth/api/csrf-token", "/auth/api/login",
-                        "/assets/**", "/static/**", "/webjars/**",
+                        "/assets/**", "/static/**", "/webjars/**", "/api/iconify/**",
                         "/error/**", "/favicon.ico", "/actuator/**",
                         "/api/health", "/api/csrf-token");
     }
@@ -170,6 +170,7 @@ public class SecurityConfig implements WebMvcConfigurer {
                     uri.equals("/auth/api/csrf-token") ||
                     uri.equals("/auth/api/login") ||
                     uri.startsWith("/assets/") ||
+                    uri.startsWith("/api/iconify/") ||
                     uri.startsWith("/static/") ||
                     uri.startsWith("/webjars/") ||
                     uri.startsWith("/error/") ||

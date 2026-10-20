@@ -4,6 +4,7 @@ import com.ait.ar.attendanceMintenance.service.ArMacRecordEatService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -23,6 +24,10 @@ public class ArMacRecordEatScheduler {
     @Autowired
     private ArMacRecordEatService arMacRecordEatService;
 
+    /** 1: chạy, 0: tắt (máy không truy cập được SQL Server máy chấm công 10.43.7.249, vd. máy dev) */
+    @Value(\"${ar.device.import-flag:1}\")
+    private String importFlag;
+
     /**
      * Chạy lúc 07:00 và 14:00 hàng ngày.
      * Chỉ đọc dữ liệu trong ngày hiện tại và 2 ngày trước để tránh tải dữ liệu cũ.
@@ -30,6 +35,9 @@ public class ArMacRecordEatScheduler {
      */
     @Scheduled(cron = "0 0 7,14 * * *")
     public void autoImportMealRecord() {
+        if (!"1".equals(importFlag)) {
+            return;
+        }
         if (!running.compareAndSet(false, true)) {
             log.warn("[AutoImportMeal] Lần chạy trước chưa hoàn tất, bỏ qua lần này.");
             return;

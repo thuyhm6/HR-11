@@ -33,10 +33,16 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.util.HtmlUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.ConnectException;
+import java.net.NoRouteToHostException;
+import java.net.SocketTimeoutException;
+import java.net.URI;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
@@ -146,17 +152,24 @@ public class CleverseApprovalServiceImpl implements CleverseApprovalService {
         }
         sendLock.lock();
         try {
-            NeoOrgWsProxy orgProxy = new NeoOrgWsProxy(orgEndpoint);
-            if (!checkOrgConnection(orgProxy)) {
-                return 0;
+            Map<String, Object> waitParams = new HashMap<>();
+            if (RequestContextHolder.getRequestAttributes() == null) {
+                // Gọi từ scheduler (gửi lại đơn bị bỏ qua do lỗi mạng): không có session để inject cpnyId
+                waitParams.put("cpnyId", syncCpnyId);
             }
-
-            List<CleverseApprovalApplyDto> applyList = mapper.selectWaitSendApplyList(new HashMap<>());
+            List<CleverseApprovalApplyDto> applyList = mapper.selectWaitSendApplyList(waitParams);
             if (applyList == null || applyList.isEmpty()) {
                 log.info("[Cleverse] No pending apply to send");
                 return 0;
             }
             log.info("[Cleverse] Pending apply count: {}", applyList.size());
+
+            NeoOrgWsProxy orgProxy = new NeoOrgWsProxy(orgEndpoint);
+            if (!checkOrgConnection(orgProxy)) {
+                log.warn("[Cleverse] Hoãn gửi {} đơn sang Cleverse do không kết nối được (sẽ gửi lại theo lịch"
+                        + " cleverse.approval.resend-cron):{}", applyList.size(), describeApplies(applyList));
+                return 0;
+            }
 
             Map<String, String> userKeyCache = new HashMap<>();
             int successCount = 0;
@@ -380,9 +393,49 @@ public class CleverseApprovalServiceImpl implements CleverseApprovalService {
             }
             return true;
         } catch (Exception e) {
-            log.error("[Cleverse] NeoOrgWs unreachable ({}), skip sending{}", orgEndpoint, describeWsError(e), e);
+            String networkHint = describeNetworkError(e, orgEndpoint);
+            if (networkHint != null) {
+                // Lỗi mạng (DNS/VPN/firewall): không phải lỗi code -> log gọn, stacktrace chỉ in ở DEBUG
+                log.warn("[Cleverse] NeoOrgWs unreachable ({}), skip sending. Đơn vẫn được lưu (SEND_EMAIL_FLAG=0)"
+                        + " và sẽ được scheduler gửi lại khi kết nối được.{}", orgEndpoint, networkHint);
+                log.debug("[Cleverse] NeoOrgWs unreachable - stacktrace", e);
+            } else {
+                log.error("[Cleverse] NeoOrgWs unreachable ({}), skip sending{}", orgEndpoint, describeWsError(e), e);
+            }
             return false;
         }
+    }
+
+    /**
+     * Nhận diện lỗi kết nối mạng trong chuỗi cause (AxisFault bọc trong detail) và trả về gợi ý kiểm tra;
+     * null nếu không phải lỗi mạng.
+     */
+    private static String describeNetworkError(Throwable e, String endpoint) {
+        String host = endpoint;
+        try {
+            host = URI.create(endpoint).getHost();
+        } catch (Exception ignore) {
+            // giữ nguyên endpoint
+        }
+        for (Throwable t = e; t != null; t = nextCause(t)) {
+            String hint = null;
+            if (t instanceof UnknownHostException) {
+                hint = "không phân giải được tên miền (DNS). Kiểm tra VPN/mạng nội bộ Hanwha, chạy: nslookup " + host;
+            } else if (t instanceof ConnectException || t instanceof NoRouteToHostException) {
+                hint = "không mở được kết nối TCP. Kiểm tra firewall/proxy, chạy: Test-NetConnection " + host + " -Port 443";
+            } else if (t instanceof SocketTimeoutException) {
+                hint = "hết thời gian chờ phản hồi từ server Cleverse";
+            }
+            if (hint != null) {
+                return "\n  rootCause=" + t.getClass().getName() + ": " + t.getMessage() + "\n  hint: " + hint;
+            }
+        }
+        return null;
+    }
+
+    private static Throwable nextCause(Throwable t) {
+        Throwable next = (t instanceof AxisFault && ((AxisFault) t).detail != null) ? ((AxisFault) t).detail : t.getCause();
+        return next == t ? null : next;
     }
 
     private boolean sendOneApply(NeoOrgWsProxy orgProxy, CleverseApprovalApplyDto apply,
@@ -493,9 +546,11 @@ public class CleverseApprovalServiceImpl implements CleverseApprovalService {
             log.info("[Cleverse] submitApproval misDocId={} response={}", misDocId, message);
             return true;
         } catch (Exception e) {
-            log.error("[Cleverse] submitApproval error, misDocId={}{}\n  request: endpoint={}, systemId={}, companyId={},"
+            String networkHint = describeNetworkError(e, approvalEndpoint);
+            log.error("[Cleverse] submitApproval error, misDocId={}{}{}\n  request: endpoint={}, systemId={}, companyId={},"
                             + " formCode={}, flowCase=customized, title={}\n  signers: {}\n  receivers: {}",
-                    misDocIdPrefix + misDocId, describeWsError(e), approvalEndpoint, systemId, companyId, formCode,
+                    misDocIdPrefix + misDocId, describeWsError(e), networkHint != null ? networkHint : "",
+                    approvalEndpoint, systemId, companyId, formCode,
                     title, describeSigners(approverList), describeSigners(receiverList), e);
             return false;
         }
@@ -526,6 +581,22 @@ public class CleverseApprovalServiceImpl implements CleverseApprovalService {
             }
         } else if (e.getMessage() != null) {
             sb.append("\n  message=").append(e.getMessage());
+        }
+        return sb.toString();
+    }
+
+    /** Liệt kê các đơn chờ gửi (mỗi đơn 1 dòng) để biết cụ thể đơn nào chưa lên Cleverse. */
+    private static String describeApplies(List<CleverseApprovalApplyDto> applies) {
+        StringBuilder sb = new StringBuilder();
+        for (CleverseApprovalApplyDto a : applies) {
+            sb.append("\n  - applyNo=").append(a.getApplyNo())
+              .append(", misDocId=").append(a.getMisDocId())
+              .append(", type=").append(a.getApplyTypeNo()).append(" ").append(safe(a.getApplyTypeName()))
+              .append(", empId=").append(a.getEmpId())
+              .append(", name=").append(a.getLocalName())
+              .append(", dept=").append(a.getDeptName())
+              .append(", time=").append(a.getFromTime()).append(" ~ ").append(a.getToTime())
+              .append(", applyTime=").append(a.getApplyTime());
         }
         return sb.toString();
     }

@@ -1,5 +1,5 @@
 import { CommonModule, formatDate } from '@angular/common';
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, ViewChild, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzCardModule } from 'ng-zorro-antd/card';
@@ -11,7 +11,6 @@ import { NzTreeSelectModule } from 'ng-zorro-antd/tree-select';
 import { NzTreeNodeOptions } from 'ng-zorro-antd/tree';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzModalModule } from 'ng-zorro-antd/modal';
-import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import * as XLSX from 'xlsx';
 import { I18nService } from '../i18n/i18n.service';
@@ -19,13 +18,13 @@ import { TranslatePipe } from '../i18n/translate.pipe';
 import { CheckAttendanceExForBatchService } from './check-attendance-ex-for-batch.service';
 import {
   AuthDeptNode,
-  CardApprovalRow,
-  CardLeaveInfo,
   CheckAttendanceExRow,
   CodeItem,
   ShiftOption,
 } from './check-attendance-ex-for-batch.model';
 import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
+import { AttendanceExApplyDetailComponent } from '../shared/attendance-ex-apply-detail/attendance-ex-apply-detail.component';
+import { AttendanceExApplyDetail } from '../shared/attendance-ex-apply-detail/attendance-ex-apply-detail.model';
 
 /** Toàn bộ key bên dưới đã có sẵn trong message.properties (namespace "ck" dùng riêng cho trang này,
  *  "common"/"mep" dùng chung với các trang khác) - không cần thêm key mới. */
@@ -38,13 +37,8 @@ const I18N_KEYS = [
   'ck.col.no', 'ck.col.empId', 'ck.col.localName', 'ck.col.deptName', 'ck.col.postGradeName',
   'ck.col.postFamilyName', 'ck.col.shiftName', 'ck.col.itemNoName', 'ck.col.arDate', 'ck.col.fromDateTime',
   'ck.col.toDateTime', 'ck.col.remark', 'ck.col.createdName', 'ck.col.createDate',
-  'ck.modal.title', 'ck.modal.requester', 'ck.modal.applyInfo', 'ck.modal.applyTitle', 'ck.modal.stt',
-  'ck.modal.approvalSeq', 'ck.modal.approvalStatus', 'ck.modal.opinion', 'ck.modal.actionTime',
-  'ck.modal.empInfoTitle', 'ck.modal.empName', 'ck.modal.empId', 'ck.modal.empDept', 'ck.modal.empPost',
-  'ck.modal.leaveType', 'ck.modal.leaveFrom', 'ck.modal.leaveTo', 'ck.modal.duration', 'ck.modal.remark',
-  'ck.msg.loading', 'ck.msg.noApprovalData', 'ck.msg.noApplyNo', 'ck.msg.loadDetailFailed',
-  'ck.msg.loadApprovalFailed',
-  'common.empName', 'common.deptName', 'common.loadFail', 'common.totalRows', 'mep.msg.loadDeptFailed',
+  'ess.infoApply.check_error_attendance', 'ck.msg.noApplyNo', 'ck.msg.loadDetailFailed',
+  'common.loadFail', 'common.totalRows', 'common.print', 'common.close', 'mep.msg.loadDeptFailed',
 ];
 
 /** Mã cha nhóm nhân viên (POST_FAMILY) dùng cho bộ lọc "Nhóm nhân viên" - đúng data-parent-code="14015812" bản gốc. */
@@ -68,8 +62,8 @@ const ITEM_NO_OPTIONS: { value: string; labelKey: string; fallback: string }[] =
  * mở modal chi tiết qua atexOpenApplyDetail()). Gọi lại nguyên các API JSON đã có sẵn ở
  * EssInfoApplyAttendanceController (xem CheckAttendanceExForBatchService) - không đổi backend.
  * Kiến trúc bám theo AttendanceExBatchInfoComponent (nz-table + nz-tree-select + expandDeptSelection
- * cho phần lọc/bảng) và ManageEmpPositionInfoComponent (nz-modal + nz-descriptions cho phần modal
- * chi tiết click-row).
+ * cho phần lọc/bảng); modal chi tiết click-row dùng chung AttendanceExApplyDetailComponent (bản Angular của
+ * /ess/infoApply/viewAttendanceEx dự án Hanwha_HTSV).
  *
  * Khác biệt cố ý so với bản gốc: bản gốc truyền thêm 1 tham số "ctx" (không dùng ở trang này - luôn
  * undefined) cho atexOpenApplyDetail() để hiển thị nút Duyệt/Từ chối khi mở từ email phê duyệt; vì
@@ -91,7 +85,7 @@ const ITEM_NO_OPTIONS: { value: string; labelKey: string; fallback: string }[] =
     NzTreeSelectModule,
     NzAlertModule,
     NzModalModule,
-    NzDescriptionsModule,
+    AttendanceExApplyDetailComponent,
     TranslatePipe,
   ],
   templateUrl: './check-attendance-ex-for-batch.component.html',
@@ -121,9 +115,9 @@ export class CheckAttendanceExForBatchComponent implements OnInit {
   readonly detailVisible = signal(false);
   readonly detailLoading = signal(false);
   readonly detailErrorMessage = signal<string | null>(null);
-  readonly detailLeaveInfo = signal<CardLeaveInfo | null>(null);
-  readonly detailEmployeeInfo = signal<CardLeaveInfo | null>(null);
-  readonly detailApprovalList = signal<CardApprovalRow[]>([]);
+  readonly detailData = signal<AttendanceExApplyDetail | null>(null);
+
+  @ViewChild(AttendanceExApplyDetailComponent) private aedDetail?: AttendanceExApplyDetailComponent;
 
   /** id -> danh sách id con trực tiếp - dùng để mở rộng lựa chọn cây phòng ban khi tra cứu (xem search()). */
   private deptChildrenMap = new Map<string, string[]>();
@@ -205,15 +199,11 @@ export class CheckAttendanceExForBatchComponent implements OnInit {
     this.detailVisible.set(true);
     this.detailLoading.set(true);
     this.detailErrorMessage.set(null);
-    this.detailLeaveInfo.set(null);
-    this.detailEmployeeInfo.set(null);
-    this.detailApprovalList.set([]);
+    this.detailData.set(null);
 
     this.api.getDetail(row.applyNo, row.itemNo).subscribe({
       next: (res) => {
-        this.detailLeaveInfo.set(res?.leaveInfo ?? null);
-        this.detailEmployeeInfo.set(res?.employeeInfo ?? null);
-        this.detailApprovalList.set(res?.approvalList ?? []);
+        this.detailData.set(res ? { ...res, approvalList: res.approvalList ?? [] } : null);
         this.detailLoading.set(false);
       },
       error: () => {
@@ -227,24 +217,8 @@ export class CheckAttendanceExForBatchComponent implements OnInit {
     this.detailVisible.set(false);
   }
 
-  /** Đúng atexBuildApplyTitle() bản gốc. */
-  buildApplyTitle(info: CardLeaveInfo | null): string {
-    if (!info) return '';
-    const { leaveTypeName = '', localName = '', leaveFromTime = '', leaveToTime = '' } = info;
-    if (!leaveTypeName && !localName && !leaveFromTime && !leaveToTime) return '';
-    return `${leaveTypeName}/Apply(${localName})[Date: ${leaveFromTime} ~ ${leaveToTime}]`;
-  }
-
-  /** Đúng dòng "Người xin phép" trong atexRenderData() bản gốc. */
-  buildRequesterInfo(info: CardLeaveInfo | null): string {
-    if (!info) return '';
-    return `${info.localName || ''}/${info.postGradeName || ''}/${info.deptName || ''}`;
-  }
-
-  /** Đúng cách hiển thị STT trong atexRenderApprovalRows() bản gốc: mức duyệt 100 = HR. */
-  approvalStt(row: CardApprovalRow, index: number): string {
-    const stt = row.affirmLevel || String(index + 1);
-    return String(stt) === '100' ? 'HR' : stt;
+  printDetail(): void {
+    this.aedDetail?.print();
   }
 
   // ==================== Xuất excel (client-side, không có endpoint export riêng ở backend) ====================

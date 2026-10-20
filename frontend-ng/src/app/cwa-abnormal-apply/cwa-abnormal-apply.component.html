@@ -1,7 +1,7 @@
 <div class="row">
   <div class="col-12">
 
-    <!-- ===== Thông tin nhân viên (tương đương fragments/essEmpInfoCard.html) ===== -->
+    <!-- ===== Thông tin nhân viên (viewPersonalInfoHead_ess.jsp bản gốc) ===== -->
     <div class="card mb-3" *ngIf="basicInfo() as info">
       <div class="card-body p-0">
         <table class="table table-bordered table-sm align-middle mb-0" style="table-layout:fixed;">
@@ -39,120 +39,122 @@
     </div>
 
     <!-- ===== Điều kiện tìm kiếm ===== -->
-    <div class="card mb-2">
-      <div class="card-body py-2 px-3">
-        <div class="d-flex align-items-center gap-2 flex-wrap">
-          <span class="fw-semibold small">{{ 'essCwa.startDate' | translate:'Ngày bắt đầu' }}</span>
-          <nz-date-picker style="width:130px;" [(ngModel)]="startDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
-          <span class="fw-semibold small">{{ 'essCwa.endDate' | translate:'Ngày kết thúc' }}</span>
-          <nz-date-picker style="width:130px;" [(ngModel)]="endDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
-          <button nz-button nzType="primary" nzSize="small" (click)="search()">
-            {{ 'essCwa.search' | translate:'Tra cứu' }}
+    <nz-card class="mb-2">
+      <form class="row g-2 align-items-end" (ngSubmit)="search()">
+        <div class="col-md-2">
+          <label class="form-label">{{ 'ar.viewcycleparameter.title.kaishiriqi' | translate:'Ngày bắt đầu' }}</label>
+          <nz-date-picker class="w-100" [(ngModel)]="startDate" name="startDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'ar.viewcycleparameter.title.jieshuriqi' | translate:'Ngày kết thúc' }}</label>
+          <nz-date-picker class="w-100" [(ngModel)]="endDate" name="endDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
+        </div>
+        <div class="col-md-2">
+          <button nz-button nzType="primary" type="submit">
+            <i class="bx bx-search"></i> {{ 'button.search' | translate:'Tra cứu' }}
+          </button>
+        </div>
+      </form>
+
+      <!-- Áp giờ vào/ra cho các dòng đã tick (nút "Thực hiện tất cả" bản gốc) -->
+      <div class="row g-2 align-items-end mt-1 pt-2 border-top">
+        <div class="col-md-4">
+          <label class="form-label">{{ 'ess.infoApply.in_door_card' | translate:'Vào:' }}</label>
+          <div class="d-flex align-items-center gap-1">
+            <nz-date-picker class="flex-fill" [(ngModel)]="bulkInDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
+            <nz-select class="cwaa-hm" [(ngModel)]="bulkInHour">
+              <nz-option *ngFor="let h of hours" [nzValue]="h" [nzLabel]="h"></nz-option>
+            </nz-select>
+            <span>:</span>
+            <nz-select class="cwaa-hm" [(ngModel)]="bulkInMinute">
+              <nz-option *ngFor="let m of bulkMinutes" [nzValue]="m" [nzLabel]="m"></nz-option>
+            </nz-select>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">{{ 'ess.infoApply.out_door_card' | translate:'Ra:' }}</label>
+          <div class="d-flex align-items-center gap-1">
+            <nz-date-picker class="flex-fill" [(ngModel)]="bulkOutDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
+            <nz-select class="cwaa-hm" [(ngModel)]="bulkOutHour">
+              <nz-option *ngFor="let h of hours" [nzValue]="h" [nzLabel]="h"></nz-option>
+            </nz-select>
+            <span>:</span>
+            <nz-select class="cwaa-hm" [(ngModel)]="bulkOutMinute">
+              <nz-option *ngFor="let m of bulkMinutes" [nzValue]="m" [nzLabel]="m"></nz-option>
+            </nz-select>
+          </div>
+        </div>
+        <div class="col-md-2">
+          <button nz-button type="button" (click)="fillSelected()">
+            <i class="bx bx-check-double"></i> {{ 'ess.message.all_reaction' | translate:'Thực hiện tất cả' }}
           </button>
         </div>
       </div>
-    </div>
+    </nz-card>
 
-    <!-- ===== Thiết lập thời gian hàng loạt ===== -->
-    <div class="card mb-2">
-      <div class="card-body py-2 px-3">
-        <div class="d-flex align-items-center gap-2 flex-wrap">
-          <span class="fw-semibold small">{{ 'essCwa.batchIn' | translate:'Vào:' }}</span>
-          <nz-date-picker style="width:190px;" [(ngModel)]="globalInTime" nzFormat="dd/MM/yyyy HH:mm"
-                           [nzShowTime]="{ nzFormat: 'HH:mm' }"></nz-date-picker>
-          <span class="fw-semibold small ms-2">{{ 'essCwa.batchOut' | translate:'Ra:' }}</span>
-          <nz-date-picker style="width:190px;" [(ngModel)]="globalOutTime" nzFormat="dd/MM/yyyy HH:mm"
-                           [nzShowTime]="{ nzFormat: 'HH:mm' }"></nz-date-picker>
-          <button nz-button nzSize="small" class="ms-2" (click)="applyAllToPage(cwaTable.data)">
-            {{ 'essCwa.applyAll' | translate:'Thực hiện tất cả' }}
-          </button>
-          <button nz-button nzType="primary" nzSize="small" class="ms-auto" [nzLoading]="submitting()" (click)="submit()">
-            {{ 'essCwa.submit' | translate:'Xin phép' }}
-          </button>
-        </div>
+    <nz-card>
+      <div class="mb-2">
+        <button nz-button nzType="primary" type="button" [nzLoading]="submitting()" (click)="submit()">
+          <i class="bx bx-send"></i> {{ 'ess.infoApply.title.apply' | translate:'Xin phép' }}
+        </button>
       </div>
-    </div>
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
 
-    <!-- ===== Toolbar lọc nhanh ===== -->
-    <div class="d-flex align-items-center gap-2 mb-2">
-      <input nz-input style="max-width:160px;" [ngModel]="quickFilterKeyword()"
-             (ngModelChange)="quickFilterKeyword.set($event)"
-             [placeholder]="'essCwa.quickFilter' | translate:'Lọc nhanh'">
-    </div>
-
-    <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
-
-    <!-- ===== Bảng danh sách ===== -->
-    <nz-table [nzData]="filteredRows()" [nzLoading]="loading()" [nzPageSize]="50" [nzShowSizeChanger]="true"
-              [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="cwaTotalTpl"
-              [nzScroll]="{ x: '1200px' }" class="table-nowrap" #cwaTable>
-      <thead>
-        <tr>
-          <th nzWidth="40px">
-            <label nz-checkbox [ngModel]="isAllSelected()" [nzIndeterminate]="isSomeSelected()"
-                   (ngModelChange)="toggleSelectAll($event)"></label>
-          </th>
-          <th class="text-center" nzWidth="50px">{{ 'common.stt' | translate:'STT' }}</th>
-          <th nzWidth="150px">{{ 'essCwa.category' | translate:'Phân loại' }}</th>
-          <th class="text-center" nzWidth="110px">{{ 'essCwa.workDate' | translate:'Ngày công' }}</th>
-          <th class="text-center" nzWidth="130px">{{ 'essCwa.cardSwipe' | translate:'Thời gian quẹt thẻ' }}</th>
-          <th class="text-center" nzWidth="380px">{{ 'essCwa.timeInput' | translate:'Thời gian' }}</th>
-          <th nzWidth="180px">{{ 'essCwa.reason' | translate:'Lý do' }}</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let row of cwaTable.data; let i = index">
-          <td class="text-center">
-            <label nz-checkbox [(ngModel)]="row.selected"></label>
-          </td>
-          <td class="text-center">{{ i + 1 }}</td>
-          <td [attr.title]="row.itemName || row.itemNo || null">{{ row.itemName || row.itemNo }}</td>
-          <td class="text-center">{{ row.arDateStr }}</td>
-          <td class="text-center small">
-            <div>{{ 'essCwa.inLabel' | translate:'Vào' }}: {{ row.indoorTime || '**:**' }}</div>
-            <div>{{ 'essCwa.outLabel' | translate:'Ra' }}: {{ row.outdoorTime || '**:**' }}</div>
-          </td>
-          <td>
-            <div class="d-flex align-items-center gap-1 mb-1">
-              <span class="small flex-shrink-0" style="width:26px;">{{ 'essCwa.inLabel' | translate:'Vào' }}</span>
-              <nz-date-picker style="flex:1;min-width:0;" [(ngModel)]="row.inTime" nzFormat="dd/MM/yyyy HH:mm"
-                               [nzShowTime]="{ nzFormat: 'HH:mm' }"></nz-date-picker>
-            </div>
-            <div class="d-flex align-items-center gap-1">
-              <span class="small flex-shrink-0" style="width:26px;">{{ 'essCwa.outLabel' | translate:'Ra' }}</span>
-              <nz-date-picker style="flex:1;min-width:0;" [(ngModel)]="row.outTime" nzFormat="dd/MM/yyyy HH:mm"
-                               [nzShowTime]="{ nzFormat: 'HH:mm' }"></nz-date-picker>
-            </div>
-          </td>
-          <td><input nz-input [(ngModel)]="row.remark"></td>
-        </tr>
-      </tbody>
-      <ng-template #cwaTotalTpl let-total>
-        {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
-      </ng-template>
-    </nz-table>
-
-    <!-- ===== Danh sách người phê duyệt ===== -->
-    <nz-table [nzData]="approvers()" [nzLoading]="approversLoading()" [nzShowPagination]="false"
-              nzSize="small" class="mt-3" #cwaApproverTable>
-      <thead>
-        <tr>
-          <th class="text-center" style="width:60px">{{ 'common.stt' | translate:'STT' }}</th>
-          <th>{{ 'essCwa.approver' | translate:'Người duyệt' }}</th>
-          <th class="text-center" style="width:130px">{{ 'common.empId' | translate:'Mã nhân viên' }}</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngIf="!approversLoading() && cwaApproverTable.data.length === 0">
-          <td colspan="3" class="text-center text-muted">{{ 'essCwa.noData' | translate:'Không có dữ liệu' }}</td>
-        </tr>
-        <tr *ngFor="let item of cwaApproverTable.data; let i = index">
-          <td class="text-center">{{ item.affirmLevel || i + 1 }}</td>
-          <td>{{ item.localName }}</td>
-          <td class="text-center">{{ item.empId }}</td>
-        </tr>
-      </tbody>
-    </nz-table>
-
+      <nz-table #cwaaTable [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="50" [nzShowSizeChanger]="true"
+                [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="cwaaTotalTpl" nzSize="small" nzBordered
+                [nzScroll]="{ x: '1400px' }" class="cwaa-table">
+        <thead>
+          <tr>
+            <th class="text-center" nzWidth="50px">NO.</th>
+            <th class="text-center" nzWidth="40px">
+              <label nz-checkbox [ngModel]="allSelected" [nzIndeterminate]="someSelected" (ngModelChange)="toggleSelectAll($event)"></label>
+            </th>
+            <th class="text-center" nzWidth="130px">{{ 'ess.infoApply.yichangleixing' | translate:'Phân loại' }}</th>
+            <th class="text-center" nzWidth="110px">{{ 'ess.infoApply.attendance_date' | translate:'Ngày công' }}</th>
+            <th class="text-center" nzWidth="140px">{{ 'ess.infoApply.card_clock_time' | translate:'Thời gian quẹt thẻ' }}</th>
+            <th class="text-center" nzWidth="360px">{{ 'ess.infoApply.time_quantum' | translate:'Thời gian' }}</th>
+            <th class="text-center" nzWidth="240px">{{ 'ess.infoApply.Reason' | translate:'Lý do' }}</th>
+            <th class="text-center" nzWidth="300px">{{ 'ess.infoApply.juecaizheliebiao' | translate:'Người duyệt' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of cwaaTable.data; let i = index; trackBy: trackByRow" [class.cwaa-row-selected]="row.selected">
+            <td class="text-center">{{ (cwaaTable.nzPageIndex - 1) * cwaaTable.nzPageSize + i + 1 }}</td>
+            <td class="text-center">
+              <label *ngIf="canSelect(row)" nz-checkbox [(ngModel)]="row.selected"></label>
+            </td>
+            <td class="text-center">{{ row.itemName }}</td>
+            <td class="text-center">{{ row.arDateStr }}</td>
+            <td class="text-center">
+              {{ 'ess.infoApply.in_door_card' | translate:'Vào:' }}{{ row.indoorTime }}<br>
+              {{ 'ess.infoApply.out_door_card' | translate:'Ra:' }}{{ row.outdoorTime }}
+            </td>
+            <td>
+              <div class="d-flex align-items-center gap-1 mb-1">
+                <span class="cwaa-io">{{ 'ess.infoApply.in_door_card' | translate:'Vào:' }}</span>
+                <nz-date-picker nzSize="small" [(ngModel)]="row.inDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
+                <input nz-input nzSize="small" class="cwaa-num" maxlength="2" placeholder="HH"
+                       [ngModel]="row.inHour" (ngModelChange)="row.inHour = normalizeNumber($event, 23)">
+                <input nz-input nzSize="small" class="cwaa-num" maxlength="2" placeholder="mm"
+                       [ngModel]="row.inMinute" (ngModelChange)="row.inMinute = normalizeNumber($event, 59)">
+              </div>
+              <div class="d-flex align-items-center gap-1">
+                <span class="cwaa-io">{{ 'ess.infoApply.out_door_card' | translate:'Ra:' }}</span>
+                <nz-date-picker nzSize="small" [(ngModel)]="row.outDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
+                <input nz-input nzSize="small" class="cwaa-num" maxlength="2" placeholder="HH"
+                       [ngModel]="row.outHour" (ngModelChange)="row.outHour = normalizeNumber($event, 23)">
+                <input nz-input nzSize="small" class="cwaa-num" maxlength="2" placeholder="mm"
+                       [ngModel]="row.outMinute" (ngModelChange)="row.outMinute = normalizeNumber($event, 59)">
+              </div>
+            </td>
+            <td><input nz-input nzSize="small" [(ngModel)]="row.remark"></td>
+            <td class="cwaa-affirm" [innerHTML]="row.affirmStr"></td>
+          </tr>
+        </tbody>
+        <ng-template #cwaaTotalTpl let-total>
+          {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+        </ng-template>
+      </nz-table>
+    </nz-card>
   </div>
 </div>

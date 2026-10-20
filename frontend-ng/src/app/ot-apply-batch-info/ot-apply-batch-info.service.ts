@@ -14,8 +14,8 @@ const API_BASE = '/ar/attendanceMintenance/api/overtime';
 const EXCEL_TEMPLATE_NAME = 'OvertimeApply_add_Template';
 
 /**
- * Gọi lại nguyên các API JSON đã có sẵn ở ArOvertimeManagentController (không đổi backend) - bản
- * Angular của ess/infoApply/viewPiciOtAffirmLBatchList.html (Thymeleaf + DataTables + jQuery).
+ * Service dùng chung cho các trang tăng ca (component riêng của thư mục này đã bỏ - menu chuyển sang
+ * PiciOtAffirmBatchComponent): chi tiết đơn, tìm nhân viên, tải mẫu / import Excel tăng ca.
  */
 @Injectable({ providedIn: 'root' })
 export class OtApplyBatchInfoService {

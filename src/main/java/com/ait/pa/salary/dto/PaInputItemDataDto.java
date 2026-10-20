@@ -33,6 +33,15 @@ public class PaInputItemDataDto {
     private String dateLeft;
     private String startMonth;
     private String endMonth;
+    // Ngày hiệu lực (YYYY-MM-DD) - tính lương theo ngày, thay cho startMonth/endMonth
+    private String startDate;
+    private String endDate;
+
+    // PA_PARAM_DATA_OTHER (DISTINCT_FIELD khác PERSON_ID)
+    private String field1Value;
+    private String field2Value;
+    private String field1Name;
+    private String field2Name;
     private String cpnyId;
     private String cpnyName;
     private String isApply;
@@ -44,6 +53,7 @@ public class PaInputItemDataDto {
     private String deptNos;
     private String empSearch;
     private String itemType;
+    private String field1Search;
 
     // Server-side pagination (DataTables)
     private int draw;

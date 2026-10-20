@@ -1,6 +1,7 @@
 package com.ait.ess.infoApplyAttendance.mapper;
 
 import com.ait.ar.attendanceMintenance.dto.EssLeaveApplyDto;
+import com.ait.ess.infoApplyAttendance.dto.EssAttendanceExDetailDto;
 import com.ait.ess.infoApplyAttendance.dto.EssAttendanceExForBatchDto;
 import com.ait.sy.syAffirm.dto.SyAffirmEmailDto;
 import org.apache.ibatis.annotations.Mapper;
@@ -15,6 +16,8 @@ public interface EssAttendanceExForBatchMapper {
     List<EssAttendanceExForBatchDto> selectCheckAttendanceExForBatchList(EssAttendanceExForBatchDto params);
 
     EssLeaveApplyDto selectCardApplyInfo(@Param("applyNo") String applyNo);
+
+    EssAttendanceExDetailDto selectAttendanceExDetail(@Param("applyNo") String applyNo);
 
     List<SyAffirmEmailDto> selectCardApprovalInfo(@Param("applyNo") String applyNo,
             @Param("applyType") String applyType);

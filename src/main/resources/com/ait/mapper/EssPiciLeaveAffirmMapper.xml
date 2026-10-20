@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- Xin nghỉ phép hàng loạt - port từ Hanwha_HTSV (viewApplyAttenanceBatchInfoList.jsp / viewApplyAttenanceManagentInfoList_new.jsp,
+     sqlInfoApplyLeave.xml getNullBatchLeaveAffirmInfoList / addAttendanceApplyInfoForBatch / updateLeaveApplyInfoForBatch /
+     getAttendanceInformation / insertArShiftChange). Ngày nhận/trả dạng 'DD/MM/YYYY', giờ dạng 'HH24:MI'. -->
+<mapper namespace="com.ait.ess.infoApplyAttendance.mapper.EssPiciLeaveAffirmMapper">
+
+    <resultMap id="PiciLeaveResultMap" type="com.ait.ess.infoApplyAttendance.dto.EssPiciLeaveAffirmDto">
+        <result column="APPLY_NO" property="applyNo" />
+        <result column="PERSON_ID" property="personId" />
+        <result column="EMPID" property="empId" />
+        <result column="LOCAL_NAME" property="localName" />
+        <result column="DEPT_NAME" property="deptName" />
+        <result column="SHIFT_NAME" property="shiftName" />
+        <result column="POST_FAMILY" property="postFamily" />
+        <result column="DUTY_NO" property="dutyNo" />
+        <result column="APPLY_TIME" property="applyTime" />
+        <result column="LEAVE_TYPE_CODE" property="leaveTypeCode" />
+        <result column="LEAVE_TYPE_CODE_NAME" property="leaveTypeName" />
+        <result column="FROM_DATE" property="fromDate" />
+        <result column="FROM_TIME" property="fromTime" />
+        <result column="TO_DATE" property="toDate" />
+        <result column="TO_TIME" property="toTime" />
+        <result column="APPLY_LENGTH" property="applyLength" />
+        <result column="DAY_HOURS" property="dayHours" />
+        <result column="LEAVE_REASON" property="leaveReason" />
+        <result column="HR_COMMENT" property="hrComment" />
+        <result column="AFFIRM_FLAG" property="affirmFlag" />
+        <result column="AFFIRM_FLAG_NAME" property="affirmFlagName" />
+        <result column="CONFIRM_FLAG" property="confirmFlag" />
+        <result column="TOT_VAC_CNT" property="totVacCnt" />
+        <result column="SHENGYU_VAC_CNT" property="remainVacCnt" />
+        <result column="AFFIRM_STR" property="affirmStr" />
+        <result column="CREATED_BY" property="createdBy" />
+        <result column="CREATE_DATE" property="createDate" />
+        <result column="UPDATED_BY" property="updatedBy" />
+        <result column="UPDATE_DATE" property="updateDate" />
+    </resultMap>
+
+    <resultMap id="LeaveLengthResultMap" type="com.ait.ess.infoApplyAttendance.dto.EssPiciLeaveAffirmDto">
+        <result column="DAY_HOURS" property="dayHours" />
+        <result column="LEAVE_LENGTH" property="applyLength" />
+    </resultMap>
+
+    <resultMap id="EmpLeaveInfoResultMap" type="com.ait.ess.infoApplyAttendance.dto.EssPiciLeaveAffirmDto">
+        <result column="SHIFT_NAME" property="shiftName" />
+        <result column="POST_FAMILY" property="postFamily" />
+        <result column="DUTY_NO" property="dutyNo" />
+        <result column="TOT_VAC_CNT" property="totVacCnt" />
+        <result column="SHENGYU_VAC_CNT" property="remainVacCnt" />
+    </resultMap>
+
+    <!-- Cột của 1 dòng danh sách - đúng getNullBatchLeaveAffirmInfoList bản gốc -->
+    <sql id="listColumns">
+        TO_CHAR(EL.APPLY_NO) AS APPLY_NO,
+        TO_CHAR(EL.APPLY_TIME, 'DD/MM/YYYY') AS APPLY_TIME,
+        EL.PERSON_ID,
+        TO_CHAR(EL.LEAVE_FROM_TIME, 'DD/MM/YYYY') AS FROM_DATE,
+        TO_CHAR(EL.LEAVE_FROM_TIME, 'HH24:MI') AS FROM_TIME,
+        TO_CHAR(EL.LEAVE_TO_TIME, 'DD/MM/YYYY') AS TO_DATE,
+        TO_CHAR(EL.LEAVE_TO_TIME, 'HH24:MI') AS TO_TIME,
+        TO_CHAR(AR_GET_DAY_HOURS(EL.PERSON_ID, TO_CHAR(EL.LEAVE_FROM_TIME, 'YYYY/MM/DD'))) AS DAY_HOURS,
+        EL.LEAVE_REASON,
+        TO_CHAR(EL.LEAVE_TYPE_CODE) AS LEAVE_TYPE_CODE,
+        GET_GLOBAL_NAME(EL.LEAVE_TYPE_CODE, #{lang, jdbcType=VARCHAR}) AS LEAVE_TYPE_CODE_NAME,
+        EL.HR_COMMENT,
+        TO_CHAR(EL.APPLY_LENGTH) AS APPLY_LENGTH,
+        TO_CHAR(EL.AFFIRM_FLAG) AS AFFIRM_FLAG,
+        TO_CHAR(EL.CONFIRM_FLAG) AS CONFIRM_FLAG,
+        GET_GLOBAL_NAME(EL.AFFIRM_FLAG, #{lang, jdbcType=VARCHAR}) AS AFFIRM_FLAG_NAME,
+        HR.EMPID,
+        HR.LOCAL_NAME,
+        TO_CHAR(HR.POST_FAMILY) AS POST_FAMILY,
+        TO_CHAR(HR.DUTY_NO) AS DUTY_NO,
+        GET_DEPT_NAME(HR.DEPTNO, #{lang, jdbcType=VARCHAR}) AS DEPT_NAME,
+        GET_GLOBAL_NAME(GET_AR_SHIFTNO(EL.PERSON_ID, TO_CHAR(EL.APPLY_TIME, 'YYYY/MM/DD'), EL.CPNY_ID), #{lang, jdbcType=VARCHAR}) AS SHIFT_NAME,
+        TO_CHAR(AR_GET_VAC_FOR_ESS(TO_CHAR(EL.LEAVE_FROM_TIME, 'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, EL.PERSON_ID, '0')
+              + AR_GET_VAC_FOR_ESS(TO_CHAR(EL.LEAVE_FROM_TIME, 'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, EL.PERSON_ID, '4')
+              + AR_GET_VAC_FOR_ESS(TO_CHAR(EL.LEAVE_FROM_TIME, 'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, EL.PERSON_ID, 'LAST_YEAR_VAC')) AS TOT_VAC_CNT,
+        TO_CHAR(AR_GET_VAC_FOR_ESS(TO_CHAR(EL.LEAVE_FROM_TIME, 'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, EL.PERSON_ID, '3')) AS SHENGYU_VAC_CNT,
+        <!-- Người duyệt dạng "1 [EMPID]Tên<br>..." (getAgoAffirmor_ess3401 bản gốc) -->
+        (SELECT LISTAGG(S.AFFIRM_LEVEL || ' [' || HE.EMPID || ']' || HE.LOCAL_NAME || '&lt;br&gt;', '')
+                    WITHIN GROUP (ORDER BY S.AFFIRM_LEVEL)
+           FROM SY_AFFIRM_EMAIL S, HR_EMPLOYEE HE
+          WHERE S.AFFIRM_PERSON_ID = HE.PERSON_ID
+            AND S.APPLY_NO = EL.APPLY_NO
+            AND S.AFFIRM_LEVEL &gt; 0) AS AFFIRM_STR,
+        GET_UPDATED_INFO(EL.CREATED_BY) AS CREATED_BY,
+        TO_CHAR(EL.CREATE_DATE, 'DD/MM/YYYY HH24:MI') AS CREATE_DATE,
+        GET_UPDATED_INFO(EL.UPDATED_BY) AS UPDATED_BY,
+        TO_CHAR(EL.UPDATE_DATE, 'DD/MM/YYYY HH24:MI') AS UPDATE_DATE
+    </sql>
+
+    <select id="selectList" parameterType="com.ait.ess.infoApplyAttendance.dto.EssPiciLeaveAffirmDto" resultMap="PiciLeaveResultMap">
+        SELECT
+            <include refid="listColumns" />
+        FROM ESS_LEAVE_APPLY_TB EL, HR_EMPLOYEE HR
+        WHERE EL.PERSON_ID = HR.PERSON_ID(+)
+          AND EL.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+          AND EL.ACTIVITY = '1'
+          AND EL.BATCH_YN &lt;&gt; '2'
+          AND (EL.PERSON_ID NOT LIKE '111111%' OR (EL.PERSON_ID IS NULL AND EL.CREATED_BY = #{adminID, jdbcType=VARCHAR}))
+          <!-- Phạm vi: phòng ban người đăng nhập làm trưởng (cả cây con) hoặc được phân quyền AR_SUPERVISOR_INFO -->
+          AND (EXISTS (SELECT B1.DEPTID
+                         FROM HR_DEPARTMENT B1
+                        WHERE B1.DEPTNO = HR.DEPTNO
+                        START WITH B1.DEPTNO IN (SELECT HRD.DEPTID
+                                                   FROM HR_DEPARTMENT HRD
+                                                  WHERE HRD.MANAGER_EMP_ID = #{adminID, jdbcType=VARCHAR})
+                      CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+                       UNION
+                       SELECT AR_SUPERVISOR_INFO.DEPTNO
+                         FROM AR_SUPERVISOR_INFO
+                        WHERE AR_SUPERVISOR_INFO.DEPTNO = HR.DEPTNO
+                          AND AR_SUPERVISOR_INFO.PERSON_ID = #{adminID, jdbcType=VARCHAR})
+               OR EL.PERSON_ID IS NULL)
+        <if test="deptNos != null and deptNos != ''">
+          AND INSTR(',' || #{deptNos, jdbcType=VARCHAR} || ',', ',' || HR.DEPTNO || ',') &gt; 0
+        </if>
+        <if test="searchPostFamily != null and searchPostFamily != ''">
+          AND TO_CHAR(HR.POST_FAMILY) = #{searchPostFamily, jdbcType=VARCHAR}
+        </if>
+        <if test="shiftNo != null and shiftNo != ''">
+          AND GET_AR_SHIFTNO(EL.PERSON_ID, TO_CHAR(EL.APPLY_TIME, 'YYYY/MM/DD'), EL.CPNY_ID) = #{shiftNo, jdbcType=VARCHAR}
+        </if>
+        <if test="keyword != null and keyword != ''">
+          AND (HR.EMPID LIKE '%' || #{keyword, jdbcType=VARCHAR} || '%'
+               OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{keyword, jdbcType=VARCHAR})) || '%'
+               OR UPPER(HR.ENGLISH_NAME) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%')
+        </if>
+        <if test="searchLeaveTypeCode != null and searchLeaveTypeCode != ''">
+          AND TO_CHAR(EL.LEAVE_TYPE_CODE) = #{searchLeaveTypeCode, jdbcType=VARCHAR}
+        </if>
+        <if test="searchAffirmFlag != null and searchAffirmFlag != ''">
+          AND TO_CHAR(EL.AFFIRM_FLAG) = #{searchAffirmFlag, jdbcType=VARCHAR}
+        </if>
+        <if test="cancelFlag != null and cancelFlag != ''">
+          AND NVL(TO_CHAR(EL.AFFIRM_FLAG), ' ') &lt;&gt; '14014310'
+        </if>
+        <if test="searchConfirmFlag != null and searchConfirmFlag != ''">
+          AND TO_CHAR(EL.CONFIRM_FLAG) = #{searchConfirmFlag, jdbcType=VARCHAR}
+        </if>
+        <!-- Lọc kỳ: đơn bắt đầu trong kỳ, hoặc bao trùm kỳ, hoặc kết thúc trong kỳ - đúng điều kiện bản gốc -->
+        <if test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+          AND ((TRUNC(EL.LEAVE_FROM_TIME) &gt;= TO_DATE(#{startDate, jdbcType=VARCHAR}, 'DD/MM/YYYY')
+                AND TRUNC(EL.LEAVE_FROM_TIME) &lt;= TO_DATE(#{endDate, jdbcType=VARCHAR}, 'DD/MM/YYYY'))
+            OR (TRUNC(EL.LEAVE_FROM_TIME) &lt;= TO_DATE(#{startDate, jdbcType=VARCHAR}, 'DD/MM/YYYY')
+                AND TRUNC(EL.LEAVE_TO_TIME) &gt; TO_DATE(#{endDate, jdbcType=VARCHAR}, 'DD/MM/YYYY'))
+            OR (TRUNC(EL.LEAVE_TO_TIME) &gt; TO_DATE(#{startDate, jdbcType=VARCHAR}, 'DD/MM/YYYY')
+                AND TRUNC(EL.LEAVE_TO_TIME) &lt; TO_DATE(#{endDate, jdbcType=VARCHAR}, 'DD/MM/YYYY')))
+        </if>
+        ORDER BY EL.APPLY_TIME DESC NULLS FIRST, EL.APPLY_NO DESC
+    </select>
+
+    <select id="selectByApplyNo" resultMap="PiciLeaveResultMap">
+        SELECT
+            <include refid="listColumns" />
+        FROM ESS_LEAVE_APPLY_TB EL, HR_EMPLOYEE HR
+        WHERE EL.PERSON_ID = HR.PERSON_ID(+)
+          AND EL.APPLY_NO = #{applyNo, jdbcType=VARCHAR}
+    </select>
+
+    <delete id="deleteEmptyApply">
+        DELETE FROM ESS_LEAVE_APPLY_TB
+         WHERE PERSON_ID IS NULL
+           AND CREATED_BY = #{adminID, jdbcType=VARCHAR}
+    </delete>
+
+    <select id="getNextApplySeq" resultType="java.lang.Long">
+        SELECT ESS_APPLY_SEQ.NEXTVAL FROM DUAL
+    </select>
+
+    <insert id="insertEmptyApply">
+        INSERT INTO ESS_LEAVE_APPLY_TB (
+            APPLY_NO,
+            LEAVE_TYPE_NO,
+            LEAVE_FROM_TIME,
+            LEAVE_TO_TIME,
+            CREATE_DATE,
+            CREATED_BY,
+            CREATED_IP,
+            CPNY_ID,
+            BATCH_YN,
+            APPLY_TIME,
+            ACTIVITY,
+            SEND_EMAIL_FLAG
+        ) VALUES (
+            #{applyNo, jdbcType=VARCHAR},
+            '21',
+            TRUNC(SYSDATE),
+            TRUNC(SYSDATE),
+            SYSDATE,
+            #{adminID, jdbcType=VARCHAR},
+            #{adminIP, jdbcType=VARCHAR},
+            #{cpnyId, jdbcType=VARCHAR},
+            1,
+            SYSDATE,
+            1,
+            0
+        )
+    </insert>
+
+    <!-- Đúng callength() bản gốc: GET_AR_LEAVE_LENGTH nhận mã loại nghỉ trực tiếp (không qua GET_CODE_NO) -->
+    <select id="selectLeaveLength" parameterType="com.ait.ess.infoApplyAttendance.dto.EssPiciLeaveAffirmDto" resultMap="LeaveLengthResultMap">
+        SELECT TO_CHAR(AR_GET_DAY_HOURS(#{personId, jdbcType=VARCHAR},
+                                        TO_CHAR(TO_DATE(#{fromDate, jdbcType=VARCHAR} || ' ' || #{fromTime, jdbcType=VARCHAR}, 'DD/MM/YYYY HH24:MI'), 'YYYY-MM-DD HH24:MI:SS'))) AS DAY_HOURS,
+               TO_CHAR(GET_AR_LEAVE_LENGTH(#{personId, jdbcType=VARCHAR}, #{cpnyId, jdbcType=VARCHAR},
+                                           TO_DATE(#{fromDate, jdbcType=VARCHAR} || ' ' || #{fromTime, jdbcType=VARCHAR}, 'DD/MM/YYYY HH24:MI'),
+                                           TO_DATE(#{toDate, jdbcType=VARCHAR} || ' ' || #{toTime, jdbcType=VARCHAR}, 'DD/MM/YYYY HH24:MI'),
+                                           #{leaveTypeCode, jdbcType=VARCHAR})) AS LEAVE_LENGTH
+          FROM DUAL
+    </select>
+
+    <select id="selectEmpLeaveInfo" resultMap="EmpLeaveInfoResultMap">
+        SELECT GET_GLOBAL_NAME(GET_AR_SHIFTNO(HE.PERSON_ID, TO_CHAR(SYSDATE, 'YYYY/MM/DD'), HE.CPNY_ID), #{lang, jdbcType=VARCHAR}) AS SHIFT_NAME,
+               TO_CHAR(HE.POST_FAMILY) AS POST_FAMILY,
+               TO_CHAR(HE.DUTY_NO) AS DUTY_NO,
+               TO_CHAR(AR_GET_VAC_FOR_ESS(D.D_DASH, #{cpnyId, jdbcType=VARCHAR}, HE.PERSON_ID, '0')
+                     + AR_GET_VAC_FOR_ESS(D.D_DASH, #{cpnyId, jdbcType=VARCHAR}, HE.PERSON_ID, '4')
+                     + AR_GET_VAC_FOR_ESS(D.D_DASH, #{cpnyId, jdbcType=VARCHAR}, HE.PERSON_ID, 'LAST_YEAR_VAC')) AS TOT_VAC_CNT,
+               TO_CHAR(AR_GET_VAC_FOR_ESS(D.D_DASH, #{cpnyId, jdbcType=VARCHAR}, HE.PERSON_ID, '3')) AS SHENGYU_VAC_CNT
+          FROM HR_EMPLOYEE HE,
+               (SELECT TO_CHAR(TO_DATE(#{applyDate, jdbcType=VARCHAR}, 'DD/MM/YYYY'), 'YYYY-MM-DD') AS D_DASH FROM DUAL) D
+         WHERE HE.PERSON_ID = #{personId, jdbcType=VARCHAR}
+           AND HE.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+    </select>
+
+    <select id="checkLeaveClash" parameterType="com.ait.ess.infoApplyAttendance.dto.EssPiciLeaveAffirmDto" resultType="int">
+        SELECT AR_GET_LEAVE_CLASH(
+                   #{applyNo, jdbcType=VARCHAR},
+                   #{personId, jdbcType=VARCHAR},
+                   TO_CHAR(TO_DATE(#{fromDate, jdbcType=VARCHAR} || ' ' || #{fromTime, jdbcType=VARCHAR}, 'DD/MM/YYYY HH24:MI'), 'YYYY-MM-DD HH24:MI'),
+                   TO_CHAR(TO_DATE(#{toDate, jdbcType=VARCHAR} || ' ' || #{toTime, jdbcType=VARCHAR}, 'DD/MM/YYYY HH24:MI'), 'YYYY-MM-DD HH24:MI'))
+          FROM DUAL
+    </select>
+
+    <!-- Đúng ess.infoApplyLeave.updateLeaveApplyInfoForBatch; thêm SEND_EMAIL_FLAG = 0 + MISDOCID mới để đơn
+         được gửi (lại) sang hộp phê duyệt Cleverse -->
+    <update id="updateLeaveApply" parameterType="com.ait.ess.infoApplyAttendance.dto.EssPiciLeaveAffirmDto">
+        UPDATE ESS_LEAVE_APPLY_TB
+           SET PERSON_ID = #{personId, jdbcType=VARCHAR},
+               APPLY_TIME = SYSDATE,
+               LEAVE_FROM_TIME = TO_DATE(#{fromDate, jdbcType=VARCHAR} || ' ' || #{fromTime, jdbcType=VARCHAR}, 'DD/MM/YYYY HH24:MI'),
+               LEAVE_TO_TIME = TO_DATE(#{toDate, jdbcType=VARCHAR} || ' ' || #{toTime, jdbcType=VARCHAR}, 'DD/MM/YYYY HH24:MI'),
+               LEAVE_REASON = #{leaveReason, jdbcType=VARCHAR},
+               LEAVE_TYPE_CODE = #{leaveTypeCode, jdbcType=VARCHAR},
+               APPLY_LENGTH = GET_AR_LEAVE_LENGTH(#{personId, jdbcType=VARCHAR}, #{cpnyId, jdbcType=VARCHAR},
+                                  TO_DATE(#{fromDate, jdbcType=VARCHAR} || ' ' || #{fromTime, jdbcType=VARCHAR}, 'DD/MM/YYYY HH24:MI'),
+                                  TO_DATE(#{toDate, jdbcType=VARCHAR} || ' ' || #{toTime, jdbcType=VARCHAR}, 'DD/MM/YYYY HH24:MI'),
+                                  GET_CODE_NO(#{leaveTypeCode, jdbcType=VARCHAR}, '21', #{cpnyId, jdbcType=VARCHAR}, 'CODE')),
+               AFFIRM_FLAG = 14014306,
+               ACTIVITY = 1,
+               BATCH_NO = 0,
+               UPDATE_DATE = SYSDATE,
+               UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+               UPDATED_IP = #{adminIP, jdbcType=VARCHAR},
+               CONFIRM_FLAG = 0,
+               CONFIRM_DATE = NULL,
+               CONFIRM_BY = NULL,
+               CONFIRM_IP = NULL,
+               CPNY_ID = #{cpnyId, jdbcType=VARCHAR},
+               SEND_EMAIL_FLAG = 0,
+               MISDOCID = #{misDocId, jdbcType=VARCHAR}
+         WHERE APPLY_NO = #{applyNo, jdbcType=VARCHAR}
+    </update>
+
+    <select id="selectNextMisDocId" resultType="java.lang.String">
+        SELECT TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS') || LPAD(MISDOCID.NEXTVAL, 7, 0) FROM DUAL
+    </select>
+
+    <insert id="insertArShiftChange">
+        INSERT INTO AR_SHIFT_CHANGE (NO, PERSON_ID, CPNY_ID, DATE_STR, ACTIVITY, CREATE_DATE, END_DATE_STR, CHANGE_TYPE)
+        SELECT AR_SHIFT_CHANGE_SEQ.NEXTVAL,
+               HR.PERSON_ID,
+               HR.CPNY_ID,
+               TO_CHAR(EL.LEAVE_FROM_TIME, 'YYYY/MM/DD'),
+               0,
+               SYSDATE,
+               TO_CHAR(EL.LEAVE_TO_TIME, 'YYYY/MM/DD'),
+               '考勤确认'
+          FROM ESS_LEAVE_APPLY_TB EL, HR_EMPLOYEE HR
+         WHERE EL.PERSON_ID = HR.PERSON_ID
+           AND EL.ACTIVITY = '1'
+           AND EL.APPLY_NO = #{applyNo, jdbcType=VARCHAR}
+    </insert>
+
+</mapper>

@@ -5,10 +5,10 @@ import {
   CancelResult,
   CodeItem,
   EssBasicInfoDto,
-  LeaveApplyDetailResponse,
   MyLeaveApplyRow,
   MyLeaveApplySearchParams,
 } from './apply-attendance-info-list.model';
+import { LeaveApplyDetail } from '../shared/leave-apply-detail/leave-apply-detail.model';
 
 const API_BASE = '/ess/infoApplyAttendance/api/myLeaveApply';
 
@@ -39,10 +39,10 @@ export class ApplyAttendanceInfoListService {
     return this.http.post<CancelResult>(`${API_BASE}/cancel`, applyNos, { withCredentials: true });
   }
 
-  getDetail(applyNo: string, applyType: string): Observable<LeaveApplyDetailResponse> {
+  getDetail(applyNo: string, applyType: string): Observable<LeaveApplyDetail> {
     let httpParams = new HttpParams().set('applyNo', applyNo);
     if (applyType) httpParams = httpParams.set('applyType', applyType);
-    return this.http.get<LeaveApplyDetailResponse>('/ar/attendanceMintenance/api/leaveApply/detail', {
+    return this.http.get<LeaveApplyDetail>('/ar/attendanceMintenance/api/leaveApply/detail', {
       params: httpParams,
       withCredentials: true,
     });

@@ -33,6 +33,8 @@ const I18N_KEYS = [
   'pa.inputItemParam.delete', 'pa.inputItemParam.save', 'pa.inputItemParam.editTitle',
   'pa.inputItemParam.confirmDelete', 'pa.inputItemParam.selectRequired', 'pa.inputItemParam.selectOne',
   'pa.inputItemParam.validateRequired',
+  'pa.inputItemParam.prorateType', 'pa.inputItemParam.prorateType.hint', 'pa.inputItemParam.prorateType.0',
+  'pa.inputItemParam.prorateType.1', 'pa.inputItemParam.prorateType.2', 'pa.inputItemParam.prorateType.3',
   'pa.salaryCode.itemType.all', 'pa.salaryCode.itemType.std', 'pa.salaryCode.itemType.adj',
   'pa.salaryCode.itemType.excPay', 'pa.salaryCode.itemType.adjDed', 'pa.salaryCode.itemType.excDed',
   'pa.salaryCode.itemType.calc',
@@ -55,6 +57,15 @@ const ITEM_TYPES: ItemTypeOption[] = [
   { value: 6, key: 'pa.salaryCode.itemType.calc', fallback: 'Hạng mục tính toán' },
 ];
 
+/** PA_PARAM_ITEM_PARAM.PRORATE_TYPE - cách gộp nhiều bản ghi PA_PARAM_DATA trong cùng kỳ lương khi tính lương
+ *  theo ngày (xem oracle/function/PA_BUILD_PARAM_UPDATE_F.fnc). */
+const PRORATE_TYPES: ItemTypeOption[] = [
+  { value: 0, key: 'pa.inputItemParam.prorateType.0', fallback: 'Cộng dồn' },
+  { value: 1, key: 'pa.inputItemParam.prorateType.1', fallback: 'Lấy giá trị sau cùng trong kỳ' },
+  { value: 2, key: 'pa.inputItemParam.prorateType.2', fallback: 'Chia theo ngày lịch' },
+  { value: 3, key: 'pa.inputItemParam.prorateType.3', fallback: 'Chia theo ngày công thực tế' },
+];
+
 interface EditForm {
   paramNo: string | null;
   cpnyId: string;
@@ -64,11 +75,12 @@ interface EditForm {
   distinctField2nd: string | null;
   defaultVal: string;
   activity: number;
+  prorateType: number;
 }
 
 const EMPTY_FORM: EditForm = {
   paramNo: null, cpnyId: '', itemTypeLabel: '', aliasName: '',
-  distinctField: null, distinctField2nd: null, defaultVal: '', activity: 1,
+  distinctField: null, distinctField2nd: null, defaultVal: '', activity: 1, prorateType: 0,
 };
 
 /**
@@ -109,6 +121,7 @@ const EMPTY_FORM: EditForm = {
 export class ViewPaInputItemParamComponent implements OnInit {
   readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
   readonly itemTypes = ITEM_TYPES;
+  readonly prorateTypes = PRORATE_TYPES;
 
   readonly rows = signal<PaInputItemParamDto[]>([]);
   readonly totalRecords = signal(0);
@@ -151,6 +164,11 @@ export class ViewPaInputItemParamComponent implements OnInit {
 
   itemTypeLabel(value: number): string {
     const item = this.itemTypes.find((i) => i.value === value);
+    return item ? this.i18n.t(item.key, item.fallback) : String(value);
+  }
+
+  prorateTypeLabel(value: number | null | undefined): string {
+    const item = this.prorateTypes.find((i) => i.value === (value ?? 0));
     return item ? this.i18n.t(item.key, item.fallback) : String(value);
   }
 
@@ -249,6 +267,7 @@ export class ViewPaInputItemParamComponent implements OnInit {
           distinctField2nd: dto.distinctField2nd,
           defaultVal: dto.defaultVal || '',
           activity: dto.activity ?? 1,
+          prorateType: dto.prorateType ?? 0,
         };
         this.modalVisible.set(true);
       },
@@ -270,6 +289,7 @@ export class ViewPaInputItemParamComponent implements OnInit {
       distinctField2nd: this.form.distinctField2nd || null,
       defaultVal: this.form.defaultVal.trim(),
       activity: this.form.activity,
+      prorateType: this.form.prorateType,
     };
     this.saving.set(true);
     this.api.update(payload).subscribe({

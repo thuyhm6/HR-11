@@ -1,5 +1,5 @@
 import { CommonModule, formatDate } from '@angular/common';
-import { Component, OnInit, computed, signal } from '@angular/core';
+import { Component, OnInit, ViewChild, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzInputModule } from 'ng-zorro-antd/input';
@@ -10,7 +10,8 @@ import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
-import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
+import { NzSpinModule } from 'ng-zorro-antd/spin';
+import { OtApplyDetailComponent } from '../shared/ot-apply-detail/ot-apply-detail.component';
 import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { TabService } from '../shell/tab.service';
@@ -33,7 +34,7 @@ const I18N_KEYS = [
   'common.selectOne', 'common.approvalStatus', 'common.search', 'common.quickFilter', 'common.cancel',
   'common.no.serial', 'common.startTime', 'common.endTime', 'common.duration', 'common.reason',
   'common.status', 'common.name', 'common.empId', 'common.deptName', 'common.position', 'common.close',
-  'common.selectAll', 'common.stt', 'common.totalRows',
+  'common.selectAll', 'common.stt', 'common.totalRows', 'common.print', 'ess.infoApply.title.overtimeApply',
 ];
 
 /** applyNo chỉ hủy được khi AFFIRM_FLAG thuộc nhóm này (Gửi/Đang duyệt/Đã duyệt) - đúng
@@ -47,7 +48,7 @@ const CANCELABLE_FLAGS = ['14014306', '14014307', '14014308'];
  * tiết luồng phê duyệt. Gọi lại nguyên các API JSON đã có sẵn (không đổi backend) - xem
  * OtApplyInfoListService. Cấu trúc gần như giống hệt apply-attendance-info-list.component.ts (danh
  * sách đơn nghỉ phép) - cùng cơ chế lọc nhanh client-side, chọn dòng hủy đơn, modal chi tiết dùng
- * chung layout nz-descriptions + nz-table (chỉ khác endpoint /overtime/detail và cách định dạng thời
+ * chung layout (nay dùng OtApplyDetailComponent) + (chỉ khác endpoint /overtime/detail và cách định dạng thời
  * lượng: OT hiển thị "X Tiếng Y Phút" trực tiếp từ otApplyHour, khác với đơn nghỉ phép cần chia
  * applyLength/dayHours). Nút "Xin tăng ca" mở tab route Angular /sst-ot-apply-info (đã migrate).
  */
@@ -65,7 +66,8 @@ const CANCELABLE_FLAGS = ['14014306', '14014307', '14014308'];
     NzCheckboxModule,
     NzModalModule,
     NzAlertModule,
-    NzDescriptionsModule,
+    NzSpinModule,
+    OtApplyDetailComponent,
     TranslatePipe,
   ],
   templateUrl: './ot-apply-info-list.component.html',
@@ -105,6 +107,7 @@ export class OtApplyInfoListComponent implements OnInit {
   readonly detailLoading = signal(false);
   readonly detailErrorMessage = signal<string | null>(null);
   readonly detailData = signal<OtApplyDetailResponse | null>(null);
+  @ViewChild(OtApplyDetailComponent) private otdDetail?: OtApplyDetailComponent;
 
   otTypeCode: string | null = null;
   affirmFlag: string | null = null;
@@ -222,9 +225,8 @@ export class OtApplyInfoListComponent implements OnInit {
     this.detailVisible.set(false);
   }
 
-  /** STT dòng phê duyệt - affirmLevel=100 là dòng xác nhận của HR (poiRenderApprovalRows() bản gốc). */
-  approvalSeqLabel(item: { affirmLevel: string }): string {
-    return String(item.affirmLevel) === '100' ? 'HR' : item.affirmLevel;
+  printDetail(): void {
+    this.otdDetail?.print();
   }
 
   deductLabel(deductYn: string | null | undefined): string {

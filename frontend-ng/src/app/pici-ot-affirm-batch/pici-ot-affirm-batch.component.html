@@ -1,0 +1,333 @@
+<div class="row">
+  <div class="col-12">
+    <!-- Điều kiện tìm kiếm + áp dụng hàng loạt - đứng im khi cuộn (xem .sticky-filter-card trong styles.css) -->
+    <nz-card class="mb-3 sticky-filter-card">
+      <form class="row g-2 align-items-end" (ngSubmit)="search()">
+        <div class="col-md-2">
+          <label class="form-label">{{ 'hrm.empinfo.nameAndEmpid' | translate:'Mã nhân viên/Họ tên' }}</label>
+          <input nz-input [(ngModel)]="keyword" name="keyword">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'hr.viewPersonalInfo.title.DEPTNAME' | translate:'Phòng ban' }}</label>
+          <nz-tree-select class="w-100" [nzNodes]="deptNodes()" [(ngModel)]="deptNos" name="deptNos"
+                          nzCheckable nzShowSearch nzAllowClear [nzMaxTagCount]="2"
+                          [nzPlaceHolder]="'hr.viewCondSql.title.QINGXUANZE' | translate:'Lựa chọn'"></nz-tree-select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ L.date[0] | translate:L.date[1] }}</label>
+          <div class="d-flex align-items-center gap-1">
+            <nz-date-picker class="flex-fill" [(ngModel)]="startDate" name="startDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
+            <span>~</span>
+            <nz-date-picker class="flex-fill" [(ngModel)]="endDate" name="endDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
+          </div>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'ar.viewArBaseEmpInfoList.BANZULEIXING.b' | translate:'Ca làm' }}</label>
+          <nz-select class="w-100" [(ngModel)]="shiftNo" name="shiftNo" nzAllowClear nzShowSearch
+                     [nzPlaceHolder]="'hr.viewCondSql.title.QINGXUANZE' | translate:'Lựa chọn'">
+            <nz-option *ngFor="let s of shiftOptions()" [nzValue]="s.shiftNo" [nzLabel]="s.nameVi || s.shiftName || s.shiftNo"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'ess.infoApply.overtime_type' | translate:'Tăng ca' }}</label>
+          <nz-select class="w-100" [(ngModel)]="otTypeCode" name="otTypeCode" nzAllowClear
+                     [nzPlaceHolder]="'hr.viewCondSql.title.QINGXUANZE' | translate:'Lựa chọn'">
+            <nz-option *ngFor="let c of otTypeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ 'ess.infoApply.approval_status' | translate:'Trạng thái duyệt' }}</label>
+          <div class="d-flex align-items-center gap-2">
+            <nz-select class="flex-fill" [(ngModel)]="affirmFlag" name="affirmFlag" nzAllowClear
+                       [nzPlaceHolder]="'hr.viewCondSql.title.QINGXUANZE' | translate:'Lựa chọn'">
+              <nz-option *ngFor="let c of affirmFlagOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+            </nz-select>
+            <!-- Tick = ẩn đơn đã hủy (CANCEL_FLAG bản gốc) -->
+            <label nz-checkbox class="text-nowrap" [(ngModel)]="cancelFlag" name="cancelFlag">
+              {{ 'ess.affirmApply.title.quxiaoshenqing' | translate:'Hủy bỏ' }}
+            </label>
+          </div>
+        </div>
+        <div class="col-md-9 d-flex align-items-end gap-2 flex-wrap">
+          <button nz-button nzType="primary" type="submit">
+            <i class="bx bx-search"></i> {{ L.search[0] | translate:L.search[1] }}
+          </button>
+          <button nz-button nzType="primary" type="button" [nzLoading]="adding()" (click)="addRow()">
+            <i class="bx bx-plus"></i> {{ 'ess.empInfo.insert' | translate:'Thêm mới' }}
+          </button>
+          <button nz-button nzDanger type="button" [nzLoading]="cancelling()" (click)="cancelSelected()">
+            <i class="bx bx-trash"></i> {{ 'ess.empInfo.Delete' | translate:'Xóa' }}
+          </button>
+          <button nz-button nzType="primary" type="button" [nzLoading]="saving()" (click)="save()">
+            <i class="bx bx-save"></i> {{ L.save[0] | translate:L.save[1] }}
+          </button>
+          <button nz-button type="button" (click)="downloadTemplate()">
+            <i class="bx bx-download"></i> {{ 'ess.message.template_download' | translate:'Bản mẫu' }}
+          </button>
+          <button nz-button type="button" [nzLoading]="importing()" (click)="poabImportFile.click()">
+            <i class="bx bx-upload"></i> {{ 'ess.infoApply.EXCEL_IN' | translate:'Chèn file' }}
+          </button>
+          <input #poabImportFile type="file" hidden accept=".xlsx,.xls" (change)="onImportFileSelected($event)">
+          <button nz-button type="button" (click)="exportExcel()">
+            <i class="bx bx-export"></i> {{ L.export[0] | translate:L.export[1] }}
+          </button>
+        </div>
+      </form>
+
+      <!-- Áp dụng hàng loạt cho các dòng đã tick (otAffirm_fillItem bản gốc) -->
+      <div class="row g-2 align-items-end mt-1 pt-2 border-top poab-bulk">
+        <div class="col-md-2">
+          <label class="form-label">{{ 'ess.title.JIABANZHUANGTAI' | translate:'Trạng thái' }}</label>
+          <nz-select class="w-100" [ngModel]="bulkOtTypeCode" nzDisabled
+                     [nzPlaceHolder]="'hr.viewCondSql.title.QINGXUANZE' | translate:'Lựa chọn'">
+            <nz-option *ngFor="let c of otTypeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'ess.infoApply.title.overtimeTime' | translate:'Ngày tăng ca' }}</label>
+          <nz-date-picker class="w-100" [ngModel]="bulkDate" (ngModelChange)="onBulkDateChange($event)" nzFormat="dd/MM/yyyy"></nz-date-picker>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'ess.infoApply.title.startTime' | translate:'Thời gian bắt đầu' }}</label>
+          <nz-select class="w-100" [(ngModel)]="bulkFromTime" nzShowSearch nzAllowClear>
+            <nz-option *ngFor="let tm of timeOptions()" [nzValue]="tm" [nzLabel]="tm"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ L.endTime[0] | translate:L.endTime[1] }}</label>
+          <nz-select class="w-100" [(ngModel)]="bulkToTime" nzShowSearch nzAllowClear>
+            <nz-option *ngFor="let tm of timeOptions()" [nzValue]="tm" [nzLabel]="tm"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ 'hrm.empinfo.reason' | translate:'Lý do' }}</label>
+          <input nz-input [(ngModel)]="bulkRemark">
+        </div>
+        <div class="col-md-2">
+          <button nz-button nzType="primary" type="button" [nzLoading]="filling()" (click)="fillSelected()">
+            <i class="bx bx-check-double"></i> {{ L.fillAll[0] | translate:L.fillAll[1] }}
+          </button>
+        </div>
+      </div>
+    </nz-card>
+
+    <nz-card>
+      <nz-alert *ngIf="errorMessage()" nzType="error" [nzMessage]="errorMessage() ?? ''" class="mb-3"></nz-alert>
+
+      <!-- nzWidthConfig đồng bộ độ rộng cột body với header nhiều tầng khi dùng nzScroll -->
+      <nz-table #poabTable [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="50" [nzShowSizeChanger]="true"
+                [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="poabTotalTpl" nzSize="small" nzBordered
+                [nzScroll]="{ x: isHr ? '3700px' : '3300px', y: 'calc(100vh - 420px)' }"
+                [nzWidthConfig]="widthConfig"
+                class="poab-table">
+        <thead>
+          <tr>
+            <th rowspan="2" class="text-center">NO</th>
+            <th rowspan="2" class="text-center">
+              <label nz-checkbox [ngModel]="allSelected" [nzIndeterminate]="someSelected" (ngModelChange)="toggleSelectAll($event)"></label>
+            </th>
+            <th rowspan="2" class="poab-edit-col">{{ 'ess.infoApply.EMPID' | translate:'Mã nhân viên' }}</th>
+            <th rowspan="2">{{ L.name[0] | translate:L.name[1] }}</th>
+            <th rowspan="2">{{ 'ess.infoApply.DEPT' | translate:'Phòng ban' }}</th>
+            <th rowspan="2">{{ 'hr.viewPersonalInfo.title.banzu' | translate:'Ca' }}</th>
+            <th rowspan="2" class="poab-edit-col">{{ 'ess.infoApply.title.overtimeTime' | translate:'Ngày tăng ca' }}</th>
+            <th [attr.colspan]="isHr ? 8 : 10" class="text-center">{{ 'ess.infoApply.title.apply' | translate:'Xin phép' }}</th>
+            <th rowspan="2" class="poab-edit-col">{{ 'ess.infoApply.Reason' | translate:'Lý do' }}</th>
+            <th colspan="5" class="text-center">{{ 'ess.title.JIABANLEIJI' | translate:'Tổng tăng ca' }}</th>
+            <th colspan="2" class="text-center">{{ 'ar.viewAdjustLeaveTSTOBatchList.JIABANSHANGXIAN.b' | translate:'Giới hạn tăng ca' }}</th>
+            <th rowspan="2">{{ 'hrm.contractInfo.APPROVAL_PERSON' | translate:'Người duyệt' }}</th>
+            <th rowspan="2" class="text-center">{{ L.status[0] | translate:L.status[1] }}</th>
+            <th rowspan="2">{{ L.creator[0] | translate:L.creator[1] }}</th>
+            <ng-container *ngIf="isHr">
+              <th rowspan="2" class="text-center">{{ 'pa.salary.canShu.chuanJianRiQi' | translate:'Ngày tạo' }}</th>
+              <th rowspan="2">{{ 'ar.viewApplyAttenanceManagentInfoList.XIUGAIZHE.b' | translate:'Người sửa' }}</th>
+              <th rowspan="2" class="text-center">{{ 'ar.viewApplyAttenanceManagentInfoList.XIUGAIRIQI.b' | translate:'Thời gian sửa' }}</th>
+            </ng-container>
+          </tr>
+          <tr>
+            <ng-container *ngIf="!isHr">
+              <th class="text-center">{{ 'ess.infoApply.work_time' | translate:'Thời gian vào làm' }}</th>
+              <th class="text-center">{{ 'ess.infoApply.out_work_time' | translate:'Thời gian tan làm' }}</th>
+            </ng-container>
+            <th class="text-center">{{ 'ess.infoApply.in_door_time' | translate:'Thời gian vào' }}</th>
+            <th class="text-center">{{ 'ess.infoApply.out_door_time' | translate:'Thời gian ra' }}</th>
+            <th class="text-center poab-edit-col">{{ 'ess.infoApply.title.startTime' | translate:'Thời gian bắt đầu' }}</th>
+            <th class="text-center poab-edit-col">{{ L.endTime[0] | translate:L.endTime[1] }}</th>
+            <th class="text-center">{{ 'ess.infoApply.overtime_hours' | translate:'Thời lượng' }}</th>
+            <th class="text-center poab-edit-col">
+              {{ 'ess.viewPiciOtAffirmLBatchList.DEDUCT_MEAL_TIME.b' | translate:'Báo cơm' }} /
+              {{ 'heran.ess.viewLikeLeaveApplyInfo.yuanxiuxiri' | translate:'Nghỉ ngơi' }} (30')
+              <label nz-checkbox class="ms-1" [ngModel]="allDeduct" (ngModelChange)="toggleAllDeduct($event)"></label>
+            </th>
+            <th class="text-center poab-edit-col">{{ 'ess.title.KUATIAN' | translate:'Qua đêm' }}</th>
+            <th class="text-center">{{ 'ess.title.JIABANZHUANGTAI' | translate:'Trạng thái' }}</th>
+            <th class="text-center">{{ 'ess.viewPiciOtAffirmBatchList.BENNIAN.b' | translate:'Năm nay' }}</th>
+            <th class="text-center">{{ 'ess.viewPiciOtAffirmBatchList.BENYUE.b' | translate:'Tháng này' }}</th>
+            <th class="text-center">{{ 'ar.viewitemparameter.title.pingshi' | translate:'Ngày thường' }}</th>
+            <th class="text-center">{{ 'ar.viewitemparameter.title.zhoumo' | translate:'Cuối tuần' }}</th>
+            <th class="text-center">{{ 'ar.viewitemparameter.title.jiejiari' | translate:'Ngày nghỉ lễ' }}</th>
+            <th class="text-center">{{ L.yearLimit[0] | translate:L.yearLimit[1] }}</th>
+            <th class="text-center">{{ L.monthLimit[0] | translate:L.monthLimit[1] }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of poabTable.data; let i = index; trackBy: trackByRow" [class.poab-row-selected]="row.selected">
+            <td class="text-center">{{ (poabTable.nzPageIndex - 1) * poabTable.nzPageSize + i + 1 }}</td>
+            <td class="text-center">
+              <label nz-checkbox [(ngModel)]="row.selected" [nzDisabled]="isCancelled(row)"></label>
+            </td>
+
+            <!-- Mã NV: dòng tạo trống -> nhập mã/tên rồi Enter để mở popup tìm nhân viên, dòng đã có NV -> chỉ hiển thị -->
+            <td>
+              <ng-container *ngIf="row.empEditable; else poabEmpText">
+                <div class="poab-emp-input">
+                  <input nz-input nzSize="small" [ngModel]="row.empKeyword" (ngModelChange)="onEmpKeywordChange(row, $event)"
+                         (keydown.enter)="$event.preventDefault(); openEmpPicker(row)"
+                         [placeholder]="'empSearch.placeholder.keyword' | translate:'Nhập mã hoặc họ tên'">
+                  <button nz-button nzSize="small" type="button" (click)="openEmpPicker(row)">
+                    <i class="bx bx-search"></i>
+                  </button>
+                </div>
+              </ng-container>
+              <ng-template #poabEmpText>{{ row.empId }}</ng-template>
+            </td>
+            <td>
+              <a *ngIf="row.canViewDetail; else poabNameText" href="javascript:void(0)" (click)="openDetail(row)">{{ row.localName }}</a>
+              <ng-template #poabNameText>{{ row.localName }}</ng-template>
+            </td>
+            <td [attr.title]="row.deptName || null">{{ row.deptName }}</td>
+            <td>{{ shiftLabel(row) }}</td>
+            <td>
+              <nz-date-picker nzSize="small" class="w-100" [ngModel]="row.applyOtDateObj" (ngModelChange)="onDateChange(row, $event)"
+                              nzFormat="dd/MM/yyyy" [nzAllowClear]="false"></nz-date-picker>
+            </td>
+            <ng-container *ngIf="!isHr">
+              <td class="text-center">{{ row.shiftStartTime }}</td>
+              <td class="text-center">{{ row.shiftEndTime }}</td>
+            </ng-container>
+            <td class="text-center">{{ row.indoorTime }}</td>
+            <td class="text-center">{{ row.outdoorTime }}</td>
+            <td>
+              <nz-select nzSize="small" class="w-100" nzShowSearch [ngModel]="row.otFromTime" (ngModelChange)="onTimeChange(row, 'from', $event)">
+                <nz-option *ngFor="let tm of timeOptions()" [nzValue]="tm" [nzLabel]="tm"></nz-option>
+              </nz-select>
+            </td>
+            <td>
+              <nz-select nzSize="small" class="w-100" nzShowSearch [ngModel]="row.otToTime" (ngModelChange)="onTimeChange(row, 'to', $event)">
+                <nz-option *ngFor="let tm of timeOptions()" [nzValue]="tm" [nzLabel]="tm"></nz-option>
+              </nz-select>
+            </td>
+            <td class="text-center">
+              <ng-container *ngIf="row.otApplyHour">{{ row.otApplyHour }} {{ L.hour[0] | translate:L.hour[1] }}</ng-container>
+            </td>
+            <td class="text-center">
+              <label nz-checkbox [ngModel]="row.deductYn === '1'" (ngModelChange)="onDeductChange(row, $event)"></label>
+            </td>
+            <td class="text-center">
+              <label nz-checkbox [ngModel]="row.offsetYn === '1'" (ngModelChange)="onOffsetChange(row, $event)"></label>
+            </td>
+            <td class="text-center">{{ row.otTypeName }}</td>
+            <td>
+              <input nz-input nzSize="small" [ngModel]="row.applyOtRemark" (ngModelChange)="onRemarkChange(row, $event)">
+            </td>
+            <td class="text-center">{{ row.otTotal }}</td>
+            <td class="text-center">{{ row.otTotalMonth }}</td>
+            <td class="text-center">{{ row.weekdayOtTotal }}</td>
+            <td class="text-center">{{ row.weekendOtTotal }}</td>
+            <td class="text-center">{{ row.holidayOtTotal }}</td>
+            <td class="text-center">{{ yearLimit }}</td>
+            <td class="text-center">{{ monthLimit }}</td>
+            <td class="poab-affirm" [innerHTML]="row.affirmStr || ''"></td>
+            <td class="text-center">{{ row.affirmFlagName }}</td>
+            <td>{{ row.createdBy }}</td>
+            <ng-container *ngIf="isHr">
+              <td class="text-center">{{ row.createDate }}</td>
+              <td>{{ row.updatedBy }}</td>
+              <td class="text-center">{{ row.updateDate }}</td>
+            </ng-container>
+          </tr>
+        </tbody>
+        <ng-template #poabTotalTpl let-total>
+          {{ 'common.totalRows' | translate:'Tổng số dòng:' }} {{ total }}
+        </ng-template>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>
+
+<!-- Popup chi tiết đơn tăng ca (changeURL_ess3403 -> viewApprovaledOtInfo bản gốc) - dùng chung OtApplyDetailComponent -->
+<nz-modal [nzVisible]="detailVisible()" [nzTitle]="'ess.infoApply.title.overtimeApply' | translate:'Xin tăng ca'" nzWidth="70vw"
+          [nzBodyStyle]="{ 'max-height': '75vh', 'overflow-y': 'auto' }"
+          (nzOnCancel)="closeDetail()" [nzFooter]="poabDetailFooter">
+  <ng-container *nzModalContent>
+    <nz-alert *ngIf="detailErrorMessage()" nzType="error" [nzMessage]="detailErrorMessage() ?? ''" class="mb-3"></nz-alert>
+    <nz-spin [nzSpinning]="detailLoading()">
+      <app-ot-apply-detail [data]="detailData()"></app-ot-apply-detail>
+    </nz-spin>
+  </ng-container>
+  <ng-template #poabDetailFooter>
+    <button nz-button nzType="primary" (click)="printDetail()" [disabled]="detailLoading() || !detailData()">
+      <i class="bx bx-printer me-1"></i>{{ 'common.print' | translate:'In' }}
+    </button>
+    <button nz-button (click)="closeDetail()">{{ 'common.close' | translate:'Đóng' }}</button>
+  </ng-template>
+</nz-modal>
+
+<!-- Popup tìm nhân viên cho ô Mã NV (cùng cách làm trang change-user) -->
+<nz-modal [nzVisible]="pickerVisible()" [nzTitle]="'empSearch.title' | translate:'Tìm kiếm nhân viên'"
+          nzWidth="900px" (nzOnCancel)="closeEmpPicker()" [nzFooter]="null">
+  <ng-container *nzModalContent>
+    <form class="row g-2 align-items-end mb-3" (ngSubmit)="pickerSearch()">
+      <div class="col-md-5">
+        <label class="form-label">{{ 'empSearch.field.keyword' | translate:'Mã nhân viên / Họ tên' }}</label>
+        <input nz-input [(ngModel)]="pickerKeyword" name="pickerKeyword"
+               [placeholder]="'empSearch.placeholder.keyword' | translate:'Nhập mã hoặc họ tên'"
+               (keydown.enter)="$event.preventDefault(); pickerSearch()">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">{{ 'empSearch.field.dept' | translate:'Phòng ban' }}</label>
+        <nz-tree-select class="w-100" [nzNodes]="deptNodes()" [(ngModel)]="pickerDeptNos" name="pickerDeptNos"
+                        nzCheckable nzShowSearch nzAllowClear
+                        [nzPlaceHolder]="'vdp.search.dept.placeholder' | translate:'Chọn phòng ban'"></nz-tree-select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">{{ 'empSearch.field.empOffice' | translate:'Trạng thái làm việc' }}</label>
+        <nz-select class="w-100" [(ngModel)]="pickerEmpOffice" name="pickerEmpOffice" nzAllowClear
+                   [nzPlaceHolder]="'common.selectAll' | translate:'-- Tất cả --'">
+          <nz-option *ngFor="let c of empOfficeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-12 d-flex gap-2">
+        <button nz-button nzType="primary" type="submit">
+          <i class="bx bx-search"></i> {{ 'common.search' | translate:'Tìm kiếm' }}
+        </button>
+        <button nz-button type="button" (click)="pickerClear()">
+          <i class="bx bx-x"></i> {{ 'empSearch.btn.clearFilter' | translate:'Xóa bộ lọc' }}
+        </button>
+      </div>
+    </form>
+
+    <nz-alert *ngIf="pickerErrorMessage()" nzType="error" [nzMessage]="pickerErrorMessage() ?? ''" class="mb-2"></nz-alert>
+
+    <nz-table #poabPickerTable [nzData]="pickerRows()" [nzLoading]="pickerLoading()" [nzPageSize]="10" nzSize="small">
+      <thead>
+        <tr>
+          <th class="text-center" nzWidth="60px">{{ 'empSearch.col.no' | translate:'STT' }}</th>
+          <th nzWidth="110px">{{ 'common.empId' | translate:'Mã nhân viên' }}</th>
+          <th>{{ 'common.empName' | translate:'Họ tên' }}</th>
+          <th>{{ 'common.deptName' | translate:'Phòng ban' }}</th>
+          <th>{{ 'epi.field.position' | translate:'Chức vụ' }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let emp of poabPickerTable.data; let i = index" class="poab-picker-row" (click)="pickEmployee(emp)">
+          <td class="text-center">{{ i + 1 }}</td>
+          <td>{{ emp.empId }}</td>
+          <td>{{ emp.localName }}</td>
+          <td>{{ emp.deptName || emp.deptNo }}</td>
+          <td>{{ emp.position }}</td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </ng-container>
+</nz-modal>
