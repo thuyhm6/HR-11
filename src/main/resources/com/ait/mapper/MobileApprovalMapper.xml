@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- Mobile API (APP-HR): kiểm tra quyền duyệt trên SY_AFFIRM_EMAIL trước khi gọi PKG_AFFIRM_EMAIL.PR_AFFIRM_EXECUTE.
+     Tham số người duyệt truyền tường minh (approverId = personId trong token). -->
+<mapper namespace="com.ait.mobile.approval.mapper.MobileApprovalMapper">
+
+    <resultMap id="AffirmRowResultMap" type="com.ait.mobile.approval.dto.MobileAffirmRowDto">
+        <result property="applyNo"         column="APPLY_NO"/>
+        <result property="applyType"       column="APPLY_TYPE"/>
+        <result property="applyTypeCode"   column="APPLY_TYPE_CODE"/>
+        <result property="applyFlag"       column="APPLY_FLAG"/>
+        <result property="affirmLevel"     column="AFFIRM_LEVEL"/>
+        <result property="applyPersonId"   column="APPLY_PERSON_ID"/>
+        <result property="title"           column="TITLE"/>
+        <result property="applyPersonInfo" column="APPLY_PERSON_INFO"/>
+        <result property="statusName"      column="STATUS_NAME"/>
+    </resultMap>
+
+    <sql id="rowColumns">
+        TO_CHAR(EM.APPLY_NO) AS APPLY_NO,
+        TO_CHAR(EM.APPLY_TYPE) AS APPLY_TYPE,
+        TO_CHAR(EM.APPLY_TYPE_CODE) AS APPLY_TYPE_CODE,
+        TO_CHAR(EM.APPLY_FLAG) AS APPLY_FLAG,
+        TO_CHAR(EM.AFFIRM_LEVEL) AS AFFIRM_LEVEL,
+        EM.APPLY_PERSON_ID,
+        EM.TITLE,
+        EM.APPLY_PERSON_INFO,
+        GET_CODE_NAME(EM.APPLY_AFFIRM_FLAG, #{lang, jdbcType=VARCHAR}) AS STATUS_NAME
+    </sql>
+
+    <select id="selectPendingRow" resultMap="AffirmRowResultMap">
+        SELECT * FROM (
+            SELECT <include refid="rowColumns"/>
+              FROM SY_AFFIRM_EMAIL EM
+             WHERE EM.ACTIVITY = 0
+               AND EM.AFFIRM_PERSON_ID = #{approverId, jdbcType=VARCHAR}
+               AND TO_CHAR(EM.APPLY_NO) = #{applyNo, jdbcType=VARCHAR}
+               AND TO_CHAR(EM.APPLY_TYPE) = #{applyType, jdbcType=VARCHAR}
+               AND EM.APPLY_AFFIRM_FLAG NOT IN ('14014310', '14014309', '14014308')
+               AND NOT EXISTS (SELECT 1 FROM ESS_LEAVE_APPLY_TB TB WHERE TB.APPLY_NO = EM.APPLY_NO AND TB.BATCH_YN = 2)
+               AND NOT EXISTS (SELECT 1 FROM ESS_APPLY_OT OT WHERE OT.APPLY_NO = EM.APPLY_NO AND OT.BATCH_YN = 2)
+             ORDER BY EM.AFFIRM_LEVEL
+        ) WHERE ROWNUM = 1
+    </select>
+
+    <select id="countAffirmRows" resultType="int">
+        SELECT COUNT(1)
+          FROM SY_AFFIRM_EMAIL EM
+         WHERE EM.AFFIRM_PERSON_ID = #{approverId, jdbcType=VARCHAR}
+           AND TO_CHAR(EM.APPLY_NO) = #{applyNo, jdbcType=VARCHAR}
+    </select>
+
+    <select id="selectLatestRow" resultMap="AffirmRowResultMap">
+        SELECT * FROM (
+            SELECT <include refid="rowColumns"/>
+              FROM SY_AFFIRM_EMAIL EM
+             WHERE EM.AFFIRM_PERSON_ID = #{approverId, jdbcType=VARCHAR}
+               AND TO_CHAR(EM.APPLY_NO) = #{applyNo, jdbcType=VARCHAR}
+             ORDER BY EM.CREATE_DATE DESC
+        ) WHERE ROWNUM = 1
+    </select>
+
+</mapper>

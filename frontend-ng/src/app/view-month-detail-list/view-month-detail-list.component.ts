@@ -22,6 +22,12 @@ const EMP_OFFICE_PARENT_CODE = '15118';
 const EXPORT_REPORT_TYPE = '305';
 /** AR_CALENDER.TYPEID của ngày làm việc - các ngày khác (nghỉ/lễ) tô xám như bản gốc. */
 const WORKDAY_TYPE_ID = '1440';
+/** Kỳ dữ liệu (seach_PERIOD_TYPE bản gốc): value gửi backend + nhãn đa ngôn ngữ. */
+const PERIOD_OPTIONS = [
+  { value: '', key: 'ess.viewMonthDetailList.PERIOD_STD.b', fallback: '25 tháng trước - 24 tháng này' },
+  { value: '25_31', key: 'ess.viewMonthDetailList.PERIOD_25_END.b', fallback: '25 - cuối tháng này' },
+  { value: '01_31', key: 'ess.viewMonthDetailList.PERIOD_01_END.b', fallback: '01 - cuối tháng này' },
+];
 
 /** Nhãn cột: key message.properties + fallback tiếng Việt (+ hậu tố), hoặc chữ cố định (VD '150%').
  *  Có suffixKey thì hậu tố là text đa ngôn ngữ đặt trong ngoặc (suffix là fallback), không thì suffix là chữ cố định. */
@@ -178,6 +184,7 @@ const I18N_KEYS = [
     'ess.viewMonthDetailList.DAY_LEAVE_DETAIL.b',
     'ess.viewMonthDetailList.DAY_OT_DETAIL.b', 'ess.viewMonthDetailList.NIGHT_OT_DETAIL.b',
     'ess.viewMonthDetailList.msg.noData', 'ess.viewMonthDetailList.msg.loadFailed', 'mep.msg.loadDeptFailed',
+    'ess.viewMonthDetailList.PERIOD_TYPE.b', ...PERIOD_OPTIONS.map((p) => p.key),
     ...NUM_GROUPS.flatMap((g) => [g.label.key, ...g.cols.flatMap((c) => [c.label?.key, c.label?.suffixKey])])
       .filter((k): k is string => !!k),
   ]),
@@ -191,8 +198,8 @@ interface ViewRow {
 }
 
 /**
- * Bản Angular của ess/tempEmp/viewMonthDetailList.jsp (Hanwha_HTSV) - Chi tiết chấm công tháng theo kỳ công
- * 25 tháng trước -> 24 tháng chọn: thông tin nhân viên, tổng hợp tăng ca/phụ cấp/ngày công/nghỉ phép và 3 nhóm
+ * Bản Angular của ess/tempEmp/viewMonthDetailList.jsp (Hanwha_HTSV) - Chi tiết chấm công tháng theo kỳ dữ liệu
+ * (mặc định 25 tháng trước -> 24 tháng chọn; hoặc 25 -> cuối tháng / 01 -> cuối tháng): thông tin nhân viên, tổng hợp tăng ca/phụ cấp/ngày công/nghỉ phép và 3 nhóm
  * cột chi tiết theo ngày (công, TC ngày, TC đêm). Dữ liệu lấy 1 lần từ /detail (cùng SQL với báo cáo 305),
  * lọc nhanh + sắp xếp + phân trang ở client như DataTables bản gốc. 4 cột đầu cố định khi cuộn ngang
  * (fixedColumns leftColumns: 4 bản gốc) bằng CSS sticky - pattern giống ViewArPersonalListComponent vì
@@ -221,6 +228,7 @@ export class ViewMonthDetailListComponent implements OnInit {
   readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
   readonly numGroups = NUM_GROUPS;
   readonly workdayTypeId = WORKDAY_TYPE_ID;
+  readonly periodOptions = PERIOD_OPTIONS;
 
   readonly dates = signal<MonthDetailDate[]>([]);
   readonly allRows = signal<ViewRow[]>([]);
@@ -239,6 +247,7 @@ export class ViewMonthDetailListComponent implements OnInit {
   });
 
   monthValue: Date = new Date();
+  periodType = '';
   keyword = '';
   deptNos: string[] = [];
   nationalityCode: string | null = null;
@@ -311,6 +320,7 @@ export class ViewMonthDetailListComponent implements OnInit {
     return {
       month: String(d.getMonth() + 1).padStart(2, '0'),
       year: String(d.getFullYear()),
+      periodType: this.periodType ?? '',
       keyword: this.keyword.trim(),
       deptNos: this.expandDeptSelection(this.deptNos).join(','),
       nationalityCode: this.nationalityCode ?? '',

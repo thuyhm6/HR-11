@@ -176,7 +176,8 @@ public class EssInfoApplyController {
                 response.put("message", "Không có đơn nào được chọn.");
                 return ResponseEntity.ok(response);
             }
-            String errors = syAffirmEmailService.executeAffirm(items);
+            // Chỉ dùng applyNo / applyType / flag / ý kiến từ client; cấp duyệt, APPLY_FLAG lấy từ DB theo người đăng nhập
+            String errors = syAffirmEmailService.executeAffirmForCurrentUser(items);
             if (errors.isEmpty()) {
                 response.put("success", true);
             } else {

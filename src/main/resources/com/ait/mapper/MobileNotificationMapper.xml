@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- Mobile API (APP-HR): thông báo trong app + push (MB_NOTIFICATION, MB_DEVICE).
+     Các câu quét chạy từ scheduler (không có session) => không dùng #{adminID}/#{cpnyId}/#{lang} do interceptor inject;
+     ngôn ngữ lấy theo MB_DEVICE.LANG của người nhận. Chỉ tạo thông báo cho người đã cài app và chỉ với đơn tạo SAU
+     lần đầu cài app (tránh dồn thông báo cũ khi mới triển khai). -->
+<mapper namespace="com.ait.mobile.notification.mapper.MobileNotificationMapper">
+
+    <resultMap id="NotificationResultMap" type="com.ait.mobile.notification.dto.MobileNotificationDto">
+        <id     property="notiNo"      column="NOTI_NO"/>
+        <result property="recipientId" column="PERSON_ID"/>
+        <result property="notiType"    column="NOTI_TYPE"/>
+        <result property="title"       column="TITLE"/>
+        <result property="body"        column="BODY"/>
+        <result property="refType"     column="REF_TYPE"/>
+        <result property="refId"       column="REF_ID"/>
+        <result property="refExtra"    column="REF_EXTRA"/>
+        <result property="read"        column="IS_READ" javaType="boolean"/>
+        <result property="createDate"  column="CREATE_DATE_STR"/>
+    </resultMap>
+
+    <resultMap id="TargetResultMap" type="com.ait.mobile.notification.dto.MobileNotiTargetDto">
+        <result property="recipientId"   column="RECIPIENT_ID"/>
+        <result property="companyId"     column="CPNY_ID"/>
+        <result property="deviceLang"    column="DEVICE_LANG"/>
+        <result property="applyNo"       column="APPLY_NO"/>
+        <result property="applyType"     column="APPLY_TYPE"/>
+        <result property="category"      column="CATEGORY"/>
+        <result property="affirmLevel"   column="AFFIRM_LEVEL"/>
+        <result property="affirmFlag"    column="AFFIRM_FLAG"/>
+        <result property="applicantName" column="APPLICANT_NAME"/>
+        <result property="typeName"      column="TYPE_NAME"/>
+        <result property="period"        column="PERIOD"/>
+    </resultMap>
+
+    <resultMap id="PushTokenResultMap" type="com.ait.mobile.notification.dto.MobilePushTokenDto">
+        <result property="deviceId" column="DEVICE_ID"/>
+        <result property="fcmToken" column="FCM_TOKEN"/>
+    </resultMap>
+
+    <select id="selectNextNotiNo" resultType="java.lang.Long">
+        SELECT MB_NOTIFICATION_SEQ.NEXTVAL FROM DUAL
+    </select>
+
+    <insert id="insertNotification">
+        INSERT INTO MB_NOTIFICATION (
+            NOTI_NO, CPNY_ID, PERSON_ID, NOTI_TYPE, TITLE, BODY, REF_TYPE, REF_ID, REF_EXTRA, DEDUP_KEY,
+            READ_YN, PUSH_YN, CREATE_DATE, CREATED_BY
+        ) VALUES (
+            #{notiNo, jdbcType=NUMERIC},
+            #{companyId, jdbcType=VARCHAR},
+            #{recipientId, jdbcType=VARCHAR},
+            #{notiType, jdbcType=VARCHAR},
+            #{title, jdbcType=VARCHAR},
+            #{body, jdbcType=VARCHAR},
+            #{refType, jdbcType=VARCHAR},
+            #{refId, jdbcType=VARCHAR},
+            #{refExtra, jdbcType=VARCHAR},
+            #{dedupKey, jdbcType=VARCHAR},
+            'N', 'N', SYSDATE, 'MOBILE_NOTI'
+        )
+    </insert>
+
+    <select id="selectMyNotifications" resultMap="NotificationResultMap">
+        SELECT * FROM (
+            SELECT R.*, ROWNUM AS RN FROM (
+                SELECT N.NOTI_NO, N.PERSON_ID, N.NOTI_TYPE, N.TITLE, N.BODY, N.REF_TYPE, N.REF_ID, N.REF_EXTRA,
+                       CASE WHEN N.READ_YN = 'Y' THEN 1 ELSE 0 END AS IS_READ,
+                       TO_CHAR(N.CREATE_DATE, 'DD/MM/YYYY HH24:MI') AS CREATE_DATE_STR
+                  FROM MB_NOTIFICATION N
+                 WHERE N.PERSON_ID = #{recipientId, jdbcType=VARCHAR}
+                 ORDER BY N.CREATE_DATE DESC, N.NOTI_NO DESC
+            ) R WHERE ROWNUM &lt;= #{offset, jdbcType=NUMERIC} + #{limit, jdbcType=NUMERIC}
+        ) WHERE RN &gt; #{offset, jdbcType=NUMERIC}
+    </select>
+
+    <select id="countUnread" resultType="int">
+        SELECT COUNT(1) FROM MB_NOTIFICATION
+         WHERE PERSON_ID = #{recipientId, jdbcType=VARCHAR}
+           AND READ_YN = 'N'
+    </select>
+
+    <update id="markRead">
+        UPDATE MB_NOTIFICATION
+           SET READ_YN = 'Y', READ_DATE = SYSDATE
+         WHERE PERSON_ID = #{recipientId, jdbcType=VARCHAR}
+           AND NOTI_NO = #{notiNo, jdbcType=NUMERIC}
+           AND READ_YN = 'N'
+    </update>
+
+    <update id="markAllRead">
+        UPDATE MB_NOTIFICATION
+           SET READ_YN = 'Y', READ_DATE = SYSDATE
+         WHERE PERSON_ID = #{recipientId, jdbcType=VARCHAR}
+           AND READ_YN = 'N'
+    </update>
+
+    <update id="markPushed">
+        UPDATE MB_NOTIFICATION SET PUSH_YN = 'Y' WHERE NOTI_NO = #{notiNo, jdbcType=NUMERIC}
+    </update>
+
+    <select id="selectApprovalRequestTargets" resultMap="TargetResultMap">
+        SELECT * FROM (
+            SELECT EM.AFFIRM_PERSON_ID AS RECIPIENT_ID,
+                   HE.CPNY_ID,
+                   NVL((SELECT MAX(D.LANG) KEEP (DENSE_RANK LAST ORDER BY D.UPDATE_DATE)
+                          FROM MB_DEVICE D WHERE D.PERSON_ID = EM.AFFIRM_PERSON_ID AND D.ACTIVITY = 1), 'vi') AS DEVICE_LANG,
+                   TO_CHAR(EM.APPLY_NO) AS APPLY_NO,
+                   TO_CHAR(EM.APPLY_TYPE) AS APPLY_TYPE,
+                   TO_CHAR(EM.APPLY_TYPE_CODE) AS CATEGORY,
+                   TO_CHAR(EM.AFFIRM_LEVEL) AS AFFIRM_LEVEL,
+                   NULL AS AFFIRM_FLAG,
+                   HE.LOCAL_NAME AS APPLICANT_NAME,
+                   NULL AS TYPE_NAME,
+                   CASE TO_CHAR(EM.APPLY_TYPE_CODE)
+                       WHEN '21' THEN (SELECT TO_CHAR(L.LEAVE_FROM_TIME, 'DD/MM/YYYY HH24:MI')
+                                         FROM ESS_LEAVE_APPLY_TB L WHERE L.APPLY_NO = EM.APPLY_NO AND ROWNUM = 1)
+                       WHEN '31' THEN (SELECT TO_CHAR(O.APPLY_OT_DATE, 'DD/MM/YYYY')
+                                         FROM ESS_APPLY_OT O WHERE O.APPLY_NO = EM.APPLY_NO AND ROWNUM = 1)
+                       WHEN '218197' THEN (SELECT TO_CHAR(C.FROM_TIME, 'DD/MM/YYYY HH24:MI')
+                                             FROM ESS_CARD_APPLY_TB C WHERE C.APPLY_NO = EM.APPLY_NO AND ROWNUM = 1)
+                   END AS PERIOD
+              FROM SY_AFFIRM_EMAIL EM
+              LEFT JOIN HR_EMPLOYEE HE ON HE.PERSON_ID = EM.APPLY_PERSON_ID
+             WHERE EM.ACTIVITY = 0
+               AND EM.APPLY_AFFIRM_FLAG NOT IN ('14014310', '14014309', '14014308')
+               AND EM.CREATE_DATE &gt;= SYSDATE - #{lookbackDays, jdbcType=NUMERIC}
+               AND NOT EXISTS (SELECT 1 FROM ESS_LEAVE_APPLY_TB TB WHERE TB.APPLY_NO = EM.APPLY_NO AND TB.BATCH_YN = 2)
+               AND NOT EXISTS (SELECT 1 FROM ESS_APPLY_OT OT WHERE OT.APPLY_NO = EM.APPLY_NO AND OT.BATCH_YN = 2)
+               AND EXISTS (SELECT 1 FROM MB_DEVICE D
+                            WHERE D.PERSON_ID = EM.AFFIRM_PERSON_ID
+                              AND D.ACTIVITY = 1
+                              AND D.CREATE_DATE &lt;= EM.CREATE_DATE)
+               AND NOT EXISTS (SELECT 1 FROM MB_NOTIFICATION N
+                                WHERE N.PERSON_ID = EM.AFFIRM_PERSON_ID
+                                  AND N.DEDUP_KEY = 'APPROVAL_REQUEST:' || EM.APPLY_NO || ':' || EM.AFFIRM_LEVEL)
+             ORDER BY EM.CREATE_DATE
+        ) WHERE ROWNUM &lt;= 500
+    </select>
+
+    <select id="selectApplyResultTargets" resultMap="TargetResultMap">
+        SELECT * FROM (
+            SELECT R.RECIPIENT_ID,
+                   R.CPNY_ID,
+                   R.DEVICE_LANG,
+                   R.APPLY_NO,
+                   NULL AS APPLY_TYPE,
+                   R.CATEGORY,
+                   NULL AS AFFIRM_LEVEL,
+                   R.AFFIRM_FLAG,
+                   NULL AS APPLICANT_NAME,
+                   GET_GLOBAL_NAME(R.TYPE_CODE, R.DEVICE_LANG) AS TYPE_NAME,
+                   R.PERIOD
+              FROM (
+                    SELECT L.PERSON_ID AS RECIPIENT_ID, L.CPNY_ID, 'LEAVE' AS CATEGORY,
+                           TO_CHAR(L.APPLY_NO) AS APPLY_NO, TO_CHAR(L.AFFIRM_FLAG) AS AFFIRM_FLAG,
+                           TO_CHAR(L.LEAVE_TYPE_CODE) AS TYPE_CODE,
+                           TO_CHAR(L.LEAVE_FROM_TIME, 'DD/MM/YYYY HH24:MI') AS PERIOD,
+                           L.CREATE_DATE,
+                           NVL((SELECT MAX(D.LANG) KEEP (DENSE_RANK LAST ORDER BY D.UPDATE_DATE)
+                                  FROM MB_DEVICE D WHERE D.PERSON_ID = L.PERSON_ID AND D.ACTIVITY = 1), 'vi') AS DEVICE_LANG
+                      FROM ESS_LEAVE_APPLY_TB L
+                     WHERE L.ACTIVITY = 1
+                       AND TO_CHAR(L.AFFIRM_FLAG) IN ('14014308', '14014309')
+                       AND L.CREATE_DATE &gt;= SYSDATE - #{lookbackDays, jdbcType=NUMERIC}
+                    UNION ALL
+                    SELECT O.PERSON_ID, O.CPNY_ID, 'OT',
+                           TO_CHAR(O.APPLY_NO), TO_CHAR(O.AFFIRM_FLAG),
+                           TO_CHAR(O.OT_TYPE_CODE),
+                           TO_CHAR(O.APPLY_OT_DATE, 'DD/MM/YYYY'),
+                           O.CREATE_DATE,
+                           NVL((SELECT MAX(D.LANG) KEEP (DENSE_RANK LAST ORDER BY D.UPDATE_DATE)
+                                  FROM MB_DEVICE D WHERE D.PERSON_ID = O.PERSON_ID AND D.ACTIVITY = 1), 'vi')
+                      FROM ESS_APPLY_OT O
+                     WHERE O.ACTIVITY = 1
+                       AND TO_CHAR(O.AFFIRM_FLAG) IN ('14014308', '14014309')
+                       AND O.CREATE_DATE &gt;= SYSDATE - #{lookbackDays, jdbcType=NUMERIC}
+                   ) R
+             WHERE EXISTS (SELECT 1 FROM MB_DEVICE D
+                            WHERE D.PERSON_ID = R.RECIPIENT_ID
+                              AND D.ACTIVITY = 1
+                              AND D.CREATE_DATE &lt;= R.CREATE_DATE)
+               AND NOT EXISTS (SELECT 1 FROM MB_NOTIFICATION N
+                                WHERE N.PERSON_ID = R.RECIPIENT_ID
+                                  AND N.DEDUP_KEY = 'APPLY_RESULT:' || R.CATEGORY || ':' || R.APPLY_NO)
+             ORDER BY R.CREATE_DATE
+        ) WHERE ROWNUM &lt;= 500
+    </select>
+
+    <select id="selectPushTokens" resultMap="PushTokenResultMap">
+        SELECT DEVICE_ID, FCM_TOKEN
+          FROM MB_DEVICE
+         WHERE PERSON_ID = #{recipientId, jdbcType=VARCHAR}
+           AND ACTIVITY = 1
+           AND FCM_TOKEN IS NOT NULL
+    </select>
+
+    <update id="clearFcmToken">
+        UPDATE MB_DEVICE
+           SET FCM_TOKEN = NULL, UPDATE_DATE = SYSDATE
+         WHERE DEVICE_ID = #{deviceId, jdbcType=VARCHAR}
+           AND FCM_TOKEN = #{fcmToken, jdbcType=VARCHAR}
+    </update>
+
+</mapper>

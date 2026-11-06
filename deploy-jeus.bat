@@ -148,10 +148,50 @@ echo.
 :BUILD
 echo  [3/4] Dang build (mvn clean package -DskipTests)...
 echo.
-call "%MVN%" clean package -DskipTests
+
+:: Xoa truoc output cu (WEB-INF/classes) va thu lai neu file dang bi khoa tam thoi
+:: (app dang chay tu IDE / Tomcat, VS Code Java extension, Explorer, antivirus...) - tranh loi
+:: "maven-clean-plugin: Failed to delete ...\WEB-INF\classes\static\ng-app"
+set CLASSES_DIR=%PROJECT_DIR%src\main\webapp\WEB-INF\classes
+set CLEAN_TRY=0
+:CLEAN_CLASSES
+if not exist "%CLASSES_DIR%" goto :CLEAN_CLASSES_DONE
+rmdir /s /q "%CLASSES_DIR%" >nul 2>&1
+if not exist "%CLASSES_DIR%" goto :CLEAN_CLASSES_DONE
+set /a CLEAN_TRY+=1
+if !CLEAN_TRY! GEQ 5 (
+    echo.
+    echo  [LOI] Khong xoa duoc: %CLASSES_DIR%
+    echo        File dang bi khoa. Hay dung app dang chay ^(Hr11Application trong IDE / Tomcat^),
+    echo        dong cua so Explorer dang mo thu muc nay roi chay lai.
+    pause
+    exit /b 1
+)
+echo  -- Thu muc classes dang bi khoa, thu lai lan !CLEAN_TRY!/4 sau 3 giay...
+timeout /t 3 /nobreak >nul
+goto :CLEAN_CLASSES
+:CLEAN_CLASSES_DONE
+
+:: Output Maven (src/main/webapp/WEB-INF/classes) trung voi output cua VS Code Java extension
+:: -> IDE co the tu build/copy resource cung luc, khoa file tam thoi va lam loi
+:: "maven-resources-plugin: Failed to copy full contents ...". Thu build lai toi da 3 lan.
+set MVN_TRY=1
+set MVN_GOALS=clean package
+:MVN_BUILD
+call "%MVN%" %MVN_GOALS% -DskipTests
 if %ERRORLEVEL% NEQ 0 (
+    if !MVN_TRY! LSS 3 (
+        set /a MVN_TRY+=1
+        set MVN_GOALS=package
+        echo.
+        echo  -- Maven build loi ^(co the do file dang bi khoa^), thu lai lan !MVN_TRY!/3 sau 5 giay...
+        timeout /t 5 /nobreak >nul
+        goto :MVN_BUILD
+    )
     echo.
     echo  [LOI] Maven build THAT BAI. Xem log loi o tren.
+    echo        Neu loi "Failed to copy/delete" lap lai: dung app dang chay ^(IDE/Tomcat^),
+    echo        hoac tam tat VS Code Java auto build ^(Java: Clean/Disable Auto Build^) roi chay lai.
     pause
     exit /b 1
 )

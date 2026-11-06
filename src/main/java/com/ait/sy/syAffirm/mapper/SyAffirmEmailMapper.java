@@ -17,6 +17,13 @@ public interface SyAffirmEmailMapper {
 
     void callAffirmExecute(Map<String, Object> params);
 
+    /**
+     * Các dòng duyệt của đơn đang chờ chính người đăng nhập (#{adminID}) - cùng điều kiện với hộp duyệt
+     * selectApprovalEmailList. Dùng để lấy APPLY_FLAG / AFFIRM_LEVEL từ DB khi duyệt, không tin dữ liệu client.
+     */
+    List<SyAffirmEmailDto> selectMyPendingAffirmRows(@Param("applyNo") String applyNo,
+            @Param("applyType") String applyType);
+
     SyAffirmEmailDto selectById(@Param("seq") String seq);
 
     int insert(SyAffirmEmailDto dto);

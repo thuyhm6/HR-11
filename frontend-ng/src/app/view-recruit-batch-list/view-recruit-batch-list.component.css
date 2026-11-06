@@ -1,13 +1,16 @@
-.rbl-row {
+.vrbl-register-select {
+  min-width: 200px;
+}
+.vrbl-row {
   cursor: pointer;
 }
-.rbl-row:hover {
+.vrbl-row:hover > td {
   background: #fafafa;
 }
-.rbl-row-processed {
+.vrbl-row-processed {
   color: #6c757d;
 }
-.rbl-modal-body {
+.vrbl-modal-body {
   max-height: 70vh;
   overflow-y: auto;
 }

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- Mobile API (APP-HR): thông tin phiên bản app (bảng MB_APP_VERSION). -->
+<mapper namespace="com.ait.mobile.app.mapper.MobileAppMapper">
+
+    <resultMap id="AppVersionResultMap" type="com.ait.mobile.app.dto.MobileAppVersionDto">
+        <id     property="platform"      column="PLATFORM"/>
+        <result property="minVersion"    column="MIN_VERSION"/>
+        <result property="latestVersion" column="LATEST_VERSION"/>
+        <result property="downloadUrl"   column="DOWNLOAD_URL"/>
+        <result property="releaseNote"   column="RELEASE_NOTE"/>
+    </resultMap>
+
+    <select id="selectAppVersion" resultMap="AppVersionResultMap">
+        SELECT PLATFORM, MIN_VERSION, LATEST_VERSION, DOWNLOAD_URL, RELEASE_NOTE
+          FROM MB_APP_VERSION
+         WHERE PLATFORM = #{platform, jdbcType=VARCHAR}
+    </select>
+
+</mapper>

@@ -27,19 +27,38 @@
         </encoder>
     </appender>
 
+    <!-- Ghi log BẤT ĐỒNG BỘ: thread xử lý request chỉ đẩy log vào hàng đợi rồi chạy tiếp.
+         Lý do: cửa sổ console Windows (Tomcat startup.bat) ghi rất chậm, và khi người dùng click/bôi đen
+         vào cửa sổ (QuickEdit mode) thì việc ghi console bị TẠM DỪNG -> mọi thread đang log bị treo,
+         giữ connection DB -> pool cạn -> toàn bộ ứng dụng đứng.
+         neverBlock=true: hàng đợi đầy thì bỏ bớt log console chứ không chặn thread. -->
+    <appender name="ASYNC_CONSOLE" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>2048</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <neverBlock>true</neverBlock>
+        <appender-ref ref="CONSOLE"/>
+    </appender>
+
+    <appender name="ASYNC_FILE" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>4096</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <neverBlock>false</neverBlock>
+        <appender-ref ref="FILE"/>
+    </appender>
+
     <!-- Dev profile: DEBUG cho com.ait -->
     <springProfile name="dev">
         <logger name="com.ait" level="DEBUG" additivity="false">
-            <appender-ref ref="CONSOLE"/>
-            <appender-ref ref="FILE"/>
+            <appender-ref ref="ASYNC_CONSOLE"/>
+            <appender-ref ref="ASYNC_FILE"/>
         </logger>
     </springProfile>
 
     <!-- Mặc định (prod/không có profile): WARN -->
     <springProfile name="!dev">
         <logger name="com.ait" level="WARN" additivity="false">
-            <appender-ref ref="CONSOLE"/>
-            <appender-ref ref="FILE"/>
+            <appender-ref ref="ASYNC_CONSOLE"/>
+            <appender-ref ref="ASYNC_FILE"/>
         </logger>
     </springProfile>
 
@@ -50,8 +69,8 @@
     <logger name="oracle.jdbc" level="WARN"/>
 
     <root level="WARN">
-        <appender-ref ref="CONSOLE"/>
-        <appender-ref ref="FILE"/>
+        <appender-ref ref="ASYNC_CONSOLE"/>
+        <appender-ref ref="ASYNC_FILE"/>
     </root>
 
 </configuration>

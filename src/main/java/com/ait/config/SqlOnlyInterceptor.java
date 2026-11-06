@@ -52,9 +52,32 @@ public class SqlOnlyInterceptor implements Interceptor {
     private static final String APP_PACKAGE_PREFIX = "com.ait.";
     private static final String MAPPER_PACKAGE_MARKER = ".mapper.";
     private static final String MISSING_PARAMETER_PLACEHOLDER = "<MISSING_PARAM>";
+    // Query chạy lâu hơn ngưỡng này (ms) luôn được ghi WARN, kể cả khi tắt log SQL chi tiết
+    private static final long SLOW_QUERY_THRESHOLD_MS = Long.getLong("hr.sql.slow-threshold-ms", 3000L);
 
     @Override
     public Object intercept(Invocation invocation) throws Throwable {
+        // Fast path: không bật INFO (server production) -> không dựng SQL/params, không gọi getStackTrace()
+        // cho mỗi câu lệnh (rất tốn CPU khi import hàng nghìn dòng). Chỉ log query chậm.
+        if (!logger.isInfoEnabled()) {
+            long start = System.currentTimeMillis();
+            Object result;
+            try {
+                result = invocation.proceed();
+            } catch (Throwable ex) {
+                MappedStatement ms = (MappedStatement) invocation.getArgs()[0];
+                logger.error("SQL Failed  | mapper={} | caller={} | took={} ms | error={}", ms.getId(),
+                        resolveCallerMethod(), System.currentTimeMillis() - start, ex.getMessage(), ex);
+                throw ex;
+            }
+            long took = System.currentTimeMillis() - start;
+            if (took >= SLOW_QUERY_THRESHOLD_MS && logger.isWarnEnabled()) {
+                MappedStatement ms = (MappedStatement) invocation.getArgs()[0];
+                logger.warn("SQL Slow    | mapper={} | caller={} | took={} ms", ms.getId(), resolveCallerMethod(), took);
+            }
+            return result;
+        }
+
         MappedStatement mappedStatement = (MappedStatement) invocation.getArgs()[0];
         String methodName = invocation.getMethod().getName();
         Object parameterObject = invocation.getArgs().length > 1 ? invocation.getArgs()[1] : null;

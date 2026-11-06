@@ -14,6 +14,7 @@ import { TranslatePipe } from '../i18n/translate.pipe';
 import { ChangePasswordModalComponent } from './change-password-modal.component';
 import { ExternalTabComponent } from './external-tab.component';
 import { ForcePasswordChangeModalComponent } from './force-password-change-modal.component';
+import { IconifyPreloadService } from './iconify-preload.service';
 import { LanguageSwitcherComponent } from './language-switcher.component';
 import { LockScreenOverlayComponent } from './lock-screen-overlay.component';
 import { LockScreenService } from './lock-screen.service';
@@ -294,7 +295,8 @@ export class AppShellComponent implements OnInit, OnDestroy {
     readonly lockScreen: LockScreenService,
     private readonly theme: ThemeService,
     private readonly message: NzMessageService,
-    private readonly router: Router
+    private readonly router: Router,
+    private readonly iconifyPreload: IconifyPreloadService
   ) {
     // Đồng bộ menu ngữ cảnh trên topbar mỗi khi tab active đổi menuNo - không chỉ lúc vừa bấm menu
     // (openMenuTab) mà cả khi người dùng chuyển qua lại giữa các tab đã mở sẵn ở tab-strip, đúng hành
@@ -494,7 +496,15 @@ export class AppShellComponent implements OnInit, OnDestroy {
     // Tab Trang chủ đi theo chế độ: đóng hết tab ở HR Management System phải quay về /hrm-dashboard
     // (giữ menu SYS_TYPE=0), không phải /dashboard (route sysType '1' -> sẽ kéo sidebar về menu ESS).
     this.tabs.setHomePath(sysType === '0' ? '/hrm-dashboard' : '/dashboard');
-    this.menu.set(await this.auth.getMenu(sysType));
+    const menu = await this.auth.getMenu(sysType);
+    // Nạp sẵn SVG icon menu (MENU_IMG trong DB) chưa có trong assets/js/iconify-icons.js qua API nội bộ
+    // trước khi render -> sidebar hiện đủ icon khi server không có Internet.
+    await this.iconifyPreload.preload(this.collectMenuIcons(menu));
+    this.menu.set(menu);
+  }
+
+  private collectMenuIcons(items: MenuItem[] | null): string[] {
+    return (items ?? []).flatMap(item => [item.menuImg ?? '', ...this.collectMenuIcons(item.children)]);
   }
 
   ngOnDestroy(): void {

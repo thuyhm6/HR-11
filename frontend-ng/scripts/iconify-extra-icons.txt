@@ -1,0 +1,6 @@
+# Icon menu chỉ có trong DB (cột MENU_IMG, nhập ở màn "Quản lý Menu") mà không xuất hiện trong code/SQL.
+# Mỗi dòng 1 icon dạng "solar:ten-icon" -> được gói vào assets/js/iconify-icons.js ở lần build sau
+# (npm run build / npm run icons). Dòng bắt đầu bằng # là chú thích.
+#
+# Icon không có trong danh sách này vẫn hiển thị được (tải qua API nội bộ /api/iconify/), nhưng gói sẵn
+# thì không phát sinh request nào.

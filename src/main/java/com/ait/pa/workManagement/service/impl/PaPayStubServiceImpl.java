@@ -24,6 +24,9 @@ public class PaPayStubServiceImpl implements PaPayStubService {
     @Autowired
     private PaPayStubMapper mapper;
 
+    @Autowired
+    private com.ait.pa.workManagement.service.PaPayScheduleService paPayScheduleService;
+
     @Override
     @Transactional
     public List<PaPayStubDto> loadPayStubs(PaPayStubDto params, String lang) {
@@ -93,6 +96,15 @@ public class PaPayStubServiceImpl implements PaPayStubService {
     public List<PaPayStubDto> loadSelfPayStub(PaPayStubDto params, String lang) {
         log.info("Bắt đầu tải phiếu lương cá nhân payScheduleNo={}", params.getPayScheduleNo());
         try {
+            // Chỉ cho xem kỳ lương HR đã mở cho nhân viên (PA_OPEN_FLAG = 1). Trước đây chỉ dropdown ở màn hình lọc kỳ
+            // đã mở, gọi thẳng API với payScheduleNo khác vẫn xem được lương của kỳ chưa công bố.
+            String requestedSchedule = params.getPayScheduleNo() == null ? "" : params.getPayScheduleNo().trim();
+            boolean open = paPayScheduleService.getOpenList().stream()
+                    .anyMatch(s -> s != null && requestedSchedule.equals(s.getPayScheduleNo()));
+            if (!open) {
+                log.warn("Từ chối tải phiếu lương của kỳ chưa mở payScheduleNo={}", requestedSchedule);
+                return java.util.Collections.emptyList();
+            }
             List<PaPayStubDto> employees = mapper.selectSelfEmployee(params);
             log.info("Tìm được {} bản ghi cho nhân viên đăng nhập payScheduleNo={}", employees.size(), params.getPayScheduleNo());
 

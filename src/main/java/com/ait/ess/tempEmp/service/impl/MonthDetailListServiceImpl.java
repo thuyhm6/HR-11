@@ -10,6 +10,7 @@ import com.ait.util.ExcelJxForEachUtil;
 import com.ait.util.I18nUtil;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -25,6 +26,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -32,6 +37,14 @@ import java.util.Map;
 public class MonthDetailListServiceImpl implements MonthDetailListService {
 
     private static final Logger log = LoggerFactory.getLogger(MonthDetailListServiceImpl.class);
+
+    /** Kỳ dữ liệu (periodType): 25 -> cuối tháng / 01 -> cuối tháng. Rỗng = 25 tháng trước -> 24 tháng này. */
+    private static final String PERIOD_25_END = "25_31";
+    private static final String PERIOD_01_END = "01_31";
+    private static final int MAX_PERIOD_DAYS = 31;
+    private static final DateTimeFormatter DAY_FMT = DateTimeFormatter.ofPattern("yyyy/MM/dd");
+    private static final DateTimeFormatter YM_FMT = DateTimeFormatter.ofPattern("yyyyMM");
+    private static final DateTimeFormatter SHOW_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     @Autowired
     private MonthDetailListMapper mapper;
@@ -56,8 +69,10 @@ public class MonthDetailListServiceImpl implements MonthDetailListService {
     @Override
     @Transactional(readOnly = true)
     public MonthDetailViewDto getDetailView(MonthDetailListDto params) {
-        log.info("Tra cứu chi tiết chấm công tháng: month={}, year={}, deptNos={}", params.getMonth(), params.getYear(), params.getDeptNos());
+        log.info("Tra cứu chi tiết chấm công tháng: month={}, year={}, periodType={}, deptNos={}",
+                params.getMonth(), params.getYear(), params.getPeriodType(), params.getDeptNos());
         try {
+            applyPeriod(params);
             List<MonthDetailDateDto> dates = mapper.selectFixedDateList(params);
             List<Map<String, Object>> rows = mapper.selectSalaryReport(params);
             log.info("Tra cứu chi tiết chấm công tháng: {} ngày, {} nhân viên", dates.size(), rows.size());
@@ -124,16 +139,21 @@ public class MonthDetailListServiceImpl implements MonthDetailListService {
      */
     private void exportSalaryReport(MonthDetailListDto params, HttpServletResponse response) throws IOException {
         try {
+            applyPeriod(params);
             List<Map<String, Object>> rows = mapper.selectSalaryReport(params);
+            Map<String, String> headerValues = putPeriodExcelData(rows, params);
 
             ClassPathResource resource = new ClassPathResource("templates/305.xlsx");
             try (InputStream is = resource.getInputStream();
                  Workbook workbook = WorkbookFactory.create(is)) {
                 Sheet sheet = workbook.getSheetAt(0);
+                replaceHeaderTokens(sheet, headerValues);
                 ExcelJxForEachUtil.fillForEachBlock(sheet, rows);
                 fillSalaryHeaderPlaceholders(sheet, params);
 
-                ExcelJxForEachUtil.writeWorkbook(workbook, response, "305_" + params.getMonth() + params.getYear() + ".xlsx");
+                String suffix = params.getPeriodType().isEmpty() ? "" : "_" + params.getPeriodType();
+                ExcelJxForEachUtil.writeWorkbook(workbook, response,
+                        "305_" + params.getMonth() + params.getYear() + suffix + ".xlsx");
             }
         } catch (Exception e) {
             log.error("Lỗi khi xuất báo cáo công tính lương: {}", e.getMessage(), e);
@@ -380,6 +400,105 @@ public class MonthDetailListServiceImpl implements MonthDetailListService {
 
         setCellIfExists(sheet, 0, 0, month);          // A1: Tháng
         setCellIfExists(sheet, 0, 3, year);   // D1: Năm
+    }
+
+    /**
+     * Tính kỳ dữ liệu theo Tháng (month/year) + periodType - bản gốc TempEmpSerImpl.putArPeriodParam (Hanwha_HTSV),
+     * dùng cho selectFixedDateList / selectSalaryReport (màn hình viewMonthDetailList và báo cáo 305):
+     * <ul>
+     *   <li>periodType rỗng: 25 tháng trước -> 24 tháng này (mặc định, như cũ)</li>
+     *   <li>25_31: 25 tháng này -> ngày cuối tháng này</li>
+     *   <li>01_31: 01 tháng này -> ngày cuối tháng này</li>
+     * </ul>
+     * Kết quả: arPeriodFrom/arPeriodTo (YYYY/MM/DD), arHiYm (YYYYMM của các cột ngày 25..31), arLoYm (YYYYMM của
+     * các cột ngày 1..24). Tháng không hợp lệ thì lấy tháng trước tháng hiện tại (giống nhánh SYSDATE bản gốc).
+     */
+    private void applyPeriod(MonthDetailListDto params) {
+        String periodType = params.getPeriodType() == null ? "" : params.getPeriodType().trim();
+        if (!PERIOD_25_END.equals(periodType) && !PERIOD_01_END.equals(periodType)) {
+            periodType = "";
+        }
+        params.setPeriodType(periodType);
+
+        YearMonth cur;
+        try {
+            cur = YearMonth.of(Integer.parseInt(params.getYear()), Integer.parseInt(params.getMonth()));
+        } catch (Exception e) {
+            cur = YearMonth.now().minusMonths(1);
+            log.warn("Tháng/năm không hợp lệ (month={}, year={}), dùng mặc định {}", params.getMonth(), params.getYear(), cur);
+            params.setMonth(String.format("%02d", cur.getMonthValue()));
+            params.setYear(String.valueOf(cur.getYear()));
+        }
+
+        LocalDate from;
+        LocalDate to;
+        YearMonth hiYm;
+        if (periodType.isEmpty()) {
+            YearMonth prev = cur.minusMonths(1);
+            from = prev.atDay(25);
+            to = cur.atDay(24);
+            hiYm = prev;
+        } else {
+            from = cur.atDay(PERIOD_25_END.equals(periodType) ? 25 : 1);
+            to = cur.atEndOfMonth();
+            hiYm = cur;
+        }
+        params.setArPeriodFrom(from.format(DAY_FMT));
+        params.setArPeriodTo(to.format(DAY_FMT));
+        params.setArHiYm(hiYm.format(YM_FMT));
+        params.setArLoYm(cur.format(YM_FMT));
+    }
+
+    /**
+     * Báo cáo 305: sắp xếp cột ngày theo thứ tự thực của kỳ dữ liệu (bản gốc RetrieveMasterListCtroller.putArPeriodExcelData).
+     * SQL trả key theo số ngày (DATE_25, DAY_OT_1...), file mẫu dùng key theo vị trí cột:
+     * P_DATE_k / P_DAY_OT_k / P_NIGHT_OT_k (k = 1..31) = ngày thứ k của kỳ; vị trí vượt quá số ngày của kỳ để trống.
+     *
+     * @return giá trị header: H_k = nhãn ngày (dd), periodStr = "dd/MM/yyyy - dd/MM/yyyy"
+     */
+    private Map<String, String> putPeriodExcelData(List<Map<String, Object>> rows, MonthDetailListDto params) {
+        LocalDate from = LocalDate.parse(params.getArPeriodFrom(), DAY_FMT);
+        LocalDate to = LocalDate.parse(params.getArPeriodTo(), DAY_FMT);
+
+        Map<String, String> header = new HashMap<>();
+        header.put("periodStr", from.format(SHOW_FMT) + " - " + to.format(SHOW_FMT));
+        int[] days = new int[MAX_PERIOD_DAYS];
+        int n = 0;
+        for (LocalDate d = from; n < MAX_PERIOD_DAYS && !d.isAfter(to); d = d.plusDays(1)) {
+            days[n] = d.getDayOfMonth();
+            header.put("H_" + (n + 1), String.format("%02d", days[n]));
+            n++;
+        }
+        for (int k = n; k < MAX_PERIOD_DAYS; k++) {
+            header.put("H_" + (k + 1), "");
+        }
+
+        for (Map<String, Object> row : rows) {
+            for (int k = 0; k < MAX_PERIOD_DAYS; k++) {
+                row.put("P_DATE_" + (k + 1), k < n ? row.get("DATE_" + days[k]) : null);
+                row.put("P_DAY_OT_" + (k + 1), k < n ? row.get("DAY_OT_" + days[k]) : null);
+                row.put("P_NIGHT_OT_" + (k + 1), k < n ? row.get("NIGHT_OT_" + days[k]) : null);
+            }
+        }
+        return header;
+    }
+
+    /** Thay các ô có nội dung đúng bằng {@code ${KEY}} (KEY có trong values) - dùng cho header ngoài block jx:forEach. */
+    private void replaceHeaderTokens(Sheet sheet, Map<String, String> values) {
+        for (Row row : sheet) {
+            for (Cell cell : row) {
+                if (cell.getCellType() != CellType.STRING) {
+                    continue;
+                }
+                String text = cell.getStringCellValue();
+                if (text != null && text.startsWith("${") && text.endsWith("}")) {
+                    String value = values.get(text.substring(2, text.length() - 1));
+                    if (value != null) {
+                        cell.setCellValue(value);
+                    }
+                }
+            }
+        }
     }
 
     /** Thay token {@code ${item.YEAR}} trong tiêu đề báo cáo bằng năm đang xuất. */

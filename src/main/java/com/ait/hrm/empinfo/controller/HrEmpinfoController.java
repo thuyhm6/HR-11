@@ -942,59 +942,63 @@ public class HrEmpinfoController {
     }
 
     // ── Quyết định nhân sự (HR_EXPERIENCE_INSIDE) ─────────────────────────────
-    // Trang Thymeleaf viewStartPoint.html đã được thay bằng Angular route /view-start-point
+    // Bản gốc hrm/empinfo/viewStartPoint + viewSingleStartPoint (HTSV) -> Angular route /view-start-point
 
+    /** Tìm nhân viên theo mã/tên (thay popup viewEmpInfoListTanchu của bản gốc). */
     @GetMapping("/api/startpoint/employee/search")
     @ResponseBody
-    public ResponseEntity<?> searchEmployeeForStartPoint(
-            @RequestParam(required = false) String keyword,
-            HttpSession session) {
-        try {
-            HrUserInfo currentHrUser = (HrUserInfo) session.getAttribute("currentHrUser");
-            HrExpInsideDto dto = new HrExpInsideDto();
-            dto.setSearchKeyword(keyword);
-            HrExpInsideDto emp = hrExpInsideService.searchEmployee(dto);
-            if (emp == null) {
-                return ResponseEntity.status(404).body("Không tìm thấy nhân viên");
-            }
-            return ResponseEntity.ok(emp);
-        } catch (Exception e) {
-            log.error("Lỗi tìm kiếm nhân viên startpoint: ", e);
-            return ResponseEntity.status(500).body("Lỗi hệ thống");
-        }
+    public ResponseEntity<?> searchEmployeeForStartPoint(@RequestParam(required = false) String keyword) {
+        return ResponseEntity.ok(hrExpInsideService.searchEmployees(keyword));
     }
 
-    @PostMapping("/api/startpoint/decisions/list")
+    /** Thông tin nhân viên trên đầu trang (Tên / Mã NV / Chức vụ / Trạng thái). */
+    @GetMapping("/api/startpoint/employee/info")
     @ResponseBody
-    public DataTablesResponse<HrExpInsideDto> getDecisionList(
-            @RequestBody HrExpInsideDto dto) {
-        return hrExpInsideService.getDecisionList(dto);
+    public ResponseEntity<?> getStartPointEmployeeInfo(@RequestParam("personId") String personId) {
+        HrExpInsideDto emp = hrExpInsideService.getEmployeeInfo(personId);
+        if (emp == null) {
+            return ResponseEntity.status(404).body(java.util.Map.of("error", "Không tìm thấy nhân viên"));
+        }
+        return ResponseEntity.ok(emp);
+    }
+
+    @GetMapping("/api/startpoint/decisions/list")
+    @ResponseBody
+    public ResponseEntity<?> getDecisionList(@RequestParam("personId") String personId) {
+        return ResponseEntity.ok(hrExpInsideService.getDecisionList(personId));
     }
 
     @GetMapping("/api/startpoint/decisions/detail")
     @ResponseBody
     public ResponseEntity<?> getDecisionDetail(@RequestParam("seq") Long seq) {
-        try {
-            HrExpInsideDto dto = hrExpInsideService.getDecisionBySeq(seq);
-            if (dto == null) {
-                return ResponseEntity.status(404).body("Không tìm thấy quyết định");
-            }
-            return ResponseEntity.ok(dto);
-        } catch (Exception e) {
-            log.error("Lỗi lấy chi tiết quyết định seq={}: ", seq, e);
-            return ResponseEntity.status(500).body("Lỗi hệ thống");
+        HrExpInsideDto dto = hrExpInsideService.getDecisionBySeq(seq);
+        if (dto == null) {
+            return ResponseEntity.status(404).body(java.util.Map.of("error", "Không tìm thấy quyết định"));
         }
+        return ResponseEntity.ok(dto);
+    }
+
+    /** Giá trị mặc định khi bấm "Thêm" = thông tin hiện tại ở HR_EMPLOYEE (bản gốc viewCurrentHrInfo). */
+    @GetMapping("/api/startpoint/decisions/current")
+    @ResponseBody
+    public ResponseEntity<?> getDecisionDefault(@RequestParam("personId") String personId) {
+        HrExpInsideDto dto = hrExpInsideService.getCurrentHrInfo(personId);
+        return ResponseEntity.ok(dto != null ? dto : new HrExpInsideDto());
     }
 
     @PostMapping("/api/startpoint/decisions/save")
     @ResponseBody
     public ResponseEntity<?> saveDecision(@RequestBody HrExpInsideDto dto) {
+        if (dto.getPersonId() == null || dto.getPersonId().isBlank()
+                || dto.getTransCode() == null || dto.getTransCode().isBlank()
+                || dto.getStartDate() == null || dto.getStartDate().isBlank()) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", "Thiếu thông tin bắt buộc"));
+        }
         try {
-            java.util.Map<String, Object> result = hrExpInsideService.saveDecision(dto);
-            return ResponseEntity.ok(result);
-        } catch (Exception e) {
-            log.error("Lỗi lưu quyết định: ", e);
-            return ResponseEntity.status(500).body(java.util.Collections.singletonMap("success", false));
+            Long seq = hrExpInsideService.saveDecision(dto);
+            return ResponseEntity.ok(java.util.Map.of("success", true, "seq", seq));
+        } catch (com.ait.exception.BusinessException e) {
+            return ResponseEntity.ok(java.util.Map.of("success", false, "messageKey", e.getErrorCode(), "message", e.getUserMessage()));
         }
     }
 
@@ -1002,87 +1006,10 @@ public class HrEmpinfoController {
     @ResponseBody
     public ResponseEntity<?> deleteDecision(@RequestParam("seq") Long seq) {
         try {
-            java.util.Map<String, Object> result = hrExpInsideService.deleteDecision(seq);
-            return ResponseEntity.ok(result);
-        } catch (Exception e) {
-            log.error("Lỗi xóa quyết định seq={}: ", seq, e);
-            return ResponseEntity.status(500).body(java.util.Collections.singletonMap("success", false));
-        }
-    }
-
-    @GetMapping("/api/startpoint/decisions/export")
-    public void exportDecisionsExcel(
-            @RequestParam("personId") String personId,
-            @RequestParam(value = "localName", required = false, defaultValue = "") String localName,
-            HttpSession session,
-            HttpServletResponse response) {
-        try {
-            java.util.List<HrExpInsideDto> list = hrExpInsideService.getAllDecisionsByPersonId(personId);
-
-            Workbook wb = new XSSFWorkbook();
-            Sheet sheet = wb.createSheet("Quyết định nhân sự");
-
-            CellStyle headerStyle = wb.createCellStyle();
-            Font headerFont = wb.createFont();
-            headerFont.setBold(true);
-            headerStyle.setFont(headerFont);
-            headerStyle.setFillForegroundColor(IndexedColors.LIGHT_BLUE.getIndex());
-            headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-            headerStyle.setBorderBottom(BorderStyle.THIN);
-            headerStyle.setBorderTop(BorderStyle.THIN);
-            headerStyle.setBorderLeft(BorderStyle.THIN);
-            headerStyle.setBorderRight(BorderStyle.THIN);
-            headerStyle.setAlignment(HorizontalAlignment.CENTER);
-
-            String[] headers = {
-                "STT", "Tên quyết định", "Ngày quyết định", "Phòng ban",
-                "Loại nhân viên", "Nhóm NV", "Cấp bậc", "Chức vụ",
-                "Loại giờ làm", "Loại lương", "Lý do QĐ", "Ghi chú"
-            };
-            Row headerRow = sheet.createRow(0);
-            for (int i = 0; i < headers.length; i++) {
-                Cell cell = headerRow.createCell(i);
-                cell.setCellValue(headers[i]);
-                cell.setCellStyle(headerStyle);
-            }
-
-            CellStyle dataStyle = wb.createCellStyle();
-            dataStyle.setBorderBottom(BorderStyle.THIN);
-            dataStyle.setBorderTop(BorderStyle.THIN);
-            dataStyle.setBorderLeft(BorderStyle.THIN);
-            dataStyle.setBorderRight(BorderStyle.THIN);
-
-            for (int i = 0; i < list.size(); i++) {
-                HrExpInsideDto d = list.get(i);
-                Row row = sheet.createRow(i + 1);
-                row.createCell(0).setCellValue(i + 1);
-                row.createCell(1).setCellValue(d.getTransCodeName() != null ? d.getTransCodeName() : "");
-                row.createCell(2).setCellValue(d.getStartDate() != null ? d.getStartDate() : "");
-                row.createCell(3).setCellValue(d.getDeptno() != null ? d.getDeptno() : "");
-                row.createCell(4).setCellValue(d.getEmpTypeName() != null ? d.getEmpTypeName() : "");
-                row.createCell(5).setCellValue(d.getPostFamilyName() != null ? d.getPostFamilyName() : "");
-                row.createCell(6).setCellValue(d.getPostGradeName() != null ? d.getPostGradeName() : "");
-                row.createCell(7).setCellValue(d.getPositionNo() != null ? d.getPositionNo() : "");
-                row.createCell(8).setCellValue(d.getWorkHourType() != null ? d.getWorkHourType() : "");
-                row.createCell(9).setCellValue(d.getWageType() != null ? d.getWageType() : "");
-                row.createCell(10).setCellValue(d.getTransResource() != null ? d.getTransResource() : "");
-                row.createCell(11).setCellValue(d.getRemark() != null ? d.getRemark() : "");
-                for (int j = 0; j < headers.length; j++) {
-                    if (row.getCell(j) != null) row.getCell(j).setCellStyle(dataStyle);
-                }
-            }
-            for (int i = 0; i < headers.length; i++) {
-                sheet.autoSizeColumn(i);
-            }
-
-            String filename = "QuyetDinhNhanSu_" + localName.replace(" ", "_") + ".xlsx";
-            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-            response.setHeader("Content-Disposition", "attachment; filename=\"" +
-                    java.net.URLEncoder.encode(filename, "UTF-8") + "\"");
-            wb.write(response.getOutputStream());
-            wb.close();
-        } catch (Exception e) {
-            log.error("Lỗi xuất Excel quyết định nhân sự personId={}: ", personId, e);
+            hrExpInsideService.deleteDecision(seq);
+            return ResponseEntity.ok(java.util.Map.of("success", true));
+        } catch (com.ait.exception.BusinessException e) {
+            return ResponseEntity.ok(java.util.Map.of("success", false, "messageKey", e.getErrorCode(), "message", e.getUserMessage()));
         }
     }
 

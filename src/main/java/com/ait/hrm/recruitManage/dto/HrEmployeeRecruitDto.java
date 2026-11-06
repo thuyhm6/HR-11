@@ -1,142 +1,96 @@
 package com.ait.hrm.recruitManage.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
 
+/**
+ * Nhân viên chờ nhận việc (HR_EMPLOYEE_RECRUIT) - trang /view-recruit-list (bản gốc
+ * hrm/recruitManage/viewRecruitList + viewAddRecruitInfo của dự án HTSV). Ngày tháng lưu dạng chuỗi DD/MM/YYYY.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class HrEmployeeRecruitDto {
 
-    // Pagination
-    private int draw;
-    private int start;
-    private int length;
+    // Điều kiện tìm kiếm (bản gốc seach_OBJECT / seach_START_DATE / seach_END_DATE / seach_DATA_SOURCES)
+    /** 0 = Quyết định nhận việc (chưa xác nhận), 1 = Đã hoàn thành. */
+    private String searchObject;
+    private String searchStartDate;
+    private String searchEndDate;
+    /** 1 = Nhập thủ công, 0 = Tuyển dụng; rỗng = cả hai. */
+    private String searchDataSources;
 
-    // Search
-    private String activity;
-    private String searchName;
-    private String searchEmpId;
-
-    // Primary key
     private String personId;
-
-    // Thông tin cơ bản
     private String cpnyId;
-    private String deptNo;
-    private String empId;
+
+    // ── Thông tin cơ bản (tab 0) ──
     private String localName;
-    private String chinesePinyin;
+    private String empId;
     private String englishName;
-    private String koreanName;
-    private String sexcode;
-    private String dob;
-    private String nationalityCode;
-    private String nationCode;
-    private String maritalStatusCode;
-    private String standardPosition;
+    private String isProbation;
+    private String joinType;
+    private String joinDetailType;
+    private String deptNo;
+    private String empTypeCode;
+    private String dateStarted;
+    private String endProbationDate;
+    private String timeStarted;
+    private String positionConfirmationDate;
+    private String mainBusiness;
+    private String costCenter;
     private String postFamily;
     private String postGradeNo;
     private String positionNo;
-    private String workArea;
-    private String empTypeCode;
-    private String empCommonTypeCode;
-    private String joinType;
-    private String joinDetailType;
-    private String dateStarted;
-    private String confirmWorkDate;
-    private String isProbation;
-    private String endProbationDate;
-    private String contractStartDate;
-    private String contractEndDate;
-    private String timeStarted;
-    private String mainBusiness;
-    private String rankStatistics;
-    private String productType;
-    private String costCenter;
-    private String coinCode;
-    private String interfaceId;
-    private String affirmWorkAge;
-    private String nextPromoteDate;
     private String detainLength;
-    private String confirmDate;
-    private String cancelDate;
+    private String shiftNo;
+    private String payStepNo;
+    private String personSupplierCompany;
 
-    // Thông tin bổ sung
-    private String homePhone;
-    private String companyPhone;
-    private String officePhone;
-    private String email;
+    // ── Thông tin bổ sung (tab 1) ──
     private String idcardNo;
-    private String documentType;
     private String idcardStartDate;
     private String issuingAuthority;
+    private String dob;
+    private String sexcode;
+    private String maritalStatusCode;
+    private String nationalityCode;
+    private String nationCode;
+    private String homePhone;
+    private String companyPhone;
+    private String existSingle;
+    private String singId;
+    private String email;
+    private String cvUpdateStatus;
+    private String religion;
+    private String experience;
+    private String regPlace;
+    private String origin;
+    private String height;
+    private String weight;
     private String addressType;
     private String effectiveStartDate;
+    private String nationality;
     private String addressContent;
     private String hujiaddressType;
     private String hujiyouxiaoStartDate;
-    private String hujiGuoji;
+    private String hujiguoji;
     private String hujiaddressContent;
-    private String nationality;
-    private String insuranceType;
-    private String insuranceArea;
-    private String insuranceDistinguish;
-    private String jingshebao;
-    private String wageType;
-    private String accountNo;
-    private String oldPay;
-    private String experience;
-    private String interested;
-    private String characterCode;
-    private String recruitType;
-    private String workHourType;
-    private String dutyNo;
-    private String recommend;
-    private String lastHaofengDate;
-    private String assignmentInformation;
-    private String regTypeCode;
-    private String regPlace;
-    private String religion;
-    private String height;
-    private String weight;
-    private String bloodType;
-    private String laetPromotionDate;
-    private String origin;
-    private String payStepNo;
-    private String cvUpdateStatus;
-    private String positionConfirmationDate;
-    private String isProbationDate;
-    private String datGroupEntry;
-    private String costStatistics;
-    private String filenumber;
-    private String jobType;
-    private String employeeBelong;
-    private String employeeStatus;
-    private String graduationAchievement;
-    private String averageScore;
-    private String languageAbility;
-    private String personSupplierCompany;
-    private String singId;
-    private String existSingle;
-    private String shiftNo;
-    private String dataSources;
-    private String remark;
 
-    // Audit
+    // ── Ảnh (tab 5) ──
+    private String photoPath;
+
+    private String dataSources;
+    private String activity;
     private String createDate;
-    private String createdBy;
-    private String updatedBy;
     private String updateDate;
 
-    // Display (joined)
+    // ── Tên hiển thị ──
     private String deptName;
+    private String joinTypeName;
+    private String joinDetailName;
+    private String empTypeName;
     private String sexName;
     private String nationalityName;
-    private String maritalStatusName;
-    private String empTypeName;
-    private String joinTypeName;
-    private String positionName;
     private String postGradeName;
 }

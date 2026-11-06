@@ -4,6 +4,47 @@
   vertical-align: middle;
 }
 
+/* Kéo đổi độ rộng cột (nz-resizable) - ng-zorro-antd.min.css không có style của module resizable nên khai báo ở đây */
+.plab-table th.nz-resizable {
+  position: relative;
+}
+
+.plab-table th.nz-resizable-resizing {
+  user-select: none;
+}
+
+.plab-table .nz-resizable-handle-right {
+  position: absolute;
+  top: 0;
+  right: -5px;
+  z-index: 9;
+  width: 10px;
+  height: 100%;
+  cursor: col-resize;
+  user-select: none;
+}
+
+.plab-resize-trigger {
+  width: 100%;
+  height: 100%;
+}
+
+.plab-table .nz-resizable-handle-right:hover .plab-resize-trigger {
+  border-right: 2px solid #1677ff;
+  width: 6px;
+}
+
+/* Khung xem trước khi đang kéo - phần tử do directive tạo bằng Renderer (không có attribute encapsulation) */
+:host ::ng-deep .plab-table .nz-resizable-preview {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 8;
+  border: 0;
+  border-right: 2px dashed #1677ff;
+  pointer-events: none;
+}
+
 /* Cột cho phép sửa trực tiếp - tương ứng class titleColor bản gốc */
 .plab-table th.plab-edit-col {
   color: #1677ff;

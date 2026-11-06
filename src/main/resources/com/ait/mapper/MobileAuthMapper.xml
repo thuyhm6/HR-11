@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- Mobile API (APP-HR): refresh token + thiết bị (script tạo bảng: resources/sql/create_mobile_tables.sql).
+     Các câu ở đây chạy cả lúc login/refresh (chưa có user trong session) nên KHÔNG dùng #{cpnyId}/#{adminID}/#{adminIP}
+     do interceptor inject, mà dùng tham số truyền tường minh (companyId, personId, clientIp). -->
+<mapper namespace="com.ait.mobile.auth.mapper.MobileAuthMapper">
+
+    <resultMap id="RefreshTokenResultMap" type="com.ait.mobile.auth.dto.MobileRefreshTokenDto">
+        <id     property="tokenNo"    column="TOKEN_NO"/>
+        <result property="tokenHash"  column="TOKEN_HASH"/>
+        <result property="userName"   column="USER_NAME"/>
+        <result property="personId"   column="PERSON_ID"/>
+        <result property="companyId"  column="CPNY_ID"/>
+        <result property="deviceId"   column="DEVICE_ID"/>
+        <result property="expireDate" column="EXPIRE_DATE"/>
+        <result property="revokedYn"  column="REVOKED_YN"/>
+        <result property="replacedBy" column="REPLACED_BY"/>
+        <result property="clientIp"   column="CREATE_IP"/>
+    </resultMap>
+
+    <select id="selectNextRefreshTokenNo" resultType="java.lang.Long">
+        SELECT MB_REFRESH_TOKEN_SEQ.NEXTVAL FROM DUAL
+    </select>
+
+    <insert id="insertRefreshToken">
+        INSERT INTO MB_REFRESH_TOKEN (
+            TOKEN_NO, TOKEN_HASH, USER_NAME, PERSON_ID, CPNY_ID, DEVICE_ID,
+            EXPIRE_DATE, REVOKED_YN, CREATE_DATE, CREATE_IP
+        ) VALUES (
+            #{tokenNo, jdbcType=NUMERIC},
+            #{tokenHash, jdbcType=VARCHAR},
+            #{userName, jdbcType=VARCHAR},
+            #{personId, jdbcType=VARCHAR},
+            #{companyId, jdbcType=VARCHAR},
+            #{deviceId, jdbcType=VARCHAR},
+            #{expireDate, jdbcType=TIMESTAMP},
+            'N',
+            SYSDATE,
+            #{clientIp, jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <select id="selectRefreshTokenByHash" resultMap="RefreshTokenResultMap">
+        SELECT TOKEN_NO, TOKEN_HASH, USER_NAME, PERSON_ID, CPNY_ID, DEVICE_ID,
+               EXPIRE_DATE, REVOKED_YN, REPLACED_BY, CREATE_IP
+          FROM MB_REFRESH_TOKEN
+         WHERE TOKEN_HASH = #{tokenHash, jdbcType=VARCHAR}
+    </select>
+
+    <update id="revokeRefreshToken">
+        UPDATE MB_REFRESH_TOKEN
+           SET REVOKED_YN   = 'Y',
+               REVOKED_DATE = SYSDATE,
+               REPLACED_BY  = #{replacedBy, jdbcType=NUMERIC}
+         WHERE TOKEN_NO   = #{tokenNo, jdbcType=NUMERIC}
+           AND REVOKED_YN = 'N'
+    </update>
+
+    <update id="updateReplacedBy">
+        UPDATE MB_REFRESH_TOKEN
+           SET REPLACED_BY = #{replacedBy, jdbcType=NUMERIC}
+         WHERE TOKEN_NO = #{tokenNo, jdbcType=NUMERIC}
+    </update>
+
+    <update id="revokeTokensOfDevice">
+        UPDATE MB_REFRESH_TOKEN
+           SET REVOKED_YN = 'Y', REVOKED_DATE = SYSDATE
+         WHERE PERSON_ID  = #{personId, jdbcType=VARCHAR}
+           AND DEVICE_ID  = #{deviceId, jdbcType=VARCHAR}
+           AND REVOKED_YN = 'N'
+    </update>
+
+    <update id="revokeTokensOfPerson">
+        UPDATE MB_REFRESH_TOKEN
+           SET REVOKED_YN = 'Y', REVOKED_DATE = SYSDATE
+         WHERE PERSON_ID  = #{personId, jdbcType=VARCHAR}
+           AND REVOKED_YN = 'N'
+        <if test="exceptDeviceId != null and exceptDeviceId != ''">
+           AND DEVICE_ID &lt;&gt; #{exceptDeviceId, jdbcType=VARCHAR}
+        </if>
+    </update>
+
+    <update id="mergeDevice">
+        MERGE INTO MB_DEVICE D
+        USING (SELECT #{deviceId, jdbcType=VARCHAR} AS DEVICE_ID,
+                      #{personId, jdbcType=VARCHAR} AS PERSON_ID
+                 FROM DUAL) S
+           ON (D.DEVICE_ID = S.DEVICE_ID AND D.PERSON_ID = S.PERSON_ID)
+        WHEN MATCHED THEN UPDATE SET
+            D.CPNY_ID         = #{companyId, jdbcType=VARCHAR},
+            D.PLATFORM        = #{platform, jdbcType=VARCHAR},
+            D.APP_VERSION     = #{appVersion, jdbcType=VARCHAR},
+            D.OS_VERSION      = #{osVersion, jdbcType=VARCHAR},
+            D.DEVICE_MODEL    = #{deviceModel, jdbcType=VARCHAR},
+            D.ACTIVITY        = 1,
+            D.LAST_LOGIN_DATE = SYSDATE,
+            D.LAST_LOGIN_IP   = #{clientIp, jdbcType=VARCHAR},
+            D.LANG            = #{deviceLang, jdbcType=VARCHAR},
+            D.UPDATE_DATE     = SYSDATE
+        WHEN NOT MATCHED THEN INSERT (
+            DEVICE_ID, PERSON_ID, CPNY_ID, PLATFORM, APP_VERSION, OS_VERSION, DEVICE_MODEL,
+            ACTIVITY, LAST_LOGIN_DATE, LAST_LOGIN_IP, LANG, CREATE_DATE, UPDATE_DATE
+        ) VALUES (
+            S.DEVICE_ID, S.PERSON_ID,
+            #{companyId, jdbcType=VARCHAR},
+            #{platform, jdbcType=VARCHAR},
+            #{appVersion, jdbcType=VARCHAR},
+            #{osVersion, jdbcType=VARCHAR},
+            #{deviceModel, jdbcType=VARCHAR},
+            1, SYSDATE,
+            #{clientIp, jdbcType=VARCHAR},
+            #{deviceLang, jdbcType=VARCHAR},
+            SYSDATE, SYSDATE
+        )
+    </update>
+
+    <update id="updateDeviceFcmToken">
+        UPDATE MB_DEVICE
+           SET FCM_TOKEN   = #{fcmToken, jdbcType=VARCHAR},
+               UPDATE_DATE = SYSDATE
+         WHERE DEVICE_ID = #{deviceId, jdbcType=VARCHAR}
+           AND PERSON_ID = #{personId, jdbcType=VARCHAR}
+    </update>
+
+    <update id="updateDeviceLang">
+        UPDATE MB_DEVICE
+           SET LANG        = #{deviceLang, jdbcType=VARCHAR},
+               UPDATE_DATE = SYSDATE
+         WHERE DEVICE_ID = #{deviceId, jdbcType=VARCHAR}
+           AND PERSON_ID = #{personId, jdbcType=VARCHAR}
+           AND (LANG IS NULL OR LANG &lt;&gt; #{deviceLang, jdbcType=VARCHAR})
+    </update>
+
+    <update id="deactivateDevice">
+        UPDATE MB_DEVICE
+           SET ACTIVITY    = 0,
+               FCM_TOKEN   = NULL,
+               UPDATE_DATE = SYSDATE
+         WHERE DEVICE_ID = #{deviceId, jdbcType=VARCHAR}
+           AND PERSON_ID = #{personId, jdbcType=VARCHAR}
+    </update>
+
+</mapper>

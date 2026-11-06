@@ -1,5 +1,5 @@
 import { CommonModule, formatDate } from '@angular/common';
-import { Component, OnInit, ViewChild, inject, signal } from '@angular/core';
+import { Component, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { forkJoin, of } from 'rxjs';
@@ -17,6 +17,7 @@ import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
+import { NzResizableModule, NzResizeEvent } from 'ng-zorro-antd/resizable';
 import * as XLSX from 'xlsx';
 import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
@@ -208,6 +209,7 @@ function buildTimes(): string[] {
     NzModalModule,
     NzAlertModule,
     NzSpinModule,
+    NzResizableModule,
     LeaveApplyDetailComponent,
     TranslatePipe,
   ],
@@ -219,7 +221,14 @@ export class PiciLeaveAffirmBatchComponent implements OnInit {
   readonly isHr = this.mode === 'hr';
   readonly L = this.isHr ? LABELS_HR : LABELS_MANAGER;
   readonly columns = this.isHr ? COLS_HR : COLS_MANAGER;
-  readonly widthConfig = this.columns.map((c) => c.width);
+  /** Độ rộng cột (px) - kéo mép phải tiêu đề cột để đổi, lưu localStorage theo mode. */
+  private readonly colWidthStorageKey = `plab.colWidths.${this.mode}`;
+  readonly colWidths = signal<number[]>(this.loadColWidths());
+  readonly widthConfig = computed(() => this.colWidths().map((w) => `${w}px`));
+  readonly tableScroll = computed(() => ({
+    x: `${this.colWidths().reduce((sum, w) => sum + w, 0)}px`,
+    y: 'calc(100vh - 440px)',
+  }));
   readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
   readonly timeOptions = buildTimes();
   readonly confirmFlagOptions: { value: string; label: [string, string] }[] = [
@@ -366,6 +375,37 @@ export class PiciLeaveAffirmBatchComponent implements OnInit {
   }
 
   trackByRow = (_: number, row: PiciLeaveRow): string => row.applyNo;
+
+  // ---------- Kéo đổi độ rộng cột ----------
+
+  /** Độ rộng đã lưu (nếu hợp lệ, đủ số cột) hoặc độ rộng mặc định trong ColDef. */
+  private loadColWidths(): number[] {
+    const defaults = this.columns.map((c) => parseInt(c.width, 10));
+    try {
+      const saved = JSON.parse(localStorage.getItem(this.colWidthStorageKey) || 'null');
+      if (Array.isArray(saved) && saved.length === defaults.length && saved.every((w) => Number.isFinite(w) && w > 0)) {
+        return saved;
+      }
+    } catch {
+      // Dữ liệu localStorage hỏng -> dùng mặc định
+    }
+    return defaults;
+  }
+
+  onColResize({ width }: NzResizeEvent, index: number): void {
+    if (!width) return;
+    this.colWidths.update((ws) => ws.map((w, i) => (i === index ? Math.round(width) : w)));
+    try {
+      localStorage.setItem(this.colWidthStorageKey, JSON.stringify(this.colWidths()));
+    } catch {
+      // localStorage bị chặn -> chỉ áp dụng trong phiên hiện tại
+    }
+  }
+
+  /** Double-click mép cột -> trả cột đó về độ rộng mặc định. */
+  resetColWidth(index: number): void {
+    this.onColResize({ width: parseInt(this.columns[index].width, 10) }, index);
+  }
 
   isLocked(row: PiciLeaveRow): boolean {
     return LOCKED_FLAGS.includes(row.affirmFlag ?? '');

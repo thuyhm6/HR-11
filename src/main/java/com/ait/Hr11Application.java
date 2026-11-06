@@ -1,5 +1,6 @@
 package com.ait;
 
+import com.ait.config.WindowsConsoleUtf8;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 import org.springframework.boot.SpringApplication;
@@ -15,6 +16,11 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 public class Hr11Application extends SpringBootServletInitializer {
 
     private static final String INIT_FLAG = Hr11Application.class.getName() + ".initialized";
+
+    static {
+        // Đổi console Windows sang UTF-8 trước khi in log (tránh lỗi font tiếng Việt trên cửa sổ Tomcat)
+        WindowsConsoleUtf8.enable();
+    }
 
     @Override
     public void onStartup(ServletContext servletContext) throws ServletException {

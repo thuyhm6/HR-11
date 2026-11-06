@@ -1,58 +1,56 @@
-/** Tương ứng với response GET /hrm/empinfo/api/startpoint/employee/search. */
+/** Thông tin nhân viên (kết quả tìm kiếm + header) - GET /hrm/empinfo/api/startpoint/employee/search|info. */
 export interface StartPointEmployee {
   personId: string;
   empId?: string | null;
   localName?: string | null;
+  deptno?: string | null;
   deptName?: string | null;
+  postGradeName?: string | null;
+  empOfficeName?: string | null;
 }
 
-/** Tương ứng với HrExpInsideDto.java (chỉ các field dùng ở UI). */
+/** Tương ứng với HrExpInsideDto.java (1 quyết định nhân sự - HR_EXPERIENCE_INSIDE). */
 export interface StartPointDecision {
-  seq: number;
+  seq?: number | null;
   personId?: string | null;
   transCode?: string | null;
   transCodeName?: string | null;
+  transResource?: string | null;
+  transResourceName?: string | null;
   startDate?: string | null;
   deptno?: string | null;
   deptName?: string | null;
   empTypeCode?: string | null;
-  employeeBelong?: string | null;
+  empTypeName?: string | null;
   empOffice?: string | null;
-  endProbationDate?: string | null;
+  empOfficeName?: string | null;
   postGradeNo?: string | null;
+  postGradeName?: string | null;
   postFamily?: string | null;
-  jobType?: string | null;
-  dutyNo?: string | null;
-  workHourType?: string | null;
-  wageType?: string | null;
+  postFamilyName?: string | null;
   remark?: string | null;
-  positionNo?: string | null;
-  mainBusiness?: string | null;
-  transResource?: string | null;
-  costCenter?: string | null;
-  payStepNo?: string | null;
   position?: string | null;
-}
-
-export interface StartPointListParams {
-  draw: number;
-  start: number;
-  length: number;
-  personId: string;
-}
-
-/** Tương ứng với DataTablesResponse.java. */
-export interface DataTablesResponse<T> {
-  draw: number;
-  recordsTotal: number;
-  recordsFiltered: number;
-  data: T[];
+  positionName?: string | null;
+  positionNo?: string | null;
+  positionNoName?: string | null;
+  mainBusiness?: string | null;
+  mainBusinessName?: string | null;
+  costCenter?: string | null;
+  costCenterName?: string | null;
+  payStepNo?: string | null;
+  dateLeft?: string | null;
+  activity?: string | null;
+  activityName?: string | null;
+  updateDate?: string | null;
+  updatedBy?: string | null;
 }
 
 export interface StartPointActionResult {
   success: boolean;
-  message?: string;
   seq?: number;
+  /** Message key (messages*.properties) để frontend tự dịch thông báo lỗi. */
+  messageKey?: string;
+  message?: string;
 }
 
 /** Tương ứng với response GET /sys/api/getCode/list?parentCodeNo=... */

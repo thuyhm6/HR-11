@@ -95,7 +95,7 @@
 
       <div class="vrg-tree-scroll mt-2">
         <nz-tree *ngIf="selectedRoleNo() && !relationsLoading() && menuTreeNodes().length > 0"
-                 [nzData]="menuTreeNodes()" nzCheckable [nzCheckedKeys]="checkedMenuKeys()"
+                 [nzData]="menuTreeNodes()" nzCheckable [nzCheckedKeys]="treeCheckedKeys()"
                  (nzCheckedKeysChange)="onMenuCheckedKeysChange($event)"></nz-tree>
       </div>
     </nz-card>

@@ -1,14 +1,14 @@
 package com.ait.hrm.recruitManage.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
 
+/** Thông tin gia đình (HR_FAMILY_RECRUIT) - FAM_BORNDATE lưu dạng DD/MM/YYYY như bản gốc. */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class HrFamilyRecruitDto {
-
     private Long seq;
     private String personId;
     private String famName;
@@ -21,23 +21,14 @@ public class HrFamilyRecruitDto {
     private String famEmail;
     private String famPhone;
     private String workPhone;
-    private String welfareType;
-    private String remark;
-    private String childrenCode;
     private String occupation;
-    private String country;
-    private String diploma;
     private String workUnit;
-    private String age;
+    private String remark;
     private String activity;
-    private String createDate;
-    private String createdBy;
-    private String updateDate;
+    /** Người thay đổi: [EMPID]-LOCAL_NAME IP (bản gốc). */
     private String updatedBy;
-
+    private String updateDate;
     // Display
     private String famTypeName;
     private String genderName;
-    private String localName;
-    private String empId;
 }

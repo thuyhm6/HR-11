@@ -228,6 +228,35 @@
     </select>
 
     <!-- Gọi stored procedure phê duyệt / từ chối đơn -->
+    <!-- Dòng duyệt đang chờ người đăng nhập của 1 đơn (điều kiện giống selectApprovalEmailList) - nguồn tham số khi duyệt -->
+    <select id="selectMyPendingAffirmRows" resultMap="SyAffirmEmailResultMap">
+        SELECT SEQ,
+               AFFIRM_TYPE,
+               APPLY_NO,
+               APPLY_TYPE,
+               APPLY_PERSON_ID,
+               AFFIRM_PERSON_ID,
+               TITLE,
+               AFFIRM_LEVEL,
+               AFFIRM_FLAG,
+               AFFIRM_URL,
+               APPLY_FLAG,
+               APPLY_TYPE_CODE,
+               APPLY_PERSON_INFO,
+               APPLY_AFFIRM_FLAG,
+               ACTIVITY,
+               READ_FLAG
+          FROM SY_AFFIRM_EMAIL EM
+         WHERE ACTIVITY = 0
+           AND AFFIRM_PERSON_ID = #{adminID, jdbcType=VARCHAR}
+           AND TO_CHAR(APPLY_NO) = #{applyNo, jdbcType=VARCHAR}
+           AND TO_CHAR(APPLY_TYPE) = #{applyType, jdbcType=VARCHAR}
+           AND APPLY_AFFIRM_FLAG NOT IN ('14014310', '14014309', '14014308')
+           AND NOT EXISTS (SELECT 1 FROM ESS_LEAVE_APPLY_TB TB WHERE TB.APPLY_NO = EM.APPLY_NO AND TB.BATCH_YN = 2)
+           AND NOT EXISTS (SELECT 1 FROM ESS_APPLY_OT OT WHERE OT.APPLY_NO = EM.APPLY_NO AND OT.BATCH_YN = 2)
+         ORDER BY AFFIRM_LEVEL
+    </select>
+
     <update id="callAffirmExecute" parameterType="java.util.Map" statementType="CALLABLE">
         {CALL PKG_AFFIRM_EMAIL.PR_AFFIRM_EXECUTE(
             #{applyNo,       jdbcType=VARCHAR, mode=IN},

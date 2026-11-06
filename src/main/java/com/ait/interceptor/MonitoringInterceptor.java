@@ -6,6 +6,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.web.servlet.HandlerMapping;
 
 import com.ait.sy.sys.service.LoggingService;
 import com.ait.sy.sys.service.MetricsService;
@@ -43,7 +44,7 @@ public class MonitoringInterceptor implements HandlerInterceptor {
         // Record request start metrics
         Map<String, String> tags = Map.of(
                 "method", request.getMethod(),
-                "endpoint", request.getRequestURI());
+                "endpoint", resolveEndpointTag(request));
 
         metricsService.incrementCounter("http.requests.total", tags);
 
@@ -83,7 +84,7 @@ public class MonitoringInterceptor implements HandlerInterceptor {
             // Record metrics
             Map<String, String> tags = Map.of(
                     "method", method,
-                    "endpoint", endpoint,
+                    "endpoint", resolveEndpointTag(request),
                     "status", String.valueOf(statusCode));
 
             metricsService.recordTimer("http.request.duration", duration, tags);
@@ -122,5 +123,15 @@ public class MonitoringInterceptor implements HandlerInterceptor {
             // Log interceptor error without throwing to avoid breaking the request
             loggingService.logError("INTERCEPTOR_ERROR", "Error in monitoring interceptor", e, null);
         }
+    }
+
+    /**
+     * Tag "endpoint" cho metrics: dùng URL pattern của handler (vd. /hrm/emp/api/{id}) thay vì URI thật.
+     * Dùng URI thật thì mỗi URL khác nhau (path variable, file chunk JS/ảnh...) sinh ra 1 meter mới
+     * trong MeterRegistry và không bao giờ được giải phóng -> bộ nhớ tăng dần, server chậm dần.
+     */
+    private String resolveEndpointTag(HttpServletRequest request) {
+        Object pattern = request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE);
+        return pattern != null ? pattern.toString() : "UNMAPPED";
     }
 }

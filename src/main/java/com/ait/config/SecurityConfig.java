@@ -118,7 +118,9 @@ public class SecurityConfig implements WebMvcConfigurer {
                         "/auth/api/csrf-token", "/auth/api/login",
                         "/assets/**", "/static/**", "/webjars/**", "/api/iconify/**",
                         "/error/**", "/favicon.ico", "/actuator/**",
-                        "/api/health", "/api/csrf-token");
+                        "/api/health", "/api/csrf-token",
+                        // Mobile API xác thực bằng JWT ở MobileSecurityConfig (không dùng session thật)
+                        "/mobile/api/**");
     }
 
     public static class AuthenticationInterceptor implements HandlerInterceptor {

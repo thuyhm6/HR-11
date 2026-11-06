@@ -50,4 +50,5 @@ public class HrExpInsideBatchDto {
     private String positionNoName;
     private String empTypeName;
     private String mainBusinessName;
+    private String costCenterName;
 }

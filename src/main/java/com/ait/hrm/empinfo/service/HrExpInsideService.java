@@ -1,21 +1,24 @@
 package com.ait.hrm.empinfo.service;
 
+import com.ait.exception.BusinessException;
 import com.ait.hrm.empinfo.dto.HrExpInsideDto;
-import com.ait.sy.sys.dto.DataTablesResponse;
 import java.util.List;
-import java.util.Map;
 
 public interface HrExpInsideService {
 
-    HrExpInsideDto searchEmployee(HrExpInsideDto dto);
+    List<HrExpInsideDto> searchEmployees(String keyword);
 
-    DataTablesResponse<HrExpInsideDto> getDecisionList(HrExpInsideDto dto);
+    HrExpInsideDto getEmployeeInfo(String personId);
+
+    List<HrExpInsideDto> getDecisionList(String personId);
 
     HrExpInsideDto getDecisionBySeq(Long seq);
 
-    List<HrExpInsideDto> getAllDecisionsByPersonId(String personId);
+    /** Giá trị mặc định cho quyết định mới = thông tin hiện tại của nhân viên ở HR_EMPLOYEE. */
+    HrExpInsideDto getCurrentHrInfo(String personId);
 
-    Map<String, Object> saveDecision(HrExpInsideDto dto);
+    /** Thêm/sửa quyết định rồi chạy PKG_RECRUIT_MANAGE.PR_EXPERIENCE_EXECUTE_SINGLE. @return SEQ đã lưu */
+    Long saveDecision(HrExpInsideDto dto) throws BusinessException;
 
-    Map<String, Object> deleteDecision(Long seq);
+    void deleteDecision(Long seq) throws BusinessException;
 }

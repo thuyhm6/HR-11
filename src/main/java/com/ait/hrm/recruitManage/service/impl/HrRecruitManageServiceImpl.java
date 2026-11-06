@@ -1,10 +1,10 @@
 package com.ait.hrm.recruitManage.service.impl;
 
+import com.ait.exception.BusinessException;
 import com.ait.hrm.recruitManage.dto.HrEmployeeRecruitDto;
 import com.ait.hrm.recruitManage.dto.HrEducationRecruitDto;
 import com.ait.hrm.recruitManage.dto.HrWorkExperienceRecruitDto;
 import com.ait.hrm.recruitManage.dto.HrFamilyRecruitDto;
-import com.ait.hrm.recruitManage.dto.HrRecruitExecuteDto;
 import com.ait.hrm.recruitManage.dto.HrExpInsideBatchDto;
 import com.ait.hrm.recruitManage.dto.HrRecruitBatchDto;
 import com.ait.hrm.recruitManage.mapper.HrRecruitManageMapper;
@@ -18,6 +18,7 @@ import java.text.SimpleDateFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -25,29 +26,54 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.servlet.http.HttpSession;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+/**
+ * Quản lý nhận việc - chuyển từ RecruitManageSerImpl / RecruitManageCtroller (dự án HTSV). errorCode của
+ * BusinessException là message key để frontend tự dịch thông báo.
+ */
 @Service
 public class HrRecruitManageServiceImpl implements HrRecruitManageService {
 
     private static final Logger log = LoggerFactory.getLogger(HrRecruitManageServiceImpl.class);
 
+    /** Loại đăng ký đợt (HR_RECRUIT_REGISTER_INFO.REGISTER_TYPE) - bản gốc viewAddRegisterInfo FLAG=1/2. */
+    private static final String REGISTER_TYPE_RECRUIT_BATCH = "14014410";
+    private static final String REGISTER_TYPE_EXPERIENCE_BATCH = "80000057";
+    private static final String MSG_EMPID_EXISTS = "hrm.recruitManage.EMPID_EXISTENCE.Z";
+    private static final String MSG_SAVE_FAIL = "alert.message.add_fail";
+    private static final String MSG_DELETE_FAIL = "alert.message.delete_fail";
+    private static final Set<String> PHOTO_EXTENSIONS = Set.of("jpg", "jpeg", "png", "gif", "bmp");
+    private static final long MAX_PHOTO_SIZE = 20L * 1024 * 1024;
+
     @Autowired
     private HrRecruitManageMapper mapper;
 
+    /** Thư mục ảnh của công ty hiện tại (vd. .../resources/photo/HTSV) - thư mục cha được map URL /resources/photo/**. */
+    @Value("${app.photo.upload.path:./assets/images/users}")
+    private String photoUploadPath;
+
+    // ── Danh sách nhận việc ──────────────────────────────────────────────────
+
     @Override
-    public DataTablesResponse<HrEmployeeRecruitDto> getEmployeeList(HrEmployeeRecruitDto dto) {
+    public List<HrEmployeeRecruitDto> getEmployeeList(HrEmployeeRecruitDto search) {
         try {
-            int total = mapper.countList(dto);
-            List<HrEmployeeRecruitDto> list = mapper.selectListPage(dto);
-            return new DataTablesResponse<>(dto.getDraw(), total, total, list);
+            return mapper.selectEmployeeList(search);
         } catch (Exception e) {
-            log.error("Lỗi lấy danh sách nhân viên tuyển dụng", e);
-            return new DataTablesResponse<>(dto.getDraw(), "Lỗi truy vấn dữ liệu");
+            log.error("Lỗi lấy danh sách nhận việc: {}", e.getMessage(), e);
+            return new ArrayList<>();
         }
     }
 
@@ -56,33 +82,104 @@ public class HrRecruitManageServiceImpl implements HrRecruitManageService {
         try {
             return mapper.selectEmployeeById(personId);
         } catch (Exception e) {
-            log.error("Lỗi lấy thông tin nhân viên personId={}", personId, e);
+            log.error("Lỗi lấy thông tin nhận việc personId={}: {}", personId, e.getMessage(), e);
             return null;
         }
     }
 
     @Override
-    @Transactional
-    public Map<String, Object> saveEmployee(HrEmployeeRecruitDto dto) {
-        Map<String, Object> result = new HashMap<>();
+    @Transactional(rollbackFor = Exception.class)
+    public String saveEmployeeBasic(HrEmployeeRecruitDto dto) throws BusinessException {
+        String empId = trimToNull(dto.getEmpId());
+        dto.setEmpId(empId);
+        if (empId != null && mapper.countExistingEmpId(empId, trimToNull(dto.getPersonId())) > 0) {
+            throw new BusinessException(MSG_EMPID_EXISTS, "Mã nhân viên đã tồn tại: " + empId);
+        }
         try {
-            if (dto.getPersonId() == null || dto.getPersonId().isEmpty()) {
+            if (trimToNull(dto.getPersonId()) == null) {
+                dto.setPersonId(mapper.selectNextPersonId());
+                dto.setCpnyId(currentCpnyId());
                 mapper.insertEmployee(dto);
-                result.put("success", true);
-                result.put("personId", dto.getPersonId());
-                result.put("message", "Thêm mới thành công");
             } else {
                 mapper.updateEmployee(dto);
-                result.put("success", true);
-                result.put("personId", dto.getPersonId());
-                result.put("message", "Cập nhật thành công");
             }
+            log.info("Lưu thông tin cơ bản nhận việc personId={}", dto.getPersonId());
+            return dto.getPersonId();
         } catch (Exception e) {
-            log.error("Lỗi lưu thông tin nhân viên tuyển dụng", e);
-            result.put("success", false);
-            result.put("message", "Lỗi lưu dữ liệu: " + e.getMessage());
+            log.error("Lỗi lưu thông tin cơ bản nhận việc personId={}: {}", dto.getPersonId(), e.getMessage(), e);
+            throw new BusinessException(MSG_SAVE_FAIL, "Lưu thất bại", e);
         }
-        return result;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void saveEmployeePersonal(HrEmployeeRecruitDto dto) throws BusinessException {
+        try {
+            mapper.updatePersonalInfo(dto);
+            log.info("Lưu thông tin bổ sung nhận việc personId={}", dto.getPersonId());
+        } catch (Exception e) {
+            log.error("Lỗi lưu thông tin bổ sung nhận việc personId={}: {}", dto.getPersonId(), e.getMessage(), e);
+            throw new BusinessException(MSG_SAVE_FAIL, "Lưu thất bại", e);
+        }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteEmployee(String personId) throws BusinessException {
+        try {
+            mapper.deleteEmployee(personId);
+            log.info("Xóa nhận việc personId={}", personId);
+        } catch (Exception e) {
+            log.error("Lỗi xóa nhận việc personId={}: {}", personId, e.getMessage(), e);
+            throw new BusinessException(MSG_DELETE_FAIL, "Xóa thất bại", e);
+        }
+    }
+
+    @Override
+    public List<String> getPersonSupplierNames() {
+        try {
+            return mapper.selectPersonSupplierNames();
+        } catch (Exception e) {
+            log.error("Lỗi lấy danh sách công ty cung ứng lao động: {}", e.getMessage(), e);
+            return new ArrayList<>();
+        }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public String uploadPhoto(String personId, MultipartFile file) throws BusinessException {
+        HrEmployeeRecruitDto emp = mapper.selectEmployeeById(personId);
+        if (emp == null || file == null || file.isEmpty() || file.getSize() > MAX_PHOTO_SIZE) {
+            throw new BusinessException("hr.alert.message.upload_failure", "Tải ảnh thất bại");
+        }
+        String original = file.getOriginalFilename() == null ? "" : file.getOriginalFilename();
+        String ext = original.contains(".") ? original.substring(original.lastIndexOf('.') + 1).toLowerCase(Locale.ROOT) : "";
+        if (!PHOTO_EXTENSIONS.contains(ext)) {
+            throw new BusinessException("hr.alert.message.upload_failure", "Định dạng ảnh không hợp lệ");
+        }
+        // Bản gốc: /resources/photo/<cpnyId>/<EMPID>.<ext>
+        String cpnyId = emp.getCpnyId() != null ? emp.getCpnyId() : currentCpnyId();
+        String fileName = (trimToNull(emp.getEmpId()) != null ? emp.getEmpId().trim() : personId) + "." + ext;
+        try {
+            Path photoRoot = Paths.get(photoUploadPath).toAbsolutePath().getParent();
+            Path dir = photoRoot.resolve(cpnyId).normalize();
+            if (!dir.startsWith(photoRoot)) {
+                throw new BusinessException("hr.alert.message.upload_failure", "Đường dẫn không hợp lệ");
+            }
+            Files.createDirectories(dir);
+            try (InputStream in = file.getInputStream()) {
+                Files.copy(in, dir.resolve(fileName), StandardCopyOption.REPLACE_EXISTING);
+            }
+            String photoPath = "/resources/photo/" + cpnyId + "/" + fileName;
+            mapper.updatePhotoPath(personId, photoPath);
+            log.info("Cập nhật ảnh nhận việc personId={}, path={}", personId, photoPath);
+            return photoPath;
+        } catch (BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Lỗi tải ảnh nhận việc personId={}: {}", personId, e.getMessage(), e);
+            throw new BusinessException("hr.alert.message.upload_failure", "Tải ảnh thất bại", e);
+        }
     }
 
     // ── Education ────────────────────────────────────────────────────────────
@@ -92,44 +189,32 @@ public class HrRecruitManageServiceImpl implements HrRecruitManageService {
         try {
             return mapper.selectEducationList(personId);
         } catch (Exception e) {
-            log.error("Lỗi lấy danh sách giáo dục personId={}", personId, e);
-            return List.of();
+            log.error("Lỗi lấy danh sách giáo dục personId={}: {}", personId, e.getMessage(), e);
+            return new ArrayList<>();
         }
     }
 
     @Override
-    @Transactional
-    public Map<String, Object> saveEducation(HrEducationRecruitDto dto) {
-        Map<String, Object> result = new HashMap<>();
+    @Transactional(rollbackFor = Exception.class)
+    public void saveEducation(HrEducationRecruitDto dto) throws BusinessException {
         try {
-            if (dto.getSeq() == null) {
-                mapper.insertEducation(dto);
-            } else {
-                mapper.updateEducation(dto);
-            }
-            result.put("success", true);
-            result.put("message", "Lưu thành công");
+            if (dto.getSeq() == null) mapper.insertEducation(dto);
+            else mapper.updateEducation(dto);
         } catch (Exception e) {
-            log.error("Lỗi lưu thông tin giáo dục", e);
-            result.put("success", false);
-            result.put("message", "Lỗi: " + e.getMessage());
+            log.error("Lỗi lưu thông tin giáo dục seq={}: {}", dto.getSeq(), e.getMessage(), e);
+            throw new BusinessException(MSG_SAVE_FAIL, "Lưu thất bại", e);
         }
-        return result;
     }
 
     @Override
-    @Transactional
-    public Map<String, Object> deleteEducation(Long seq) {
-        Map<String, Object> result = new HashMap<>();
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteEducation(Long seq) throws BusinessException {
         try {
             mapper.deleteEducation(seq);
-            result.put("success", true);
         } catch (Exception e) {
-            log.error("Lỗi xóa giáo dục seq={}", seq, e);
-            result.put("success", false);
-            result.put("message", e.getMessage());
+            log.error("Lỗi xóa giáo dục seq={}: {}", seq, e.getMessage(), e);
+            throw new BusinessException(MSG_DELETE_FAIL, "Xóa thất bại", e);
         }
-        return result;
     }
 
     // ── Work Experience ──────────────────────────────────────────────────────
@@ -139,44 +224,32 @@ public class HrRecruitManageServiceImpl implements HrRecruitManageService {
         try {
             return mapper.selectWorkExpList(personId);
         } catch (Exception e) {
-            log.error("Lỗi lấy quá trình làm việc personId={}", personId, e);
-            return List.of();
+            log.error("Lỗi lấy quá trình làm việc personId={}: {}", personId, e.getMessage(), e);
+            return new ArrayList<>();
         }
     }
 
     @Override
-    @Transactional
-    public Map<String, Object> saveWorkExp(HrWorkExperienceRecruitDto dto) {
-        Map<String, Object> result = new HashMap<>();
+    @Transactional(rollbackFor = Exception.class)
+    public void saveWorkExp(HrWorkExperienceRecruitDto dto) throws BusinessException {
         try {
-            if (dto.getSeq() == null) {
-                mapper.insertWorkExp(dto);
-            } else {
-                mapper.updateWorkExp(dto);
-            }
-            result.put("success", true);
-            result.put("message", "Lưu thành công");
+            if (dto.getSeq() == null) mapper.insertWorkExp(dto);
+            else mapper.updateWorkExp(dto);
         } catch (Exception e) {
-            log.error("Lỗi lưu quá trình làm việc", e);
-            result.put("success", false);
-            result.put("message", "Lỗi: " + e.getMessage());
+            log.error("Lỗi lưu quá trình làm việc seq={}: {}", dto.getSeq(), e.getMessage(), e);
+            throw new BusinessException(MSG_SAVE_FAIL, "Lưu thất bại", e);
         }
-        return result;
     }
 
     @Override
-    @Transactional
-    public Map<String, Object> deleteWorkExp(Long seq) {
-        Map<String, Object> result = new HashMap<>();
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteWorkExp(Long seq) throws BusinessException {
         try {
             mapper.deleteWorkExp(seq);
-            result.put("success", true);
         } catch (Exception e) {
-            log.error("Lỗi xóa quá trình làm việc seq={}", seq, e);
-            result.put("success", false);
-            result.put("message", e.getMessage());
+            log.error("Lỗi xóa quá trình làm việc seq={}: {}", seq, e.getMessage(), e);
+            throw new BusinessException(MSG_DELETE_FAIL, "Xóa thất bại", e);
         }
-        return result;
     }
 
     // ── Family ───────────────────────────────────────────────────────────────
@@ -186,103 +259,106 @@ public class HrRecruitManageServiceImpl implements HrRecruitManageService {
         try {
             return mapper.selectFamilyList(personId);
         } catch (Exception e) {
-            log.error("Lỗi lấy thông tin gia đình personId={}", personId, e);
-            return List.of();
+            log.error("Lỗi lấy thông tin gia đình personId={}: {}", personId, e.getMessage(), e);
+            return new ArrayList<>();
         }
     }
 
     @Override
-    @Transactional
-    public Map<String, Object> saveFamily(HrFamilyRecruitDto dto) {
-        Map<String, Object> result = new HashMap<>();
+    @Transactional(rollbackFor = Exception.class)
+    public void saveFamily(HrFamilyRecruitDto dto) throws BusinessException {
         try {
-            if (dto.getSeq() == null) {
-                mapper.insertFamily(dto);
-            } else {
-                mapper.updateFamily(dto);
-            }
-            result.put("success", true);
-            result.put("message", "Lưu thành công");
+            if (dto.getSeq() == null) mapper.insertFamily(dto);
+            else mapper.updateFamily(dto);
         } catch (Exception e) {
-            log.error("Lỗi lưu thông tin gia đình", e);
-            result.put("success", false);
-            result.put("message", "Lỗi: " + e.getMessage());
+            log.error("Lỗi lưu thông tin gia đình seq={}: {}", dto.getSeq(), e.getMessage(), e);
+            throw new BusinessException(MSG_SAVE_FAIL, "Lưu thất bại", e);
         }
-        return result;
     }
 
     @Override
-    @Transactional
-    public Map<String, Object> deleteFamily(Long seq) {
-        Map<String, Object> result = new HashMap<>();
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteFamily(Long seq) throws BusinessException {
         try {
             mapper.deleteFamily(seq);
-            result.put("success", true);
         } catch (Exception e) {
-            log.error("Lỗi xóa thông tin gia đình seq={}", seq, e);
-            result.put("success", false);
-            result.put("message", e.getMessage());
+            log.error("Lỗi xóa thông tin gia đình seq={}: {}", seq, e.getMessage(), e);
+            throw new BusinessException(MSG_DELETE_FAIL, "Xóa thất bại", e);
         }
-        return result;
     }
 
     // ── Execute ──────────────────────────────────────────────────────────────
 
     @Override
     @Transactional
-    public Map<String, Object> executeRecruit(String personIds, String type) {
+    public Map<String, Object> executeRecruit(String ids, String type) {
         Map<String, Object> result = new HashMap<>();
         try {
-            if ("CONFIRM".equals(type) || "CONFIRM_BATCH".equals(type)) {
-                List<String> empIds;
-                if ("CONFIRM_BATCH".equals(type)) {
-                    empIds = mapper.selectEmpIdsByRegisterSeq(personIds);
-                } else {
-                    empIds = mapper.selectEmpIdsByPersonIds(Arrays.asList(personIds.split(",")));
+            String procIds = ids;
+            if ("CONFIRM".equals(type) || "CANCEL".equals(type)) {
+                List<String> personIds = Arrays.stream(ids.split(","))
+                        .map(String::trim).filter(s -> !s.isEmpty()).collect(Collectors.toList());
+                if (personIds.isEmpty()) {
+                    result.put("success", false);
+                    result.put("messageKey", "hrm.alert.empinfo.Choice_Perform_operation");
+                    return result;
                 }
-                if (empIds != null && !empIds.isEmpty()) {
-                    List<String> existingIds = mapper.selectExistingEmpIds(empIds);
-                    if (existingIds != null && !existingIds.isEmpty()) {
-                        result.put("success", false);
-                        result.put("message", "Mã nhân viên đã tồn tại trong hệ thống: " + String.join(", ", existingIds));
-                        return result;
-                    }
+                if ("CONFIRM".equals(type) && hasExistingEmpIds(mapper.selectEmpIdsByPersonIds(personIds), result)) {
+                    return result;
+                }
+                // Bản gốc truyền danh sách dạng 'id1','id2','empty' cho PR_RECRUIT_EXECUTE
+                procIds = personIds.stream().map(id -> "'" + id.replace("'", "") + "'")
+                        .collect(Collectors.joining(",")) + ",'empty'";
+            } else if ("CONFIRM_BATCH".equals(type)) {
+                if (hasExistingEmpIds(mapper.selectEmpIdsByRegisterSeq(ids), result)) {
+                    return result;
                 }
             }
-            HrUserInfo user = getCurrentUser();
-            HrRecruitExecuteDto dto = new HrRecruitExecuteDto();
-            dto.setPersonIds(personIds);
-            dto.setType(type);
-            if (user != null) {
-                dto.setAdminID(user.getUsername());
-                dto.setAdminIP(getClientIp());
-                dto.setCpnyId(user.getCpnyId());
-            }
-            mapper.callRecruitExecute(dto);
-            String msg = dto.getMessage();
-            if (msg != null && msg.startsWith("ERR")) {
-                result.put("success", false);
-                result.put("message", msg);
-            } else {
+            Map<String, Object> params = new HashMap<>();
+            params.put("personIds", procIds);
+            params.put("type", type);
+            mapper.callRecruitExecute(params);
+            Object msg = params.get("message");
+            String message = msg == null ? null : msg.toString();
+            if (message == null || "OK".equalsIgnoreCase(message)) {
                 result.put("success", true);
-                result.put("message", msg != null ? msg : "Thực hiện thành công");
+                result.put("messageKey", "liang.alert.message.org.execute_success");
+            } else {
+                // Bản gốc: procedure trả về khác "OK" = thông báo lỗi
+                result.put("success", false);
+                result.put("message", message);
             }
+            log.info("PR_RECRUIT_EXECUTE type={}, ids={}, message={}", type, ids, message);
         } catch (Exception e) {
-            log.error("Lỗi thực hiện recruit execute type={}", type, e);
+            log.error("Lỗi thực hiện recruit execute type={}: {}", type, e.getMessage(), e);
             result.put("success", false);
             result.put("message", "Lỗi: " + e.getMessage());
         }
         return result;
     }
 
+    /** Có EMPID đã tồn tại ở HR_EMPLOYEE -> ghi lỗi vào result. */
+    private boolean hasExistingEmpIds(List<String> empIds, Map<String, Object> result) {
+        if (empIds == null || empIds.isEmpty()) return false;
+        List<String> existing = mapper.selectExistingEmpIds(empIds);
+        if (existing == null || existing.isEmpty()) return false;
+        result.put("success", false);
+        result.put("messageKey", MSG_EMPID_EXISTS);
+        result.put("message", "Mã nhân viên đã tồn tại: " + String.join(", ", existing));
+        return true;
+    }
+
     // ── Quyết định hàng loạt ─────────────────────────────────────────────────
 
     @Override
+    @Transactional
     public List<HrExpInsideBatchDto> getRegisterList() {
         try {
+            // Bản gốc viewExperienceBatchList: mỗi lần mở trang dọn các dòng rỗng
+            mapper.deleteEmptyBatchItems();
             return mapper.selectRegisterList(new HrExpInsideBatchDto());
         } catch (Exception e) {
-            log.error("Lỗi lấy danh sách đăng ký hàng loạt", e);
+            log.error("Lỗi lấy danh sách đăng ký quyết định hàng loạt: {}", e.getMessage(), e);
             return new ArrayList<>();
         }
     }
@@ -290,18 +366,7 @@ public class HrRecruitManageServiceImpl implements HrRecruitManageService {
     @Override
     @Transactional
     public Map<String, Object> saveRegister(HrExpInsideBatchDto dto) {
-        Map<String, Object> result = new HashMap<>();
-        try {
-            mapper.insertRegister(dto);
-            result.put("success", true);
-            result.put("registerSeq", dto.getRegisterSeq());
-            result.put("registerDate", dto.getRegisterDate());
-        } catch (Exception e) {
-            log.error("Lỗi lưu đăng ký hàng loạt", e);
-            result.put("success", false);
-            result.put("message", e.getMessage());
-        }
-        return result;
+        return insertRegister(REGISTER_TYPE_EXPERIENCE_BATCH, dto.getRegisterDate());
     }
 
     @Override
@@ -314,24 +379,9 @@ public class HrRecruitManageServiceImpl implements HrRecruitManageService {
             response.setAllProcessed(total > 0 && unprocessed == 0);
             return response;
         } catch (Exception e) {
-            log.error("Lỗi lấy danh sách quyết định hàng loạt registerSeq={}", dto.getRegisterSeq(), e);
+            log.error("Lỗi lấy danh sách quyết định hàng loạt registerSeq={}: {}", dto.getRegisterSeq(), e.getMessage(), e);
             return new DataTablesResponse<>(dto.getDraw(), "Lỗi truy vấn dữ liệu");
         }
-    }
-
-    @Override
-    @Transactional
-    public Map<String, Object> updateBatchItem(HrExpInsideBatchDto dto) {
-        Map<String, Object> result = new HashMap<>();
-        try {
-            mapper.updateBatchItem(dto);
-            result.put("success", true);
-        } catch (Exception e) {
-            log.error("Lỗi cập nhật quyết định hàng loạt seq={}", dto.getSeq(), e);
-            result.put("success", false);
-            result.put("message", e.getMessage());
-        }
-        return result;
     }
 
     @Override
@@ -342,9 +392,9 @@ public class HrRecruitManageServiceImpl implements HrRecruitManageService {
             mapper.deleteBatchItem(seq);
             result.put("success", true);
         } catch (Exception e) {
-            log.error("Lỗi xóa quyết định hàng loạt seq={}", seq, e);
+            log.error("Lỗi xóa quyết định hàng loạt seq={}: {}", seq, e.getMessage(), e);
             result.put("success", false);
-            result.put("message", e.getMessage());
+            result.put("messageKey", MSG_DELETE_FAIL);
         }
         return result;
     }
@@ -382,8 +432,6 @@ public class HrRecruitManageServiceImpl implements HrRecruitManageService {
                     dto.setLineId(String.valueOf(i - 1));
                     // Nếu có ô trống, lấy giá trị hiện tại từ HR_EMPLOYEE để bổ sung
                     fillBlankFromEmployee(dto, empId);
-                    String personId = mapper.selectPersonIdByEmpId(empId);
-                    dto.setPersonId(personId);
                     mapper.insertBatchItem(dto);
                     successCount++;
                 } catch (Exception ex) {
@@ -397,7 +445,7 @@ public class HrRecruitManageServiceImpl implements HrRecruitManageService {
             result.put("errorCount", errorCount);
             if (errors.length() > 0) result.put("errors", errors.toString());
         } catch (Exception e) {
-            log.error("Lỗi đọc file Excel import batch", e);
+            log.error("Lỗi đọc file Excel import batch: {}", e.getMessage(), e);
             result.put("success", false);
             result.put("message", "Lỗi đọc file: " + e.getMessage());
         }
@@ -459,29 +507,17 @@ public class HrRecruitManageServiceImpl implements HrRecruitManageService {
         if (dto.getCostCenter()     == null) dto.setCostCenter(emp.getCostCenter());
     }
 
-    private HrUserInfo getCurrentUser() {
-        try {
-            ServletRequestAttributes attrs = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-            if (attrs != null) {
-                HttpSession session = attrs.getRequest().getSession(false);
-                if (session != null) {
-                    return (HrUserInfo) session.getAttribute("currentHrUser");
-                }
-            }
-        } catch (Exception e) {
-            log.warn("Không lấy được thông tin user hiện tại", e);
-        }
-        return null;
-    }
-
     // ── Nhận việc hàng loạt (Recruit Batch) ──────────────────────────────────
 
     @Override
+    @Transactional
     public List<HrRecruitBatchDto> getRblRegisterList() {
         try {
+            // Bản gốc viewRecruitBatchList (không có FLAG): mỗi lần mở trang dọn các dòng rỗng
+            mapper.deleteEmptyRblBatchItems();
             return mapper.selectRblRegisterList(new HrRecruitBatchDto());
         } catch (Exception e) {
-            log.error("Lỗi lấy danh sách đăng ký nhận việc hàng loạt", e);
+            log.error("Lỗi lấy danh sách đăng ký nhận việc hàng loạt: {}", e.getMessage(), e);
             return new ArrayList<>();
         }
     }
@@ -489,16 +525,28 @@ public class HrRecruitManageServiceImpl implements HrRecruitManageService {
     @Override
     @Transactional
     public Map<String, Object> saveRblRegister(HrRecruitBatchDto dto) {
+        return insertRegister(REGISTER_TYPE_RECRUIT_BATCH, dto.getRegisterDate());
+    }
+
+    /** Bản gốc addRegisterInfo: REGISTER_DATE dạng DD/MM/YYYY, REMARK = REGISTER_DATE. */
+    private Map<String, Object> insertRegister(String registerType, String registerDate) {
         Map<String, Object> result = new HashMap<>();
-        try {
-            mapper.insertRblRegister(dto);
-            result.put("success", true);
-            result.put("registerSeq", dto.getRegisterSeq());
-            result.put("registerDate", dto.getRegisterDate());
-        } catch (Exception e) {
-            log.error("Lỗi lưu đăng ký nhận việc hàng loạt", e);
+        if (trimToNull(registerDate) == null) {
             result.put("success", false);
-            result.put("message", e.getMessage());
+            result.put("messageKey", MSG_SAVE_FAIL);
+            return result;
+        }
+        try {
+            String seq = mapper.selectNextRegisterSeq();
+            mapper.insertRegister(seq, registerType, registerDate.trim());
+            result.put("success", true);
+            result.put("registerSeq", seq);
+            result.put("registerDate", registerDate.trim());
+            log.info("Đăng ký đợt type={}, seq={}, date={}", registerType, seq, registerDate);
+        } catch (Exception e) {
+            log.error("Lỗi đăng ký đợt type={}: {}", registerType, e.getMessage(), e);
+            result.put("success", false);
+            result.put("messageKey", MSG_SAVE_FAIL);
         }
         return result;
     }
@@ -513,24 +561,40 @@ public class HrRecruitManageServiceImpl implements HrRecruitManageService {
             response.setAllProcessed(total > 0 && unprocessed == 0);
             return response;
         } catch (Exception e) {
-            log.error("Lỗi lấy danh sách nhận việc hàng loạt registerSeq={}", dto.getRegisterSeq(), e);
+            log.error("Lỗi lấy danh sách nhận việc hàng loạt registerSeq={}: {}", dto.getRegisterSeq(), e.getMessage(), e);
             return new DataTablesResponse<>(dto.getDraw(), "Lỗi truy vấn dữ liệu");
         }
     }
 
     @Override
-    @Transactional
-    public Map<String, Object> updateRblBatchItem(HrRecruitBatchDto dto) {
-        Map<String, Object> result = new HashMap<>();
+    @Transactional(rollbackFor = Exception.class)
+    public String addEmptyRblBatchItem(String registerSeq) throws BusinessException {
+        try {
+            String seq = mapper.selectNextRblBatchSeq();
+            mapper.insertEmptyRblBatchItem(seq, registerSeq);
+            log.info("Thêm dòng trống nhận việc hàng loạt seq={}, registerSeq={}", seq, registerSeq);
+            return seq;
+        } catch (Exception e) {
+            log.error("Lỗi thêm dòng nhận việc hàng loạt registerSeq={}: {}", registerSeq, e.getMessage(), e);
+            throw new BusinessException(MSG_SAVE_FAIL, "Lưu thất bại", e);
+        }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updateRblBatchItem(HrRecruitBatchDto dto) throws BusinessException {
+        String empId = trimToNull(dto.getEmpId());
+        dto.setEmpId(empId);
+        // Bản gốc IS_EXISTS_EMPID1: mã NV không được trùng HR_EMPLOYEE / HR_EMPLOYEE_RECRUIT / dòng chưa xử lý khác
+        if (empId != null && mapper.countExistingRblEmpId(empId, dto.getSeq()) > 0) {
+            throw new BusinessException(MSG_EMPID_EXISTS, "Mã nhân viên đã tồn tại: " + empId);
+        }
         try {
             mapper.updateRblBatchItem(dto);
-            result.put("success", true);
         } catch (Exception e) {
-            log.error("Lỗi cập nhật nhận việc hàng loạt seq={}", dto.getSeq(), e);
-            result.put("success", false);
-            result.put("message", e.getMessage());
+            log.error("Lỗi cập nhật nhận việc hàng loạt seq={}: {}", dto.getSeq(), e.getMessage(), e);
+            throw new BusinessException(MSG_SAVE_FAIL, "Lưu thất bại", e);
         }
-        return result;
     }
 
     @Override
@@ -541,9 +605,9 @@ public class HrRecruitManageServiceImpl implements HrRecruitManageService {
             mapper.deleteRblBatchItem(seq);
             result.put("success", true);
         } catch (Exception e) {
-            log.error("Lỗi xóa nhận việc hàng loạt seq={}", seq, e);
+            log.error("Lỗi xóa nhận việc hàng loạt seq={}: {}", seq, e.getMessage(), e);
             result.put("success", false);
-            result.put("message", e.getMessage());
+            result.put("messageKey", MSG_DELETE_FAIL);
         }
         return result;
     }
@@ -625,25 +689,36 @@ public class HrRecruitManageServiceImpl implements HrRecruitManageService {
             result.put("errorCount", errorCount);
             if (errors.length() > 0) result.put("errors", errors.toString());
         } catch (Exception e) {
-            log.error("Lỗi đọc file Excel import nhận việc hàng loạt", e);
+            log.error("Lỗi đọc file Excel import nhận việc hàng loạt: {}", e.getMessage(), e);
             result.put("success", false);
             result.put("message", "Lỗi đọc file: " + e.getMessage());
         }
         return result;
     }
 
-    private String getClientIp() {
+    // ── Helpers ──────────────────────────────────────────────────────────────
+
+    private static String trimToNull(String s) {
+        if (s == null) return null;
+        String t = s.trim();
+        return t.isEmpty() ? null : t;
+    }
+
+    private String currentCpnyId() {
         try {
             ServletRequestAttributes attrs = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
             if (attrs != null) {
-                jakarta.servlet.http.HttpServletRequest req = attrs.getRequest();
-                String ip = req.getHeader("X-Forwarded-For");
-                if (ip == null || ip.isEmpty()) ip = req.getRemoteAddr();
-                return ip;
+                HttpSession session = attrs.getRequest().getSession(false);
+                if (session != null) {
+                    Object cpny = session.getAttribute("cpnyId");
+                    if (cpny != null) return cpny.toString();
+                    HrUserInfo user = (HrUserInfo) session.getAttribute("currentHrUser");
+                    if (user != null) return user.getCpnyId();
+                }
             }
         } catch (Exception e) {
-            log.warn("Không lấy được IP", e);
+            log.warn("Không lấy được công ty của user hiện tại: {}", e.getMessage());
         }
-        return "";
+        return null;
     }
 }

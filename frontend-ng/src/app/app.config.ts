@@ -1,4 +1,4 @@
-import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
+import { ApplicationConfig, inject, provideAppInitializer, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { provideHttpClient, withInterceptorsFromDi, withXsrfConfiguration } from '@angular/common/http';
 import { provideRouter, RouteReuseStrategy } from '@angular/router';
 import { routes } from './app.routes';
@@ -8,6 +8,7 @@ import { registerLocaleData } from '@angular/common';
 import vi from '@angular/common/locales/vi';
 import { provideNzDateFnsAdapter } from 'ng-zorro-antd/core/time';
 import { NzConfig, provideNzConfig } from 'ng-zorro-antd/core/config';
+import { TableColumnResizeService } from './shared/table-column-resize.service';
 
 // Ngôn ngữ mặc định của toàn dự án là tiếng Việt (xem CLAUDE.md) - NG-ZORRO cần locale riêng cho
 // i18n nội bộ của các component (DatePicker, Pagination...) và Angular cần locale data cho pipe.
@@ -35,5 +36,7 @@ export const appConfig: ApplicationConfig = {
     provideNzI18n(vi_VN),
     provideNzDateFnsAdapter(),
     provideNzConfig(NZ_GLOBAL_CONFIG),
+    // Kéo mép tiêu đề cột để đổi độ rộng cột cho mọi nz-table (không cần sửa từng trang)
+    provideAppInitializer(() => inject(TableColumnResizeService).init()),
   ],
 };

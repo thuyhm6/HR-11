@@ -10,7 +10,9 @@
   <!-- CSS dùng chung của theme (giống layout/master.html bản Thymeleaf) -->
   <link href="/assets/css/vendor.min.css" rel="stylesheet" type="text/css">
   <link href="/assets/css/icons.min.css" rel="stylesheet" type="text/css">
-  <link href="/assets/css/all.min.css" rel="stylesheet">
+  <!-- Font Awesome 5 (icon fas fa-...): dùng bản trong plugins/fontawesome-free vì có sẵn file font cạnh nó;
+       assets/css/all.min.css (FA 6) trỏ tới assets/webfonts/ không tồn tại nên icon bị trống. -->
+  <link href="/assets/plugins/fontawesome-free/css/all.min.css" rel="stylesheet">
   <link href="/assets/fonts/bootstrap-icons.min.css" rel="stylesheet">
   <link href="/assets/css/app.min.css" rel="stylesheet" type="text/css">
   <link href="/assets/css/style.css" rel="stylesheet" type="text/css">
@@ -23,7 +25,11 @@
        <iconify-icon> dùng để render icon menu (menuImg dạng "solar:xxx-bold") -->
   <script src="/assets/js/vendor.js"></script>
 
-  <!-- Trỏ <iconify-icon> về API icon nội bộ (/assets/iconify/...) thay vì api.iconify.design trên
+  <!-- Dữ liệu SVG các icon dùng trong code/menu, gói sẵn tĩnh (sinh bởi scripts/build-iconify-icons.mjs)
+       -> icon hiển thị ngay, không cần Internet và không phát sinh request API. -->
+  <script src="/assets/js/iconify-icons.js"></script>
+
+  <!-- Icon chưa gói sẵn: trỏ <iconify-icon> về API icon nội bộ (/assets/iconify/...) thay vì api.iconify.design trên
        Internet - để icon menu/sidebar/topbar hiển thị được khi server không có mạng.
        Xem chi tiết trong file iconify-offline.js. -->
   <script src="/assets/js/iconify-offline.js"></script>

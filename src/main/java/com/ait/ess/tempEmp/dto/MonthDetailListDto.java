@@ -37,6 +37,18 @@ public class MonthDetailListDto {
     private String year;
     private String reportType;
     private String reportYear;
+    /** Kỳ dữ liệu: rỗng = 25 tháng trước -> 24 tháng này (mặc định), 25_31 = 25 -> cuối tháng này, 01_31 = 01 -> cuối tháng này. */
+    private String periodType;
+
+    // Kỳ dữ liệu đã tính từ month/year + periodType (MonthDetailListServiceImpl.applyPeriod tự set, ghi đè giá trị client gửi lên)
+    /** Ngày bắt đầu kỳ (YYYY/MM/DD). */
+    private String arPeriodFrom;
+    /** Ngày kết thúc kỳ (YYYY/MM/DD). */
+    private String arPeriodTo;
+    /** YYYYMM của các cột ngày 25..31. */
+    private String arHiYm;
+    /** YYYYMM của các cột ngày 1..24. */
+    private String arLoYm;
 
     // Phân trang
     private int draw;

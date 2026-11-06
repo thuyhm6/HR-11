@@ -182,3 +182,23 @@ input.ant-input:not(.ant-input-sm):not(.ant-input-lg) {
   padding: 2px 6px;
 }
 
+
+/* Kéo đổi độ rộng cột cho mọi nz-table - xem shared/table-column-resize.service.ts */
+.ant-table-thead > tr > th.tcr-hover {
+  cursor: col-resize;
+  box-shadow: inset -2px 0 0 #1677ff;
+}
+
+body.tcr-dragging,
+body.tcr-dragging * {
+  cursor: col-resize !important;
+  user-select: none !important;
+}
+
+.tcr-guide {
+  position: fixed;
+  z-index: 2000;
+  width: 0;
+  border-left: 2px dashed #1677ff;
+  pointer-events: none;
+}

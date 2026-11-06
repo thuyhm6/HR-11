@@ -1,1 +1,3 @@
-/* Không cần style riêng - dùng chung class table-nowrap toàn cục (xem styles.css). */
+.vebl-register-select {
+  min-width: 200px;
+}

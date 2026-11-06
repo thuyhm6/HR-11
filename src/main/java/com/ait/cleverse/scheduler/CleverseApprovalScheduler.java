@@ -36,7 +36,7 @@ public class CleverseApprovalScheduler {
      * Gửi lại các đơn còn SEND_EMAIL_FLAG = 0 (vd. lúc lưu đơn mất kết nối Cleverse do DNS/VPN).
      * Mặc định 30 phút/lần ở giây 0; lịch đồng bộ chạy ở giây 30 nên cùng phút thì gửi lại chạy trước.
      */
-    @Scheduled(cron = "${cleverse.approval.resend-cron:0 0/30 * * * *}")
+    //@Scheduled(cron = "${cleverse.approval.resend-cron:0 0/30 * * * *}")
     public void resendPendingApply() {
         if (!"1".equals(syncFlag)) {
             return;
@@ -56,7 +56,7 @@ public class CleverseApprovalScheduler {
         }
     }
 
-    @Scheduled(cron = "${cleverse.approval.sync-cron:30 0/10 * * * *}")
+    //@Scheduled(cron = "${cleverse.approval.sync-cron:30 0/10 * * * *}")
     public void synchronizationApprovalStatus() {
         if (!"1".equals(syncFlag)) {
             return;

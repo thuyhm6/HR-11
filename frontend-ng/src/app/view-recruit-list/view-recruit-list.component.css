@@ -1,13 +1,32 @@
-.vrl-emp-row {
+.vrl-row {
   cursor: pointer;
 }
-.vrl-emp-row:hover {
+.vrl-row:hover > td {
   background: #fafafa;
 }
-.vrl-emp-row-active {
-  background: #e6f4ff;
+.vrl-row-active > td {
+  background: #e6f4ff !important;
 }
 .vrl-loading {
   opacity: 0.6;
   pointer-events: none;
+}
+.vrl-readonly {
+  min-height: 32px;
+  padding: 4px 11px;
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  background: #fafafa;
+}
+.vrl-photo {
+  width: 170px;
+  height: 226px;
+  object-fit: cover;
+  border: 1px solid #d9d9d9;
+}
+fieldset {
+  min-width: 0;
+  border: 0;
+  padding: 0;
+  margin: 0;
 }

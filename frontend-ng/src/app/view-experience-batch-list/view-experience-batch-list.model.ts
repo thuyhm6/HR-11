@@ -1,12 +1,13 @@
-/** Tương ứng với 1 dòng đăng ký (HR_RECRUIT_REGISTER_INFO) trong HrExpInsideBatchDto.java. */
+/** 1 đợt đăng ký (HR_RECRUIT_REGISTER_INFO, REGISTER_TYPE=80000057) trong HrExpInsideBatchDto.java. */
 export interface ExpBatchRegister {
   registerSeq: string;
   registerDate?: string | null;
   registerRemark?: string | null;
+  /** '1' = đợt đã xác nhận -> chỉ xem. */
   registerActivity?: string | null;
 }
 
-/** Tương ứng với 1 dòng dữ liệu (HR_EXPERIENCE_INSIDE_BATCH) trong HrExpInsideBatchDto.java. */
+/** 1 dòng dữ liệu (HR_EXPERIENCE_INSIDE_BATCH) trong HrExpInsideBatchDto.java. */
 export interface ExpBatchItem {
   seq: string;
   registerSeq?: string | null;
@@ -30,6 +31,7 @@ export interface ExpBatchItem {
   mainBusiness?: string | null;
   mainBusinessName?: string | null;
   costCenter?: string | null;
+  costCenterName?: string | null;
   remarks?: string | null;
   activity?: string | null;
 }
@@ -52,6 +54,8 @@ export interface DataTablesResponse<T> {
 
 export interface ExpBatchActionResult {
   success: boolean;
+  /** Message key (messages*.properties) để frontend tự dịch thông báo. */
+  messageKey?: string;
   message?: string;
   registerSeq?: string;
   registerDate?: string;
@@ -63,19 +67,4 @@ export interface ExpBatchImportResult {
   successCount?: number;
   errorCount?: number;
   errors?: string;
-}
-
-/** Tương ứng với response GET /sys/api/getCode/list?parentCodeNo=... */
-export interface CodeItem {
-  codeNo: string;
-  codeName: string;
-  description?: string;
-  codeId?: string;
-}
-
-/** Tương ứng với response GET /ar/attendanceSettings/api/arSupervisor/authorized-departments (danh sách phẳng). */
-export interface AuthDeptNode {
-  id: string;
-  text: string;
-  parent: string;
 }

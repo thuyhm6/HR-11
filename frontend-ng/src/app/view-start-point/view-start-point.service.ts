@@ -4,32 +4,35 @@ import { Observable } from 'rxjs';
 import {
   AuthDeptNode,
   CodeItem,
-  DataTablesResponse,
   StartPointActionResult,
   StartPointDecision,
   StartPointEmployee,
-  StartPointListParams,
 } from './view-start-point.model';
 
 const API_BASE = '/hrm/empinfo/api/startpoint';
 
-/**
- * Gọi lại nguyên các API JSON đã có sẵn ở HrEmpinfoController (không đổi backend) - trang Thymeleaf
- * viewStartPoint.html đã được thay bằng Angular route /view-start-point.
- */
+/** API quyết định nhân sự ở HrEmpinfoController (bản gốc /hrm/empinfo/viewStartPoint của dự án HTSV). */
 @Injectable({ providedIn: 'root' })
 export class ViewStartPointService {
   constructor(private readonly http: HttpClient) {}
 
-  searchEmployee(keyword: string): Observable<StartPointEmployee> {
-    return this.http.get<StartPointEmployee>(`${API_BASE}/employee/search`, {
+  searchEmployees(keyword: string): Observable<StartPointEmployee[]> {
+    return this.http.get<StartPointEmployee[]>(`${API_BASE}/employee/search`, {
       params: new HttpParams().set('keyword', keyword),
       withCredentials: true,
     });
   }
 
-  getDecisionList(params: StartPointListParams): Observable<DataTablesResponse<StartPointDecision>> {
-    return this.http.post<DataTablesResponse<StartPointDecision>>(`${API_BASE}/decisions/list`, params, {
+  getEmployeeInfo(personId: string): Observable<StartPointEmployee> {
+    return this.http.get<StartPointEmployee>(`${API_BASE}/employee/info`, {
+      params: new HttpParams().set('personId', personId),
+      withCredentials: true,
+    });
+  }
+
+  getDecisionList(personId: string): Observable<StartPointDecision[]> {
+    return this.http.get<StartPointDecision[]>(`${API_BASE}/decisions/list`, {
+      params: new HttpParams().set('personId', personId),
       withCredentials: true,
     });
   }
@@ -41,7 +44,15 @@ export class ViewStartPointService {
     });
   }
 
-  saveDecision(dto: Partial<StartPointDecision>): Observable<StartPointActionResult> {
+  /** Giá trị mặc định cho quyết định mới (thông tin hiện tại ở HR_EMPLOYEE). */
+  getDecisionDefault(personId: string): Observable<StartPointDecision> {
+    return this.http.get<StartPointDecision>(`${API_BASE}/decisions/current`, {
+      params: new HttpParams().set('personId', personId),
+      withCredentials: true,
+    });
+  }
+
+  saveDecision(dto: StartPointDecision): Observable<StartPointActionResult> {
     return this.http.post<StartPointActionResult>(`${API_BASE}/decisions/save`, dto, { withCredentials: true });
   }
 
@@ -50,10 +61,6 @@ export class ViewStartPointService {
       params: new HttpParams().set('seq', String(seq)),
       withCredentials: true,
     });
-  }
-
-  exportUrl(personId: string, localName: string): string {
-    return `${API_BASE}/decisions/export?personId=${encodeURIComponent(personId)}&localName=${encodeURIComponent(localName)}`;
   }
 
   getCodeList(parentCodeNo: string): Observable<CodeItem[]> {

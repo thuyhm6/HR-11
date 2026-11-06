@@ -117,7 +117,8 @@
         ) WHERE RN &gt; #{start, jdbcType=INTEGER}
     </select>
 
-    <!-- ===== Danh sách ngày trong kỳ công (25 tháng trước -> 24 tháng chọn) - viewFixedDateList bản gốc,
+    <!-- ===== Danh sách ngày trong kỳ dữ liệu (arPeriodFrom -> arPeriodTo, service tính theo periodType:
+         mặc định 25 tháng trước -> 24 tháng chọn) - viewFixedDateList bản gốc,
          dùng để dựng động 3 nhóm cột chi tiết theo ngày trên màn hình viewMonthDetailList ===== -->
     <resultMap id="MonthDetailDateResultMap" type="com.ait.ess.tempEmp.dto.MonthDetailDateDto">
         <result column="DDATE_STR"    property="ddateStr"   jdbcType="VARCHAR"/>
@@ -132,7 +133,6 @@
 
     <select id="selectFixedDateList" parameterType="com.ait.ess.tempEmp.dto.MonthDetailListDto"
             resultMap="MonthDetailDateResultMap">
-        <bind name="arMonth" value="month + year"/>
         SELECT DDATE_STR,
                IWEEK,
                TYPEID,
@@ -143,20 +143,20 @@
                DECODE(IWEEK, 1, 'Mon', 2, 'Tues', 3, 'Wed', 4, 'Thur', 5, 'Fri', 6, 'Sat', 0, 'Sun') AS WEEK_TITLE
           FROM AR_CALENDER
          WHERE CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
-           AND DDATE_STR BETWEEN TO_CHAR(ADD_MONTHS(TO_DATE(#{arMonth, jdbcType=VARCHAR},'MMYYYY'), -1),'YYYY/MM') || '/25'
-                             AND TO_CHAR(TO_DATE(#{arMonth, jdbcType=VARCHAR},'MMYYYY'),'YYYY/MM') || '/24'
+           AND DDATE_STR BETWEEN #{arPeriodFrom, jdbcType=VARCHAR} AND #{arPeriodTo, jdbcType=VARCHAR}
          ORDER BY DDATE_STR
     </select>
 
     <!-- ===== Báo cáo "Công tính lương" (reportType = 305) ===== -->
-    <!-- Khoảng ngày đầu/cuối tháng dùng lặp lại trong AR_GET_ATTEND_VALUE / GETTENPOINT -->
+    <!-- Kỳ dữ liệu: arPeriodFrom/arPeriodTo/arHiYm/arLoYm do service tính (MonthDetailListServiceImpl.applyPeriod)
+         theo Tháng + periodType. arHiYm = YYYYMM cột ngày 25..31, arLoYm = YYYYMM cột ngày 1..24
+         (periodType 25_31 không có ngày 1..24 -> NULL) -->
     <sql id="monthRange">
-        TO_CHAR(ADD_MONTHS(TO_DATE('25'||#{arMonth, jdbcType=VARCHAR},'DDMMYYYY'),-1),'YYYY/MM/DD'),
-        TO_CHAR(TO_DATE('24'||#{arMonth, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD')
+        #{arPeriodFrom, jdbcType=VARCHAR}, #{arPeriodTo, jdbcType=VARCHAR}
     </sql>
     <sql id="monthFirstDay">TO_CHAR(TO_DATE('01'||#{arMonth, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD')</sql>
-    <sql id="monthYYYYMM">TO_CHAR(TO_DATE(#{arMonth, jdbcType=VARCHAR},'MMYYYY'),'YYYYMM')</sql>
-    <sql id="lastMonthYYYYMM">TO_CHAR(ADD_MONTHS(TO_DATE(#{arMonth, jdbcType=VARCHAR},'MMYYYY'),-1),'YYYYMM')</sql>
+    <sql id="monthYYYYMM">#{arLoYm, jdbcType=VARCHAR}</sql>
+    <sql id="lastMonthYYYYMM">#{arHiYm, jdbcType=VARCHAR}</sql>
 
     <select id="selectSalaryReport" parameterType="com.ait.ess.tempEmp.dto.MonthDetailListDto"
             resultType="java.util.LinkedHashMap">
@@ -281,6 +281,34 @@
                AR_GET_DETAIL_VALUE(HR.PERSON_ID, <include refid="lastMonthYYYYMM"/> || '29',#{cpnyId, jdbcType=VARCHAR}) DATE_29,
                AR_GET_DETAIL_VALUE(HR.PERSON_ID, <include refid="lastMonthYYYYMM"/> || '30',#{cpnyId, jdbcType=VARCHAR}) DATE_30,
                AR_GET_DETAIL_VALUE(HR.PERSON_ID, <include refid="lastMonthYYYYMM"/> || '31',#{cpnyId, jdbcType=VARCHAR}) DATE_31,
+            <choose>
+              <when test="periodType == '25_31'">
+               NULL DATE_1,
+               NULL DATE_2,
+               NULL DATE_3,
+               NULL DATE_4,
+               NULL DATE_5,
+               NULL DATE_6,
+               NULL DATE_7,
+               NULL DATE_8,
+               NULL DATE_9,
+               NULL DATE_10,
+               NULL DATE_11,
+               NULL DATE_12,
+               NULL DATE_13,
+               NULL DATE_14,
+               NULL DATE_15,
+               NULL DATE_16,
+               NULL DATE_17,
+               NULL DATE_18,
+               NULL DATE_19,
+               NULL DATE_20,
+               NULL DATE_21,
+               NULL DATE_22,
+               NULL DATE_23,
+               NULL DATE_24,
+              </when>
+              <otherwise>
                AR_GET_DETAIL_VALUE(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '01',#{cpnyId, jdbcType=VARCHAR}) DATE_1,
                AR_GET_DETAIL_VALUE(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '02',#{cpnyId, jdbcType=VARCHAR}) DATE_2,
                AR_GET_DETAIL_VALUE(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '03',#{cpnyId, jdbcType=VARCHAR}) DATE_3,
@@ -305,6 +333,8 @@
                AR_GET_DETAIL_VALUE(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '22',#{cpnyId, jdbcType=VARCHAR}) DATE_22,
                AR_GET_DETAIL_VALUE(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '23',#{cpnyId, jdbcType=VARCHAR}) DATE_23,
                AR_GET_DETAIL_VALUE(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '24',#{cpnyId, jdbcType=VARCHAR}) DATE_24,
+              </otherwise>
+            </choose>
                
                TO_NUMBER(AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="lastMonthYYYYMM"/> || '25',#{cpnyId, jdbcType=VARCHAR},'DAY')) DAY_OT_25,
                TO_NUMBER(AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="lastMonthYYYYMM"/> || '26',#{cpnyId, jdbcType=VARCHAR},'DAY')) DAY_OT_26,
@@ -313,6 +343,34 @@
                TO_NUMBER(AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="lastMonthYYYYMM"/> || '29',#{cpnyId, jdbcType=VARCHAR},'DAY')) DAY_OT_29,
                TO_NUMBER(AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="lastMonthYYYYMM"/> || '30',#{cpnyId, jdbcType=VARCHAR},'DAY')) DAY_OT_30,
                TO_NUMBER(AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="lastMonthYYYYMM"/> || '31',#{cpnyId, jdbcType=VARCHAR},'DAY')) DAY_OT_31,
+            <choose>
+              <when test="periodType == '25_31'">
+               NULL DAY_OT_1,
+               NULL DAY_OT_2,
+               NULL DAY_OT_3,
+               NULL DAY_OT_4,
+               NULL DAY_OT_5,
+               NULL DAY_OT_6,
+               NULL DAY_OT_7,
+               NULL DAY_OT_8,
+               NULL DAY_OT_9,
+               NULL DAY_OT_10,
+               NULL DAY_OT_11,
+               NULL DAY_OT_12,
+               NULL DAY_OT_13,
+               NULL DAY_OT_14,
+               NULL DAY_OT_15,
+               NULL DAY_OT_16,
+               NULL DAY_OT_17,
+               NULL DAY_OT_18,
+               NULL DAY_OT_19,
+               NULL DAY_OT_20,
+               NULL DAY_OT_21,
+               NULL DAY_OT_22,
+               NULL DAY_OT_23,
+               NULL DAY_OT_24,
+              </when>
+              <otherwise>
                TO_NUMBER(AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '01',#{cpnyId, jdbcType=VARCHAR},'DAY')) DAY_OT_1,
                TO_NUMBER(AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '02',#{cpnyId, jdbcType=VARCHAR},'DAY')) DAY_OT_2,
                TO_NUMBER(AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '03',#{cpnyId, jdbcType=VARCHAR},'DAY')) DAY_OT_3,
@@ -337,6 +395,8 @@
                TO_NUMBER(AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '22',#{cpnyId, jdbcType=VARCHAR},'DAY')) DAY_OT_22,
                TO_NUMBER(AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '23',#{cpnyId, jdbcType=VARCHAR},'DAY')) DAY_OT_23,
                TO_NUMBER(AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '24',#{cpnyId, jdbcType=VARCHAR},'DAY')) DAY_OT_24,
+              </otherwise>
+            </choose>
                
                TO_NUMBER(AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="lastMonthYYYYMM"/> || '25',#{cpnyId, jdbcType=VARCHAR},'NIGHT')) NIGHT_OT_25,
                TO_NUMBER(AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="lastMonthYYYYMM"/> || '26',#{cpnyId, jdbcType=VARCHAR},'NIGHT')) NIGHT_OT_26,
@@ -345,6 +405,34 @@
                TO_NUMBER(AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="lastMonthYYYYMM"/> || '29',#{cpnyId, jdbcType=VARCHAR},'NIGHT')) NIGHT_OT_29,
                TO_NUMBER(AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="lastMonthYYYYMM"/> || '30',#{cpnyId, jdbcType=VARCHAR},'NIGHT')) NIGHT_OT_30,
                TO_NUMBER(AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="lastMonthYYYYMM"/> || '31',#{cpnyId, jdbcType=VARCHAR},'NIGHT')) NIGHT_OT_31,
+            <choose>
+              <when test="periodType == '25_31'">
+               NULL NIGHT_OT_1,
+               NULL NIGHT_OT_2,
+               NULL NIGHT_OT_3,
+               NULL NIGHT_OT_4,
+               NULL NIGHT_OT_5,
+               NULL NIGHT_OT_6,
+               NULL NIGHT_OT_7,
+               NULL NIGHT_OT_8,
+               NULL NIGHT_OT_9,
+               NULL NIGHT_OT_10,
+               NULL NIGHT_OT_11,
+               NULL NIGHT_OT_12,
+               NULL NIGHT_OT_13,
+               NULL NIGHT_OT_14,
+               NULL NIGHT_OT_15,
+               NULL NIGHT_OT_16,
+               NULL NIGHT_OT_17,
+               NULL NIGHT_OT_18,
+               NULL NIGHT_OT_19,
+               NULL NIGHT_OT_20,
+               NULL NIGHT_OT_21,
+               NULL NIGHT_OT_22,
+               NULL NIGHT_OT_23,
+               NULL NIGHT_OT_24
+              </when>
+              <otherwise>
                TO_NUMBER(AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '01',#{cpnyId, jdbcType=VARCHAR},'NIGHT')) NIGHT_OT_1,
                TO_NUMBER(AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '02',#{cpnyId, jdbcType=VARCHAR},'NIGHT')) NIGHT_OT_2,
                TO_NUMBER(AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '03',#{cpnyId, jdbcType=VARCHAR},'NIGHT')) NIGHT_OT_3,
@@ -369,13 +457,17 @@
                TO_NUMBER(AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '22',#{cpnyId, jdbcType=VARCHAR},'NIGHT')) NIGHT_OT_22,
                TO_NUMBER(AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '23',#{cpnyId, jdbcType=VARCHAR},'NIGHT')) NIGHT_OT_23,
                TO_NUMBER(AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '24',#{cpnyId, jdbcType=VARCHAR},'NIGHT')) NIGHT_OT_24
+              </otherwise>
+            </choose>
                
           FROM HR_EMPLOYEE HR
          WHERE HR.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
            AND HR.EMPID NOT LIKE '111111%'
            AND HR.EMP_TYPE_CODE &lt;&gt; '10418'
-           AND (HR.DATE_LEFT IS NULL OR TO_CHAR(HR.DATE_LEFT,'YYYY/MM/DD') &gt; TO_CHAR(ADD_MONTHS(TO_DATE('25'||#{arMonth, jdbcType=VARCHAR},'DDMMYYYY'),-1),'YYYY/MM/DD')
-           AND TO_CHAR(HR.DATE_STARTED,'YYYY/MM/DD') &lt;= TO_CHAR(TO_DATE('24'||#{arMonth, jdbcType=VARCHAR},'DDMMYYYY'),'YYYY/MM/DD'))
+           <!-- Ngoặc tách riêng điều kiện nghỉ việc: bản gốc "(A IS NULL OR B AND C)" làm NV chưa nghỉ việc
+                nhưng vào làm sau kỳ vẫn bị lấy ra (AND ưu tiên hơn OR). -->
+           AND (HR.DATE_LEFT IS NULL OR TO_CHAR(HR.DATE_LEFT,'YYYY/MM/DD') &gt; #{arPeriodFrom, jdbcType=VARCHAR})
+           AND TO_CHAR(HR.DATE_STARTED,'YYYY/MM/DD') &lt;= #{arPeriodTo, jdbcType=VARCHAR}
             <if test="keyword != null and keyword != ''">
                 AND (
                     UPPER(HR.EMPID) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%'

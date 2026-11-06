@@ -53,6 +53,8 @@ public class HrRecruitBatchDto {
     private String telephone;
     private String addressContent;
     private String regPlace;
+    private String religionCode;
+    private String singId;
     private String activity;
     private String lineId;
     private String personId;
@@ -71,4 +73,5 @@ public class HrRecruitBatchDto {
     private String nationalityName;
     private String nationName;
     private String maritalStatusName;
+    private String costCenterName;
 }

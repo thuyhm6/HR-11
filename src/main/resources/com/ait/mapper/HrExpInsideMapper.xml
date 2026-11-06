@@ -1,301 +1,250 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+    Quyết định nhân sự (HR_EXPERIENCE_INSIDE) - chuyển từ hrm.empinfo.getStartPointList / editStartPoint /
+    insertStartPoint / deleteStartPoint / updateActivity / updatePositivePointActivity / falingcunchu
+    (sqlEmpInfo.xml dự án HTSV). START_DATE lưu dạng chuỗi DD/MM/YYYY như bản gốc.
+-->
 <mapper namespace="com.ait.hrm.empinfo.mapper.HrExpInsideMapper">
 
     <!-- ═══════════════════ ResultMaps ═══════════════════ -->
 
     <resultMap id="ExpInsideResultMap" type="com.ait.hrm.empinfo.dto.HrExpInsideDto">
-        <id     column="SEQ"               property="seq"              jdbcType="NUMERIC"/>
-        <result column="PERSON_ID"         property="personId"         jdbcType="VARCHAR"/>
-        <result column="TRANS_CODE"        property="transCode"        jdbcType="VARCHAR"/>
-        <result column="START_DATE"        property="startDate"        jdbcType="VARCHAR"/>
-        <result column="DEPTNO"            property="deptno"           jdbcType="VARCHAR"/>
-        <result column="EMP_TYPE_CODE"     property="empTypeCode"      jdbcType="VARCHAR"/>
-        <result column="EMPLOYEE_BELONG"   property="employeeBelong"   jdbcType="VARCHAR"/>
-        <result column="EMP_OFFICE"        property="empOffice"        jdbcType="VARCHAR"/>
-        <result column="END_PROBATION_DATE" property="endProbationDate" jdbcType="VARCHAR"/>
-        <result column="POST_GRADE_NO"     property="postGradeNo"      jdbcType="VARCHAR"/>
-        <result column="POST_FAMILY"       property="postFamily"       jdbcType="VARCHAR"/>
-        <result column="JOB_TYPE"          property="jobType"          jdbcType="VARCHAR"/>
-        <result column="DUTY_NO"           property="dutyNo"           jdbcType="VARCHAR"/>
-        <result column="WORK_HOUR_TYPE"    property="workHourType"     jdbcType="VARCHAR"/>
-        <result column="WAGE_TYPE"         property="wageType"         jdbcType="VARCHAR"/>
-        <result column="REMARK"            property="remark"           jdbcType="VARCHAR"/>
-        <result column="ACTIVITY"          property="activity"         jdbcType="VARCHAR"/>
-        <result column="POSITION_NO"       property="positionNo"       jdbcType="VARCHAR"/>
-        <result column="MAIN_BUSINESS"     property="mainBusiness"     jdbcType="VARCHAR"/>
-        <result column="TRANS_RESOURCE"    property="transResource"    jdbcType="VARCHAR"/>
-        <result column="COST_CENTER"       property="costCenter"       jdbcType="VARCHAR"/>
-        <result column="PAY_STEP_NO"       property="payStepNo"        jdbcType="VARCHAR"/>
-        <result column="POSITION"          property="position"         jdbcType="VARCHAR"/>
-        <result column="CREATE_DATE"       property="createDate"       jdbcType="VARCHAR"/>
-        <result column="CREATED_BY"        property="createdBy"        jdbcType="VARCHAR"/>
-        <result column="UPDATE_DATE"       property="updateDate"       jdbcType="VARCHAR"/>
-        <result column="UPDATED_BY"        property="updatedBy"        jdbcType="VARCHAR"/>
-        <!-- Joined display fields -->
-        <result column="EMPID"             property="empId"            jdbcType="VARCHAR"/>
-        <result column="LOCAL_NAME"        property="localName"        jdbcType="VARCHAR"/>
-        <result column="DEPT_NAME"         property="deptName"         jdbcType="VARCHAR"/>
-        <result column="TRANS_CODE_NAME"   property="transCodeName"    jdbcType="VARCHAR"/>
-        <result column="EMP_TYPE_NAME"     property="empTypeName"      jdbcType="VARCHAR"/>
-        <result column="POST_FAMILY_NAME"  property="postFamilyName"   jdbcType="VARCHAR"/>
-        <result column="POST_GRADE_NAME"   property="postGradeName"    jdbcType="VARCHAR"/>
+        <id     column="SEQ"                 property="seq"               jdbcType="NUMERIC"/>
+        <result column="PERSON_ID"           property="personId"          jdbcType="VARCHAR"/>
+        <result column="TRANS_CODE"          property="transCode"         jdbcType="VARCHAR"/>
+        <result column="TRANS_CODE_NAME"     property="transCodeName"     jdbcType="VARCHAR"/>
+        <result column="TRANS_RESOURCE"      property="transResource"     jdbcType="VARCHAR"/>
+        <result column="TRANS_RESOURCE_NAME" property="transResourceName" jdbcType="VARCHAR"/>
+        <result column="START_DATE"          property="startDate"         jdbcType="VARCHAR"/>
+        <result column="DEPTNO"              property="deptno"            jdbcType="VARCHAR"/>
+        <result column="DEPT_NAME"           property="deptName"          jdbcType="VARCHAR"/>
+        <result column="EMP_TYPE_CODE"       property="empTypeCode"       jdbcType="VARCHAR"/>
+        <result column="EMP_TYPE_NAME"       property="empTypeName"       jdbcType="VARCHAR"/>
+        <result column="EMP_OFFICE"          property="empOffice"         jdbcType="VARCHAR"/>
+        <result column="EMP_OFFICE_NAME"     property="empOfficeName"     jdbcType="VARCHAR"/>
+        <result column="POST_GRADE_NO"       property="postGradeNo"       jdbcType="VARCHAR"/>
+        <result column="POST_GRADE_NAME"     property="postGradeName"     jdbcType="VARCHAR"/>
+        <result column="POST_FAMILY"         property="postFamily"        jdbcType="VARCHAR"/>
+        <result column="POST_FAMILY_NAME"    property="postFamilyName"    jdbcType="VARCHAR"/>
+        <result column="REMARK"              property="remark"            jdbcType="VARCHAR"/>
+        <result column="POSITION"            property="position"          jdbcType="VARCHAR"/>
+        <result column="POSITION_NAME"       property="positionName"      jdbcType="VARCHAR"/>
+        <result column="POSITION_NO"         property="positionNo"        jdbcType="VARCHAR"/>
+        <result column="POSITION_NO_NAME"    property="positionNoName"    jdbcType="VARCHAR"/>
+        <result column="MAIN_BUSINESS"       property="mainBusiness"      jdbcType="VARCHAR"/>
+        <result column="MAIN_BUSINESS_NAME"  property="mainBusinessName"  jdbcType="VARCHAR"/>
+        <result column="COST_CENTER"         property="costCenter"        jdbcType="VARCHAR"/>
+        <result column="COST_CENTER_NAME"    property="costCenterName"    jdbcType="VARCHAR"/>
+        <result column="PAY_STEP_NO"         property="payStepNo"         jdbcType="VARCHAR"/>
+        <result column="DATE_LEFT"           property="dateLeft"          jdbcType="VARCHAR"/>
+        <result column="ACTIVITY"            property="activity"          jdbcType="VARCHAR"/>
+        <result column="ACTIVITY_NAME"       property="activityName"      jdbcType="VARCHAR"/>
+        <result column="UPDATE_DATE"         property="updateDate"        jdbcType="VARCHAR"/>
+        <result column="UPDATED_BY"          property="updatedBy"         jdbcType="VARCHAR"/>
     </resultMap>
 
-    <resultMap id="EmployeeKeywordResultMap" type="com.ait.hrm.empinfo.dto.HrExpInsideDto">
-        <result column="PERSON_ID"  property="personId"  jdbcType="VARCHAR"/>
-        <result column="EMPID"      property="empId"     jdbcType="VARCHAR"/>
-        <result column="LOCAL_NAME" property="localName" jdbcType="VARCHAR"/>
-        <result column="DEPTNO"     property="deptno"    jdbcType="VARCHAR"/>
-        <result column="DEPT_NAME"  property="deptName"  jdbcType="VARCHAR"/>
+    <resultMap id="EmployeeInfoResultMap" type="com.ait.hrm.empinfo.dto.HrExpInsideDto">
+        <result column="PERSON_ID"       property="personId"      jdbcType="VARCHAR"/>
+        <result column="EMPID"           property="empId"         jdbcType="VARCHAR"/>
+        <result column="LOCAL_NAME"      property="localName"     jdbcType="VARCHAR"/>
+        <result column="DEPTNO"          property="deptno"        jdbcType="VARCHAR"/>
+        <result column="DEPT_NAME"       property="deptName"      jdbcType="VARCHAR"/>
+        <result column="POST_GRADE_NAME" property="postGradeName" jdbcType="VARCHAR"/>
+        <result column="EMP_OFFICE_NAME" property="empOfficeName" jdbcType="VARCHAR"/>
     </resultMap>
 
-    <!-- ═══════════════════ Tìm kiếm nhân viên ═══════════════════ -->
+    <!-- ═══════════════════ Nhân viên ═══════════════════ -->
 
-    <select id="selectEmployeeByKeyword"
-            parameterType="com.ait.hrm.empinfo.dto.HrExpInsideDto"
-            resultMap="EmployeeKeywordResultMap">
-        SELECT E.PERSON_ID, E.EMPID, E.LOCAL_NAME, E.DEPTNO,
-               D.ORG_NAME_LOCAL AS DEPT_NAME
-        FROM HR_EMPLOYEE E
-        LEFT JOIN HR_DEPARTMENT D ON D.DEPTNO = E.DEPTNO
-                                 AND D.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
-        WHERE E.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
-        <if test="searchKeyword != null and searchKeyword != ''">
-          AND (
-              E.EMPID LIKE '%' || #{searchKeyword, jdbcType=VARCHAR} || '%'
-              OR CONVERTTOUNSIGN(UPPER(E.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{searchKeyword, jdbcType=VARCHAR})) || '%'
-          )
-        </if>
-        AND ROWNUM = 1
-        ORDER BY E.EMPID
-    </select>
+    <sql id="employeeInfoColumns">
+        E.PERSON_ID, E.EMPID, E.LOCAL_NAME, E.DEPTNO,
+        GET_DEPT_NAME(E.DEPTNO, #{lang, jdbcType=VARCHAR})         AS DEPT_NAME,
+        GET_GLOBAL_NAME(E.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}) AS POST_GRADE_NAME,
+        GET_GLOBAL_NAME(E.EMP_OFFICE, #{lang, jdbcType=VARCHAR})    AS EMP_OFFICE_NAME
+    </sql>
 
-    <!-- ═══════════════════ Count + SelectPage ═══════════════════ -->
-
-    <select id="countDecisionList"
-            parameterType="com.ait.hrm.empinfo.dto.HrExpInsideDto"
-            resultType="int">
-        SELECT COUNT(1)
-        FROM HR_EXPERIENCE_INSIDE T
-        WHERE T.PERSON_ID = #{personId, jdbcType=VARCHAR}
-          AND T.ACTIVITY IN ('0','1')
-    </select>
-
-    <select id="selectDecisionListPage"
-            parameterType="com.ait.hrm.empinfo.dto.HrExpInsideDto"
-            resultMap="ExpInsideResultMap">
+    <select id="selectEmployeeList" resultMap="EmployeeInfoResultMap">
         SELECT * FROM (
-            SELECT ROWNUM AS RN, A.* FROM (
-                SELECT
-                    T.SEQ,
-                    T.PERSON_ID,
-                    T.TRANS_CODE,
-                    GET_GLOBAL_NAME(T.TRANS_CODE, #{lang, jdbcType=VARCHAR}) AS TRANS_CODE_NAME,
-                    T.START_DATE,
-                    T.DEPTNO,
-                    GET_DEPT_NAME(T.DEPTNO, #{lang, jdbcType=VARCHAR}) AS DEPT_NAME,
-                    T.EMP_TYPE_CODE,
-                    GET_GLOBAL_NAME(T.EMP_TYPE_CODE, #{lang, jdbcType=VARCHAR}) AS EMP_TYPE_NAME,
-                    T.EMPLOYEE_BELONG,
-                    T.EMP_OFFICE,
-                    T.END_PROBATION_DATE,
-                    T.POST_GRADE_NO,
-                    GET_GLOBAL_NAME(T.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}) AS POST_GRADE_NAME,
-                    T.POST_FAMILY,
-                    GET_GLOBAL_NAME(T.POST_FAMILY, #{lang, jdbcType=VARCHAR}) AS POST_FAMILY_NAME,
-                    T.JOB_TYPE,
-                    T.DUTY_NO,
-                    T.WORK_HOUR_TYPE,
-                    T.WAGE_TYPE,
-                    T.REMARK,
-                    T.ACTIVITY,
-                    T.POSITION_NO,
-                    T.MAIN_BUSINESS,
-                    T.TRANS_RESOURCE,
-                    T.COST_CENTER,
-                    T.PAY_STEP_NO,
-                    T.POSITION,
-                    TO_CHAR(T.CREATE_DATE, 'YYYY/MM/DD HH24:MI') AS CREATE_DATE,
-                    T.CREATED_BY,
-                    TO_CHAR(T.UPDATE_DATE, 'YYYY/MM/DD HH24:MI') AS UPDATE_DATE,
-                    T.UPDATED_BY,
-                    E.EMPID,
-                    E.LOCAL_NAME
-                FROM HR_EXPERIENCE_INSIDE T
-                LEFT JOIN HR_EMPLOYEE E ON E.PERSON_ID = T.PERSON_ID
-                WHERE T.PERSON_ID = #{personId, jdbcType=VARCHAR}
-                  AND T.ACTIVITY IN ('0','1')
-                ORDER BY TO_DATE(T.START_DATE,'DD.MM.YYYY') DESC, T.CREATE_DATE DESC
-            ) A WHERE ROWNUM &lt;= #{start, jdbcType=NUMERIC} + #{length, jdbcType=NUMERIC}
-        ) WHERE RN &gt; #{start, jdbcType=NUMERIC}
+            SELECT <include refid="employeeInfoColumns"/>
+            FROM HR_EMPLOYEE E
+            WHERE E.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+            <if test="keyword != null and keyword != ''">
+              AND (
+                  UPPER(E.EMPID) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%'
+                  OR CONVERTTOUNSIGN(UPPER(E.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{keyword, jdbcType=VARCHAR})) || '%'
+              )
+            </if>
+            ORDER BY E.EMPID
+        ) WHERE ROWNUM &lt;= 100
     </select>
 
-    <!-- ═══════════════════ Select tất cả (cho export) ═══════════════════ -->
-
-    <select id="selectAllDecisionsByPersonId"
-            resultMap="ExpInsideResultMap">
-        SELECT
-            T.SEQ,
-            T.PERSON_ID,
-            T.TRANS_CODE,
-            GET_GLOBAL_NAME(T.TRANS_CODE, #{lang, jdbcType=VARCHAR}) AS TRANS_CODE_NAME,
-            T.START_DATE,
-            T.DEPTNO,
-            GET_DEPT_NAME(T.DEPTNO, #{lang, jdbcType=VARCHAR}) AS DEPT_NAME,
-            T.EMP_TYPE_CODE,
-            GET_GLOBAL_NAME(T.EMP_TYPE_CODE, #{lang, jdbcType=VARCHAR}) AS EMP_TYPE_NAME,
-            T.EMPLOYEE_BELONG,
-            T.EMP_OFFICE,
-            T.END_PROBATION_DATE,
-            T.POST_GRADE_NO,
-            GET_GLOBAL_NAME(T.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}) AS POST_GRADE_NAME,
-            T.POST_FAMILY,
-            GET_GLOBAL_NAME(T.POST_FAMILY, #{lang, jdbcType=VARCHAR}) AS POST_FAMILY_NAME,
-            T.JOB_TYPE,
-            T.DUTY_NO,
-            T.WORK_HOUR_TYPE,
-            T.WAGE_TYPE,
-            T.REMARK,
-            T.ACTIVITY,
-            T.POSITION_NO,
-            T.MAIN_BUSINESS,
-            T.TRANS_RESOURCE,
-            T.COST_CENTER,
-            T.PAY_STEP_NO,
-            T.POSITION,
-            TO_CHAR(T.CREATE_DATE, 'YYYY/MM/DD HH24:MI') AS CREATE_DATE,
-            T.CREATED_BY,
-            TO_CHAR(T.UPDATE_DATE, 'YYYY/MM/DD HH24:MI') AS UPDATE_DATE,
-            T.UPDATED_BY,
-            E.EMPID,
-            E.LOCAL_NAME
-        FROM HR_EXPERIENCE_INSIDE T
-        LEFT JOIN HR_EMPLOYEE E ON E.PERSON_ID = T.PERSON_ID
-        WHERE T.PERSON_ID = #{personId, jdbcType=VARCHAR}
-          AND T.ACTIVITY IN ('0','1')
-        ORDER BY TO_DATE(T.START_DATE,'DD.MM.YYYY') DESC, T.CREATE_DATE DESC
+    <select id="selectEmployeeInfo" resultMap="EmployeeInfoResultMap">
+        SELECT <include refid="employeeInfoColumns"/>
+        FROM HR_EMPLOYEE E
+        WHERE E.PERSON_ID = #{personId, jdbcType=VARCHAR}
     </select>
 
-    <!-- ═══════════════════ Select chi tiết ═══════════════════ -->
+    <!-- ═══════════════════ Danh sách / chi tiết quyết định ═══════════════════ -->
 
-    <select id="selectDecisionBySeq"
-            resultMap="ExpInsideResultMap">
-        SELECT
-            T.SEQ,
-            T.PERSON_ID,
-            T.TRANS_CODE,
-            GET_GLOBAL_NAME(T.TRANS_CODE, #{lang, jdbcType=VARCHAR}) AS TRANS_CODE_NAME,
-            T.START_DATE,
-            T.DEPTNO,
-            GET_DEPT_NAME(T.DEPTNO, #{lang, jdbcType=VARCHAR}) AS DEPT_NAME,
-            T.EMP_TYPE_CODE,
-            GET_GLOBAL_NAME(T.EMP_TYPE_CODE, #{lang, jdbcType=VARCHAR}) AS EMP_TYPE_NAME,
-            T.EMPLOYEE_BELONG,
-            T.EMP_OFFICE,
-            T.END_PROBATION_DATE,
-            T.POST_GRADE_NO,
-            GET_GLOBAL_NAME(T.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}) AS POST_GRADE_NAME,
-            T.POST_FAMILY,
-            GET_GLOBAL_NAME(T.POST_FAMILY, #{lang, jdbcType=VARCHAR}) AS POST_FAMILY_NAME,
-            T.JOB_TYPE,
-            T.DUTY_NO,
-            T.WORK_HOUR_TYPE,
-            T.WAGE_TYPE,
-            T.REMARK,
-            T.ACTIVITY,
-            T.POSITION_NO,
-            T.MAIN_BUSINESS,
-            T.TRANS_RESOURCE,
-            T.COST_CENTER,
-            T.PAY_STEP_NO,
-            T.POSITION,
-            TO_CHAR(T.CREATE_DATE, 'YYYY/MM/DD HH24:MI') AS CREATE_DATE,
-            T.CREATED_BY,
-            TO_CHAR(T.UPDATE_DATE, 'YYYY/MM/DD HH24:MI') AS UPDATE_DATE,
-            T.UPDATED_BY,
-            E.EMPID,
-            E.LOCAL_NAME
-        FROM HR_EXPERIENCE_INSIDE T
-        LEFT JOIN HR_EMPLOYEE E ON E.PERSON_ID = T.PERSON_ID
-        WHERE T.SEQ = #{seq, jdbcType=NUMERIC}
+    <sql id="decisionColumns">
+        HEI.SEQ,
+        HEI.PERSON_ID,
+        HEI.TRANS_CODE,
+        GET_GLOBAL_NAME(HEI.TRANS_CODE, #{lang, jdbcType=VARCHAR})     AS TRANS_CODE_NAME,
+        HEI.TRANS_RESOURCE,
+        GET_GLOBAL_NAME(HEI.TRANS_RESOURCE, #{lang, jdbcType=VARCHAR}) AS TRANS_RESOURCE_NAME,
+        HEI.START_DATE,
+        HEI.DEPTNO,
+        GET_DEPT_NAME(HEI.DEPTNO, #{lang, jdbcType=VARCHAR})           AS DEPT_NAME,
+        HEI.EMP_TYPE_CODE,
+        GET_GLOBAL_NAME(HEI.EMP_TYPE_CODE, #{lang, jdbcType=VARCHAR})  AS EMP_TYPE_NAME,
+        HEI.EMP_OFFICE,
+        GET_GLOBAL_NAME(HEI.EMP_OFFICE, #{lang, jdbcType=VARCHAR})     AS EMP_OFFICE_NAME,
+        HEI.POST_GRADE_NO,
+        GET_GLOBAL_NAME(HEI.POST_GRADE_NO, #{lang, jdbcType=VARCHAR})  AS POST_GRADE_NAME,
+        HEI.POST_FAMILY,
+        GET_GLOBAL_NAME(HEI.POST_FAMILY, #{lang, jdbcType=VARCHAR})    AS POST_FAMILY_NAME,
+        HEI.REMARK,
+        HEI.POSITION,
+        GET_GLOBAL_NAME(HEI.POSITION, #{lang, jdbcType=VARCHAR})       AS POSITION_NAME,
+        HEI.POSITION_NO,
+        GET_GLOBAL_NAME(HEI.POSITION_NO, #{lang, jdbcType=VARCHAR})    AS POSITION_NO_NAME,
+        HEI.MAIN_BUSINESS,
+        GET_GLOBAL_NAME(HEI.MAIN_BUSINESS, #{lang, jdbcType=VARCHAR})  AS MAIN_BUSINESS_NAME,
+        HEI.COST_CENTER,
+        GET_DEPT_NAME(HEI.COST_CENTER, #{lang, jdbcType=VARCHAR})      AS COST_CENTER_NAME,
+        HEI.PAY_STEP_NO,
+        TO_CHAR(H.DATE_LEFT, 'DD/MM/YYYY')                             AS DATE_LEFT,
+        HEI.ACTIVITY,
+        CASE WHEN HEI.ACTIVITY = '1' THEN 'Có hiệu lực' ELSE 'Chưa hiệu lực' END AS ACTIVITY_NAME,
+        TO_CHAR(HEI.UPDATE_DATE, 'DD/MM/YYYY HH24:MI')                 AS UPDATE_DATE,
+        GET_UPDATED_INFO(HEI.UPDATED_BY) || ' ' || HEI.UPDATED_IP      AS UPDATED_BY
+    </sql>
+
+    <select id="selectDecisionList" resultMap="ExpInsideResultMap">
+        SELECT <include refid="decisionColumns"/>
+        FROM HR_EXPERIENCE_INSIDE HEI
+        JOIN HR_EMPLOYEE H ON H.PERSON_ID = HEI.PERSON_ID
+        WHERE HEI.PERSON_ID = #{personId, jdbcType=VARCHAR}
+          AND HEI.ACTIVITY IN ('1', '0')
+        ORDER BY TO_DATE(HEI.START_DATE, 'DD.MM.YYYY') DESC, HEI.CREATE_DATE DESC
     </select>
 
-    <!-- ═══════════════════ Insert ═══════════════════ -->
+    <select id="selectDecisionBySeq" resultMap="ExpInsideResultMap">
+        SELECT <include refid="decisionColumns"/>
+        FROM HR_EXPERIENCE_INSIDE HEI
+        JOIN HR_EMPLOYEE H ON H.PERSON_ID = HEI.PERSON_ID
+        WHERE HEI.SEQ = #{seq, jdbcType=NUMERIC}
+    </select>
+
+    <select id="selectCurrentHrInfo" resultMap="ExpInsideResultMap">
+        SELECT H.PERSON_ID,
+               H.DEPTNO,
+               GET_DEPT_NAME(H.DEPTNO, #{lang, jdbcType=VARCHAR}) AS DEPT_NAME,
+               H.EMP_TYPE_CODE,
+               H.POST_FAMILY,
+               H.POST_GRADE_NO,
+               H.POSITION,
+               H.POSITION_NO,
+               H.MAIN_BUSINESS,
+               H.COST_CENTER,
+               TO_CHAR(H.DATE_LEFT, 'DD/MM/YYYY') AS DATE_LEFT
+        FROM HR_EMPLOYEE H
+        WHERE H.PERSON_ID = #{personId, jdbcType=VARCHAR}
+    </select>
+
+    <!-- ═══════════════════ Thêm / sửa ═══════════════════ -->
+
+    <select id="selectNextSeq" resultType="java.lang.Long">
+        SELECT HR_EXP_INSID_SEQ.NEXTVAL FROM DUAL
+    </select>
 
     <insert id="insertDecision" parameterType="com.ait.hrm.empinfo.dto.HrExpInsideDto">
-        <selectKey keyProperty="seq" resultType="Long" order="BEFORE">
-            SELECT HR_EXP_INSID_SEQ.NEXTVAL FROM DUAL
-        </selectKey>
         INSERT INTO HR_EXPERIENCE_INSIDE (
-            SEQ, PERSON_ID, TRANS_CODE, START_DATE, DEPTNO,
-            EMP_TYPE_CODE, EMPLOYEE_BELONG, EMP_OFFICE, END_PROBATION_DATE,
-            POST_GRADE_NO, POST_FAMILY, JOB_TYPE, DUTY_NO,
-            WORK_HOUR_TYPE, WAGE_TYPE, REMARK, ACTIVITY,
-            POSITION_NO, MAIN_BUSINESS, TRANS_RESOURCE, COST_CENTER,
-            PAY_STEP_NO, POSITION,
-            CREATE_DATE, CREATED_BY, CREATED_IP, UPDATED_BY, UPDATE_DATE, UPDATED_IP
+            SEQ, TRANS_CODE, TRANS_RESOURCE, PERSON_ID, START_DATE, DEPTNO,
+            EMP_TYPE_CODE, EMP_OFFICE, POST_GRADE_NO, POST_FAMILY, POSITION, POSITION_NO,
+            MAIN_BUSINESS, COST_CENTER, PAY_STEP_NO, REMARK, ACTIVITY,
+            CREATE_DATE, CREATED_BY, UPDATE_DATE, UPDATED_BY, CREATED_IP, UPDATED_IP
         ) VALUES (
             #{seq, jdbcType=NUMERIC},
-            #{personId, jdbcType=VARCHAR},
             #{transCode, jdbcType=VARCHAR},
+            #{transResource, jdbcType=VARCHAR},
+            #{personId, jdbcType=VARCHAR},
             #{startDate, jdbcType=VARCHAR},
             #{deptno, jdbcType=VARCHAR},
             #{empTypeCode, jdbcType=VARCHAR},
-            #{employeeBelong, jdbcType=VARCHAR},
             #{empOffice, jdbcType=VARCHAR},
-            #{endProbationDate, jdbcType=VARCHAR},
             #{postGradeNo, jdbcType=VARCHAR},
             #{postFamily, jdbcType=VARCHAR},
-            #{jobType, jdbcType=VARCHAR},
-            #{dutyNo, jdbcType=VARCHAR},
-            #{workHourType, jdbcType=VARCHAR},
-            #{wageType, jdbcType=VARCHAR},
-            #{remark, jdbcType=VARCHAR},
-            '0',
+            #{position, jdbcType=VARCHAR},
             #{positionNo, jdbcType=VARCHAR},
             #{mainBusiness, jdbcType=VARCHAR},
-            #{transResource, jdbcType=VARCHAR},
             #{costCenter, jdbcType=VARCHAR},
             #{payStepNo, jdbcType=VARCHAR},
-            #{position, jdbcType=VARCHAR},
-            SYSDATE,
-            #{adminID, jdbcType=VARCHAR},
-            #{adminIP, jdbcType=VARCHAR},
-            #{adminID, jdbcType=VARCHAR},
-            SYSDATE,
-            #{adminIP, jdbcType=VARCHAR}
+            #{remark, jdbcType=VARCHAR},
+            0,
+            SYSDATE, #{adminID, jdbcType=VARCHAR},
+            SYSDATE, #{adminID, jdbcType=VARCHAR},
+            #{adminIP, jdbcType=VARCHAR}, #{adminIP, jdbcType=VARCHAR}
         )
     </insert>
 
-    <!-- ═══════════════════ Update ═══════════════════ -->
-
     <update id="updateDecision" parameterType="com.ait.hrm.empinfo.dto.HrExpInsideDto">
         UPDATE HR_EXPERIENCE_INSIDE SET
-            TRANS_CODE        = #{transCode, jdbcType=VARCHAR},
-            START_DATE        = #{startDate, jdbcType=VARCHAR},
-            DEPTNO            = #{deptno, jdbcType=VARCHAR},
-            EMP_TYPE_CODE     = #{empTypeCode, jdbcType=VARCHAR},
-            EMPLOYEE_BELONG   = #{employeeBelong, jdbcType=VARCHAR},
-            EMP_OFFICE        = #{empOffice, jdbcType=VARCHAR},
-            END_PROBATION_DATE= #{endProbationDate, jdbcType=VARCHAR},
-            POST_GRADE_NO     = #{postGradeNo, jdbcType=VARCHAR},
-            POST_FAMILY       = #{postFamily, jdbcType=VARCHAR},
-            JOB_TYPE          = #{jobType, jdbcType=VARCHAR},
-            DUTY_NO           = #{dutyNo, jdbcType=VARCHAR},
-            WORK_HOUR_TYPE    = #{workHourType, jdbcType=VARCHAR},
-            WAGE_TYPE         = #{wageType, jdbcType=VARCHAR},
-            REMARK            = #{remark, jdbcType=VARCHAR},
-            POSITION_NO       = #{positionNo, jdbcType=VARCHAR},
-            MAIN_BUSINESS     = #{mainBusiness, jdbcType=VARCHAR},
-            TRANS_RESOURCE    = #{transResource, jdbcType=VARCHAR},
-            COST_CENTER       = #{costCenter, jdbcType=VARCHAR},
-            PAY_STEP_NO       = #{payStepNo, jdbcType=VARCHAR},
-            POSITION          = #{position, jdbcType=VARCHAR},
-            UPDATED_BY        = #{adminID, jdbcType=VARCHAR},
-            UPDATE_DATE       = SYSDATE,
-            UPDATED_IP        = #{adminIP, jdbcType=VARCHAR}
+            TRANS_CODE     = #{transCode, jdbcType=VARCHAR},
+            START_DATE     = #{startDate, jdbcType=VARCHAR},
+            TRANS_RESOURCE = #{transResource, jdbcType=VARCHAR},
+            DEPTNO         = #{deptno, jdbcType=VARCHAR},
+            EMP_TYPE_CODE  = #{empTypeCode, jdbcType=VARCHAR},
+            EMP_OFFICE     = #{empOffice, jdbcType=VARCHAR},
+            POST_GRADE_NO  = #{postGradeNo, jdbcType=VARCHAR},
+            POST_FAMILY    = #{postFamily, jdbcType=VARCHAR},
+            POSITION       = #{position, jdbcType=VARCHAR},
+            POSITION_NO    = #{positionNo, jdbcType=VARCHAR},
+            MAIN_BUSINESS  = #{mainBusiness, jdbcType=VARCHAR},
+            COST_CENTER    = #{costCenter, jdbcType=VARCHAR},
+            PAY_STEP_NO    = #{payStepNo, jdbcType=VARCHAR},
+            REMARK         = #{remark, jdbcType=VARCHAR},
+            ACTIVITY       = 0,
+            UPDATE_DATE    = SYSDATE,
+            UPDATED_BY     = #{adminID, jdbcType=VARCHAR},
+            UPDATED_IP     = #{adminIP, jdbcType=VARCHAR}
         WHERE SEQ = #{seq, jdbcType=NUMERIC}
+    </update>
+
+    <update id="updatePositivePointActivity">
+        UPDATE HR_EXPERIENCE_INSIDE H
+           SET H.ACTIVITY = '2'
+         WHERE H.PERSON_ID = #{personId, jdbcType=VARCHAR}
+           AND H.ACTIVITY = '0'
+           AND H.SEQ IN (SELECT A.SEQ
+                           FROM HR_EXPERIENCE_INSIDE A
+                          WHERE A.PERSON_ID = #{personId, jdbcType=VARCHAR}
+                            AND A.TRANS_CODE = '400422'
+                            AND TO_DATE(A.START_DATE, 'DD/MM/YYYY') &gt;
+                                (SELECT MIN(TO_DATE(B.START_DATE, 'DD/MM/YYYY'))
+                                   FROM HR_EXPERIENCE_INSIDE B
+                                  WHERE B.PERSON_ID = #{personId, jdbcType=VARCHAR}
+                                    AND B.EMP_OFFICE = '15120'))
+    </update>
+
+    <!-- ═══════════════════ Xóa ═══════════════════ -->
+
+    <update id="deleteDecision">
+        UPDATE HR_EXPERIENCE_INSIDE
+           SET ACTIVITY    = '2',
+               UPDATE_DATE = SYSDATE,
+               UPDATED_BY  = #{adminID, jdbcType=VARCHAR},
+               UPDATED_IP  = #{adminIP, jdbcType=VARCHAR}
+         WHERE SEQ = #{seq, jdbcType=NUMERIC}
+    </update>
+
+    <update id="updateActivityAfterDelete">
+        UPDATE HR_EXPERIENCE_INSIDE
+           SET ACTIVITY = '0'
+         WHERE TO_DATE(START_DATE, 'DD/MM/YYYY') &gt;= TO_DATE(#{startDate, jdbcType=VARCHAR}, 'DD/MM/YYYY')
+           AND PERSON_ID = #{personId, jdbcType=VARCHAR}
+           AND ACTIVITY = '1'
     </update>
 
     <!-- ═══════════════════ Stored Procedure ═══════════════════ -->
@@ -303,16 +252,5 @@
     <update id="callExperienceExecuteSingle" statementType="CALLABLE">
         {call PKG_RECRUIT_MANAGE.PR_EXPERIENCE_EXECUTE_SINGLE()}
     </update>
-
-    <!-- ═══════════════════ Delete ═══════════════════ -->
-
-    <delete id="deleteDecision">
-        UPDATE HR_EXPERIENCE_INSIDE
-        SET ACTIVITY = '2',
-            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
-            UPDATE_DATE = SYSDATE,
-            UPDATED_IP = #{adminIP, jdbcType=VARCHAR}
-        WHERE SEQ = #{seq, jdbcType=NUMERIC}
-    </delete>
 
 </mapper>

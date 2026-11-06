@@ -1,594 +1,685 @@
-<div class="row g-3">
-  <!-- ════════════ Panel trái: Danh sách nhân viên ════════════ -->
-  <div class="col-lg-4">
-    <nz-card class="mb-3">
-      <div class="row g-2">
-        <div class="col-6">
-          <input nz-input [(ngModel)]="searchName" name="vrlSearchName"
-                 [placeholder]="'recruit.list.placeholder.searchName' | translate:'Họ tên...'"
-                 (keyup.enter)="search()">
-        </div>
-        <div class="col-6">
-          <input nz-input [(ngModel)]="searchEmpId" name="vrlSearchEmpId"
-                 [placeholder]="'recruit.list.placeholder.searchEmpId' | translate:'Mã NV...'"
-                 (keyup.enter)="search()">
-        </div>
-        <div class="col-12 d-flex align-items-center justify-content-between">
-          <label nz-checkbox [(ngModel)]="showCompleted" name="vrlShowCompleted" (ngModelChange)="search()">
-            {{ 'recruit.list.tab.completed' | translate:'Hoàn thành' }}
-          </label>
-          <button nz-button nzType="primary" nzSize="small" (click)="search()">
-            <i class="bx bx-search"></i> {{ 'common.search' | translate:'Tìm kiếm' }}
-          </button>
-        </div>
-      </div>
-    </nz-card>
+<!-- ════════════ Điều kiện tìm kiếm + nút chức năng ════════════ -->
+<nz-card class="mb-2" [nzBodyStyle]="{ padding: '10px' }">
+  <div class="d-flex flex-wrap align-items-center gap-3">
+    <nz-radio-group [(ngModel)]="searchObject" name="vrlSearchObject" (ngModelChange)="search()">
+      <label nz-radio nzValue="0">{{ 'hrm.recruitManage.The_entry' | translate:'Quyết định nhận việc' }}</label>
+      <label nz-radio nzValue="1">{{ 'hrm.recruitManage.The_entry_end' | translate:'Hoàn thành quyết định nhận việc' }}</label>
+    </nz-radio-group>
 
+    <div class="d-flex align-items-center gap-1">
+      <span class="small fw-semibold">{{ 'hrm.recruitManage.RUZHI_FALING_DATE.Z' | translate:'Ngày quyết định' }}</span>
+      <nz-date-picker [(ngModel)]="searchStartDate" name="vrlSearchStartDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
+      <span>~</span>
+      <nz-date-picker [(ngModel)]="searchEndDate" name="vrlSearchEndDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
+    </div>
+
+    <div class="d-flex align-items-center gap-1">
+      <span class="small fw-semibold">{{ 'ar.viewarcardrecord.title.shujulaiyuan' | translate:'Nguồn dữ liệu' }}:</span>
+      <nz-radio-group [(ngModel)]="searchDataSources" name="vrlSearchDataSources">
+        <label nz-radio nzValue="">{{ 'common.all' | translate:'Tất cả' }}</label>
+        <label nz-radio nzValue="1">{{ 'hrm.recruitManage.SHOUDONG_SHURU.Z' | translate:'Nhập thủ công' }}</label>
+        <label nz-radio nzValue="0">{{ 'hrm.recruitManage.ZHAOPIN_WORK.Z' | translate:'Tuyển dụng' }}</label>
+      </nz-radio-group>
+    </div>
+
+    <div class="ms-auto d-flex flex-wrap gap-1">
+      <button *ngIf="listObject() === '1'" nz-button (click)="executeAction('CANCEL')">
+        <i class="bx bx-undo"></i> {{ 'hrm.recruitManage.Back_by_qualified' | translate:'Quay lại quyết định nhận việc' }}
+      </button>
+      <button *ngIf="listObject() === '0'" nz-button nzType="primary" (click)="executeAction('CONFIRM')">
+        <i class="bx bx-check-double"></i> {{ 'hrm.recruitManage.Confirm' | translate:'Xác nhận' }}
+      </button>
+      <button nz-button nzType="primary" [nzLoading]="loadingList()" (click)="search()">
+        <i class="bx bx-search"></i> {{ 'button.search' | translate:'Tra cứu' }}
+      </button>
+      <button nz-button (click)="exportExcel()">
+        <i class="bx bx-export"></i> {{ 'hrm.empinfo.EXPORT' | translate:'Xuất Excel' }}
+      </button>
+    </div>
+  </div>
+</nz-card>
+
+<div class="row g-2">
+  <!-- ════════════ Bên trái: danh sách nhân viên ════════════ -->
+  <div class="col-xl-5">
     <nz-card [nzBodyStyle]="{ padding: '8px' }">
-      <div class="d-flex align-items-center justify-content-between mb-2 px-1">
-        <button nz-button nzType="dashed" nzSize="small" (click)="clearSelection()">
-          <i class="bx bx-plus"></i> {{ 'common.add' | translate:'Thêm' }}
-        </button>
-        <div class="d-flex gap-1">
-          <button *ngIf="!showCompleted" nz-button nzType="primary" nzSize="small"
-                  [disabled]="checkedPersonIds().size === 0" (click)="executeAction('CONFIRM')">
-            <i class="bx bx-check-double"></i> {{ 'recruit.list.btn.confirm' | translate:'Xác nhận' }}
-          </button>
-          <button *ngIf="showCompleted" nz-button nzSize="small"
-                  [disabled]="checkedPersonIds().size === 0" (click)="executeAction('CANCEL')">
-            <i class="bx bx-x-circle"></i> {{ 'recruit.list.btn.cancelConfirm' | translate:'Hủy xác nhận' }}
-          </button>
-        </div>
-      </div>
-
-      <nz-table [nzData]="employees()" [nzFrontPagination]="false" [nzLoading]="loadingList()"
-                [nzTotal]="totalRecords()" [nzPageIndex]="pageIndex" [nzPageSize]="pageSize"
-                [nzShowPagination]="true" [nzSimple]="true"
-                (nzPageIndexChange)="onPageIndexChange($event)"
-                [nzScroll]="{ y: 'calc(100vh - 380px)' }" nzSize="small" class="vrl-emp-table">
+      <div class="small fw-semibold mb-1">{{ 'common.total' | translate:'Tổng' }}: {{ employees().length }}</div>
+      <nz-table [nzData]="employees()" [nzFrontPagination]="false" [nzShowPagination]="false" [nzLoading]="loadingList()"
+                [nzScroll]="{ x: '1500px', y: 'calc(100vh - 290px)' }" nzSize="small" class="table-nowrap">
         <thead>
           <tr>
-            <th class="text-center" nzWidth="40px">
+            <th class="text-center" nzLeft nzWidth="45px">No.</th>
+            <th class="text-center" nzLeft nzWidth="36px">
               <label nz-checkbox [ngModel]="allChecked" (ngModelChange)="toggleAllChecked($event)"></label>
             </th>
-            <th>{{ 'common.empName' | translate:'Họ tên' }}</th>
-            <th class="text-center" nzWidth="90px">{{ 'common.empId' | translate:'Mã NV' }}</th>
+            <th nzLeft nzWidth="150px">{{ 'hrm.empinfo.name' | translate:'Họ tên' }}</th>
+            <th nzWidth="95px">{{ 'hrm.empinfo.empid' | translate:'Mã nhân viên' }}</th>
+            <th class="text-center" nzWidth="100px">{{ 'hrm.recruitManage.DATE_STARTED' | translate:'Ngày vào làm' }}</th>
+            <th class="text-center" nzWidth="120px">{{ 'hrm.empinfo.END_PROBATION_DATE' | translate:'Ngày kết thúc thử việc' }}</th>
+            <th nzWidth="130px">{{ 'hrm.recruitManage.JOIN_TYPE.Z' | translate:'Hình thức nhận việc' }}</th>
+            <th nzWidth="140px">{{ 'hrm.recruitManage.JOIN_DETAIL_TYPE.Z' | translate:'Chi tiết nhận việc' }}</th>
+            <th nzWidth="160px">{{ 'hrm.empinfo.ORG_NAME_LOCAL' | translate:'Phòng ban' }}</th>
+            <th nzWidth="120px">{{ 'hrm.empinfo.EMP_TYPE_CODE_NAME' | translate:'Loại nhân viên' }}</th>
+            <th nzWidth="120px">{{ 'ess.personalinfo.title.IDCardNo' | translate:'CMND' }}</th>
+            <th nzWidth="80px">{{ 'hrm.empinfo.SEXCODE' | translate:'Giới tính' }}</th>
+            <th nzWidth="100px">{{ 'hrm.empinfo.NATIONALITY_CODE' | translate:'Quốc tịch' }}</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let row of employees()"
-              class="vrl-emp-row" [class.vrl-emp-row-active]="row.personId === selectedPersonId()"
-              (click)="selectEmployee(row)">
-            <td class="text-center" (click)="$event.stopPropagation()">
+          <tr *ngFor="let row of employees(); let i = index" class="vrl-row"
+              [class.vrl-row-active]="row.personId === selectedPersonId()" (click)="selectEmployee(row)">
+            <td class="text-center" nzLeft>{{ i + 1 }}</td>
+            <td class="text-center" nzLeft (click)="$event.stopPropagation()">
               <label nz-checkbox [ngModel]="isChecked(row.personId)" (ngModelChange)="toggleChecked(row.personId, $event)"></label>
             </td>
-            <td>
-              <div class="fw-semibold text-truncate">{{ row.localName }}</div>
-              <div class="text-muted small text-truncate">{{ row.deptName }} · {{ formatDisplayDate(row.dateStarted) }}</div>
-            </td>
-            <td class="text-center">{{ row.empId }}</td>
+            <td nzLeft>{{ row.localName }}</td>
+            <td>{{ row.empId }}</td>
+            <td class="text-center">{{ row.dateStarted }}</td>
+            <td class="text-center">{{ row.endProbationDate }}</td>
+            <td>{{ row.joinTypeName }}</td>
+            <td>{{ row.joinDetailName }}</td>
+            <td>{{ row.deptName }}</td>
+            <td>{{ row.empTypeName }}</td>
+            <td>{{ row.idcardNo }}</td>
+            <td>{{ row.sexName }}</td>
+            <td>{{ row.nationalityName }}</td>
           </tr>
           <tr *ngIf="!loadingList() && employees().length === 0">
-            <td colspan="3" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
+            <td colspan="13" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
           </tr>
         </tbody>
       </nz-table>
     </nz-card>
   </div>
 
-  <!-- ════════════ Panel phải: Thông tin chi tiết ════════════ -->
-  <div class="col-lg-8">
-    <nz-card>
-      <div class="d-flex align-items-center justify-content-between mb-2">
-        <div>
-          <span class="fw-semibold me-2">
-            {{ selectedPersonId() ? (form.localName || '') : ('recruit.list.label.newEmployee' | translate:'Nhân viên mới') }}
-          </span>
-          <span *ngIf="!selectedPersonId() && employees().length === 0" class="text-muted small">
-            {{ 'recruit.list.label.selectEmployee' | translate:'-- Chọn nhân viên --' }}
-          </span>
-          <span *ngIf="form.empId" class="badge bg-secondary">{{ form.empId }}</span>
-        </div>
-      </div>
+  <!-- ════════════ Bên phải: chi tiết theo tab ════════════ -->
+  <div class="col-xl-7">
+    <nz-card [nzBodyStyle]="{ padding: '8px 12px' }">
+      <nz-tabs [nzSelectedIndex]="activeTabIndex()" (nzSelectedIndexChange)="activeTabIndex.set($event)" nzSize="small"
+                 [class.vrl-loading]="detailLoading()">
 
-      <nz-tabs [nzSelectedIndex]="activeTabIndex()" (nzSelectedIndexChange)="onTabIndexChange($event)">
-        <!-- ── Tab Thông tin chung ── -->
-        <nz-tab [nzTitle]="'recruit.list.tab.general' | translate:'Thông tin chung'">
-          <div class="row g-2 pt-2" [class.vrl-loading]="detailLoading()">
-            <div class="col-md-4">
-              <label class="form-label small mb-0">{{ 'recruit.list.field.localName' | translate:'Họ tên' }}</label>
-              <input nz-input [(ngModel)]="form.localName" name="localName" maxlength="50">
+        <!-- ──────────── Tab 0: Thông tin cơ bản ──────────── -->
+        <nz-tab [nzTitle]="'hrm.recruitManage.Basic_information' | translate:'Thông tin cơ bản'">
+          <div *ngIf="!readOnly()" class="d-flex justify-content-end gap-1 mb-2">
+            <button nz-button nzSize="small" (click)="newEmployee()">
+              <i class="bx bx-plus"></i> {{ 'button.add' | translate:'Thêm mới' }}
+            </button>
+            <button nz-button nzSize="small" nzDanger [disabled]="!form.personId" (click)="deleteEmployee()">
+              <i class="bx bx-trash"></i> {{ 'button.delete' | translate:'Xóa' }}
+            </button>
+            <button nz-button nzSize="small" nzType="primary" [nzLoading]="saving()" (click)="saveBasic()">
+              <i class="bx bx-save"></i> {{ 'button.sys.affirm.save' | translate:'Lưu' }}
+            </button>
+          </div>
+          <fieldset class="row g-2" [disabled]="readOnly()">
+            <div class="col-md-6">
+              <label class="form-label small mb-0 text-danger" for="vrlLocalName">{{ 'hrm.empinfo.name' | translate:'Họ tên' }} *</label>
+              <input nz-input id="vrlLocalName" [(ngModel)]="form.localName" name="vrlLocalName" maxlength="100">
             </div>
-            <div class="col-md-4">
-              <label class="form-label small mb-0">{{ 'recruit.list.field.empId' | translate:'Mã nhân viên' }}</label>
-              <input nz-input [(ngModel)]="form.empId" name="empId" maxlength="20">
+            <div class="col-md-6">
+              <label class="form-label small mb-0" for="vrlEmpId">{{ 'hrm.empinfo.empid' | translate:'Mã nhân viên' }}</label>
+              <input nz-input id="vrlEmpId" [(ngModel)]="form.empId" name="vrlEmpId" maxlength="20">
             </div>
-            <div class="col-md-4">
-              <label class="form-label small mb-0">{{ 'recruit.list.field.englishName' | translate:'Tên tiếng Anh' }}</label>
-              <input nz-input [(ngModel)]="form.englishName" name="englishName" maxlength="50">
+            <div class="col-md-6">
+              <label class="form-label small mb-0" for="vrlEnglishName">{{ 'hrm.empinfo.ENGLISH_NAME' | translate:'Tên tiếng Anh' }}</label>
+              <input nz-input id="vrlEnglishName" [(ngModel)]="form.englishName" name="vrlEnglishName" maxlength="100">
             </div>
-            <div class="col-md-4">
-              <label class="form-label small mb-0">{{ 'recruit.list.field.koreanName' | translate:'Tên Hàn' }}</label>
-              <input nz-input [(ngModel)]="form.koreanName" name="koreanName" maxlength="50">
+            <div class="col-md-6 d-flex align-items-end">
+              <label nz-checkbox [ngModel]="form.isProbation === '1'" (ngModelChange)="form.isProbation = $event ? '1' : '0'"
+                     name="vrlIsProbation" [nzDisabled]="readOnly()">
+                {{ 'hrm.recruitManage.IS_PROBATION.Z' | translate:'Hưởng lương chính thức' }}
+              </label>
             </div>
-            <div class="col-md-4">
-              <label class="form-label small mb-0">{{ 'recruit.list.field.sexcode' | translate:'Giới tính' }}</label>
-              <nz-select class="w-100" [(ngModel)]="form.sexcode" name="sexcode" nzAllowClear>
-                <nz-option *ngFor="let c of sexOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
-              </nz-select>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label small mb-0">{{ 'recruit.list.field.dob' | translate:'Ngày sinh' }}</label>
-              <nz-date-picker class="w-100" [(ngModel)]="dobPicker" name="dobPicker" nzFormat="dd/MM/yyyy"></nz-date-picker>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label small mb-0">{{ 'recruit.list.field.nationalityCode' | translate:'Quốc tịch' }}</label>
-              <nz-select class="w-100" [(ngModel)]="form.nationalityCode" name="nationalityCode" nzAllowClear>
-                <nz-option *ngFor="let c of nationalityOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
-              </nz-select>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label small mb-0">{{ 'recruit.list.field.nationCode' | translate:'Dân tộc' }}</label>
-              <nz-select class="w-100" [(ngModel)]="form.nationCode" name="nationCode" nzAllowClear>
-                <nz-option *ngFor="let c of nationOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
-              </nz-select>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label small mb-0">{{ 'recruit.list.field.maritalStatusCode' | translate:'Tình trạng hôn nhân' }}</label>
-              <nz-select class="w-100" [(ngModel)]="form.maritalStatusCode" name="maritalStatusCode" nzAllowClear>
-                <nz-option *ngFor="let c of maritalStatusOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
-              </nz-select>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label small mb-0">{{ 'recruit.list.field.deptNo' | translate:'Phòng ban' }}</label>
-              <nz-tree-select class="w-100" [nzNodes]="deptNodes()" [ngModel]="form.deptNo" name="deptNo"
-                               (ngModelChange)="onDeptNoChange($event)" nzShowSearch nzAllowClear
-                               [nzPlaceHolder]="'recruit.list.placeholder.selectDept' | translate:'-- Chọn phòng ban --'"></nz-tree-select>
-              <div *ngIf="deptTreeErrorMessage()" class="text-danger small mt-1">{{ deptTreeErrorMessage() }}</div>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label small mb-0">{{ 'recruit.list.field.postFamily' | translate:'Nhóm nhân viên' }}</label>
-              <nz-select class="w-100" [ngModel]="form.postFamily" name="postFamily"
-                         (ngModelChange)="onPostFamilyChange($event)" nzAllowClear>
-                <nz-option *ngFor="let c of postFamilyOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
-              </nz-select>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label small mb-0">{{ 'recruit.list.field.postGradeNo' | translate:'Cấp bậc' }}</label>
-              <nz-select class="w-100" [(ngModel)]="form.postGradeNo" name="postGradeNo" nzAllowClear>
-                <nz-option *ngFor="let c of postGradeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
-              </nz-select>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label small mb-0">{{ 'recruit.list.field.positionNo' | translate:'Vị trí' }}</label>
-              <nz-select class="w-100" [(ngModel)]="form.positionNo" name="positionNo" nzAllowClear>
-                <nz-option *ngFor="let c of positionOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
-              </nz-select>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label small mb-0">{{ 'recruit.list.field.empTypeCode' | translate:'Loại nhân viên' }}</label>
-              <nz-select class="w-100" [(ngModel)]="form.empTypeCode" name="empTypeCode" nzAllowClear>
-                <nz-option *ngFor="let c of empTypeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
-              </nz-select>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label small mb-0">{{ 'recruit.list.field.joinType' | translate:'Loại tuyển dụng' }}</label>
-              <nz-select class="w-100" [ngModel]="form.joinType" name="joinType"
-                         (ngModelChange)="onJoinTypeChange($event)" nzAllowClear>
+            <div class="col-md-6">
+              <label class="form-label small mb-0 text-danger">{{ 'hrm.recruitManage.JOIN_TYPE.Z' | translate:'Hình thức nhận việc' }} *</label>
+              <nz-select class="w-100" [ngModel]="form.joinType" name="vrlJoinType" (ngModelChange)="onJoinTypeChange($event)"
+                         nzShowSearch nzAllowClear [nzDisabled]="readOnly()"
+                         [nzPlaceHolder]="'hr.viewCondSql.title.QINGXUANZE' | translate:'Lựa chọn'">
                 <nz-option *ngFor="let c of joinTypeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
               </nz-select>
             </div>
-            <div class="col-md-4">
-              <label class="form-label small mb-0">{{ 'recruit.list.field.joinDetailType' | translate:'Chi tiết loại vào' }}</label>
-              <nz-select class="w-100" [(ngModel)]="form.joinDetailType" name="joinDetailType" nzAllowClear>
+            <div class="col-md-6">
+              <label class="form-label small mb-0">{{ 'hrm.recruitManage.JOIN_DETAIL_TYPE.Z' | translate:'Chi tiết nhận việc' }}</label>
+              <nz-select class="w-100" [(ngModel)]="form.joinDetailType" name="vrlJoinDetailType" nzShowSearch nzAllowClear
+                         [nzDisabled]="readOnly()" [nzPlaceHolder]="'hr.viewCondSql.title.QINGXUANZE' | translate:'Lựa chọn'">
                 <nz-option *ngFor="let c of joinDetailTypeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
               </nz-select>
             </div>
-            <div class="col-md-4">
-              <label class="form-label small mb-0">{{ 'recruit.list.field.dateStarted' | translate:'Ngày vào công ty' }}</label>
-              <nz-date-picker class="w-100" [(ngModel)]="dateStartedPicker" name="dateStartedPicker" nzFormat="dd/MM/yyyy"></nz-date-picker>
+            <div class="col-md-6">
+              <label class="form-label small mb-0 text-danger">{{ 'hrm.empinfo.ORG_NAME_LOCAL' | translate:'Phòng ban' }} *</label>
+              <nz-tree-select class="w-100" [nzNodes]="deptNodes()" [ngModel]="form.deptNo" name="vrlDeptNo"
+                              (ngModelChange)="onDeptNoChange($event)" nzShowSearch nzAllowClear [nzDisabled]="readOnly()"
+                              [nzDropdownMatchSelectWidth]="false"
+                              [nzPlaceHolder]="'hr.viewCondSql.title.QINGXUANZE' | translate:'Lựa chọn'"></nz-tree-select>
+              <div *ngIf="deptTreeErrorMessage()" class="text-danger small mt-1">{{ deptTreeErrorMessage() }}</div>
             </div>
-            <div class="col-md-4">
-              <label class="form-label small mb-0">{{ 'recruit.list.field.fullTimeEmployee' | translate:'Hưởng lương chính thức' }}</label>
-              <nz-select class="w-100" [(ngModel)]="form.isProbation" name="isProbation" nzAllowClear>
-                <nz-option nzValue="1" [nzLabel]="'common.yes' | translate:'Có'"></nz-option>
-                <nz-option nzValue="0" [nzLabel]="'common.no' | translate:'Không'"></nz-option>
+            <div class="col-md-6">
+              <label class="form-label small mb-0 text-danger">{{ 'hrm.empinfo.EMP_TYPE_CODE_NAME' | translate:'Loại nhân viên' }} *</label>
+              <nz-select class="w-100" [(ngModel)]="form.empTypeCode" name="vrlEmpTypeCode" nzShowSearch nzAllowClear
+                         [nzDisabled]="readOnly()" [nzPlaceHolder]="'hr.viewCondSql.title.QINGXUANZE' | translate:'Lựa chọn'">
+                <nz-option *ngFor="let c of empTypeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
               </nz-select>
             </div>
-            <div class="col-md-4">
-              <label class="form-label small mb-0">{{ 'recruit.list.field.endProbationDate' | translate:'Ngày kết thúc thử việc' }}</label>
-              <nz-date-picker class="w-100" [(ngModel)]="endProbationDatePicker" name="endProbationDatePicker" nzFormat="dd/MM/yyyy"></nz-date-picker>
+            <div class="col-md-6">
+              <label class="form-label small mb-0 text-danger">{{ 'hrm.recruitManage.DATE_STARTED' | translate:'Ngày vào làm' }} *</label>
+              <nz-date-picker class="w-100" [ngModel]="basicDates.dateStarted" (ngModelChange)="onDateStartedChange($event)"
+                              name="vrlDateStarted" nzFormat="dd/MM/yyyy" [nzDisabled]="readOnly()"></nz-date-picker>
             </div>
-            <div class="col-md-4">
-              <label class="form-label small mb-0">{{ 'recruit.list.field.contractStartDate' | translate:'Ngày bắt đầu HĐ' }}</label>
-              <nz-date-picker class="w-100" [(ngModel)]="contractStartDatePicker" name="contractStartDatePicker" nzFormat="dd/MM/yyyy"></nz-date-picker>
+            <div class="col-md-6">
+              <label class="form-label small mb-0">{{ 'hrm.empinfo.END_PROBATION_DATE' | translate:'Ngày kết thúc thử việc' }}</label>
+              <nz-date-picker class="w-100" [(ngModel)]="basicDates.endProbationDate" name="vrlEndProbationDate"
+                              nzFormat="dd/MM/yyyy" [nzDisabled]="readOnly()"></nz-date-picker>
             </div>
-            <div class="col-md-4">
-              <label class="form-label small mb-0">{{ 'recruit.list.field.costCenter' | translate:'Trung tâm chi phí' }}</label>
-              <nz-tree-select class="w-100" [nzNodes]="deptNodes()" [(ngModel)]="form.costCenter" name="costCenter"
-                               nzShowSearch nzAllowClear
-                               [nzPlaceHolder]="'recruit.list.placeholder.selectDept' | translate:'-- Chọn phòng ban --'"></nz-tree-select>
+            <div class="col-md-6">
+              <label class="form-label small mb-0">{{ 'hrm.recruitManage.TIME_STARTED.Z' | translate:'Ngày vào làm đầu tiên' }}</label>
+              <nz-date-picker class="w-100" [(ngModel)]="basicDates.timeStarted" name="vrlTimeStarted"
+                              nzFormat="dd/MM/yyyy" [nzDisabled]="readOnly()"></nz-date-picker>
             </div>
-          </div>
-          <div class="d-flex justify-content-end mt-3">
-            <button nz-button nzType="primary" [nzLoading]="savingEmployee()" (click)="saveEmployee()">
-              <i class="bx bx-save"></i> {{ 'common.save' | translate:'Lưu' }}
-            </button>
-          </div>
+            <div class="col-md-6">
+              <label class="form-label small mb-0">{{ 'hrm.recruitManage.XIANZHIWEI_RENDING_DATE.Z' | translate:'Ngày công nhận chức vụ' }}</label>
+              <nz-date-picker class="w-100" [(ngModel)]="basicDates.positionConfirmationDate" name="vrlPositionConfirmDate"
+                              nzFormat="dd/MM/yyyy" [nzDisabled]="readOnly()"></nz-date-picker>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small mb-0">{{ 'hrm.empinfo.MAIN_BUSINESS_NAME' | translate:'Công việc' }}</label>
+              <nz-select class="w-100" [(ngModel)]="form.mainBusiness" name="vrlMainBusiness" nzShowSearch nzAllowClear
+                         [nzDisabled]="readOnly()" [nzPlaceHolder]="'hr.viewCondSql.title.QINGXUANZE' | translate:'Lựa chọn'">
+                <nz-option *ngFor="let c of mainBusinessOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+              </nz-select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small mb-0">{{ 'hrm.empinfo.COST_CENTER_NAME_LOCAL' | translate:'Mã chi phí' }}</label>
+              <nz-tree-select class="w-100" [nzNodes]="deptNodes()" [(ngModel)]="form.costCenter" name="vrlCostCenter"
+                              nzShowSearch nzAllowClear [nzDisabled]="readOnly()" [nzDropdownMatchSelectWidth]="false"
+                              [nzPlaceHolder]="'hr.viewCondSql.title.QINGXUANZE' | translate:'Lựa chọn'"></nz-tree-select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small mb-0 text-danger">{{ 'hrm.empinfo.POST_FAMILY' | translate:'Nhóm nhân viên' }} *</label>
+              <nz-select class="w-100" [ngModel]="form.postFamily" name="vrlPostFamily" (ngModelChange)="onPostFamilyChange($event)"
+                         nzShowSearch nzAllowClear [nzDisabled]="readOnly()"
+                         [nzPlaceHolder]="'hr.viewCondSql.title.QINGXUANZE' | translate:'Lựa chọn'">
+                <nz-option *ngFor="let c of postFamilyOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+              </nz-select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small mb-0">{{ 'hrm.contract.Rank' | translate:'Chức vụ' }}</label>
+              <nz-select class="w-100" [(ngModel)]="form.postGradeNo" name="vrlPostGradeNo" nzShowSearch nzAllowClear
+                         [nzDisabled]="readOnly()" [nzPlaceHolder]="'hr.viewCondSql.title.QINGXUANZE' | translate:'Lựa chọn'">
+                <nz-option *ngFor="let c of postGradeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+              </nz-select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small mb-0">{{ 'hrm.contract.POSITION_NO' | translate:'Chức danh' }}</label>
+              <nz-select class="w-100" [(ngModel)]="form.positionNo" name="vrlPositionNo" nzShowSearch nzAllowClear
+                         [nzDisabled]="readOnly()" [nzPlaceHolder]="'hr.viewCondSql.title.QINGXUANZE' | translate:'Lựa chọn'">
+                <nz-option *ngFor="let c of positionNoOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+              </nz-select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small mb-0" for="vrlDetainLength">{{ 'hrm.recruitManage.ZHILIU_YEAR.Z' | translate:'Thời gian lưu trú' }}</label>
+              <input nz-input id="vrlDetainLength" [(ngModel)]="form.detainLength" name="vrlDetainLength" maxlength="20">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small mb-0">{{ 'hr.viewPersonalInfo.title.banzu' | translate:'Ca' }}</label>
+              <div class="vrl-readonly">{{ 'ar.viewArShiftMonthCheckList.ZHENGCHANGBAN.b' | translate:'Ca hành chính' }}</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small mb-0">{{ 'hrm.empinfo.personSupplier' | translate:'Công ty cung ứng LĐ' }}</label>
+              <nz-select class="w-100" [(ngModel)]="form.personSupplierCompany" name="vrlSupplier" nzShowSearch nzAllowClear
+                         [nzDisabled]="readOnly()" [nzPlaceHolder]="'hr.viewCondSql.title.QINGXUANZE' | translate:'Lựa chọn'">
+                <nz-option *ngFor="let s of supplierOptions()" [nzValue]="s" [nzLabel]="s"></nz-option>
+              </nz-select>
+            </div>
+          </fieldset>
         </nz-tab>
 
-        <!-- ── Tab Thông tin bổ sung ── -->
-        <nz-tab [nzTitle]="'recruit.list.tab.extra' | translate:'Thông tin bổ sung'">
-          <div class="row g-2 pt-2">
-            <div class="col-md-4">
-              <label class="form-label small mb-0">{{ 'recruit.list.field.homePhone' | translate:'ĐT nhà' }}</label>
-              <input nz-input [(ngModel)]="form.homePhone" name="homePhone" maxlength="100">
+        <!-- ──────────── Tab 1: Thông tin bổ sung ──────────── -->
+        <nz-tab [nzTitle]="'hrm.recruitManage.Additional_information' | translate:'Thông tin bổ sung'" [nzDisabled]="!form.personId">
+          <div class="d-flex align-items-center mb-2">
+            <span class="fw-semibold small">{{ 'hrm.recruitManage.I_MATTER' | translate:'Hạng mục cơ bản' }}</span>
+            <button *ngIf="!readOnly()" nz-button nzSize="small" nzType="primary" class="ms-auto" [nzLoading]="saving()"
+                    (click)="savePersonal()">
+              <i class="bx bx-save"></i> {{ 'button.sys.affirm.save' | translate:'Lưu' }}
+            </button>
+          </div>
+          <fieldset class="row g-2" [disabled]="readOnly()">
+            <div class="col-md-6">
+              <label class="form-label small mb-0 text-danger" for="vrlIdcardNo">{{ 'ess.personalinfo.title.IDCardNo' | translate:'CMND' }} *</label>
+              <input nz-input id="vrlIdcardNo" [(ngModel)]="form.idcardNo" name="vrlIdcardNo" maxlength="30">
             </div>
-            <div class="col-md-4">
-              <label class="form-label small mb-0">{{ 'recruit.list.field.companyPhone' | translate:'Số điện thoại' }}</label>
-              <input nz-input [(ngModel)]="form.companyPhone" name="companyPhone" maxlength="100">
+            <div class="col-md-6">
+              <label class="form-label small mb-0">{{ 'hrm.empinfo.award_date' | translate:'Ngày cấp' }}</label>
+              <nz-date-picker class="w-100" [(ngModel)]="personalDates.idcardStartDate" name="vrlIdcardStartDate"
+                              nzFormat="dd/MM/yyyy" [nzDisabled]="readOnly()"></nz-date-picker>
             </div>
-            <div class="col-md-4">
-              <label class="form-label small mb-0">{{ 'recruit.list.field.officePhone' | translate:'ĐT văn phòng' }}</label>
-              <input nz-input [(ngModel)]="form.officePhone" name="officePhone" maxlength="50">
+            <div class="col-md-6">
+              <label class="form-label small mb-0" for="vrlIssuing">{{ 'hrm.empinfo.QIANFA_JIGUAN.Z' | translate:'Nơi cấp' }}</label>
+              <input nz-input id="vrlIssuing" [(ngModel)]="form.issuingAuthority" name="vrlIssuing" maxlength="200">
             </div>
-            <div class="col-md-4">
-              <label class="form-label small mb-0">{{ 'recruit.list.field.email' | translate:'Email' }}</label>
-              <input nz-input [(ngModel)]="form.email" name="email" maxlength="100">
+            <div class="col-md-6">
+              <label class="form-label small mb-0">{{ 'hrm.empinfo.FAM_BORNDATE' | translate:'Ngày sinh' }}</label>
+              <nz-date-picker class="w-100" [(ngModel)]="personalDates.dob" name="vrlDob" nzFormat="dd/MM/yyyy"
+                              [nzDisabled]="readOnly()"></nz-date-picker>
             </div>
-            <div class="col-md-4">
-              <label class="form-label small mb-0">{{ 'recruit.list.field.idcardNo' | translate:'Số CMND/CCCD' }}</label>
-              <input nz-input [(ngModel)]="form.idcardNo" name="idcardNo" maxlength="100">
+            <div class="col-md-6">
+              <label class="form-label small mb-0 text-danger">{{ 'hrm.empinfo.SEXCODE' | translate:'Giới tính' }} *</label>
+              <nz-select class="w-100" [(ngModel)]="form.sexcode" name="vrlSexcode" nzAllowClear [nzDisabled]="readOnly()"
+                         [nzPlaceHolder]="'hr.viewCondSql.title.QINGXUANZE' | translate:'Lựa chọn'">
+                <nz-option *ngFor="let c of sexOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+              </nz-select>
             </div>
-            <div class="col-md-4">
-              <label class="form-label small mb-0">{{ 'recruit.list.field.documentType' | translate:'Loại giấy tờ' }}</label>
-              <input nz-input [(ngModel)]="form.documentType" name="documentType" maxlength="20">
+            <div class="col-md-6">
+              <label class="form-label small mb-0 text-danger">{{ 'hrm.empinfo.MARITAL_STATUS_NAME' | translate:'Tình trạng hôn nhân' }} *</label>
+              <nz-select class="w-100" [(ngModel)]="form.maritalStatusCode" name="vrlMarital" nzAllowClear [nzDisabled]="readOnly()"
+                         [nzPlaceHolder]="'hr.viewCondSql.title.QINGXUANZE' | translate:'Lựa chọn'">
+                <nz-option *ngFor="let c of maritalStatusOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+              </nz-select>
             </div>
-            <div class="col-md-4">
-              <label class="form-label small mb-0">{{ 'recruit.list.field.idcardStartDate' | translate:'Ngày cấp' }}</label>
-              <nz-date-picker class="w-100" [(ngModel)]="idcardStartDatePicker" name="idcardStartDatePicker" nzFormat="dd/MM/yyyy"></nz-date-picker>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label small mb-0">{{ 'recruit.list.field.issuingAuthority' | translate:'Nơi cấp' }}</label>
-              <input nz-input [(ngModel)]="form.issuingAuthority" name="issuingAuthority" maxlength="50">
-            </div>
-            <div class="col-md-4">
-              <label class="form-label small mb-0">{{ 'recruit.list.field.addressContent' | translate:'Địa chỉ hiện tại' }}</label>
-              <input nz-input [(ngModel)]="form.addressContent" name="addressContent" maxlength="100">
-            </div>
-            <div class="col-md-4">
-              <label class="form-label small mb-0">{{ 'recruit.list.field.hujiaddressContent' | translate:'Hộ khẩu thường trú' }}</label>
-              <input nz-input [(ngModel)]="form.hujiaddressContent" name="hujiaddressContent" maxlength="100">
-            </div>
-            <div class="col-md-4">
-              <label class="form-label small mb-0">{{ 'recruit.list.field.nationality' | translate:'Quốc gia' }}</label>
-              <nz-select class="w-100" [(ngModel)]="form.nationality" name="nationality" nzAllowClear>
+            <div class="col-md-6">
+              <label class="form-label small mb-0 text-danger">{{ 'hrm.empinfo.NATIONALITY_CODE' | translate:'Quốc tịch' }} *</label>
+              <nz-select class="w-100" [(ngModel)]="form.nationalityCode" name="vrlNationalityCode" nzShowSearch nzAllowClear
+                         [nzDisabled]="readOnly()" [nzPlaceHolder]="'hr.viewCondSql.title.QINGXUANZE' | translate:'Lựa chọn'">
                 <nz-option *ngFor="let c of nationalityOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
               </nz-select>
             </div>
-            <div class="col-md-4">
-              <label class="form-label small mb-0">{{ 'recruit.list.field.accountNo' | translate:'Số TK ngân hàng' }}</label>
-              <input nz-input [(ngModel)]="form.accountNo" name="accountNo" maxlength="100">
+            <div class="col-md-6">
+              <label class="form-label small mb-0 text-danger">{{ 'hrm.empinfo.NATION_CODE' | translate:'Dân tộc' }} *</label>
+              <nz-select class="w-100" [(ngModel)]="form.nationCode" name="vrlNationCode" nzShowSearch nzAllowClear
+                         [nzDisabled]="readOnly()" [nzPlaceHolder]="'hr.viewCondSql.title.QINGXUANZE' | translate:'Lựa chọn'">
+                <nz-option *ngFor="let c of nationOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+              </nz-select>
             </div>
-            <div class="col-md-4">
-              <label class="form-label small mb-0">{{ 'recruit.list.field.oldPay' | translate:'Lương cũ' }}</label>
-              <input nz-input [(ngModel)]="form.oldPay" name="oldPay" maxlength="40">
+            <div class="col-md-6">
+              <label class="form-label small mb-0" for="vrlHomePhone">{{ 'ess.personalinfo.title.familyTelphone' | translate:'Điện thoại gia đình' }}</label>
+              <input nz-input id="vrlHomePhone" [(ngModel)]="form.homePhone" name="vrlHomePhone" maxlength="30">
             </div>
-            <div class="col-md-4">
-              <label class="form-label small mb-0">{{ 'recruit.list.field.experience' | translate:'Thâm niên' }}</label>
-              <input nz-input [(ngModel)]="form.experience" name="experience" maxlength="30">
+            <div class="col-md-6">
+              <label class="form-label small mb-0 text-danger" for="vrlCompanyPhone">{{ 'hrm.empinfo.CELLPHONE' | translate:'Điện thoại' }} *</label>
+              <input nz-input id="vrlCompanyPhone" [(ngModel)]="form.companyPhone" name="vrlCompanyPhone" maxlength="30">
             </div>
-            <div class="col-md-4">
-              <label class="form-label small mb-0">{{ 'recruit.list.field.recruitType' | translate:'Kênh tuyển dụng' }}</label>
-              <input nz-input [(ngModel)]="form.recruitType" name="recruitType" maxlength="30">
+            <div class="col-md-6">
+              <label class="form-label small mb-0">{{ 'hrm.empinfo.EagLem.Z' | translate:'EagleM' }}</label>
+              <nz-select class="w-100" [(ngModel)]="form.existSingle" name="vrlExistSingle" nzAllowClear [nzDisabled]="readOnly()"
+                         [nzPlaceHolder]="'hr.viewCondSql.title.QINGXUANZE' | translate:'Lựa chọn'">
+                <nz-option *ngFor="let c of existSingleOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+              </nz-select>
             </div>
-            <div class="col-md-4">
-              <label class="form-label small mb-0">{{ 'recruit.list.field.recommend' | translate:'Người giới thiệu' }}</label>
-              <input nz-input [(ngModel)]="form.recommend" name="recommend" maxlength="50">
+            <div class="col-md-6">
+              <label class="form-label small mb-0" for="vrlSingId">{{ 'hrm.empinfo.EagLem_ID.Z' | translate:'EagleM ID' }}</label>
+              <input nz-input id="vrlSingId" [(ngModel)]="form.singId" name="vrlSingId" maxlength="50">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small mb-0" for="vrlEmail">{{ 'hrm.empinfo.EMAIL' | translate:'Email' }}</label>
+              <input nz-input id="vrlEmail" type="email" [(ngModel)]="form.email" name="vrlEmail" maxlength="100">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small mb-0">{{ 'hrm.empinfo.CV_update_status.Z' | translate:'CV update status' }}</label>
+              <nz-select class="w-100" [(ngModel)]="form.cvUpdateStatus" name="vrlCvStatus" nzAllowClear [nzDisabled]="readOnly()"
+                         [nzPlaceHolder]="'hr.viewCondSql.title.QINGXUANZE' | translate:'Lựa chọn'">
+                <nz-option *ngFor="let c of cvUpdateStatusOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+              </nz-select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small mb-0" for="vrlReligion">{{ 'ess.empInfo.religion' | translate:'Tôn giáo' }}</label>
+              <input nz-input id="vrlReligion" [(ngModel)]="form.religion" name="vrlReligion" maxlength="100">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small mb-0" for="vrlExperience">{{ 'hrm.empinfo.JINGLI_QIJIAN.Z' | translate:'Kinh nghiệm' }}</label>
+              <input nz-input id="vrlExperience" [(ngModel)]="form.experience" name="vrlExperience" maxlength="100">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small mb-0" for="vrlRegPlace">{{ 'hrm.empinfo.HUJIDIZHI' | translate:'Hộ khẩu' }}</label>
+              <input nz-input id="vrlRegPlace" [(ngModel)]="form.regPlace" name="vrlRegPlace" maxlength="200">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small mb-0" for="vrlOrigin">{{ 'hrm.empinfo.ORIGIN.Z' | translate:'Nơi sinh' }}</label>
+              <input nz-input id="vrlOrigin" [(ngModel)]="form.origin" name="vrlOrigin" maxlength="200">
+            </div>
+
+            <!-- Địa chỉ -->
+            <div class="col-12 fw-semibold small border-bottom pb-1 mt-3">{{ 'hr.viewRelation.title.FAM_ADDRESS' | translate:'Địa chỉ' }}</div>
+            <div class="col-md-6">
+              <label class="form-label small mb-0">{{ 'hrm.empinfo.FAM_ADDRESS_TYPE' | translate:'Loại địa chỉ' }}</label>
+              <nz-select class="w-100" [(ngModel)]="form.addressType" name="vrlAddressType" nzAllowClear [nzDisabled]="readOnly()"
+                         [nzPlaceHolder]="'hr.viewCondSql.title.QINGXUANZE' | translate:'Lựa chọn'">
+                <nz-option *ngFor="let c of addressTypeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+              </nz-select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small mb-0">{{ 'hrm.approve.EFFECTIVE_START_DATE' | translate:'Ngày hiệu lực' }}</label>
+              <nz-date-picker class="w-100" [(ngModel)]="personalDates.effectiveStartDate" name="vrlEffectiveStartDate"
+                              nzFormat="dd/MM/yyyy" [nzDisabled]="readOnly()"></nz-date-picker>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small mb-0">{{ 'hrm.empinfo.country' | translate:'Quốc gia' }}</label>
+              <nz-select class="w-100" [(ngModel)]="form.nationality" name="vrlNationality" nzShowSearch nzAllowClear
+                         [nzDisabled]="readOnly()" [nzPlaceHolder]="'hr.viewCondSql.title.QINGXUANZE' | translate:'Lựa chọn'">
+                <nz-option *ngFor="let c of nationalityOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+              </nz-select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small mb-0" for="vrlAddressContent">{{ 'hr.viewRelation.title.FAM_ADDRESS' | translate:'Địa chỉ' }}</label>
+              <input nz-input id="vrlAddressContent" [(ngModel)]="form.addressContent" name="vrlAddressContent" maxlength="300">
+            </div>
+
+            <!-- Địa chỉ hộ khẩu -->
+            <div class="col-12 fw-semibold small border-bottom pb-1 mt-3">{{ 'hrm.contractInfo.HUIJIDIZHI' | translate:'Hộ khẩu' }}</div>
+            <div class="col-md-6">
+              <label class="form-label small mb-0">{{ 'hrm.empinfo.FAM_ADDRESS_TYPE' | translate:'Loại địa chỉ' }}</label>
+              <nz-select class="w-100" [(ngModel)]="form.hujiaddressType" name="vrlHujiAddressType" nzAllowClear
+                         [nzDisabled]="readOnly()" [nzPlaceHolder]="'hr.viewCondSql.title.QINGXUANZE' | translate:'Lựa chọn'">
+                <nz-option *ngFor="let c of addressTypeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+              </nz-select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small mb-0">{{ 'hrm.approve.EFFECTIVE_START_DATE' | translate:'Ngày hiệu lực' }}</label>
+              <nz-date-picker class="w-100" [(ngModel)]="personalDates.hujiyouxiaoStartDate" name="vrlHujiStartDate"
+                              nzFormat="dd/MM/yyyy" [nzDisabled]="readOnly()"></nz-date-picker>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small mb-0">{{ 'hrm.empinfo.country' | translate:'Quốc gia' }}</label>
+              <nz-select class="w-100" [(ngModel)]="form.hujiguoji" name="vrlHujiGuoji" nzShowSearch nzAllowClear
+                         [nzDisabled]="readOnly()" [nzPlaceHolder]="'hr.viewCondSql.title.QINGXUANZE' | translate:'Lựa chọn'">
+                <nz-option *ngFor="let c of nationalityOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+              </nz-select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small mb-0" for="vrlHujiAddress">{{ 'hr.viewRelation.title.FAM_ADDRESS' | translate:'Địa chỉ' }}</label>
+              <input nz-input id="vrlHujiAddress" [(ngModel)]="form.hujiaddressContent" name="vrlHujiAddress" maxlength="300">
+            </div>
+          </fieldset>
+        </nz-tab>
+
+        <!-- ──────────── Tab 2: Giáo dục ──────────── -->
+        <nz-tab [nzTitle]="'hrm.recruitManage.educational_information' | translate:'Thông tin giáo dục'" [nzDisabled]="!form.personId">
+          <div class="d-flex align-items-center mb-2">
+            <span class="fw-semibold small">{{ 'hrm.recruitManage.Education_matters' | translate:'Quá trình học tập' }}</span>
+            <div *ngIf="!readOnly()" class="ms-auto d-flex gap-1">
+              <button nz-button nzSize="small" (click)="newEdu()"><i class="bx bx-plus"></i> {{ 'button.add' | translate:'Thêm mới' }}</button>
+              <button nz-button nzSize="small" nzDanger [disabled]="!eduForm.seq" (click)="deleteEdu()">
+                <i class="bx bx-trash"></i> {{ 'button.delete' | translate:'Xóa' }}
+              </button>
+              <button nz-button nzSize="small" nzType="primary" [nzLoading]="saving()" (click)="saveEdu()">
+                <i class="bx bx-save"></i> {{ 'button.sys.affirm.save' | translate:'Lưu' }}
+              </button>
+            </div>
+          </div>
+          <fieldset class="row g-2" [disabled]="readOnly()">
+            <div class="col-md-6">
+              <label class="form-label small mb-0 text-danger" for="vrlEduSchool">{{ 'hr.viewPersonalInfo.title.SCHOOL' | translate:'Trường tốt nghiệp' }} *</label>
+              <input nz-input id="vrlEduSchool" [(ngModel)]="eduForm.institutionName" name="vrlEduSchool" maxlength="200">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small mb-0">{{ 'hrm.empinfo.DEGREE_CODE' | translate:'Trình độ học vấn' }}</label>
+              <nz-select class="w-100" [(ngModel)]="eduForm.degreeCode" name="vrlEduDegree" nzAllowClear [nzDisabled]="readOnly()"
+                         [nzPlaceHolder]="'hr.viewCondSql.title.QINGXUANZE' | translate:'Lựa chọn'">
+                <nz-option *ngFor="let c of degreeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+              </nz-select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small mb-0">{{ 'hrm.recruitManage.START_DATE' | translate:'Ngày nhập học' }}</label>
+              <nz-date-picker class="w-100" nzMode="month" nzFormat="MM/yyyy" [(ngModel)]="eduForm.startMonth"
+                              name="vrlEduStart" [nzDisabled]="readOnly()"></nz-date-picker>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small mb-0">{{ 'hrm.recruitManage.END_DATE' | translate:'Ngày tốt nghiệp' }}</label>
+              <nz-date-picker class="w-100" nzMode="month" nzFormat="MM/yyyy" [(ngModel)]="eduForm.endMonth"
+                              name="vrlEduEnd" [nzDisabled]="readOnly()"></nz-date-picker>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small mb-0" for="vrlEduSubject">{{ 'hrm.recruitManage.SUBJECT' | translate:'Chuyên ngành' }}</label>
+              <input nz-input id="vrlEduSubject" [(ngModel)]="eduForm.subject" name="vrlEduSubject" maxlength="200">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small mb-0" for="vrlEduSubject2">{{ 'hr.hrm.empinfo.SUBJECT_SECOND.Z' | translate:'Chuyên ngành phụ' }}</label>
+              <input nz-input id="vrlEduSubject2" [(ngModel)]="eduForm.subjectSecond" name="vrlEduSubject2" maxlength="200">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small mb-0">{{ 'hrm.empinfo.country' | translate:'Quốc gia' }}</label>
+              <nz-select class="w-100" [(ngModel)]="eduForm.siteCountry" name="vrlEduCountry" nzShowSearch nzAllowClear
+                         [nzDisabled]="readOnly()" [nzPlaceHolder]="'hr.viewCondSql.title.QINGXUANZE' | translate:'Lựa chọn'">
+                <nz-option *ngFor="let c of nationalityOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+              </nz-select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small mb-0" for="vrlEduDegNum">{{ 'hrm.empinfo.graduation_Certificate_number' | translate:'Mã bằng tốt nghiệp' }}</label>
+              <input nz-input id="vrlEduDegNum" [(ngModel)]="eduForm.eduDegNum" name="vrlEduDegNum" maxlength="100">
+            </div>
+            <div class="col-md-6 d-flex align-items-end">
+              <label nz-checkbox [(ngModel)]="eduForm.finalDegree" name="vrlEduFinal" [nzDisabled]="readOnly()">
+                {{ 'hrm.recruitManage.FINAL_DEGREE_WHETHER' | translate:'Công nhận' }}
+              </label>
             </div>
             <div class="col-12">
-              <label class="form-label small mb-0">{{ 'recruit.list.field.remark' | translate:'Ghi chú' }}</label>
-              <textarea nz-input [(ngModel)]="form.remark" name="remark" rows="2" maxlength="500"></textarea>
+              <label class="form-label small mb-0" for="vrlEduRemark">{{ 'hrm.empinfo.REMARK' | translate:'Ghi chú' }}</label>
+              <textarea nz-input id="vrlEduRemark" [(ngModel)]="eduForm.remark" name="vrlEduRemark" rows="2" maxlength="1000"></textarea>
             </div>
-          </div>
-          <div class="d-flex justify-content-end mt-3">
-            <button nz-button nzType="primary" [nzLoading]="savingEmployee()" (click)="saveEmployee()">
-              <i class="bx bx-save"></i> {{ 'common.save' | translate:'Lưu' }}
-            </button>
-          </div>
-        </nz-tab>
-
-        <!-- ── Tab Giáo dục ── -->
-        <nz-tab [nzTitle]="'recruit.list.tab.education' | translate:'Thông tin Giáo dục'">
-          <div class="d-flex justify-content-end pt-2 pb-2">
-            <button nz-button nzType="primary" nzSize="small" (click)="openEduModal(null)">
-              <i class="bx bx-plus"></i> {{ 'common.add' | translate:'Thêm' }}
-            </button>
-          </div>
-          <nz-table [nzData]="eduRows()" [nzLoading]="eduLoading()" [nzShowPagination]="false" nzSize="small">
+            <div class="col-md-6 small text-muted">{{ 'hrm.empinfo.UPDATED_BY' | translate:'Người thay đổi' }}: {{ eduForm.updatedBy }}</div>
+            <div class="col-md-6 small text-muted">{{ 'hrm.empinfo.UPDATE_DATE' | translate:'Thời gian thay đổi' }}: {{ eduForm.updateDate }}</div>
+          </fieldset>
+          <nz-table class="mt-2 table-nowrap" [nzData]="eduRows()" [nzFrontPagination]="false" [nzShowPagination]="false"
+                    [nzScroll]="{ x: '900px' }" nzSize="small">
             <thead>
               <tr>
-                <th class="text-center" nzWidth="50px">{{ 'common.stt' | translate:'STT' }}</th>
-                <th nzWidth="110px">{{ 'recruit.list.edu.degreeCode' | translate:'Học vị' }}</th>
-                <th nzWidth="120px">{{ 'recruit.list.edu.degreesCode' | translate:'Văn bằng' }}</th>
-                <th>{{ 'recruit.list.edu.institutionName' | translate:'Tên trường' }}</th>
-                <th nzWidth="120px">{{ 'recruit.list.edu.subject' | translate:'Chuyên ngành' }}</th>
-                <th class="text-center" nzWidth="90px">{{ 'recruit.list.edu.startDate' | translate:'Từ ngày' }}</th>
-                <th class="text-center" nzWidth="90px">{{ 'recruit.list.edu.endDate' | translate:'Đến ngày' }}</th>
-                <th class="text-center" nzWidth="80px">{{ 'recruit.list.edu.finalDegree' | translate:'Cuối' }}</th>
-                <th class="text-center" nzWidth="80px">{{ 'recruit.list.edu.studyAbroad' | translate:'Du học' }}</th>
-                <th class="text-center" nzWidth="90px">{{ 'common.action' | translate:'Thao tác' }}</th>
+                <th class="text-center" nzWidth="45px">No.</th>
+                <th nzWidth="110px">{{ 'hrm.empinfo.DEGREE_CODE' | translate:'Trình độ học vấn' }}</th>
+                <th nzWidth="160px">{{ 'hrm.recruitManage.INSTITUTION_NAME' | translate:'Tên trường' }}</th>
+                <th class="text-center" nzWidth="80px">{{ 'hrm.recruitManage.FINAL_DEGREE_WHETHER' | translate:'Công nhận' }}</th>
+                <th class="text-center" nzWidth="90px">{{ 'hrm.recruitManage.START_DATE' | translate:'Ngày nhập học' }}</th>
+                <th class="text-center" nzWidth="90px">{{ 'hrm.recruitManage.END_DATE' | translate:'Ngày tốt nghiệp' }}</th>
+                <th nzWidth="130px">{{ 'hrm.recruitManage.SUBJECT' | translate:'Chuyên ngành' }}</th>
+                <th nzWidth="160px">{{ 'hrm.empinfo.UPDATED_BY' | translate:'Người thay đổi' }}</th>
+                <th nzWidth="120px">{{ 'hrm.empinfo.UPDATE_DATE' | translate:'Thời gian thay đổi' }}</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngIf="!eduLoading() && eduRows().length === 0">
-                <td colspan="10" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
-              </tr>
-              <tr *ngFor="let row of eduRows(); let i = index">
+              <tr *ngFor="let r of eduRows(); let i = index" class="vrl-row" [class.vrl-row-active]="r.seq === eduForm.seq"
+                  (click)="selectEdu(r)">
                 <td class="text-center">{{ i + 1 }}</td>
-                <td>{{ row.degreeName || row.degreeCode }}</td>
-                <td>{{ row.degreesName || row.degreesCode }}</td>
-                <td>{{ row.institutionName }}</td>
-                <td>{{ row.subject }}</td>
-                <td class="text-center">{{ formatDisplayDate(row.startDate) }}</td>
-                <td class="text-center">{{ formatDisplayDate(row.endDate) }}</td>
-                <td class="text-center"><i class="bx" [ngClass]="row.finalDegreeWhether === 'Y' ? 'bx-check text-success' : 'bx-minus text-muted'"></i></td>
-                <td class="text-center"><i class="bx" [ngClass]="row.experienceStudyAbroad === 'Y' ? 'bx-check text-success' : 'bx-minus text-muted'"></i></td>
-                <td class="text-center">
-                  <button nz-button nzType="text" nzSize="small" (click)="openEduModal(row)">
-                    <i class="bx bx-edit text-warning"></i>
-                  </button>
-                  <button nz-button nzType="text" nzSize="small" nzDanger (click)="deleteEdu(row)">
-                    <i class="bx bx-trash"></i>
-                  </button>
-                </td>
+                <td>{{ r.degreeName }}</td>
+                <td>{{ r.institutionName }}</td>
+                <td class="text-center">{{ r.finalDegreeWhether }}</td>
+                <td class="text-center">{{ r.startDate }}</td>
+                <td class="text-center">{{ r.endDate }}</td>
+                <td>{{ r.subject }}</td>
+                <td>{{ r.updatedBy }}</td>
+                <td>{{ r.updateDate }}</td>
               </tr>
             </tbody>
           </nz-table>
         </nz-tab>
 
-        <!-- ── Tab Quá trình làm việc ── -->
-        <nz-tab [nzTitle]="'recruit.list.tab.workExp' | translate:'Quá trình làm việc'">
-          <div class="d-flex justify-content-end pt-2 pb-2">
-            <button nz-button nzType="primary" nzSize="small" (click)="openWorkModal(null)">
-              <i class="bx bx-plus"></i> {{ 'common.add' | translate:'Thêm' }}
+        <!-- ──────────── Tab 3: Kinh nghiệm ──────────── -->
+        <nz-tab [nzTitle]="'hrm.recruitManage.Experience_information' | translate:'Quá trình làm việc'" [nzDisabled]="!form.personId">
+          <div *ngIf="!readOnly()" class="d-flex justify-content-end gap-1 mb-2">
+            <button nz-button nzSize="small" (click)="newWork()"><i class="bx bx-plus"></i> {{ 'button.add' | translate:'Thêm mới' }}</button>
+            <button nz-button nzSize="small" nzDanger [disabled]="!workForm.seq" (click)="deleteWork()">
+              <i class="bx bx-trash"></i> {{ 'button.delete' | translate:'Xóa' }}
+            </button>
+            <button nz-button nzSize="small" nzType="primary" [nzLoading]="saving()" (click)="saveWork()">
+              <i class="bx bx-save"></i> {{ 'button.sys.affirm.save' | translate:'Lưu' }}
             </button>
           </div>
-          <nz-table [nzData]="workRows()" [nzLoading]="workLoading()" [nzShowPagination]="false" nzSize="small">
+          <fieldset class="row g-2" [disabled]="readOnly()">
+            <div class="col-12">
+              <label class="form-label small mb-0 text-danger" for="vrlWorkCpny">{{ 'hrm.empinfo.COMPANY_NAME' | translate:'Tên công ty' }} *</label>
+              <input nz-input id="vrlWorkCpny" [(ngModel)]="workForm.cpnyName" name="vrlWorkCpny" maxlength="200">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small mb-0" for="vrlWorkDept">{{ 'edu.teacherManager.BUMEN.a' | translate:'Phòng ban' }}</label>
+              <input nz-input id="vrlWorkDept" [(ngModel)]="workForm.deptName" name="vrlWorkDept" maxlength="200">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small mb-0" for="vrlWorkPayroll">{{ 'hr.hrm.empinfo.MONTH_SALARY.Z' | translate:'Lương tháng' }}</label>
+              <input nz-input id="vrlWorkPayroll" [(ngModel)]="workForm.payroll" name="vrlWorkPayroll" maxlength="50">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small mb-0 text-danger">{{ 'hrm.recruitManage.DATE_STARTED' | translate:'Ngày vào làm' }} *</label>
+              <nz-date-picker class="w-100" nzMode="month" nzFormat="MM/yyyy" [(ngModel)]="workForm.startMonth"
+                              name="vrlWorkStart" [nzDisabled]="readOnly()"></nz-date-picker>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small mb-0 text-danger">{{ 'hrm.recruitManage.LEAVE_DATE' | translate:'Ngày thôi việc' }} *</label>
+              <nz-date-picker class="w-100" nzMode="month" nzFormat="MM/yyyy" [(ngModel)]="workForm.endMonth"
+                              name="vrlWorkEnd" [nzDisabled]="readOnly()"></nz-date-picker>
+            </div>
+            <div class="col-12">
+              <label class="form-label small mb-0" for="vrlWorkLeft">{{ 'ess.trans.title.resignReason' | translate:'Lý do' }}</label>
+              <textarea nz-input id="vrlWorkLeft" [(ngModel)]="workForm.leftReason" name="vrlWorkLeft" rows="2" maxlength="1000"></textarea>
+            </div>
+            <div class="col-12">
+              <label class="form-label small mb-0" for="vrlWorkRemark">{{ 'hrm.empinfo.REMARK' | translate:'Ghi chú' }}</label>
+              <textarea nz-input id="vrlWorkRemark" [(ngModel)]="workForm.remark" name="vrlWorkRemark" rows="2" maxlength="1000"></textarea>
+            </div>
+            <div class="col-md-6 small text-muted">{{ 'hrm.empinfo.UPDATED_BY' | translate:'Người thay đổi' }}: {{ workForm.updatedBy }}</div>
+            <div class="col-md-6 small text-muted">{{ 'hrm.empinfo.UPDATE_DATE' | translate:'Thời gian thay đổi' }}: {{ workForm.updateDate }}</div>
+          </fieldset>
+          <nz-table class="mt-2 table-nowrap" [nzData]="workRows()" [nzFrontPagination]="false" [nzShowPagination]="false"
+                    [nzScroll]="{ x: '1000px' }" nzSize="small">
             <thead>
               <tr>
-                <th class="text-center" nzWidth="50px">{{ 'common.stt' | translate:'STT' }}</th>
-                <th>{{ 'recruit.list.work.cpnyName' | translate:'Công ty' }}</th>
-                <th nzWidth="110px">{{ 'recruit.list.work.deptName' | translate:'Phòng ban' }}</th>
-                <th nzWidth="110px">{{ 'recruit.list.work.position' | translate:'Chức vụ' }}</th>
-                <th class="text-center" nzWidth="90px">{{ 'recruit.list.work.startDate' | translate:'Từ ngày' }}</th>
-                <th class="text-center" nzWidth="90px">{{ 'recruit.list.work.endDate' | translate:'Đến ngày' }}</th>
-                <th class="text-center" nzWidth="90px">{{ 'recruit.list.work.payroll' | translate:'Lương' }}</th>
-                <th nzWidth="110px">{{ 'recruit.list.work.leftReason' | translate:'Lý do nghỉ' }}</th>
-                <th class="text-center" nzWidth="90px">{{ 'common.action' | translate:'Thao tác' }}</th>
+                <th class="text-center" nzWidth="45px">No.</th>
+                <th nzWidth="170px">{{ 'hrm.empinfo.COMPANY_NAME' | translate:'Tên công ty' }}</th>
+                <th class="text-center" nzWidth="90px">{{ 'hrm.recruitManage.DATE_STARTED' | translate:'Ngày vào làm' }}</th>
+                <th class="text-center" nzWidth="90px">{{ 'hrm.recruitManage.LEAVE_DATE' | translate:'Ngày thôi việc' }}</th>
+                <th nzWidth="130px">{{ 'edu.teacherManager.BUMEN.a' | translate:'Phòng ban' }}</th>
+                <th nzWidth="150px">{{ 'ess.trans.title.resignReason' | translate:'Lý do' }}</th>
+                <th nzWidth="150px">{{ 'hr.viewBadArchives.title.REMARK' | translate:'Ghi chú' }}</th>
+                <th nzWidth="160px">{{ 'hrm.empinfo.UPDATED_BY' | translate:'Người thay đổi' }}</th>
+                <th nzWidth="120px">{{ 'hrm.empinfo.UPDATE_DATE' | translate:'Thời gian thay đổi' }}</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngIf="!workLoading() && workRows().length === 0">
-                <td colspan="9" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
-              </tr>
-              <tr *ngFor="let row of workRows(); let i = index">
+              <tr *ngFor="let r of workRows(); let i = index" class="vrl-row" [class.vrl-row-active]="r.seq === workForm.seq"
+                  (click)="selectWork(r)">
                 <td class="text-center">{{ i + 1 }}</td>
-                <td>{{ row.cpnyName }}</td>
-                <td>{{ row.deptName }}</td>
-                <td>{{ row.position }}</td>
-                <td class="text-center">{{ formatDisplayDate(row.startDate) }}</td>
-                <td class="text-center">{{ formatDisplayDate(row.endDate) }}</td>
-                <td class="text-center">{{ row.payroll }}</td>
-                <td>{{ row.leftReason }}</td>
-                <td class="text-center">
-                  <button nz-button nzType="text" nzSize="small" (click)="openWorkModal(row)">
-                    <i class="bx bx-edit text-warning"></i>
-                  </button>
-                  <button nz-button nzType="text" nzSize="small" nzDanger (click)="deleteWork(row)">
-                    <i class="bx bx-trash"></i>
-                  </button>
-                </td>
+                <td>{{ r.cpnyName }}</td>
+                <td class="text-center">{{ r.startDate }}</td>
+                <td class="text-center">{{ r.endDate }}</td>
+                <td>{{ r.deptName }}</td>
+                <td>{{ r.leftReason }}</td>
+                <td>{{ r.remark }}</td>
+                <td>{{ r.updatedBy }}</td>
+                <td>{{ r.updateDate }}</td>
               </tr>
             </tbody>
           </nz-table>
         </nz-tab>
 
-        <!-- ── Tab Thông tin gia đình ── -->
-        <nz-tab [nzTitle]="'recruit.list.tab.family' | translate:'Thông tin gia đình'">
-          <div class="d-flex justify-content-end pt-2 pb-2">
-            <button nz-button nzType="primary" nzSize="small" (click)="openFamilyModal(null)">
-              <i class="bx bx-plus"></i> {{ 'common.add' | translate:'Thêm' }}
+        <!-- ──────────── Tab 4: Gia đình ──────────── -->
+        <nz-tab [nzTitle]="'hrm.recruitManage.Family_information' | translate:'Thông tin gia đình'" [nzDisabled]="!form.personId">
+          <div *ngIf="!readOnly()" class="d-flex justify-content-end gap-1 mb-2">
+            <button nz-button nzSize="small" (click)="newFamily()"><i class="bx bx-plus"></i> {{ 'button.add' | translate:'Thêm mới' }}</button>
+            <button nz-button nzSize="small" nzDanger [disabled]="!familyForm.seq" (click)="deleteFamily()">
+              <i class="bx bx-trash"></i> {{ 'button.delete' | translate:'Xóa' }}
+            </button>
+            <button nz-button nzSize="small" nzType="primary" [nzLoading]="saving()" (click)="saveFamily()">
+              <i class="bx bx-save"></i> {{ 'button.sys.affirm.save' | translate:'Lưu' }}
             </button>
           </div>
-          <nz-table [nzData]="familyRows()" [nzLoading]="familyLoading()" [nzShowPagination]="false" nzSize="small">
+          <fieldset class="row g-2" [disabled]="readOnly()">
+            <div class="col-md-6">
+              <label class="form-label small mb-0 text-danger" for="vrlFamName">{{ 'hrm.empinfo.name' | translate:'Họ tên' }} *</label>
+              <input nz-input id="vrlFamName" [(ngModel)]="familyForm.famName" name="vrlFamName" maxlength="100">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small mb-0">{{ 'hrm.empinfo.FAM_TYPE_CODE_NAME' | translate:'Quan hệ' }}</label>
+              <nz-select class="w-100" [(ngModel)]="familyForm.famTypeCode" name="vrlFamType" nzAllowClear [nzDisabled]="readOnly()"
+                         [nzPlaceHolder]="'hr.viewCondSql.title.QINGXUANZE' | translate:'Lựa chọn'">
+                <nz-option *ngFor="let c of famTypeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+              </nz-select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small mb-0">{{ 'hrm.empinfo.SEXCODE' | translate:'Giới tính' }}</label>
+              <nz-select class="w-100" [(ngModel)]="familyForm.gender" name="vrlFamGender" nzAllowClear [nzDisabled]="readOnly()"
+                         [nzPlaceHolder]="'hr.viewCondSql.title.QINGXUANZE' | translate:'Lựa chọn'">
+                <nz-option *ngFor="let c of sexOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+              </nz-select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small mb-0">{{ 'hrm.empinfo.FAM_BORNDATE' | translate:'Ngày sinh' }}</label>
+              <nz-date-picker class="w-100" [(ngModel)]="familyForm.famBorndate" name="vrlFamBorn" nzFormat="dd/MM/yyyy"
+                              [nzDisabled]="readOnly()"></nz-date-picker>
+            </div>
+            <div class="col-md-6 d-flex align-items-end">
+              <label nz-checkbox [(ngModel)]="familyForm.emergency" name="vrlFamEmergency" [nzDisabled]="readOnly()">
+                {{ 'hrm.recruitManage.EMERGENCY_CONTACT_YN' | translate:'Liên hệ khẩn cấp' }}
+              </label>
+            </div>
+            <div class="col-12">
+              <label class="form-label small mb-0" for="vrlFamAddress">{{ 'hr.viewRelation.title.FAM_ADDRESS' | translate:'Địa chỉ' }}</label>
+              <input nz-input id="vrlFamAddress" [(ngModel)]="familyForm.famAddress" name="vrlFamAddress" maxlength="300">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small mb-0" for="vrlFamPhone">{{ 'hrm.empinfo.CELLPHONE' | translate:'Điện thoại' }}</label>
+              <input nz-input id="vrlFamPhone" [(ngModel)]="familyForm.famPhone" name="vrlFamPhone" maxlength="30">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small mb-0" for="vrlFamEmail">{{ 'hrm.recruitManage.FAM_EMAIL' | translate:'Email gia đình' }}</label>
+              <input nz-input id="vrlFamEmail" [(ngModel)]="familyForm.famEmail" name="vrlFamEmail" maxlength="100">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small mb-0" for="vrlFamHomePhone">{{ 'hrm.empinfo.FAM_FAMILY_PHONE' | translate:'Điện thoại gia đình' }}</label>
+              <input nz-input id="vrlFamHomePhone" [(ngModel)]="familyForm.famFamilyPhone" name="vrlFamHomePhone" maxlength="30">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small mb-0" for="vrlFamWorkPhone">{{ 'sys.basicMaint.title.companyTelPhoneNo' | translate:'Điện thoại công ty' }}</label>
+              <input nz-input id="vrlFamWorkPhone" [(ngModel)]="familyForm.workPhone" name="vrlFamWorkPhone" maxlength="30">
+            </div>
+            <div class="col-12">
+              <label class="form-label small mb-0" for="vrlFamRemark">{{ 'hrm.empinfo.REMARK' | translate:'Ghi chú' }}</label>
+              <textarea nz-input id="vrlFamRemark" [(ngModel)]="familyForm.remark" name="vrlFamRemark" rows="2" maxlength="1000"></textarea>
+            </div>
+            <div class="col-md-6 small text-muted">{{ 'hrm.empinfo.UPDATED_BY' | translate:'Người thay đổi' }}: {{ familyForm.updatedBy }}</div>
+            <div class="col-md-6 small text-muted">{{ 'hrm.empinfo.UPDATE_DATE' | translate:'Thời gian thay đổi' }}: {{ familyForm.updateDate }}</div>
+          </fieldset>
+          <nz-table class="mt-2 table-nowrap" [nzData]="familyRows()" [nzFrontPagination]="false" [nzShowPagination]="false"
+                    [nzScroll]="{ x: '1000px' }" nzSize="small">
             <thead>
               <tr>
-                <th class="text-center" nzWidth="50px">{{ 'common.stt' | translate:'STT' }}</th>
-                <th>{{ 'recruit.list.family.famName' | translate:'Họ tên' }}</th>
-                <th nzWidth="110px">{{ 'recruit.list.family.famTypeCode' | translate:'Quan hệ' }}</th>
-                <th class="text-center" nzWidth="70px">{{ 'recruit.list.family.gender' | translate:'Giới tính' }}</th>
-                <th class="text-center" nzWidth="90px">{{ 'recruit.list.family.famBorndate' | translate:'Ngày sinh' }}</th>
-                <th nzWidth="110px">{{ 'recruit.list.family.famPhone' | translate:'Điện thoại' }}</th>
-                <th class="text-center" nzWidth="80px">{{ 'recruit.list.family.emergencyYn' | translate:'Khẩn cấp' }}</th>
-                <th nzWidth="100px">{{ 'recruit.list.family.occupation' | translate:'Nghề nghiệp' }}</th>
-                <th class="text-center" nzWidth="90px">{{ 'common.action' | translate:'Thao tác' }}</th>
+                <th class="text-center" nzWidth="45px">No.</th>
+                <th nzWidth="140px">{{ 'hrm.empinfo.name' | translate:'Họ tên' }}</th>
+                <th nzWidth="100px">{{ 'hrm.empinfo.FAM_TYPE_CODE_NAME' | translate:'Quan hệ' }}</th>
+                <th nzWidth="80px">{{ 'hr.viewPersonalInfo.title.SEX' | translate:'Giới tính' }}</th>
+                <th class="text-center" nzWidth="100px">{{ 'hrm.empinfo.FAM_BORNDATE' | translate:'Ngày sinh' }}</th>
+                <th nzWidth="180px">{{ 'hr.viewRelation.title.FAM_ADDRESS' | translate:'Địa chỉ' }}</th>
+                <th nzWidth="110px">{{ 'hrm.empinfo.CELLPHONE' | translate:'Điện thoại' }}</th>
+                <th nzWidth="160px">{{ 'hrm.empinfo.UPDATED_BY' | translate:'Người thay đổi' }}</th>
+                <th nzWidth="120px">{{ 'hrm.empinfo.UPDATE_DATE' | translate:'Thời gian thay đổi' }}</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngIf="!familyLoading() && familyRows().length === 0">
-                <td colspan="9" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
-              </tr>
-              <tr *ngFor="let row of familyRows(); let i = index">
+              <tr *ngFor="let r of familyRows(); let i = index" class="vrl-row" [class.vrl-row-active]="r.seq === familyForm.seq"
+                  (click)="selectFamily(r)">
                 <td class="text-center">{{ i + 1 }}</td>
-                <td>{{ row.famName }}</td>
-                <td>{{ row.famTypeName || row.famTypeCode }}</td>
-                <td class="text-center">{{ row.genderName || row.gender }}</td>
-                <td class="text-center">{{ formatDisplayDate(row.famBorndate) }}</td>
-                <td>{{ row.famPhone }}</td>
-                <td class="text-center"><i class="bx" [ngClass]="row.emergencyContactYn === 'Y' ? 'bx-check text-success' : 'bx-minus text-muted'"></i></td>
-                <td>{{ row.occupation }}</td>
-                <td class="text-center">
-                  <button nz-button nzType="text" nzSize="small" (click)="openFamilyModal(row)">
-                    <i class="bx bx-edit text-warning"></i>
-                  </button>
-                  <button nz-button nzType="text" nzSize="small" nzDanger (click)="deleteFamily(row)">
-                    <i class="bx bx-trash"></i>
-                  </button>
-                </td>
+                <td>{{ r.famName }}</td>
+                <td>{{ r.famTypeName }}</td>
+                <td>{{ r.genderName }}</td>
+                <td class="text-center">{{ r.famBorndate }}</td>
+                <td>{{ r.famAddress }}</td>
+                <td>{{ r.famPhone }}</td>
+                <td>{{ r.updatedBy }}</td>
+                <td>{{ r.updateDate }}</td>
               </tr>
             </tbody>
           </nz-table>
+        </nz-tab>
+
+        <!-- ──────────── Tab 5: Hình ảnh ──────────── -->
+        <nz-tab [nzTitle]="'hrm.recruitManage.Photo_collection' | translate:'Hình ảnh'" [nzDisabled]="!form.personId">
+          <div class="d-flex flex-wrap gap-3 mb-3">
+            <img class="vrl-photo" [src]="photoUrl()" alt="photo">
+            <img *ngIf="photoPreview()" class="vrl-photo" [src]="photoPreview()" alt="preview">
+          </div>
+          <div *ngIf="!readOnly()" class="d-flex flex-wrap align-items-center gap-2">
+            <span class="small fw-semibold">{{ 'hrm.recruitManage.ENCLOSURE' | translate:'File' }}:</span>
+            <input type="file" accept=".jpg,.jpeg,.png,.gif,.bmp" (change)="onPhotoSelected($event)">
+            <button nz-button nzSize="small" nzType="primary" [nzLoading]="saving()" (click)="uploadPhoto()">
+              <i class="bx bx-save"></i> {{ 'button.sys.affirm.save' | translate:'Lưu' }}
+            </button>
+          </div>
         </nz-tab>
       </nz-tabs>
     </nz-card>
   </div>
 </div>
-
-<!-- ===== Modal Thêm/Sửa Giáo dục ===== -->
-<nz-modal [nzVisible]="eduModalVisible()"
-          [nzTitle]="(eduIsNew() ? 'common.add' : 'common.save') | translate:(eduIsNew() ? 'Thêm mới' : 'Cập nhật')"
-          nzWidth="640px" [nzOkLoading]="eduSaving()"
-          [nzOkText]="'common.save' | translate:'Lưu'" [nzCancelText]="'common.cancel' | translate:'Hủy'"
-          (nzOnCancel)="closeEduModal()" (nzOnOk)="saveEdu()">
-  <ng-container *nzModalContent>
-    <form class="row g-2">
-      <div class="col-md-6">
-        <label class="form-label small mb-0">{{ 'recruit.list.edu.degreeCode' | translate:'Học vị' }}</label>
-        <nz-select class="w-100" [(ngModel)]="eduForm.degreeCode" name="eduDegreeCode" nzAllowClear>
-          <nz-option *ngFor="let c of degreeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
-        </nz-select>
-      </div>
-      <div class="col-md-6">
-        <label class="form-label small mb-0">{{ 'recruit.list.edu.degreesCode' | translate:'Văn bằng' }}</label>
-        <input nz-input [(ngModel)]="eduForm.degreesCode" name="eduDegreesCode">
-      </div>
-      <div class="col-md-12">
-        <label class="form-label small mb-0">{{ 'recruit.list.edu.institutionName' | translate:'Tên trường' }}</label>
-        <input nz-input [(ngModel)]="eduForm.institutionName" name="eduInstitutionName">
-      </div>
-      <div class="col-md-6">
-        <label class="form-label small mb-0">{{ 'recruit.list.edu.subject' | translate:'Chuyên ngành' }}</label>
-        <input nz-input [(ngModel)]="eduForm.subject" name="eduSubject">
-      </div>
-      <div class="col-md-3">
-        <label class="form-label small mb-0">{{ 'recruit.list.edu.startDate' | translate:'Từ ngày' }}</label>
-        <nz-date-picker class="w-100" [(ngModel)]="eduForm.startDatePicker" name="eduStartDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
-      </div>
-      <div class="col-md-3">
-        <label class="form-label small mb-0">{{ 'recruit.list.edu.endDate' | translate:'Đến ngày' }}</label>
-        <nz-date-picker class="w-100" [(ngModel)]="eduForm.endDatePicker" name="eduEndDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
-      </div>
-      <div class="col-md-6">
-        <label nz-checkbox [nzChecked]="eduForm.finalDegreeWhether === 'Y'"
-               (nzCheckedChange)="eduForm.finalDegreeWhether = $event ? 'Y' : 'N'">
-          {{ 'recruit.list.edu.finalDegree' | translate:'Học vị cuối' }}
-        </label>
-      </div>
-      <div class="col-md-6">
-        <label nz-checkbox [nzChecked]="eduForm.experienceStudyAbroad === 'Y'"
-               (nzCheckedChange)="eduForm.experienceStudyAbroad = $event ? 'Y' : 'N'">
-          {{ 'recruit.list.edu.studyAbroad' | translate:'Du học' }}
-        </label>
-      </div>
-      <div class="col-md-12">
-        <label class="form-label small mb-0">{{ 'common.description' | translate:'Ghi chú' }}</label>
-        <input nz-input [(ngModel)]="eduForm.remark" name="eduRemark">
-      </div>
-    </form>
-  </ng-container>
-</nz-modal>
-
-<!-- ===== Modal Thêm/Sửa Quá trình làm việc ===== -->
-<nz-modal [nzVisible]="workModalVisible()"
-          [nzTitle]="(workIsNew() ? 'common.add' : 'common.save') | translate:(workIsNew() ? 'Thêm mới' : 'Cập nhật')"
-          nzWidth="640px" [nzOkLoading]="workSaving()"
-          [nzOkText]="'common.save' | translate:'Lưu'" [nzCancelText]="'common.cancel' | translate:'Hủy'"
-          (nzOnCancel)="closeWorkModal()" (nzOnOk)="saveWork()">
-  <ng-container *nzModalContent>
-    <form class="row g-2">
-      <div class="col-md-12">
-        <label class="form-label small mb-0">{{ 'recruit.list.work.cpnyName' | translate:'Công ty' }}</label>
-        <input nz-input [(ngModel)]="workForm.cpnyName" name="workCpnyName">
-      </div>
-      <div class="col-md-6">
-        <label class="form-label small mb-0">{{ 'recruit.list.work.deptName' | translate:'Phòng ban' }}</label>
-        <input nz-input [(ngModel)]="workForm.deptName" name="workDeptName">
-      </div>
-      <div class="col-md-6">
-        <label class="form-label small mb-0">{{ 'recruit.list.work.position' | translate:'Chức vụ' }}</label>
-        <input nz-input [(ngModel)]="workForm.position" name="workPosition">
-      </div>
-      <div class="col-md-3">
-        <label class="form-label small mb-0">{{ 'recruit.list.work.startDate' | translate:'Từ ngày' }}</label>
-        <nz-date-picker class="w-100" [(ngModel)]="workForm.startDatePicker" name="workStartDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
-      </div>
-      <div class="col-md-3">
-        <label class="form-label small mb-0">{{ 'recruit.list.work.endDate' | translate:'Đến ngày' }}</label>
-        <nz-date-picker class="w-100" [(ngModel)]="workForm.endDatePicker" name="workEndDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
-      </div>
-      <div class="col-md-6">
-        <label class="form-label small mb-0">{{ 'recruit.list.work.payroll' | translate:'Lương' }}</label>
-        <input nz-input [(ngModel)]="workForm.payroll" name="workPayroll">
-      </div>
-      <div class="col-md-6">
-        <label class="form-label small mb-0">{{ 'recruit.list.work.leftReason' | translate:'Lý do nghỉ' }}</label>
-        <input nz-input [(ngModel)]="workForm.leftReason" name="workLeftReason">
-      </div>
-      <div class="col-md-12">
-        <label class="form-label small mb-0">{{ 'common.description' | translate:'Ghi chú' }}</label>
-        <input nz-input [(ngModel)]="workForm.remark" name="workRemark">
-      </div>
-    </form>
-  </ng-container>
-</nz-modal>
-
-<!-- ===== Modal Thêm/Sửa Thông tin gia đình ===== -->
-<nz-modal [nzVisible]="familyModalVisible()"
-          [nzTitle]="(familyIsNew() ? 'common.add' : 'common.save') | translate:(familyIsNew() ? 'Thêm mới' : 'Cập nhật')"
-          nzWidth="640px" [nzOkLoading]="familySaving()"
-          [nzOkText]="'common.save' | translate:'Lưu'" [nzCancelText]="'common.cancel' | translate:'Hủy'"
-          (nzOnCancel)="closeFamilyModal()" (nzOnOk)="saveFamily()">
-  <ng-container *nzModalContent>
-    <form class="row g-2">
-      <div class="col-md-6">
-        <label class="form-label small mb-0">{{ 'recruit.list.family.famName' | translate:'Họ tên' }}</label>
-        <input nz-input [(ngModel)]="familyForm.famName" name="famName">
-      </div>
-      <div class="col-md-6">
-        <label class="form-label small mb-0">{{ 'recruit.list.family.famTypeCode' | translate:'Quan hệ' }}</label>
-        <nz-select class="w-100" [(ngModel)]="familyForm.famTypeCode" name="famTypeCode" nzAllowClear>
-          <nz-option *ngFor="let c of famTypeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
-        </nz-select>
-      </div>
-      <div class="col-md-6">
-        <label class="form-label small mb-0">{{ 'recruit.list.family.gender' | translate:'Giới tính' }}</label>
-        <nz-select class="w-100" [(ngModel)]="familyForm.gender" name="famGender" nzAllowClear>
-          <nz-option *ngFor="let c of sexOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
-        </nz-select>
-      </div>
-      <div class="col-md-6">
-        <label class="form-label small mb-0">{{ 'recruit.list.family.famBorndate' | translate:'Ngày sinh' }}</label>
-        <nz-date-picker class="w-100" [(ngModel)]="familyForm.famBorndatePicker" name="famBorndate" nzFormat="dd/MM/yyyy"></nz-date-picker>
-      </div>
-      <div class="col-md-6">
-        <label class="form-label small mb-0">{{ 'recruit.list.family.famPhone' | translate:'Điện thoại' }}</label>
-        <input nz-input [(ngModel)]="familyForm.famPhone" name="famPhone">
-      </div>
-      <div class="col-md-6">
-        <label class="form-label small mb-0">{{ 'recruit.list.family.occupation' | translate:'Nghề nghiệp' }}</label>
-        <input nz-input [(ngModel)]="familyForm.occupation" name="famOccupation">
-      </div>
-      <div class="col-md-6 d-flex align-items-end">
-        <label nz-checkbox [nzChecked]="familyForm.emergencyContactYn === 'Y'"
-               (nzCheckedChange)="familyForm.emergencyContactYn = $event ? 'Y' : 'N'">
-          {{ 'recruit.list.family.emergencyYn' | translate:'Khẩn cấp' }}
-        </label>
-      </div>
-      <div class="col-md-12">
-        <label class="form-label small mb-0">{{ 'common.description' | translate:'Ghi chú' }}</label>
-        <input nz-input [(ngModel)]="familyForm.remark" name="famRemark">
-      </div>
-    </form>
-  </ng-container>
-</nz-modal>

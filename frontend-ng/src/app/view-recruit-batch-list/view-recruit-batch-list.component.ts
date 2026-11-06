@@ -1,5 +1,5 @@
 import { CommonModule, formatDate } from '@angular/common';
-import { Component, ElementRef, OnInit, ViewChild, signal } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzCardModule } from 'ng-zorro-antd/card';
@@ -18,6 +18,7 @@ import { TranslatePipe } from '../i18n/translate.pipe';
 import {
   AuthDeptNode,
   CodeItem,
+  RecruitBatchActionResult,
   RecruitBatchItem,
   RecruitBatchListParams,
   RecruitBatchRegister,
@@ -25,41 +26,30 @@ import {
 import { ViewRecruitBatchListService } from './view-recruit-batch-list.service';
 import { PAGE_SIZE_OPTIONS } from '../shared/table.constants';
 
-/** Các key message.properties dùng trong trang này - tải trước 1 lần ở ngOnInit (xem I18nService). */
+/** Message key dùng lại nguyên key của viewRecruitBatchList.jsp / viewAddRegisterInfo.jsp bản gốc (dự án HTSV). */
 const I18N_KEYS = [
-  'rbl.title', 'rbl.label.registerDate', 'rbl.btn.register', 'rbl.btn.insertFile',
-  'rbl.col.processed', 'rbl.col.dateStarted', 'rbl.col.joinType', 'rbl.col.joinDetailType',
-  'rbl.col.postFamily', 'rbl.col.postGrade', 'rbl.col.position', 'rbl.col.empType',
-  'rbl.col.mainBusiness', 'rbl.col.costCenter', 'rbl.col.emailSecond', 'rbl.col.telephone', 'rbl.col.regPlace',
-  'rbl.modal.register.title', 'rbl.modal.register.date', 'rbl.modal.register.remark',
-  'rbl.modal.edit.title', 'rbl.modal.edit.dateStarted', 'rbl.modal.edit.endProbation',
-  'rbl.modal.edit.joinType', 'rbl.modal.edit.joinDetailType', 'rbl.modal.edit.dept',
-  'rbl.modal.edit.postFamily', 'rbl.modal.edit.postGrade', 'rbl.modal.edit.position',
-  'rbl.modal.edit.empType', 'rbl.modal.edit.mainBusiness', 'rbl.modal.edit.costCenter',
-  'rbl.modal.edit.englishName', 'rbl.modal.edit.dob', 'rbl.modal.edit.sexcode',
-  'rbl.modal.edit.nationalityCode', 'rbl.modal.edit.nationCode', 'rbl.modal.edit.maritalStatusCode',
-  'rbl.modal.edit.finalDegreeCode', 'rbl.modal.edit.endDate', 'rbl.modal.edit.institutionName',
-  'rbl.modal.edit.subjectName', 'rbl.modal.edit.idcardNo', 'rbl.modal.edit.idcardSDate',
-  'rbl.modal.edit.issuingAuthority', 'rbl.modal.edit.emailSecond', 'rbl.modal.edit.homePhone',
-  'rbl.modal.edit.telephone', 'rbl.modal.edit.addressContent', 'rbl.modal.edit.regPlace',
-  'rbl.modal.edit.section.personal', 'rbl.modal.edit.section.work', 'rbl.modal.edit.section.education',
-  'rbl.modal.edit.section.contact', 'rbl.modal.edit.section.id',
-  'rbl.js.selectRegister', 'rbl.js.confirmExecute', 'rbl.js.confirmDelete', 'rbl.js.selectRow',
-  'rbl.js.importSuccess', 'rbl.js.importFailed',
-  'recruit.list.placeholder.selectDept',
-  'common.add', 'common.delete', 'common.save', 'common.cancel', 'common.search', 'common.confirm',
-  'common.success', 'common.error', 'common.noData', 'common.empId', 'common.empName', 'common.deptName',
-  'common.action', 'common.totalRows', 'common.loadFail', 'common.exportExcel', 'common.downloadTemplate',
-  'common.importExcel', 'common.stt', 'mep.msg.loadDeptFailed',
-  'recruit.list.field.englishName', 'recruit.list.field.dob', 'recruit.list.field.endProbationDate',
-  'recruit.list.field.sexcode', 'recruit.list.field.nationalityCode', 'recruit.list.field.nationCode',
-  'recruit.list.field.maritalStatusCode', 'recruit.list.edu.finalDegree', 'recruit.list.edu.endDate',
-  'recruit.list.edu.institutionName', 'recruit.list.edu.subject', 'recruit.list.field.idcardNo',
-  'recruit.list.field.idcardStartDate', 'recruit.list.field.issuingAuthority', 'recruit.list.field.homePhone',
-  'recruit.list.field.addressContent',
+  'hrm.recruitManage.ZHUCE_DATE.Z', 'hrm.recruitManage.ZHUCE.Z', 'hrm.empinfo.REGISTRATION_DATE',
+  'ar.addempshift.title.downloadmodule', 'hrm.recruitManage.Confirm', 'button.add', 'button.sys.affirm.save',
+  'button.delete', 'button.search', 'hrm.empinfo.EXPORT', 'ar.addempshift.title.excelimport', 'hrm.empinfo.close',
+  'hrm.empinfo.Already_processed', 'hrm.empinfo.empid', 'hrm.recruitManage.YUENAN_NAME.Z', 'hr.empinfo.english.name',
+  'hrm.empinfo.FAM_BORNDATE', 'hrm.empinfo.DATE_STARTED', 'hr.enpinfo.title.EMP.PROBATION_END_DATE',
+  'hrm.recruitManage.JOIN_TYPE.Z', 'hrm.recruitManage.JOIN_DETAIL_TYPE.Z', 'hrm.empinfo.ORG_NAME_LOCAL',
+  'hrm.empinfo.POST_FAMILY', 'hrm.contract.Rank', 'hrm.empinfo.MAIN_BUSINESS_NAME', 'hrm.contract.POSITION_NO',
+  'hrm.empinfo.EMP_TYPE_CODE_NAME', 'hrm.empinfo.COST_CENTER_NAME_LOCAL', 'ess.empInfo.final_education',
+  'ess.empInfo.graduation_date', 'hrm.recruitManage.INSTITUTION_SCHOOL', 'hr.viewPersonalInfo.title.SUBJECTNAME',
+  'pa.insurance.title.idNumber', 'hrm.recruitManage.IDCARD_QIANFA_DATE.Z', 'hrm.recruitManage.IDCARD_QIANFA_JIGUAN.Z',
+  'hrm.empinfo.SEXCODE', 'hrm.empinfo.NATIONALITY_CODE', 'hrm.empinfo.NATION_CODE', 'ess.empInfo.religion',
+  'hrm.empinfo.MARITAL_STATUS_NAME', 'hrm.empinfo.GEREN_EMAIL.Z', 'hrm.empinfo.EagLem_ID.Z', 'hr.viewHire.title.HOME_PHONE',
+  'hrm.empinfo.CELLPHONE', 'ess.empInfo.present_address', 'hrm.empinfo.HUJIDIZHI', 'hr.viewCondSql.title.QINGXUANZE',
+  'hrm.alert.empinfo.Perform_operation', 'hrm.alert.empinfo.Sure.delete', 'hrm.empinfo.SAVE_CONFIRM',
+  'hrm.alert.empinfo.Choice_Perform_operation', 'liang.alert.message.org.execute_success',
+  'alert.message.add_success', 'alert.message.update_success', 'alert.message.add_fail',
+  'alert.message.delete_success', 'alert.message.delete_fail', 'hrm.recruitManage.EMPID_EXISTENCE.Z',
+  'rbl.js.selectRegister', 'rbl.js.importSuccess', 'rbl.js.importFailed', 'rbl.modal.edit.title',
+  'common.total', 'common.noData', 'common.loadFail', 'common.error', 'mep.msg.loadDeptFailed',
 ];
 
-const PAGE_SIZE = 50;
+const PAGE_SIZE = 100;
 
 interface EditForm {
   seq: string;
@@ -67,10 +57,6 @@ interface EditForm {
   vietnamName: string;
   englishName: string;
   dobPicker: Date | null;
-  sexcode: string | null;
-  nationalityCode: string | null;
-  nationCode: string | null;
-  maritalStatusCode: string | null;
   dateStartedPicker: Date | null;
   endProbationDatePicker: Date | null;
   joinType: string | null;
@@ -78,18 +64,24 @@ interface EditForm {
   deptno: string | null;
   postFamily: string | null;
   postGradeNo: string | null;
+  mainBusiness: string | null;
   positionNo: string | null;
   empTypeCode: string | null;
-  mainBusiness: string | null;
-  costCenter: string;
-  idcardNo: string;
-  idcardSDatePicker: Date | null;
-  issuingAuthority: string;
+  costCenter: string | null;
   finalDegreeCode: string | null;
   endDatePicker: Date | null;
   institutionName: string;
   subjectName: string;
+  idcardNo: string;
+  idcardSDatePicker: Date | null;
+  issuingAuthority: string;
+  sexcode: string | null;
+  nationalityCode: string | null;
+  nationCode: string | null;
+  religionCode: string;
+  maritalStatusCode: string | null;
   emailSecond: string;
+  singId: string;
   homePhone: string;
   telephone: string;
   addressContent: string;
@@ -97,31 +89,11 @@ interface EditForm {
   activity: string;
 }
 
-function emptyEditForm(): EditForm {
-  return {
-    seq: '', empId: '', vietnamName: '', englishName: '', dobPicker: null,
-    sexcode: null, nationalityCode: null, nationCode: null, maritalStatusCode: null,
-    dateStartedPicker: null, endProbationDatePicker: null,
-    joinType: null, joinDetailType: null, deptno: null, postFamily: null, postGradeNo: null,
-    positionNo: null, empTypeCode: null, mainBusiness: null, costCenter: '',
-    idcardNo: '', idcardSDatePicker: null, issuingAuthority: '',
-    finalDegreeCode: null, endDatePicker: null, institutionName: '', subjectName: '',
-    emailSecond: '', homePhone: '', telephone: '', addressContent: '', regPlace: '', activity: '0',
-  };
-}
-
 /**
- * Bản Angular của hrm/recruitManage/viewRecruitBatchList.html (Thymeleaf + DataTables server-side) -
- * Nhận việc hàng loạt: chọn 1 "Ngày đăng ký", xem/sửa/xóa danh sách nhân viên import từ Excel cho đợt
- * đó, rồi Xác nhận nhận việc hàng loạt. Gọi lại nguyên API JSON đã có sẵn ở HrRecruitManageController
- * (xem ViewRecruitBatchListService) - không đổi backend. Nút "Xuất Excel" ở bản gốc trỏ tới endpoint
- * /api/rblBatch/export KHÔNG tồn tại ở backend (kiểm tra lại HrRecruitManageController - chỉ có
- * registerList/register/list/update/delete/import) nên đã hỏng sẵn từ trước; ở đây thay bằng xuất
- * client-side (SheetJS/xlsx) từ dữ liệu đang tải, giống pattern manage-emp-position-info, để có bản
- * xuất .xlsx thực sự hoạt động (xem CLAUDE.md - export phải ra .xlsx). Các trường ngày YYYY/MM/DD ở
- * modal sửa dòng (dob/dateStarted/...) là dữ liệu thô từ Excel import, giữ nguyên định dạng trao đổi
- * với backend nhưng hiển thị dd/MM/yyyy qua nz-date-picker theo CLAUDE.md; riêng registerDate ở modal
- * đăng ký vốn đã lưu dạng DD/MM/YYYY (data-drp-format của bản gốc) nên không cần quy đổi thêm.
+ * Nhận việc hàng loạt - bản Angular của hrm/recruitManage/viewRecruitBatchList (dự án HTSV): chọn "Ngày
+ * tạo" (đợt đăng ký), import Excel hoặc Thêm dòng trống rồi sửa từng dòng (bản gốc sửa trực tiếp trên
+ * lưới - ở đây sửa qua popup), Xóa các dòng đã chọn, Xác nhận cả đợt (PR_RECRUIT_EXECUTE type=CONFIRM_BATCH).
+ * Đợt đã xử lý (ACTIVITY=1) chỉ còn nút Tra cứu. Ngày lưu dạng YYYY/MM/DD, ngày tốt nghiệp dạng MM/YYYY như bản gốc.
  */
 @Component({
   selector: 'app-view-recruit-batch-list',
@@ -145,12 +117,12 @@ function emptyEditForm(): EditForm {
 })
 export class ViewRecruitBatchListComponent implements OnInit {
   readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
-  @ViewChild('excelFileInput') excelFileInputRef?: ElementRef<HTMLInputElement>;
+  @ViewChild('vrblExcelFileInput') excelFileInputRef?: ElementRef<HTMLInputElement>;
 
-  readonly pageSize = PAGE_SIZE;
+  pageSize = PAGE_SIZE;
 
   readonly registers = signal<RecruitBatchRegister[]>([]);
-  selectedRegisterSeq: string | null = null;
+  readonly selectedRegisterSeq = signal<string | null>(null);
 
   readonly rows = signal<RecruitBatchItem[]>([]);
   readonly totalRecords = signal(0);
@@ -158,35 +130,39 @@ export class ViewRecruitBatchListComponent implements OnInit {
   readonly loading = signal(false);
   pageIndex = 1;
   readonly checkedSeqs = signal<Set<string>>(new Set());
-
   readonly importing = signal(false);
 
-  // ==================== Modal Đăng ký ngày ====================
+  /** Đợt đã xác nhận (bản gốc ACTIVITY eq '1') -> chỉ xem. */
+  readonly readOnly = computed(() => {
+    const reg = this.registers().find((r) => r.registerSeq === this.selectedRegisterSeq());
+    return reg?.registerActivity === '1' || this.allProcessed();
+  });
+
+  // ==================== Popup Đăng ký ====================
   readonly registerModalVisible = signal(false);
   readonly registerSaving = signal(false);
   regDatePicker: Date | null = null;
-  regRemark = '';
 
-  // ==================== Modal Chỉnh sửa dòng ====================
+  // ==================== Popup sửa dòng ====================
   readonly editModalVisible = signal(false);
   readonly editSaving = signal(false);
-  editForm: EditForm = emptyEditForm();
+  editForm: EditForm = this.emptyEditForm();
 
-  // ==================== Danh mục (code list) + cây phòng ban ====================
+  // ==================== Danh mục ====================
   readonly deptNodes = signal<NzTreeNodeOptions[]>([]);
   readonly deptTreeErrorMessage = signal<string | null>(null);
-  readonly sexOptions = signal<CodeItem[]>([]);
-  readonly nationalityOptions = signal<CodeItem[]>([]);
-  readonly nationOptions = signal<CodeItem[]>([]);
-  readonly maritalStatusOptions = signal<CodeItem[]>([]);
   readonly joinTypeOptions = signal<CodeItem[]>([]);
   readonly joinDetailTypeOptions = signal<CodeItem[]>([]);
   readonly postFamilyOptions = signal<CodeItem[]>([]);
   readonly postGradeOptions = signal<CodeItem[]>([]);
+  readonly mainBusinessOptions = signal<CodeItem[]>([]);
   readonly positionOptions = signal<CodeItem[]>([]);
   readonly empTypeOptions = signal<CodeItem[]>([]);
-  readonly mainBusinessOptions = signal<CodeItem[]>([]);
   readonly degreeOptions = signal<CodeItem[]>([]);
+  readonly sexOptions = signal<CodeItem[]>([]);
+  readonly nationalityOptions = signal<CodeItem[]>([]);
+  readonly nationOptions = signal<CodeItem[]>([]);
+  readonly maritalStatusOptions = signal<CodeItem[]>([]);
 
   constructor(
     private readonly api: ViewRecruitBatchListService,
@@ -206,30 +182,42 @@ export class ViewRecruitBatchListComponent implements OnInit {
     return this.i18n.t(key, fallback);
   }
 
-  // ==================== Đăng ký ngày (danh sách + chọn) ====================
+  private resultMessage(res: RecruitBatchActionResult, fallbackKey: string, fallbackText: string): string {
+    if (res.messageKey) return this.t(res.messageKey, res.message || fallbackText);
+    return res.message || this.t(fallbackKey, fallbackText);
+  }
 
+  // ==================== Đợt đăng ký ====================
+
+  /** Bản gốc: mặc định chọn đợt mới nhất. */
   private loadRegisterList(selectSeq?: string): void {
     this.api.getRegisterList().subscribe({
       next: (list) => {
-        this.registers.set(list ?? []);
-        const seq = selectSeq || this.selectedRegisterSeq;
-        this.selectedRegisterSeq = seq && list?.some((r) => r.registerSeq === seq) ? seq : null;
-        if (this.selectedRegisterSeq) this.search();
+        const regs = list ?? [];
+        this.registers.set(regs);
+        const want = selectSeq ?? this.selectedRegisterSeq();
+        const seq = regs.some((r) => r.registerSeq === want) ? want : (regs[0]?.registerSeq ?? null);
+        this.selectedRegisterSeq.set(seq);
+        this.pageIndex = 1;
+        this.search();
       },
       error: () => this.message.error(this.t('common.loadFail', 'Tải dữ liệu thất bại!')),
     });
   }
 
-  onRegisterChange(): void {
+  onRegisterChange(seq: string | null): void {
+    this.selectedRegisterSeq.set(seq);
     this.pageIndex = 1;
-    this.checkedSeqs.set(new Set());
     this.search();
   }
 
   search(): void {
-    if (!this.selectedRegisterSeq) {
+    const registerSeq = this.selectedRegisterSeq();
+    this.checkedSeqs.set(new Set());
+    if (!registerSeq) {
       this.rows.set([]);
       this.totalRecords.set(0);
+      this.allProcessed.set(false);
       return;
     }
     this.loading.set(true);
@@ -237,14 +225,13 @@ export class ViewRecruitBatchListComponent implements OnInit {
       draw: this.pageIndex,
       start: (this.pageIndex - 1) * this.pageSize,
       length: this.pageSize,
-      registerSeq: this.selectedRegisterSeq,
+      registerSeq,
     };
     this.api.getBatchList(params).subscribe({
       next: (res) => {
         this.rows.set(res.data ?? []);
         this.totalRecords.set(res.recordsTotal ?? 0);
         this.allProcessed.set(!!res.allProcessed);
-        this.checkedSeqs.set(new Set());
         this.loading.set(false);
       },
       error: () => {
@@ -259,9 +246,14 @@ export class ViewRecruitBatchListComponent implements OnInit {
     this.search();
   }
 
+  onPageSizeChange(size: number): void {
+    this.pageSize = size;
+    this.pageIndex = 1;
+    this.search();
+  }
+
   openRegisterModal(): void {
-    this.regDatePicker = null;
-    this.regRemark = '';
+    this.regDatePicker = new Date();
     this.registerModalVisible.set(true);
   }
 
@@ -271,34 +263,35 @@ export class ViewRecruitBatchListComponent implements OnInit {
 
   saveRegister(): void {
     if (!this.regDatePicker) {
-      this.message.warning(this.t('rbl.modal.register.date', 'Ngày đăng ký *'));
+      this.message.warning(this.t('hrm.empinfo.REGISTRATION_DATE', 'Ngày đăng ký'));
       return;
     }
-    this.registerSaving.set(true);
-    this.api
-      .register({ registerDate: formatDate(this.regDatePicker, 'dd/MM/yyyy', 'vi'), registerRemark: this.regRemark })
-      .subscribe({
-        next: (res) => {
-          this.registerSaving.set(false);
-          if (res.success) {
-            this.registerModalVisible.set(false);
-            this.loadRegisterList(res.registerSeq);
-          } else {
-            this.message.error(res.message || this.t('common.error', 'Lỗi'));
-          }
-        },
-        error: () => {
-          this.registerSaving.set(false);
-          this.message.error(this.t('common.error', 'Lỗi'));
-        },
-      });
+    const registerDate = formatDate(this.regDatePicker, 'dd/MM/yyyy', 'en-US');
+    this.modal.confirm({
+      nzTitle: this.t('hrm.empinfo.SAVE_CONFIRM', 'Đồng ý lưu không?'),
+      nzOnOk: () => {
+        this.registerSaving.set(true);
+        this.api.register(registerDate).subscribe({
+          next: (res) => {
+            this.registerSaving.set(false);
+            if (res.success) {
+              this.message.success(this.t('alert.message.add_success', 'Thêm thành công!'));
+              this.registerModalVisible.set(false);
+              this.loadRegisterList(res.registerSeq);
+            } else {
+              this.message.error(this.resultMessage(res, 'alert.message.add_fail', 'Lưu thất bại!'));
+            }
+          },
+          error: () => {
+            this.registerSaving.set(false);
+            this.message.error(this.t('alert.message.add_fail', 'Lưu thất bại!'));
+          },
+        });
+      },
+    });
   }
 
-  // ==================== Chọn dòng (checkbox) ====================
-
-  isRowSelectable(row: RecruitBatchItem): boolean {
-    return String(row.activity) !== '1';
-  }
+  // ==================== Chọn dòng ====================
 
   isChecked(seq: string): boolean {
     return this.checkedSeqs().has(seq);
@@ -312,72 +305,33 @@ export class ViewRecruitBatchListComponent implements OnInit {
   }
 
   get allChecked(): boolean {
-    const selectable = this.rows().filter((r) => this.isRowSelectable(r));
-    return selectable.length > 0 && selectable.every((r) => this.isChecked(r.seq));
+    const rows = this.rows();
+    return rows.length > 0 && rows.every((r) => this.isChecked(r.seq));
   }
 
   toggleAllChecked(checked: boolean): void {
-    const next = new Set(this.checkedSeqs());
-    this.rows()
-      .filter((r) => this.isRowSelectable(r))
-      .forEach((r) => (checked ? next.add(r.seq) : next.delete(r.seq)));
-    this.checkedSeqs.set(next);
+    this.checkedSeqs.set(checked ? new Set(this.rows().map((r) => r.seq)) : new Set());
   }
 
-  deleteSelected(): void {
-    const seqs = Array.from(this.checkedSeqs());
-    if (!seqs.length) {
-      this.message.warning(this.t('rbl.js.selectRow', 'Vui lòng chọn ít nhất một dòng'));
-      return;
-    }
-    this.modal.confirm({
-      nzTitle: this.t('common.delete', 'Xóa'),
-      nzContent: this.t('rbl.js.confirmDelete', 'Bạn có chắc muốn xóa không?'),
-      nzOnOk: () => {
-        let remaining = seqs.length;
-        let hasError = false;
-        seqs.forEach((seq) => {
-          this.api.deleteBatchItem(seq).subscribe({
-            next: () => {
-              remaining -= 1;
-              if (remaining === 0) {
-                if (hasError) this.message.error(this.t('common.error', 'Lỗi'));
-                else this.message.success(this.t('common.success', 'Thành công'));
-                this.search();
-              }
-            },
-            error: () => {
-              hasError = true;
-              remaining -= 1;
-              if (remaining === 0) {
-                this.message.error(this.t('common.error', 'Lỗi'));
-                this.search();
-              }
-            },
-          });
-        });
-      },
-    });
-  }
+  // ==================== Xác nhận / Thêm / Xóa ====================
 
-  // ==================== Xác nhận nhận việc hàng loạt ====================
-
+  /** Bản gốc executeRecruitBatch('CONFIRM_BATCH'): empIds = SEQ đợt đăng ký. */
   confirmExecute(): void {
-    if (!this.selectedRegisterSeq) {
+    const registerSeq = this.selectedRegisterSeq();
+    if (!registerSeq) {
       this.message.warning(this.t('rbl.js.selectRegister', 'Vui lòng chọn Ngày đăng ký trước'));
       return;
     }
     this.modal.confirm({
-      nzTitle: this.t('common.confirm', 'Xác nhận'),
-      nzContent: this.t('rbl.js.confirmExecute', 'Xác nhận nhận việc hàng loạt?'),
+      nzTitle: this.t('hrm.alert.empinfo.Perform_operation', 'Đồng ý thực hiện không?'),
       nzOnOk: () => {
-        this.api.executeConfirmBatch(this.selectedRegisterSeq!).subscribe({
+        this.api.executeConfirmBatch(registerSeq).subscribe({
           next: (res) => {
             if (res.success) {
-              this.message.success(res.message || this.t('common.success', 'Thành công'));
-              this.search();
+              this.message.success(this.t('liang.alert.message.org.execute_success', 'Thực hiện thành công'));
+              this.loadRegisterList(registerSeq);
             } else {
-              this.message.error(res.message || this.t('common.error', 'Lỗi'));
+              this.message.error(this.resultMessage(res, 'common.error', 'Lỗi'));
             }
           },
           error: () => this.message.error(this.t('common.error', 'Lỗi')),
@@ -386,14 +340,69 @@ export class ViewRecruitBatchListComponent implements OnInit {
     });
   }
 
-  // ==================== Import / Template / Export ====================
+  /** Bản gốc viewRecruitBatchList?FLAG=ADD: thêm 1 dòng trống rồi nhập thông tin. */
+  addRow(): void {
+    const registerSeq = this.selectedRegisterSeq();
+    if (!registerSeq) {
+      this.message.warning(this.t('rbl.js.selectRegister', 'Vui lòng chọn Ngày đăng ký trước'));
+      return;
+    }
+    this.api.addBatchItem(registerSeq).subscribe({
+      next: (res) => {
+        if (res.success && res.seq) {
+          this.search();
+          this.openEditModal({ seq: res.seq, activity: '0' });
+        } else {
+          this.message.error(this.resultMessage(res, 'alert.message.add_fail', 'Lưu thất bại!'));
+        }
+      },
+      error: () => this.message.error(this.t('alert.message.add_fail', 'Lưu thất bại!')),
+    });
+  }
+
+  deleteSelected(): void {
+    const seqs = Array.from(this.checkedSeqs());
+    if (!seqs.length) {
+      this.message.warning(this.t('hrm.alert.empinfo.Choice_Perform_operation', 'Xin chọn thao tác cần thực hiện'));
+      return;
+    }
+    this.modal.confirm({
+      nzTitle: this.t('hrm.alert.empinfo.Sure.delete', 'Đồng ý Xóa không?'),
+      nzOkDanger: true,
+      nzOnOk: () => {
+        let remaining = seqs.length;
+        let failed = false;
+        const done = () => {
+          remaining -= 1;
+          if (remaining > 0) return;
+          if (failed) this.message.error(this.t('alert.message.delete_fail', 'Xóa thất bại!'));
+          else this.message.success(this.t('alert.message.delete_success', 'Xóa thành công!'));
+          this.search();
+        };
+        seqs.forEach((seq) =>
+          this.api.deleteBatchItem(seq).subscribe({
+            next: (res) => {
+              if (!res.success) failed = true;
+              done();
+            },
+            error: () => {
+              failed = true;
+              done();
+            },
+          }),
+        );
+      },
+    });
+  }
+
+  // ==================== Mẫu / Import / Xuất Excel ====================
 
   downloadTemplate(): void {
     window.location.href = this.api.downloadTemplateUrl();
   }
 
   openImportPicker(): void {
-    if (!this.selectedRegisterSeq) {
+    if (!this.selectedRegisterSeq()) {
       this.message.warning(this.t('rbl.js.selectRegister', 'Vui lòng chọn Ngày đăng ký trước'));
       return;
     }
@@ -404,17 +413,18 @@ export class ViewRecruitBatchListComponent implements OnInit {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     input.value = '';
-    if (!file || !this.selectedRegisterSeq) return;
+    const registerSeq = this.selectedRegisterSeq();
+    if (!file || !registerSeq) return;
     this.importing.set(true);
-    this.api.importExcel(file, this.selectedRegisterSeq).subscribe({
+    this.api.importExcel(file, registerSeq).subscribe({
       next: (res) => {
         this.importing.set(false);
         if (res.success) {
-          this.message.success(
-            `${this.t('rbl.js.importSuccess', 'Nhập file thành công')} (${res.successCount ?? 0} dòng)`,
-          );
+          const msg = `${this.t('rbl.js.importSuccess', 'Nhập file thành công')} (${res.successCount ?? 0})`;
+          if (res.errorCount) this.message.warning(`${msg} - ${res.errors ?? ''}`, { nzDuration: 8000 });
+          else this.message.success(msg);
         } else {
-          this.message.warning(res.message || this.t('rbl.js.importFailed', 'Nhập file thất bại'));
+          this.message.error(res.message || this.t('rbl.js.importFailed', 'Nhập file thất bại'));
         }
         this.search();
       },
@@ -425,44 +435,60 @@ export class ViewRecruitBatchListComponent implements OnInit {
     });
   }
 
-  /** Xuất excel client-side (xem docblock class - endpoint export ở backend không tồn tại). */
   exportExcel(): void {
-    if (!this.selectedRegisterSeq) {
+    if (!this.selectedRegisterSeq()) {
       this.message.warning(this.t('rbl.js.selectRegister', 'Vui lòng chọn Ngày đăng ký trước'));
       return;
     }
-    const t = (key: string, fallback: string) => this.i18n.t(key, fallback);
     const headers = [
-      t('common.stt', 'STT'), t('rbl.col.processed', 'Đã xử lý'), t('common.empName', 'Họ tên'),
-      t('common.empId', 'Mã nhân viên'), t('recruit.list.field.englishName', 'Tên tiếng Anh'),
-      t('recruit.list.field.dob', 'Ngày sinh'), t('rbl.col.dateStarted', 'Ngày vào làm'),
-      t('recruit.list.field.endProbationDate', 'Ngày hết thử việc'), t('rbl.col.joinType', 'Loại nhập'),
-      t('rbl.col.joinDetailType', 'Chi tiết'), t('common.deptName', 'Phòng ban'), t('rbl.col.postGrade', 'Chức vụ'),
-      t('rbl.col.postFamily', 'Nhóm nhân viên'), t('rbl.col.mainBusiness', 'Công việc'),
-      t('rbl.col.empType', 'Loại nhân viên'), t('rbl.col.position', 'Chức danh'), t('rbl.col.costCenter', 'Mã chi phí'),
-      t('recruit.list.field.sexcode', 'Giới tính'), t('recruit.list.field.nationalityCode', 'Quốc tịch'),
-      t('recruit.list.field.nationCode', 'Dân tộc'), t('recruit.list.field.maritalStatusCode', 'Tình trạng hôn nhân'),
-      t('recruit.list.edu.finalDegree', 'Học vị cuối'), t('recruit.list.edu.endDate', 'Đến ngày TN'),
-      t('recruit.list.edu.institutionName', 'Tên trường'), t('recruit.list.edu.subject', 'Chuyên ngành'),
-      t('recruit.list.field.idcardNo', 'Số CMND/CCCD'), t('recruit.list.field.idcardStartDate', 'Ngày cấp'),
-      t('recruit.list.field.issuingAuthority', 'Nơi cấp'), t('rbl.col.emailSecond', 'Email cá nhân'),
-      t('recruit.list.field.homePhone', 'ĐT nhà'), t('rbl.col.telephone', 'Điện thoại'),
-      t('recruit.list.field.addressContent', 'Địa chỉ'), t('rbl.col.regPlace', 'Hộ khẩu'),
+      'No.', this.t('hrm.empinfo.Already_processed', 'Đã xử lý'), this.t('hrm.empinfo.empid', 'Mã nhân viên'),
+      this.t('hrm.recruitManage.YUENAN_NAME.Z', 'Họ tên'), this.t('hr.empinfo.english.name', 'Tên tiếng Anh'),
+      this.t('hrm.empinfo.FAM_BORNDATE', 'Ngày sinh'), this.t('hrm.empinfo.DATE_STARTED', 'Ngày vào làm'),
+      this.t('hr.enpinfo.title.EMP.PROBATION_END_DATE', 'Ngày kết thúc thử việc'),
+      this.t('hrm.recruitManage.JOIN_TYPE.Z', 'Hình thức nhận việc'),
+      this.t('hrm.recruitManage.JOIN_DETAIL_TYPE.Z', 'Chi tiết nhận việc'), this.t('hrm.empinfo.ORG_NAME_LOCAL', 'Phòng ban'),
+      this.t('hrm.empinfo.POST_FAMILY', 'Nhóm nhân viên'), this.t('hrm.contract.Rank', 'Chức vụ'),
+      this.t('hrm.empinfo.MAIN_BUSINESS_NAME', 'Công việc'), this.t('hrm.contract.POSITION_NO', 'Chức danh'),
+      this.t('hrm.empinfo.EMP_TYPE_CODE_NAME', 'Loại nhân viên'), this.t('hrm.empinfo.COST_CENTER_NAME_LOCAL', 'Mã chi phí'),
+      this.t('ess.empInfo.final_education', 'Trình độ học vấn'), this.t('ess.empInfo.graduation_date', 'Ngày tốt nghiệp'),
+      this.t('hrm.recruitManage.INSTITUTION_SCHOOL', 'Trường tốt nghiệp'),
+      this.t('hr.viewPersonalInfo.title.SUBJECTNAME', 'Chuyên ngành'), this.t('pa.insurance.title.idNumber', 'CMND'),
+      this.t('hrm.recruitManage.IDCARD_QIANFA_DATE.Z', 'Ngày cấp'), this.t('hrm.recruitManage.IDCARD_QIANFA_JIGUAN.Z', 'Nơi cấp'),
+      this.t('hrm.empinfo.SEXCODE', 'Giới tính'), this.t('hrm.empinfo.NATIONALITY_CODE', 'Quốc tịch'),
+      this.t('hrm.empinfo.NATION_CODE', 'Dân tộc'), this.t('ess.empInfo.religion', 'Tôn giáo'),
+      this.t('hrm.empinfo.MARITAL_STATUS_NAME', 'Tình trạng hôn nhân'), this.t('hrm.empinfo.GEREN_EMAIL.Z', 'Email'),
+      this.t('hrm.empinfo.EagLem_ID.Z', 'EagleM ID'), this.t('hr.viewHire.title.HOME_PHONE', 'Điện thoại gia đình'),
+      this.t('hrm.empinfo.CELLPHONE', 'Điện thoại'), this.t('ess.empInfo.present_address', 'Địa chỉ tạm trú'),
+      this.t('hrm.empinfo.HUJIDIZHI', 'Hộ khẩu'),
     ];
-    const dataRows = this.rows().map((r, i) => [
-      i + 1, r.activity === '1' ? 'X' : '', r.vietnamName, r.empId, r.englishName, r.dob, r.dateStarted,
-      r.endProbationDate, r.joinTypeName, r.joinDetailTypeName, r.deptName, r.postGradeName, r.postFamilyName,
-      r.mainBusinessName, r.empTypeName, r.positionNoName, r.costCenter, r.sexName, r.nationalityName, r.nationName,
-      r.maritalStatusName, r.finalDegreeName, r.endDate, r.institutionName, r.subjectName, r.idcardNo, r.idcardSDate,
-      r.issuingAuthority, r.emailSecond, r.homePhone, r.telephone, r.addressContent, r.regPlace,
+    const offset = (this.pageIndex - 1) * this.pageSize;
+    const data = this.rows().map((r, i) => [
+      offset + i + 1, r.activity === '1' ? 'Y' : '', r.empId, r.vietnamName, r.englishName, this.displayDate(r.dob),
+      this.displayDate(r.dateStarted), this.displayDate(r.endProbationDate), r.joinTypeName, r.joinDetailTypeName,
+      r.deptName, r.postFamilyName, r.postGradeName, r.mainBusinessName, r.positionNoName, r.empTypeName,
+      r.costCenterName || r.costCenter, r.finalDegreeName, this.displayMonth(r.endDate), r.institutionName, r.subjectName,
+      r.idcardNo, this.displayDate(r.idcardSDate), r.issuingAuthority, r.sexName, r.nationalityName, r.nationName,
+      r.religionCode, r.maritalStatusName, r.emailSecond, r.singId, r.homePhone, r.telephone, r.addressContent, r.regPlace,
     ]);
-    const worksheet = XLSX.utils.aoa_to_sheet([headers, ...dataRows]);
+    const worksheet = XLSX.utils.aoa_to_sheet([headers, ...data]);
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'NhanViecHangLoat');
-    XLSX.writeFile(workbook, 'nhan_viec_hang_loat.xlsx');
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'RecruitBatch');
+    XLSX.writeFile(workbook, `RecruitBatch_${this.selectedRegisterSeq()}.xlsx`);
   }
 
-  // ==================== Modal chỉnh sửa dòng ====================
+  // ==================== Popup sửa dòng ====================
+
+  private emptyEditForm(): EditForm {
+    return {
+      seq: '', empId: '', vietnamName: '', englishName: '', dobPicker: null, dateStartedPicker: null,
+      endProbationDatePicker: null, joinType: null, joinDetailType: null, deptno: null, postFamily: null,
+      postGradeNo: null, mainBusiness: null, positionNo: null, empTypeCode: null, costCenter: null,
+      finalDegreeCode: null, endDatePicker: null, institutionName: '', subjectName: '', idcardNo: '',
+      idcardSDatePicker: null, issuingAuthority: '', sexcode: null, nationalityCode: null, nationCode: null,
+      religionCode: '', maritalStatusCode: null, emailSecond: '', singId: '', homePhone: '', telephone: '',
+      addressContent: '', regPlace: '', activity: '0',
+    };
+  }
 
   openEditModal(row: RecruitBatchItem): void {
     this.editForm = {
@@ -470,38 +496,40 @@ export class ViewRecruitBatchListComponent implements OnInit {
       empId: row.empId ?? '',
       vietnamName: row.vietnamName ?? '',
       englishName: row.englishName ?? '',
-      dobPicker: this.toDate(row.dob),
-      sexcode: row.sexcode ?? null,
-      nationalityCode: row.nationalityCode ?? null,
-      nationCode: row.nationCode ?? null,
-      maritalStatusCode: row.maritalStatusCode ?? null,
-      dateStartedPicker: this.toDate(row.dateStarted),
-      endProbationDatePicker: this.toDate(row.endProbationDate),
+      dobPicker: this.parseDate(row.dob),
+      dateStartedPicker: this.parseDate(row.dateStarted),
+      endProbationDatePicker: this.parseDate(row.endProbationDate),
       joinType: row.joinType ?? null,
       joinDetailType: row.joinDetailType ?? null,
       deptno: row.deptno ?? null,
       postFamily: row.postFamily ?? null,
       postGradeNo: row.postGradeNo ?? null,
+      mainBusiness: row.mainBusiness ?? null,
       positionNo: row.positionNo ?? null,
       empTypeCode: row.empTypeCode ?? null,
-      mainBusiness: row.mainBusiness ?? null,
-      costCenter: row.costCenter ?? '',
-      idcardNo: row.idcardNo ?? '',
-      idcardSDatePicker: this.toDate(row.idcardSDate),
-      issuingAuthority: row.issuingAuthority ?? '',
+      costCenter: row.costCenter ?? null,
       finalDegreeCode: row.finalDegreeCode ?? null,
-      endDatePicker: this.toDate(row.endDate),
+      endDatePicker: this.parseDate(row.endDate),
       institutionName: row.institutionName ?? '',
       subjectName: row.subjectName ?? '',
+      idcardNo: row.idcardNo ?? '',
+      idcardSDatePicker: this.parseDate(row.idcardSDate),
+      issuingAuthority: row.issuingAuthority ?? '',
+      sexcode: row.sexcode ?? null,
+      nationalityCode: row.nationalityCode ?? null,
+      nationCode: row.nationCode ?? null,
+      religionCode: row.religionCode ?? '',
+      maritalStatusCode: row.maritalStatusCode ?? null,
       emailSecond: row.emailSecond ?? '',
+      singId: row.singId ?? '',
       homePhone: row.homePhone ?? '',
       telephone: row.telephone ?? '',
       addressContent: row.addressContent ?? '',
       regPlace: row.regPlace ?? '',
       activity: row.activity ?? '0',
     };
-    this.loadJoinDetailOptions(row.joinType);
-    this.loadPostGradeOptions(row.postFamily);
+    this.loadJoinDetailOptions(this.editForm.joinType);
+    this.loadPostGradeOptions(this.editForm.postFamily);
     this.editModalVisible.set(true);
   }
 
@@ -510,32 +538,41 @@ export class ViewRecruitBatchListComponent implements OnInit {
   }
 
   get canEditRow(): boolean {
-    return this.editForm.activity !== '1';
+    return !this.readOnly() && this.editForm.activity !== '1';
   }
 
+  /** Bản gốc: đổi phòng ban thì Mã chi phí lấy theo phòng ban. */
   onEditDeptnoChange(value: string | null): void {
-    this.editForm.deptno = value ?? '';
-    this.editForm.costCenter = value ?? '';
+    this.editForm.deptno = value;
+    this.editForm.costCenter = value;
   }
 
   onEditJoinTypeChange(value: string | null): void {
-    this.editForm.joinType = value ?? '';
-    this.editForm.joinDetailType = '';
+    this.editForm.joinType = value;
+    this.editForm.joinDetailType = null;
     this.loadJoinDetailOptions(value);
   }
 
   onEditPostFamilyChange(value: string | null): void {
-    this.editForm.postFamily = value ?? '';
-    this.editForm.postGradeNo = '';
+    this.editForm.postFamily = value;
+    this.editForm.postGradeNo = null;
     this.loadPostGradeOptions(value);
   }
 
-  private loadJoinDetailOptions(joinType: string | null | undefined): void {
-    this.api.getCodeList(joinType || '14014036').subscribe((list) => this.joinDetailTypeOptions.set(list ?? []));
+  private loadJoinDetailOptions(joinType: string | null): void {
+    if (!joinType) {
+      this.joinDetailTypeOptions.set([]);
+      return;
+    }
+    this.api.getCodeList(joinType).subscribe((list) => this.joinDetailTypeOptions.set(list ?? []));
   }
 
-  private loadPostGradeOptions(postFamily: string | null | undefined): void {
-    this.api.getCodeList(postFamily || '400001').subscribe((list) => this.postGradeOptions.set(list ?? []));
+  private loadPostGradeOptions(postFamily: string | null): void {
+    if (!postFamily) {
+      this.postGradeOptions.set([]);
+      return;
+    }
+    this.api.getCodeList(postFamily).subscribe((list) => this.postGradeOptions.set(list ?? []));
   }
 
   saveEdit(): void {
@@ -543,6 +580,7 @@ export class ViewRecruitBatchListComponent implements OnInit {
     const f = this.editForm;
     const dto: RecruitBatchItem = {
       seq: f.seq,
+      empId: f.empId,
       vietnamName: f.vietnamName,
       englishName: f.englishName,
       dob: this.toYmd(f.dobPicker),
@@ -553,22 +591,24 @@ export class ViewRecruitBatchListComponent implements OnInit {
       deptno: f.deptno,
       postFamily: f.postFamily,
       postGradeNo: f.postGradeNo,
+      mainBusiness: f.mainBusiness,
       positionNo: f.positionNo,
       empTypeCode: f.empTypeCode,
-      mainBusiness: f.mainBusiness,
       costCenter: f.costCenter,
-      sexcode: f.sexcode,
-      nationalityCode: f.nationalityCode,
-      nationCode: f.nationCode,
-      maritalStatusCode: f.maritalStatusCode,
       finalDegreeCode: f.finalDegreeCode,
-      endDate: this.toYmd(f.endDatePicker),
+      endDate: f.endDatePicker ? formatDate(f.endDatePicker, 'MM/yyyy', 'en-US') : '',
       institutionName: f.institutionName,
       subjectName: f.subjectName,
       idcardNo: f.idcardNo,
       idcardSDate: this.toYmd(f.idcardSDatePicker),
       issuingAuthority: f.issuingAuthority,
+      sexcode: f.sexcode,
+      nationalityCode: f.nationalityCode,
+      nationCode: f.nationCode,
+      religionCode: f.religionCode,
+      maritalStatusCode: f.maritalStatusCode,
       emailSecond: f.emailSecond,
+      singId: f.singId,
       homePhone: f.homePhone,
       telephone: f.telephone,
       addressContent: f.addressContent,
@@ -579,20 +619,21 @@ export class ViewRecruitBatchListComponent implements OnInit {
       next: (res) => {
         this.editSaving.set(false);
         if (res.success) {
+          this.message.success(this.t('alert.message.update_success', 'Sửa thành công!'));
           this.editModalVisible.set(false);
           this.search();
         } else {
-          this.message.error(res.message || this.t('common.error', 'Lỗi'));
+          this.message.error(this.resultMessage(res, 'alert.message.add_fail', 'Lưu thất bại!'));
         }
       },
       error: () => {
         this.editSaving.set(false);
-        this.message.error(this.t('common.error', 'Lỗi'));
+        this.message.error(this.t('alert.message.add_fail', 'Lưu thất bại!'));
       },
     });
   }
 
-  // ==================== Cây phòng ban + danh mục dùng chung ====================
+  // ==================== Danh mục + cây phòng ban ====================
 
   private loadDeptTree(): void {
     this.api.getAuthorizedDepartments().subscribe({
@@ -604,54 +645,58 @@ export class ViewRecruitBatchListComponent implements OnInit {
   private buildDeptTree(list: AuthDeptNode[]): NzTreeNodeOptions[] {
     const map = new Map<string, NzTreeNodeOptions & { parent: string }>();
     list.forEach((d) => map.set(d.id, { title: d.text, key: d.id, parent: d.parent, children: [] }));
-
     const roots: NzTreeNodeOptions[] = [];
     map.forEach((node) => {
-      if (node.parent && node.parent !== '0' && map.has(node.parent)) {
-        map.get(node.parent)!.children!.push(node);
-      } else {
-        roots.push(node);
-      }
+      if (node.parent && node.parent !== '0' && map.has(node.parent)) map.get(node.parent)!.children!.push(node);
+      else roots.push(node);
     });
-
-    const markLeaf = (nodes: NzTreeNodeOptions[]) => {
+    const markLeaf = (nodes: NzTreeNodeOptions[]) =>
       nodes.forEach((n) => {
         n.isLeaf = !n.children || n.children.length === 0;
         if (n.children?.length) markLeaf(n.children);
       });
-    };
     markLeaf(roots);
     return roots;
   }
 
+  /** Mã danh mục cha theo đúng RecruitManageCtroller.viewRecruitBatchList bản gốc. */
   private loadCodeOptions(): void {
+    this.api.getCodeList('1359').subscribe((list) => this.joinTypeOptions.set(list ?? []));
+    this.api.getCodeList('14015812').subscribe((list) => this.postFamilyOptions.set(list ?? []));
+    this.api.getCodeList('400098').subscribe((list) => this.mainBusinessOptions.set(list ?? []));
+    this.api.getCodeList('14014036').subscribe((list) => this.positionOptions.set(list ?? []));
+    this.api.getCodeList('13864').subscribe((list) => this.empTypeOptions.set(list ?? []));
+    this.api.getCodeList('13769').subscribe((list) => this.degreeOptions.set(list ?? []));
     this.api.getCodeList('1324').subscribe((list) => this.sexOptions.set(list ?? []));
     this.api.getCodeList('870').subscribe((list) => this.nationalityOptions.set(list ?? []));
     this.api.getCodeList('210942').subscribe((list) => this.nationOptions.set(list ?? []));
     this.api.getCodeList('1709').subscribe((list) => this.maritalStatusOptions.set(list ?? []));
-    this.api.getCodeList('400001').subscribe((list) => this.joinTypeOptions.set(list ?? []));
-    this.api.getCodeList('14015812').subscribe((list) => this.postFamilyOptions.set(list ?? []));
-    this.api.getCodeList('14014036').subscribe((list) => this.positionOptions.set(list ?? []));
-    this.api.getCodeList('13864').subscribe((list) => this.empTypeOptions.set(list ?? []));
-    this.api.getCodeList('400098').subscribe((list) => this.mainBusinessOptions.set(list ?? []));
-    this.api.getCodeList('13769').subscribe((list) => this.degreeOptions.set(list ?? []));
   }
 
-  // ==================== Helpers ngày tháng + hiển thị ====================
+  // ==================== Helpers ngày tháng ====================
 
-  private toDate(dateStr: string | null | undefined): Date | null {
-    if (!dateStr) return null;
-    const d = new Date(dateStr);
-    return isNaN(d.getTime()) ? null : d;
+  /** Đọc các dạng YYYY/MM/DD (dữ liệu import), DD/MM/YYYY, MM/YYYY. */
+  private parseDate(value: string | null | undefined): Date | null {
+    if (!value) return null;
+    const parts = value.trim().split(/[/.\-]/).map(Number);
+    let d: Date | null = null;
+    if (parts.length === 3 && String(parts[0]).length === 4) d = new Date(parts[0], parts[1] - 1, parts[2]);
+    else if (parts.length === 3) d = new Date(parts[2], parts[1] - 1, parts[0]);
+    else if (parts.length === 2) d = new Date(parts[1], parts[0] - 1, 1);
+    return d && !isNaN(d.getTime()) ? d : null;
   }
 
   private toYmd(d: Date | null): string {
-    return d ? formatDate(d, 'yyyy/MM/dd', 'vi') : '';
+    return d ? formatDate(d, 'yyyy/MM/dd', 'en-US') : '';
   }
 
-  formatDisplayDate(dateStr: string | null | undefined): string {
-    if (!dateStr) return '';
-    const d = new Date(dateStr);
-    return isNaN(d.getTime()) ? dateStr : formatDate(d, 'dd/MM/yyyy', 'vi');
+  displayDate(value: string | null | undefined): string {
+    const d = this.parseDate(value);
+    return d ? formatDate(d, 'dd/MM/yyyy', 'en-US') : (value ?? '');
+  }
+
+  displayMonth(value: string | null | undefined): string {
+    const d = this.parseDate(value);
+    return d ? formatDate(d, 'MM/yyyy', 'en-US') : (value ?? '');
   }
 }

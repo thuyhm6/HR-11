@@ -22,6 +22,14 @@ public interface SyAffirmEmailService {
 
     String executeAffirm(List<Map<String, Object>> items);
 
+    /**
+     * Duyệt / từ chối theo yêu cầu từ client (màn "Phê duyệt" web): chỉ nhận applyNo, applyType, flag (1 duyệt / 2 từ chối),
+     * affirmContent; APPLY_FLAG / AFFIRM_LEVEL lấy từ dòng đang chờ chính người đăng nhập duyệt. Đơn không còn chờ
+     * người này duyệt => báo lỗi, không gọi procedure.
+     * @return chuỗi lỗi (rỗng = tất cả thành công)
+     */
+    String executeAffirmForCurrentUser(List<Map<String, Object>> items);
+
     Map<String, Integer> getPendingApprovalCounts();
 
     Map<String, Integer> getHrmPendingCounts();

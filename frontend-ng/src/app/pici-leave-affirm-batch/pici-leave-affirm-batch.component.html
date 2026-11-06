@@ -134,11 +134,17 @@
 
       <nz-table #plabTable [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="50" [nzShowSizeChanger]="true"
                 [nzPageSizeOptions]="pageSizeOptions" [nzShowTotal]="plabTotalTpl" nzSize="small" nzBordered
-                [nzScroll]="{ x: isHr ? '3500px' : '3200px', y: 'calc(100vh - 440px)' }"
-                [nzWidthConfig]="widthConfig" class="plab-table">
+                [nzScroll]="tableScroll()" nzTableLayout="fixed"
+                [nzWidthConfig]="widthConfig()" class="plab-table">
         <thead>
           <tr>
-            <th *ngFor="let c of columns" [class.text-center]="c.center" [class.plab-edit-col]="c.edit">
+            <!-- Kéo mép phải tiêu đề để đổi độ rộng cột, double-click mép để về mặc định -->
+            <th *ngFor="let c of columns; let ci = index" [class.text-center]="c.center" [class.plab-edit-col]="c.edit"
+                nz-resizable nzBounds="window" nzPreview [nzMinWidth]="40" [nzMaxWidth]="800"
+                [nzDisabled]="c.key === 'check'" (nzResizeEnd)="onColResize($event, ci)">
+              <nz-resize-handle *ngIf="c.key !== 'check'" nzDirection="right" (dblclick)="resetColWidth(ci)">
+                <div class="plab-resize-trigger"></div>
+              </nz-resize-handle>
               <ng-container [ngSwitch]="c.key">
                 <label *ngSwitchCase="'check'" nz-checkbox [ngModel]="allSelected" [nzIndeterminate]="someSelected"
                        (ngModelChange)="toggleSelectAll($event)"></label>

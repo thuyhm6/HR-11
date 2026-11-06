@@ -45,6 +45,12 @@ public class MonitoringConfig implements WebMvcConfigurer {
                 .addPathPatterns("/**")
                 .excludePathPatterns(
                         "/static/**",
+                        "/ng-app/**",
+                        "/assets/**",
+                        "/resources/**",
+                        "/*.js",
+                        "/*.css",
+                        "/*.ico",
                         "/css/**",
                         "/js/**",
                         "/images/**",

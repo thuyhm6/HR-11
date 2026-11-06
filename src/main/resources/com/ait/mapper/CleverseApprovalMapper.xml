@@ -44,7 +44,9 @@
         <result property="applyFlag" column="APPLY_FLAG"/>
     </resultMap>
 
-    <!-- Port sys.endEmail.getWaitSendApplyInfoList: interLanguage -> #{lang}, interCpnyID / 'HAE' -> #{cpnyId} -->
+    <!-- Port sys.endEmail.getWaitSendApplyInfoList: interLanguage -> #{lang}, interCpnyID / 'HAE' -> #{cpnyId}
+         Chỉ lấy đơn có MISDOCID (đơn cũ/không có MISDOCID không gửi sang Cleverse) -->
+
     <select id="selectWaitSendApplyList" resultMap="CleverseApprovalApplyResultMap">
         <![CDATA[
         SELECT APPLY_DATA.*,
@@ -112,6 +114,7 @@
                            AND ATT.ACTIVITY = 1
                            AND ATT.CREATED_BY NOT LIKE '111111%'
                            AND ATT.SEND_EMAIL_FLAG = 0
+                           AND ATT.MISDOCID IS NOT NULL
                         UNION ALL
                         SELECT OT.APPLY_NO,
                                OT.PERSON_ID,
@@ -134,6 +137,7 @@
                            AND OT.ACTIVITY = 1
                            AND OT.CREATED_BY NOT LIKE '111111%'
                            AND OT.SEND_EMAIL_FLAG = 0
+                           AND OT.MISDOCID IS NOT NULL
                         UNION ALL
                         SELECT OTO.APPLY_NO,
                                OTO.PERSON_ID,
@@ -156,6 +160,7 @@
                            AND OTO.ACTIVITY = 1
                            AND OTO.CREATED_BY NOT LIKE '111111%'
                            AND OTO.SEND_EMAIL_FLAG = 0
+                           AND OTO.MISDOCID IS NOT NULL
                         UNION ALL
                         SELECT CARD.APPLY_NO,
                                CARD.PERSON_ID,
@@ -179,6 +184,7 @@
                            AND CARD.ACTIVITY = '1'
                            AND CARD.CREATED_BY NOT LIKE '111111%'
                            AND CARD.SEND_EMAIL_FLAG = 0
+                           AND CARD.MISDOCID IS NOT NULL
                         UNION ALL
                         SELECT TR.APPLY_NO,
                                TR.PERSON_ID,
@@ -197,7 +203,8 @@
                            AND TR.PERSON_ID IS NOT NULL
                            AND TR.ACTIVITY = 1
                            AND TR.CREATED_BY NOT LIKE '111111%'
-                           AND TR.SEND_EMAIL_FLAG = 0) A,
+                           AND TR.SEND_EMAIL_FLAG = 0
+                           AND TR.MISDOCID IS NOT NULL) A,
                        HR_EMPLOYEE HR
                  WHERE A.PERSON_ID = HR.PERSON_ID
                    AND A.PERSON_ID NOT LIKE '111111%'

@@ -1,4 +1,4 @@
-/** Tương ứng với MonthDetailDateDto.java - 1 ngày trong kỳ công (25 tháng trước -> 24 tháng chọn). */
+/** Tương ứng với MonthDetailDateDto.java - 1 ngày trong kỳ dữ liệu (mặc định 25 tháng trước -> 24 tháng chọn). */
 export interface MonthDetailDate {
   ddateStr: string;
   iweek: number;
@@ -27,6 +27,8 @@ export interface MonthDetailSearchParams {
   deptNos: string;
   nationalityCode: string;
   empOffice: string;
+  /** Kỳ dữ liệu: '' = 25 tháng trước -> 24 tháng này (mặc định), '25_31' = 25 -> cuối tháng, '01_31' = 01 -> cuối tháng. */
+  periodType: string;
 }
 
 export interface MonthDetailExportParams extends MonthDetailSearchParams {

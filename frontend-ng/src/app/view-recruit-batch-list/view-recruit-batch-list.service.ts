@@ -13,12 +13,10 @@ import {
 } from './view-recruit-batch-list.model';
 
 const API_BASE = '/hrm/recruitManage/api';
+/** File mẫu import (ExcelController.buildNewEmpTemplate - có sẵn danh mục mã để chọn). */
 const TEMPLATE_NAME = 'NewEmp_add_Template';
 
-/**
- * Gọi lại nguyên các API JSON đã có sẵn ở HrRecruitManageController (không đổi backend) - trang
- * Thymeleaf viewRecruitBatchList.html đã được thay bằng Angular route /view-recruit-batch-list.
- */
+/** API Nhận việc hàng loạt ở HrRecruitManageController (bản gốc /hrm/recruitManage/viewRecruitBatchList). */
 @Injectable({ providedIn: 'root' })
 export class ViewRecruitBatchListService {
   constructor(private readonly http: HttpClient) {}
@@ -27,8 +25,17 @@ export class ViewRecruitBatchListService {
     return this.http.get<RecruitBatchRegister[]>(`${API_BASE}/rblBatch/registerList`, { withCredentials: true });
   }
 
-  register(dto: { registerDate: string; registerRemark: string }): Observable<RecruitBatchActionResult> {
-    return this.http.post<RecruitBatchActionResult>(`${API_BASE}/rblBatch/register`, dto, { withCredentials: true });
+  /** registerDate dạng dd/MM/yyyy (bản gốc). */
+  register(registerDate: string): Observable<RecruitBatchActionResult> {
+    return this.http.post<RecruitBatchActionResult>(`${API_BASE}/rblBatch/register`, { registerDate }, { withCredentials: true });
+  }
+
+  /** Thêm 1 dòng trống vào đợt (bản gốc FLAG=ADD). */
+  addBatchItem(registerSeq: string): Observable<RecruitBatchActionResult> {
+    return this.http.post<RecruitBatchActionResult>(`${API_BASE}/rblBatch/add`, null, {
+      params: new HttpParams().set('registerSeq', registerSeq),
+      withCredentials: true,
+    });
   }
 
   getBatchList(params: RecruitBatchListParams): Observable<DataTablesResponse<RecruitBatchItem>> {

@@ -119,6 +119,18 @@ export class ViewRolesGroupComponent implements OnInit {
   readonly selectedRoleNo = signal<string | null>(null);
   readonly selectedRoleLabel = signal<string | null>(null);
   readonly checkedMenuKeys = signal<string[]>([]);
+  /** menuNo -> menuNo cha (chỉ chứa node có cha trong cây), dựng lại mỗi lần tải cây menu. */
+  private menuParentOf = new Map<string, string>();
+  /** Tập menuNo có menu con. */
+  private menuHasChildren = new Set<string>();
+  /**
+   * Key truyền vào nz-tree: chỉ giữ menu lá. Nếu truyền cả menu cha thì nz-tree tự cascade tick TOÀN BỘ
+   * con (sai khi DB chỉ lưu cha + vài con); chỉ truyền lá thì cây tự tính cha là checked / half-checked.
+   */
+  readonly treeCheckedKeys = computed(() => {
+    this.menuTreeNodes();
+    return this.checkedMenuKeys().filter((k) => !this.menuHasChildren.has(k));
+  });
   readonly relationsLoading = signal(false);
   readonly savingRelations = signal(false);
 
@@ -208,7 +220,7 @@ export class ViewRolesGroupComponent implements OnInit {
     }
     const payload: RoleRelationsPayload = {
       roleNo,
-      roleRelations: this.checkedMenuKeys().map((menuNo) => ({
+      roleRelations: this.collectKeysWithAncestors(this.checkedMenuKeys()).map((menuNo) => ({
         menuNo, selectr: '1', insertr: '1', updater: '1', deleter: '1',
       })),
     };
@@ -354,6 +366,22 @@ export class ViewRolesGroupComponent implements OnInit {
     XLSX.writeFile(workbook, 'role_group_list.xlsx');
   }
 
+  /**
+   * nzCheckedKeysChange chỉ trả node tick đủ, bỏ qua menu cha đang half-checked (chỉ chọn vài con)
+   * -> bổ sung toàn bộ menu cha/ông của các key đã tick để lưu được quyền vào menu cha.
+   */
+  private collectKeysWithAncestors(keys: string[]): string[] {
+    const result = new Set<string>();
+    keys.forEach((k) => {
+      let cur: string | undefined = k;
+      while (cur && !result.has(cur)) {
+        result.add(cur);
+        cur = this.menuParentOf.get(cur);
+      }
+    });
+    return Array.from(result);
+  }
+
   // ==================== Dựng cây menu phân quyền ====================
 
   private buildMenuTree(list: SyMenuDto[]): NzTreeNodeOptions[] {
@@ -370,9 +398,13 @@ export class ViewRolesGroupComponent implements OnInit {
       });
     });
     const roots: NzTreeNodeOptions[] = [];
+    this.menuParentOf = new Map();
+    this.menuHasChildren = new Set();
     map.forEach((node) => {
       if (node.parent !== '#' && map.has(node.parent)) {
         map.get(node.parent)!.children!.push(node);
+        this.menuParentOf.set(node.key, node.parent);
+        this.menuHasChildren.add(node.parent);
       } else {
         roots.push(node);
       }

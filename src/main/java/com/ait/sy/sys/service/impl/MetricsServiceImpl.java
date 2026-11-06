@@ -25,8 +25,10 @@ public class MetricsServiceImpl implements MetricsService {
     // In-memory storage cho custom metrics
     private final Map<String, AtomicLong> counters = new ConcurrentHashMap<>();
     private final Map<String, AtomicLong> gauges = new ConcurrentHashMap<>();
-    private final Map<String, List<Long>> timers = new ConcurrentHashMap<>();
-    private final Map<String, List<Double>> histograms = new ConcurrentHashMap<>();
+    // Chỉ giữ thống kê tổng hợp (count/sum/min/max), KHÔNG lưu từng giá trị:
+    // bản cũ add mọi request vào ArrayList -> phình bộ nhớ vô hạn + ArrayList không thread-safe
+    private final Map<String, StatAccumulator> timers = new ConcurrentHashMap<>();
+    private final Map<String, StatAccumulator> histograms = new ConcurrentHashMap<>();
     private final Map<String, OperationMetric> operationMetrics = new ConcurrentHashMap<>();
 
     @Override
@@ -71,7 +73,7 @@ public class MetricsServiceImpl implements MetricsService {
 
         // Custom timer
         String key = name + ":" + tagsToString(tags);
-        timers.computeIfAbsent(key, k -> new ArrayList<>()).add(durationMs);
+        timers.computeIfAbsent(key, k -> new StatAccumulator()).add(durationMs);
 
         // Update operation metrics
         updateOperationMetrics(name, durationMs, false);
@@ -91,7 +93,7 @@ public class MetricsServiceImpl implements MetricsService {
 
         // Custom histogram
         String key = name + ":" + tagsToString(tags);
-        histograms.computeIfAbsent(key, k -> new ArrayList<>()).add(value);
+        histograms.computeIfAbsent(key, k -> new StatAccumulator()).add(value);
     }
 
     @Override
@@ -350,13 +352,9 @@ public class MetricsServiceImpl implements MetricsService {
 
         // Timer statistics
         Map<String, Object> timerStats = new HashMap<>();
-        timers.forEach((key, values) -> {
-            if (!values.isEmpty()) {
-                Map<String, Object> stats = new HashMap<>();
-                stats.put("count", values.size());
-                stats.put("avg", values.stream().mapToLong(Long::longValue).average().orElse(0));
-                stats.put("min", values.stream().mapToLong(Long::longValue).min().orElse(0));
-                stats.put("max", values.stream().mapToLong(Long::longValue).max().orElse(0));
+        timers.forEach((key, acc) -> {
+            Map<String, Object> stats = acc.snapshot();
+            if (stats != null) {
                 timerStats.put(key, stats);
             }
         });
@@ -429,5 +427,38 @@ public class MetricsServiceImpl implements MetricsService {
         // This would be set when the application starts
         // For now, return a placeholder
         return System.currentTimeMillis() - (24 * 60 * 60 * 1000); // 24 hours ago
+    }
+
+    /**
+     * Thống kê tổng hợp thread-safe, dung lượng cố định (không lưu từng giá trị).
+     */
+    private static final class StatAccumulator {
+        private long count;
+        private double sum;
+        private double min = Double.MAX_VALUE;
+        private double max = -Double.MAX_VALUE;
+
+        synchronized void add(double value) {
+            count++;
+            sum += value;
+            if (value < min) {
+                min = value;
+            }
+            if (value > max) {
+                max = value;
+            }
+        }
+
+        synchronized Map<String, Object> snapshot() {
+            if (count == 0) {
+                return null;
+            }
+            Map<String, Object> stats = new HashMap<>();
+            stats.put("count", count);
+            stats.put("avg", sum / count);
+            stats.put("min", min);
+            stats.put("max", max);
+            return stats;
+        }
     }
 }

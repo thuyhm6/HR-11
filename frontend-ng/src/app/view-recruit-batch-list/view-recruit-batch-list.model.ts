@@ -3,6 +3,7 @@ export interface RecruitBatchRegister {
   registerSeq: string;
   registerDate?: string | null;
   registerRemark?: string | null;
+  /** '1' = đợt đã xác nhận -> chỉ xem. */
   registerActivity?: string | null;
 }
 
@@ -54,6 +55,9 @@ export interface RecruitBatchItem {
   telephone?: string | null;
   addressContent?: string | null;
   regPlace?: string | null;
+  religionCode?: string | null;
+  singId?: string | null;
+  costCenterName?: string | null;
   activity?: string | null;
 }
 
@@ -75,7 +79,11 @@ export interface DataTablesResponse<T> {
 
 export interface RecruitBatchActionResult {
   success: boolean;
+  /** Message key (messages*.properties) để frontend tự dịch thông báo. */
+  messageKey?: string;
   message?: string;
+  /** SEQ dòng mới (API thêm dòng trống). */
+  seq?: string;
   registerSeq?: string;
   registerDate?: string;
 }

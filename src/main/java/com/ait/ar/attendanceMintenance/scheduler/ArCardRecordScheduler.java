@@ -26,7 +26,7 @@ public class ArCardRecordScheduler {
     private ArCardRecordService arCardRecordService;
 
     /** 1: chạy, 0: tắt (máy không truy cập được SQL Server máy chấm công 10.43.7.249, vd. máy dev) */
-    @Value(\"${ar.device.import-flag:1}\")
+    @Value("${ar.device.import-flag:1}")
     private String importFlag;
 
     /**

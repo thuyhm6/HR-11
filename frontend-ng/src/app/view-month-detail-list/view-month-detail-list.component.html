@@ -9,6 +9,12 @@
                           nzFormat="MM/yyyy" [nzAllowClear]="false"></nz-date-picker>
         </div>
         <div class="col-md-2">
+          <label class="form-label" for="vmdl-period-type">{{ 'ess.viewMonthDetailList.PERIOD_TYPE.b' | translate:'Kỳ dữ liệu' }}</label>
+          <nz-select id="vmdl-period-type" class="w-100" [(ngModel)]="periodType" name="periodType">
+            <nz-option *ngFor="let p of periodOptions" [nzValue]="p.value" [nzLabel]="p.key | translate:p.fallback"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-2">
           <label class="form-label" for="vmdl-keyword">{{ 'hrm.empinfo.nameAndEmpid' | translate:'Mã nhân viên/Họ tên' }}</label>
           <input id="vmdl-keyword" nz-input [(ngModel)]="keyword" name="keyword"
                  [placeholder]="'vdp.search.empKeyword.placeholder' | translate:'Nhập mã hoặc họ tên'">

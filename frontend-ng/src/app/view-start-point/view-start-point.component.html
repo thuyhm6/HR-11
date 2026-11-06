@@ -1,161 +1,206 @@
-<div class="row g-3">
-  <!-- ════════════ Panel trái: Danh sách quyết định ════════════ -->
-  <div class="col-lg-4">
-    <nz-card class="mb-3">
-      <div class="d-flex gap-1">
-        <input nz-input [(ngModel)]="searchKeyword" name="vspSearchKeyword"
-               [placeholder]="'vsp.search.placeholder' | translate:'Mã/Tên nhân viên...'"
-               (keyup.enter)="searchEmployee()">
-        <button nz-button nzType="primary" [nzLoading]="searching()" (click)="searchEmployee()">
-          <i class="bx bx-search"></i>
-        </button>
-      </div>
-      <div class="mt-2" *ngIf="currentPersonId">
-        <div class="fw-semibold small text-truncate">{{ currentLocalName }}</div>
-        <div class="text-muted small text-truncate">{{ currentEmpId }}<span *ngIf="currentDeptName"> | {{ currentDeptName }}</span></div>
-      </div>
-      <div class="mt-2 text-muted small" *ngIf="!currentPersonId">{{ 'vsp.label.noEmployee' | translate:'-- Chưa chọn nhân viên --' }}</div>
-    </nz-card>
+<!-- ════════════ Thanh tìm kiếm nhân viên + nút chức năng ════════════ -->
+<nz-card class="mb-2" [nzBodyStyle]="{ padding: '10px' }">
+  <div class="d-flex flex-wrap align-items-center gap-2">
+    <label class="form-label mb-0 small fw-semibold" for="vspSearchKeyword">
+      {{ 'hr.viewContractByInsert.title.EMPIDANDLOCALNAME' | translate:'Mã nhân viên/Họ tên' }}
+    </label>
+    <input nz-input id="vspSearchKeyword" class="vsp-search-input" [(ngModel)]="searchKeyword" name="vspSearchKeyword"
+           (keyup.enter)="searchEmployee()">
+    <button nz-button nzType="primary" [nzLoading]="searching()" (click)="searchEmployee()">
+      <i class="bx bx-search"></i> {{ 'button.search' | translate:'Tra cứu' }}
+    </button>
+    <span *ngIf="employee()" class="fw-semibold ms-2">{{ employeeTitle() }}</span>
 
+    <div class="ms-auto d-flex flex-wrap gap-1">
+      <button nz-button nzType="primary" (click)="newDecision()">
+        <i class="bx bx-plus"></i> {{ 'button.add' | translate:'Thêm mới' }}
+      </button>
+      <button nz-button nzDanger (click)="deleteDecision()">
+        <i class="bx bx-trash"></i> {{ 'button.delete' | translate:'Xóa' }}
+      </button>
+      <button nz-button nzType="primary" [nzLoading]="saving()" (click)="saveDecision()">
+        <i class="bx bx-save"></i> {{ 'button.sys.affirm.save' | translate:'Lưu' }}
+      </button>
+      <button nz-button (click)="exportExcel()">
+        <i class="bx bx-export"></i> {{ 'hrm.empinfo.EXPORT' | translate:'Xuất Excel' }}
+      </button>
+    </div>
+  </div>
+</nz-card>
+
+<div class="row g-2">
+  <!-- ════════════ Bên trái: lịch sử quyết định ════════════ -->
+  <div class="col-xl-5">
     <nz-card [nzBodyStyle]="{ padding: '8px' }">
-      <div class="d-flex align-items-center justify-content-between mb-2 px-1">
-        <span class="small text-muted">{{ totalRecords() }} {{ 'vsp.label.decisions' | translate:'quyết định' }}</span>
-        <div class="d-flex gap-1">
-          <button nz-button nzType="primary" nzSize="small" (click)="newDecision()">
-            <i class="bx bx-plus"></i> {{ 'common.add' | translate:'Thêm' }}
-          </button>
-          <button nz-button nzDanger nzSize="small" [disabled]="checkedSeqs().size === 0" (click)="deleteSelected()">
-            <i class="bx bx-trash"></i>
-          </button>
-          <button nz-button nzSize="small" (click)="exportExcel()">
-            <i class="bx bx-export"></i>
-          </button>
-        </div>
-      </div>
-
-      <nz-table [nzData]="decisions()" [nzFrontPagination]="false" [nzLoading]="loading()"
-                [nzTotal]="totalRecords()" [nzPageIndex]="pageIndex" [nzPageSize]="pageSize"
-                [nzShowPagination]="true" [nzSimple]="true"
-                (nzPageIndexChange)="onPageIndexChange($event)"
-                [nzScroll]="{ y: 'calc(100vh - 420px)' }" nzSize="small" class="vsp-decision-table">
+      <div class="small fw-semibold mb-1">{{ 'common.total' | translate:'Tổng' }}: {{ decisions().length }}</div>
+      <nz-table [nzData]="decisions()" [nzFrontPagination]="false" [nzShowPagination]="false" [nzLoading]="loading()"
+                [nzScroll]="{ x: '900px', y: 'calc(100vh - 300px)' }" nzSize="small" class="table-nowrap">
         <thead>
           <tr>
-            <th class="text-center" nzWidth="36px"></th>
-            <th>{{ 'vsp.field.transCode' | translate:'Loại quyết định' }}</th>
-            <th class="text-center" nzWidth="100px">{{ 'vsp.field.startDate' | translate:'Ngày quyết định' }}</th>
+            <th class="text-center" nzWidth="45px">No.</th>
+            <th class="text-center" nzWidth="95px">{{ 'hrm.empinfo.Command_date' | translate:'Thời gian' }}</th>
+            <th nzWidth="140px">{{ 'org.title.EXPERIENCE_TYPE_NAME' | translate:'Quyết định' }}</th>
+            <th nzWidth="150px">{{ 'hrm.empinfo.ORG_NAME_LOCAL' | translate:'Phòng ban' }}</th>
+            <th nzWidth="130px">{{ 'hrm.empinfo.MAIN_BUSINESS_NAME' | translate:'Công việc' }}</th>
+            <th nzWidth="110px">{{ 'hrm.contract.Rank' | translate:'Chức vụ' }}</th>
+            <th nzWidth="110px">{{ 'hrm.empinfo.Working_status' | translate:'Trạng thái' }}</th>
+            <th nzWidth="110px">{{ 'hrm.empinfo.ORDER_STATUS.Z' | translate:'Hiệu lực' }}</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let row of decisions()" class="vsp-decision-row"
-              [class.vsp-decision-row-active]="row.seq === selectedSeq()" (click)="selectDecision(row)">
-            <td class="text-center" (click)="$event.stopPropagation()">
-              <label nz-checkbox [ngModel]="isChecked(row.seq)" (ngModelChange)="toggleChecked(row.seq, $event)"></label>
-            </td>
-            <td>
-              <div class="fw-semibold small text-truncate">{{ row.transCodeName || row.transCode }}</div>
-              <div class="text-muted text-truncate" style="font-size:.72rem" *ngIf="row.deptName">{{ row.deptName }}</div>
-            </td>
+          <tr *ngFor="let row of decisions(); let i = index" class="vsp-row"
+              [class.vsp-row-active]="row.seq === selectedSeq()" (click)="selectDecision(row)">
+            <td class="text-center">{{ i + 1 }}</td>
             <td class="text-center">{{ row.startDate }}</td>
+            <td>{{ row.transCodeName }}</td>
+            <td>{{ row.deptName }}</td>
+            <td>{{ row.mainBusinessName }}</td>
+            <td>{{ row.postGradeName }}</td>
+            <td>{{ row.empOfficeName }}</td>
+            <td>{{ row.activityName }}</td>
           </tr>
           <tr *ngIf="!loading() && decisions().length === 0">
-            <td colspan="3" class="text-center text-muted">
-              {{ currentPersonId ? ('common.noData' | translate:'Không có dữ liệu') : ('vsp.js.selectFirst' | translate:'Vui lòng tìm kiếm nhân viên trước') }}
-            </td>
+            <td colspan="8" class="text-center text-muted">{{ 'common.noData' | translate:'Không có dữ liệu' }}</td>
           </tr>
         </tbody>
       </nz-table>
     </nz-card>
   </div>
 
-  <!-- ════════════ Panel phải: Chi tiết quyết định ════════════ -->
-  <div class="col-lg-8">
-    <nz-card>
-      <div class="d-flex align-items-center justify-content-between mb-2">
-        <div>
-          <span class="fw-semibold me-2">{{ selectedTitle }}</span>
-          <span *ngIf="form.seq" class="badge bg-secondary">#{{ form.seq }}</span>
-        </div>
-      </div>
-
+  <!-- ════════════ Bên phải: chi tiết quyết định ════════════ -->
+  <div class="col-xl-7">
+    <nz-card [nzBodyStyle]="{ padding: '12px' }">
       <div class="row g-2" [class.vsp-loading]="detailLoading()">
-        <div class="col-md-6 col-lg-4">
-          <label class="form-label small mb-0 fw-semibold text-danger">{{ 'vsp.field.startDate' | translate:'Ngày quyết định *' }}</label>
-          <nz-date-picker class="w-100" [(ngModel)]="form.startDatePicker" name="startDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
+        <div class="col-md-6">
+          <label class="form-label small mb-0 fw-semibold text-danger" for="vspStartDate">
+            {{ 'hrm.empinfo.starter_START_DATE' | translate:'Thời gian' }} *
+          </label>
+          <nz-date-picker id="vspStartDate" class="w-100" [(ngModel)]="form.startDatePicker" name="vspStartDate"
+                          nzFormat="dd/MM/yyyy"></nz-date-picker>
         </div>
-        <div class="col-md-6 col-lg-4">
-          <label class="form-label small mb-0 fw-semibold text-danger">{{ 'vsp.field.transCode' | translate:'Loại quyết định *' }}</label>
-          <nz-select class="w-100" [ngModel]="form.transCode" name="transCode"
-                     (ngModelChange)="onTransCodeChange($event)" nzAllowClear>
+        <div class="col-md-6"></div>
+
+        <div class="col-md-6">
+          <label class="form-label small mb-0 fw-semibold text-danger">
+            {{ 'org.title.EXPERIENCE_TYPE_NAME' | translate:'Quyết định' }} *
+          </label>
+          <div *ngIf="transCodeLocked()" class="vsp-readonly">{{ form.transCodeName }}</div>
+          <nz-select *ngIf="!transCodeLocked()" class="w-100" [ngModel]="form.transCode" name="vspTransCode"
+                     (ngModelChange)="onTransCodeChange($event)" nzShowSearch nzAllowClear
+                     [nzPlaceHolder]="'hr.viewCondSql.title.QINGXUANZE' | translate:'Lựa chọn'">
             <nz-option *ngFor="let c of transCodeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
           </nz-select>
         </div>
-        <div class="col-md-6 col-lg-4">
-          <label class="form-label small mb-0">{{ 'vsp.field.transResource' | translate:'Lý do quyết định' }}</label>
-          <nz-select class="w-100" [(ngModel)]="form.transResource" name="transResource" nzAllowClear>
+        <div class="col-md-6">
+          <label class="form-label small mb-0">{{ 'hrm.empinfo.TRANS_REASON' | translate:'Lý do' }}</label>
+          <nz-select class="w-100" [(ngModel)]="form.transResource" name="vspTransResource" nzShowSearch nzAllowClear
+                     [nzPlaceHolder]="'hr.viewCondSql.title.QINGXUANZE' | translate:'Lựa chọn'">
             <nz-option *ngFor="let c of transResourceOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
           </nz-select>
         </div>
-        <div class="col-md-6 col-lg-4">
-          <label class="form-label small mb-0">{{ 'vsp.field.deptNo' | translate:'Phòng ban' }}</label>
-          <nz-tree-select class="w-100" [nzNodes]="deptNodes()" [ngModel]="form.deptno" name="deptno"
-                           (ngModelChange)="onDeptnoChange($event)" nzShowSearch nzAllowClear
-                           [nzPlaceHolder]="'recruit.list.placeholder.selectDept' | translate:'-- Chọn phòng ban --'"></nz-tree-select>
+
+        <div class="col-md-6">
+          <label class="form-label small mb-0">{{ 'hrm.empinfo.ORG_NAME_LOCAL' | translate:'Phòng ban' }}</label>
+          <nz-tree-select class="w-100" [nzNodes]="deptNodes()" [(ngModel)]="form.deptno" name="vspDeptno"
+                          nzShowSearch nzAllowClear [nzDropdownMatchSelectWidth]="false"
+                          [nzPlaceHolder]="'hr.viewCondSql.title.QINGXUANZE' | translate:'Lựa chọn'"></nz-tree-select>
           <div *ngIf="deptTreeErrorMessage()" class="text-danger small mt-1">{{ deptTreeErrorMessage() }}</div>
         </div>
-        <div class="col-md-6 col-lg-4">
-          <label class="form-label small mb-0">{{ 'vsp.field.empTypeCode' | translate:'Loại nhân viên' }}</label>
-          <nz-select class="w-100" [(ngModel)]="form.empTypeCode" name="empTypeCode" nzAllowClear>
-            <nz-option *ngFor="let c of empTypeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
-          </nz-select>
-        </div>
-        <div class="col-md-6 col-lg-4">
-          <label class="form-label small mb-0">{{ 'vsp.field.postFamily' | translate:'Nhóm nhân viên' }}</label>
-          <nz-select class="w-100" [ngModel]="form.postFamily" name="postFamily"
-                     (ngModelChange)="onPostFamilyChange($event)" nzAllowClear>
-            <nz-option *ngFor="let c of postFamilyOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
-          </nz-select>
-        </div>
-        <div class="col-md-6 col-lg-4">
-          <label class="form-label small mb-0">{{ 'vsp.field.postGradeNo' | translate:'Chức vụ' }}</label>
-          <nz-select class="w-100" [(ngModel)]="form.postGradeNo" name="postGradeNo" nzAllowClear>
-            <nz-option *ngFor="let c of postGradeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
-          </nz-select>
-        </div>
-        <div class="col-md-6 col-lg-4">
-          <label class="form-label small mb-0">{{ 'vsp.field.positionNo' | translate:'Chức danh' }}</label>
-          <nz-select class="w-100" [(ngModel)]="form.positionNo" name="positionNo" nzAllowClear>
-            <nz-option *ngFor="let c of positionNoOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
-          </nz-select>
-        </div>
-        <div class="col-md-6 col-lg-4">
-          <label class="form-label small mb-0">{{ 'vsp.field.costCenter' | translate:'Mã chi phí' }}</label>
-          <nz-tree-select class="w-100" [nzNodes]="deptNodes()" [(ngModel)]="form.costCenter" name="costCenter"
-                           nzShowSearch nzAllowClear
-                           [nzPlaceHolder]="'recruit.list.placeholder.selectDept' | translate:'-- Chọn phòng ban --'"></nz-tree-select>
-        </div>
-        <div class="col-md-6 col-lg-4">
-          <label class="form-label small mb-0">{{ 'vsp.field.position' | translate:'Vị trí' }}</label>
-          <nz-select class="w-100" [(ngModel)]="form.position" name="position" nzAllowClear>
+        <div class="col-md-6">
+          <label class="form-label small mb-0">{{ 'sys.postManage.title.position' | translate:'Vị trí' }}</label>
+          <nz-select class="w-100" [(ngModel)]="form.position" name="vspPosition" nzShowSearch nzAllowClear
+                     [nzPlaceHolder]="'hr.viewCondSql.title.QINGXUANZE' | translate:'Lựa chọn'">
             <nz-option *ngFor="let c of positionOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
           </nz-select>
         </div>
-        <div class="col-md-6 col-lg-4">
-          <label class="form-label small mb-0">{{ 'vsp.field.mainBusiness' | translate:'Công việc' }}</label>
-          <nz-select class="w-100" [(ngModel)]="form.mainBusiness" name="mainBusiness" nzAllowClear>
+
+        <div class="col-md-6">
+          <label class="form-label small mb-0">{{ 'hrm.empinfo.POST_FAMILY' | translate:'Nhóm nhân viên' }}</label>
+          <nz-select class="w-100" [ngModel]="form.postFamily" name="vspPostFamily"
+                     (ngModelChange)="onPostFamilyChange($event)" nzShowSearch nzAllowClear
+                     [nzPlaceHolder]="'hr.viewCondSql.title.QINGXUANZE' | translate:'Lựa chọn'">
+            <nz-option *ngFor="let c of postFamilyOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small mb-0">{{ 'hrm.contract.Rank' | translate:'Chức vụ' }}</label>
+          <nz-select class="w-100" [(ngModel)]="form.postGradeNo" name="vspPostGradeNo" nzShowSearch nzAllowClear
+                     [nzPlaceHolder]="'hr.viewCondSql.title.QINGXUANZE' | translate:'Lựa chọn'">
+            <nz-option *ngFor="let c of postGradeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+          </nz-select>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label small mb-0">{{ 'hrm.contract.POSITION_NO' | translate:'Chức danh' }}</label>
+          <nz-select class="w-100" [(ngModel)]="form.positionNo" name="vspPositionNo" nzShowSearch nzAllowClear
+                     [nzPlaceHolder]="'hr.viewCondSql.title.QINGXUANZE' | translate:'Lựa chọn'">
+            <nz-option *ngFor="let c of positionNoOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small mb-0">{{ 'hrm.empinfo.EMP_TYPE_CODE_NAME' | translate:'Loại nhân viên' }}</label>
+          <nz-select class="w-100" [(ngModel)]="form.empTypeCode" name="vspEmpTypeCode" nzShowSearch nzAllowClear
+                     [nzPlaceHolder]="'hr.viewCondSql.title.QINGXUANZE' | translate:'Lựa chọn'">
+            <nz-option *ngFor="let c of empTypeOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
+          </nz-select>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label small mb-0">{{ 'hrm.empinfo.MAIN_BUSINESS_NAME' | translate:'Công việc' }}</label>
+          <nz-select class="w-100" [(ngModel)]="form.mainBusiness" name="vspMainBusiness" nzShowSearch nzAllowClear
+                     [nzPlaceHolder]="'hr.viewCondSql.title.QINGXUANZE' | translate:'Lựa chọn'">
             <nz-option *ngFor="let c of mainBusinessOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeName"></nz-option>
           </nz-select>
         </div>
-        <div class="col-12">
-          <label class="form-label small mb-0">{{ 'vsp.field.remark' | translate:'Ghi chú' }}</label>
-          <textarea nz-input [(ngModel)]="form.remark" name="remark" rows="2" maxlength="300"></textarea>
+        <div class="col-md-6">
+          <label class="form-label small mb-0">{{ 'hrm.empinfo.COST_CENTER_NAME_LOCAL' | translate:'Mã chi phí' }}</label>
+          <nz-tree-select class="w-100" [nzNodes]="deptNodes()" [(ngModel)]="form.costCenter" name="vspCostCenter"
+                          nzShowSearch nzAllowClear [nzDropdownMatchSelectWidth]="false"
+                          [nzPlaceHolder]="'hr.viewCondSql.title.QINGXUANZE' | translate:'Lựa chọn'"></nz-tree-select>
         </div>
-      </div>
 
-      <div class="d-flex justify-content-end mt-3">
-        <button nz-button nzType="primary" [nzLoading]="saving()" (click)="saveDecision()">
-          <i class="bx bx-save"></i> {{ 'common.save' | translate:'Lưu' }}
-        </button>
+        <div class="col-12">
+          <label class="form-label small mb-0" for="vspRemark">{{ 'hrm.empinfo.REMARK' | translate:'Ghi chú' }}</label>
+          <textarea nz-input id="vspRemark" [(ngModel)]="form.remark" name="vspRemark" rows="3" maxlength="1000"></textarea>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label small mb-0">{{ 'org.title.UPDATED_IP' | translate:'Người thay đổi' }}</label>
+          <div class="vsp-readonly">{{ form.updatedBy }}</div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small mb-0">{{ 'org.title.UPDATE_DATE' | translate:'Thời gian thay đổi' }}</label>
+          <div class="vsp-readonly">{{ form.updateDate }}</div>
+        </div>
       </div>
     </nz-card>
   </div>
 </div>
+
+<!-- ════════════ Popup chọn nhân viên (khi tìm thấy nhiều kết quả) ════════════ -->
+<nz-modal [nzVisible]="empPickerVisible()" [nzTitle]="'tempEmp.pickEmp' | translate:'Chọn nhân viên'" nzWidth="760px"
+          [nzFooter]="null" (nzOnCancel)="closeEmpPicker()">
+  <ng-container *nzModalContent>
+    <nz-table [nzData]="empCandidates()" [nzFrontPagination]="false" [nzShowPagination]="false"
+              [nzScroll]="{ y: '400px' }" nzSize="small">
+      <thead>
+        <tr>
+          <th nzWidth="110px">{{ 'hrm.empinfo.empid' | translate:'Mã nhân viên' }}</th>
+          <th nzWidth="170px">{{ 'hrm.empinfo.name' | translate:'Họ tên' }}</th>
+          <th>{{ 'hrm.empinfo.ORG_NAME_LOCAL' | translate:'Phòng ban' }}</th>
+          <th nzWidth="110px">{{ 'hrm.contract.Rank' | translate:'Chức vụ' }}</th>
+          <th nzWidth="110px">{{ 'hrm.empinfo.Working_status' | translate:'Trạng thái' }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let e of empCandidates()" class="vsp-row" (click)="pickEmployee(e)">
+          <td>{{ e.empId }}</td>
+          <td>{{ e.localName }}</td>
+          <td>{{ e.deptName }}</td>
+          <td>{{ e.postGradeName }}</td>
+          <td>{{ e.empOfficeName }}</td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </ng-container>
+</nz-modal>

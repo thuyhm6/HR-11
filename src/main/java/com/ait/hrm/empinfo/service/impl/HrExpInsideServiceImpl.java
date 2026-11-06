@@ -1,9 +1,9 @@
 package com.ait.hrm.empinfo.service.impl;
 
+import com.ait.exception.BusinessException;
 import com.ait.hrm.empinfo.dto.HrExpInsideDto;
 import com.ait.hrm.empinfo.mapper.HrExpInsideMapper;
 import com.ait.hrm.empinfo.service.HrExpInsideService;
-import com.ait.sy.sys.dto.DataTablesResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,37 +11,51 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
+/**
+ * Quyết định nhân sự - errorCode của BusinessException là message key (frontend tự dịch). Chuyển từ EmpInfoSerImpl.getStartPointList / editStartPoint / deleteStartPoint
+ * (dự án HTSV), giữ nguyên trình tự xử lý dữ liệu và stored procedure.
+ */
 @Service
 public class HrExpInsideServiceImpl implements HrExpInsideService {
 
     private static final Logger log = LoggerFactory.getLogger(HrExpInsideServiceImpl.class);
 
+    /** Quyết định "Vào công ty" - bản gốc không cho xóa (hrm.empinfo.RUZHI_ORDER_NOT_DELETE.Z). */
+    private static final String TRANS_CODE_JOIN = "14015867";
+
     @Autowired
     private HrExpInsideMapper mapper;
 
     @Override
-    public HrExpInsideDto searchEmployee(HrExpInsideDto dto) {
+    public List<HrExpInsideDto> searchEmployees(String keyword) {
         try {
-            return mapper.selectEmployeeByKeyword(dto);
+            return mapper.selectEmployeeList(keyword == null ? null : keyword.trim());
         } catch (Exception e) {
-            log.error("Lỗi tìm kiếm nhân viên theo keyword={}", dto.getSearchKeyword(), e);
+            log.error("Lỗi tìm kiếm nhân viên keyword={}: {}", keyword, e.getMessage(), e);
+            return Collections.emptyList();
+        }
+    }
+
+    @Override
+    public HrExpInsideDto getEmployeeInfo(String personId) {
+        try {
+            return mapper.selectEmployeeInfo(personId);
+        } catch (Exception e) {
+            log.error("Lỗi lấy thông tin nhân viên personId={}: {}", personId, e.getMessage(), e);
             return null;
         }
     }
 
     @Override
-    public DataTablesResponse<HrExpInsideDto> getDecisionList(HrExpInsideDto dto) {
+    public List<HrExpInsideDto> getDecisionList(String personId) {
         try {
-            int total = mapper.countDecisionList(dto);
-            List<HrExpInsideDto> list = mapper.selectDecisionListPage(dto);
-            return new DataTablesResponse<>(dto.getDraw(), total, total, list);
+            return mapper.selectDecisionList(personId);
         } catch (Exception e) {
-            log.error("Lỗi lấy danh sách quyết định personId={}", dto.getPersonId(), e);
-            return new DataTablesResponse<>(dto.getDraw(), "Lỗi truy vấn dữ liệu");
+            log.error("Lỗi lấy danh sách quyết định personId={}: {}", personId, e.getMessage(), e);
+            return Collections.emptyList();
         }
     }
 
@@ -50,57 +64,61 @@ public class HrExpInsideServiceImpl implements HrExpInsideService {
         try {
             return mapper.selectDecisionBySeq(seq);
         } catch (Exception e) {
-            log.error("Lỗi lấy chi tiết quyết định seq={}", seq, e);
+            log.error("Lỗi lấy chi tiết quyết định seq={}: {}", seq, e.getMessage(), e);
             return null;
         }
     }
 
     @Override
-    public List<HrExpInsideDto> getAllDecisionsByPersonId(String personId) {
+    public HrExpInsideDto getCurrentHrInfo(String personId) {
         try {
-            return mapper.selectAllDecisionsByPersonId(personId);
+            return mapper.selectCurrentHrInfo(personId);
         } catch (Exception e) {
-            log.error("Lỗi lấy tất cả quyết định personId={}", personId, e);
-            return java.util.Collections.emptyList();
+            log.error("Lỗi lấy thông tin hiện tại của nhân viên personId={}: {}", personId, e.getMessage(), e);
+            return null;
         }
     }
 
     @Override
-    @Transactional
-    public Map<String, Object> saveDecision(HrExpInsideDto dto) {
-        Map<String, Object> result = new HashMap<>();
+    @Transactional(rollbackFor = Exception.class)
+    public Long saveDecision(HrExpInsideDto dto) throws BusinessException {
         try {
             if (dto.getSeq() == null) {
+                // selectKey không gán ngược được vào DTO (LanguageParameterInterceptor copy DTO sang Map) -> lấy SEQ trước
+                dto.setSeq(mapper.selectNextSeq());
                 mapper.insertDecision(dto);
             } else {
                 mapper.updateDecision(dto);
             }
-            log.info("Gọi PKG_RECRUIT_MANAGE.PR_EXPERIENCE_EXECUTE_SINGLE seq={}", dto.getSeq());
+            // Bản gốc (2018/03/13): hủy quyết định chính thức phát sinh sau quyết định nghỉ việc
+            mapper.updatePositivePointActivity(dto.getPersonId());
             mapper.callExperienceExecuteSingle();
-            result.put("success", true);
-            result.put("seq", dto.getSeq());
-            result.put("message", "Lưu thành công");
+            log.info("Lưu quyết định nhân sự seq={}, personId={}", dto.getSeq(), dto.getPersonId());
+            return dto.getSeq();
         } catch (Exception e) {
-            log.error("Lỗi lưu quyết định nhân sự seq={}", dto.getSeq(), e);
-            result.put("success", false);
-            result.put("message", "Lỗi lưu dữ liệu: " + e.getMessage());
+            log.error("Lỗi lưu quyết định nhân sự seq={}: {}", dto.getSeq(), e.getMessage(), e);
+            throw new BusinessException("alert.message.add_fail", "Lưu thất bại", e);
         }
-        return result;
     }
 
     @Override
-    @Transactional
-    public Map<String, Object> deleteDecision(Long seq) {
-        Map<String, Object> result = new HashMap<>();
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteDecision(Long seq) throws BusinessException {
+        HrExpInsideDto row = mapper.selectDecisionBySeq(seq);
+        if (row == null) {
+            throw new BusinessException("alert.message.delete_fail", "Không tìm thấy quyết định");
+        }
+        if (TRANS_CODE_JOIN.equals(row.getTransCode())) {
+            throw new BusinessException("hrm.empinfo.RUZHI_ORDER_NOT_DELETE.Z", "Không thể xóa quyết định vào công ty");
+        }
         try {
             mapper.deleteDecision(seq);
-            result.put("success", true);
-            result.put("message", "Xóa thành công");
+            mapper.updateActivityAfterDelete(row.getPersonId(), row.getStartDate());
+            mapper.callExperienceExecuteSingle();
+            log.info("Xóa quyết định nhân sự seq={}, personId={}", seq, row.getPersonId());
         } catch (Exception e) {
-            log.error("Lỗi xóa quyết định seq={}", seq, e);
-            result.put("success", false);
-            result.put("message", "Lỗi xóa dữ liệu: " + e.getMessage());
+            log.error("Lỗi xóa quyết định nhân sự seq={}: {}", seq, e.getMessage(), e);
+            throw new BusinessException("alert.message.delete_fail", "Xóa thất bại", e);
         }
-        return result;
     }
 }

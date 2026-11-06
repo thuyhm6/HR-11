@@ -4,6 +4,7 @@ import com.ait.hrm.approve.mapper.HrmApproveMapper;
 import com.ait.sy.syAffirm.dto.SyAffirmEmailDto;
 import com.ait.sy.syAffirm.mapper.SyAffirmEmailMapper;
 import com.ait.sy.syAffirm.service.SyAffirmEmailService;
+import com.ait.util.I18nUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -170,6 +171,51 @@ public class SyAffirmEmailServiceImpl implements SyAffirmEmailService {
                 log.error("Failed to execute affirm for applyNo={}", item.get("applyNo"), e);
                 errors.append(item.get("applyNo")).append(": ").append(e.getMessage()).append("\n");
             }
+        }
+        return errors.toString();
+    }
+
+    @Override
+    @Transactional
+    public String executeAffirmForCurrentUser(List<Map<String, Object>> items) {
+        StringBuilder errors = new StringBuilder();
+        List<Map<String, Object>> trusted = new java.util.ArrayList<>();
+        for (Map<String, Object> item : items) {
+            String applyNo = item.get("applyNo") == null ? "" : String.valueOf(item.get("applyNo")).trim();
+            String applyType = item.get("applyType") == null ? "" : String.valueOf(item.get("applyType")).trim();
+            String flag = item.get("flag") == null ? "" : String.valueOf(item.get("flag")).trim();
+            if (applyNo.isEmpty() || applyType.isEmpty() || !("1".equals(flag) || "2".equals(flag))) {
+                errors.append(applyNo).append(": ").append(I18nUtil.getMessage("mobile.error.invalidRequest")).append("\n");
+                continue;
+            }
+            List<SyAffirmEmailDto> rows;
+            try {
+                rows = mapper.selectMyPendingAffirmRows(applyNo, applyType);
+            } catch (Exception e) {
+                log.error("Failed to load pending affirm row applyNo={}", applyNo, e);
+                errors.append(applyNo).append(": ").append(e.getMessage()).append("\n");
+                continue;
+            }
+            if (rows == null || rows.isEmpty()) {
+                log.warn("Từ chối duyệt: đơn không chờ người đăng nhập duyệt applyNo={} applyType={}", applyNo, applyType);
+                errors.append(applyNo).append(": ").append(I18nUtil.getMessage("mobile.approval.notPending")).append("\n");
+                continue;
+            }
+            // Ưu tiên đúng cấp client đang xem (nếu chính người này có nhiều cấp trong tuyến), mặc định cấp thấp nhất
+            String clientLevel = item.get("affirmLevel") == null ? null : String.valueOf(item.get("affirmLevel"));
+            SyAffirmEmailDto row = rows.stream().filter(r -> java.util.Objects.equals(r.getAffirmLevel(), clientLevel))
+                    .findFirst().orElse(rows.get(0));
+            Map<String, Object> params = new java.util.HashMap<>();
+            params.put("applyNo", row.getApplyNo());
+            params.put("applyType", row.getApplyType());
+            params.put("applyFlag", row.getApplyFlag());
+            params.put("affirmLevel", row.getAffirmLevel());
+            params.put("flag", Integer.valueOf(flag));
+            params.put("affirmContent", item.get("affirmContent") == null ? "" : String.valueOf(item.get("affirmContent")));
+            trusted.add(params);
+        }
+        if (!trusted.isEmpty()) {
+            errors.append(executeAffirm(trusted));
         }
         return errors.toString();
     }

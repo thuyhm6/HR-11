@@ -1,11 +1,21 @@
-.vsp-decision-row {
+.vsp-search-input {
+  width: 220px;
+}
+.vsp-row {
   cursor: pointer;
 }
-.vsp-decision-row:hover {
+.vsp-row:hover > td {
   background: #fafafa;
 }
-.vsp-decision-row-active {
-  background: #e6f4ff;
+.vsp-row-active > td {
+  background: #e6f4ff !important;
+}
+.vsp-readonly {
+  min-height: 32px;
+  padding: 4px 11px;
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  background: #fafafa;
 }
 .vsp-loading {
   opacity: 0.6;
