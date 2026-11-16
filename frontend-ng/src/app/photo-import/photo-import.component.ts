@@ -4,7 +4,7 @@ import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
-import { NzModalService } from 'ng-zorro-antd/modal';
+import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
@@ -34,7 +34,7 @@ const I18N_KEYS = [
 @Component({
   selector: 'app-photo-import',
   standalone: true,
-  imports: [CommonModule, NzButtonModule, NzCardModule, NzTableModule, NzTagModule, TranslatePipe],
+  imports: [CommonModule, NzButtonModule, NzCardModule, NzModalModule, NzTableModule, NzTagModule, TranslatePipe],
   templateUrl: './photo-import.component.html',
   styleUrl: './photo-import.component.css',
 })

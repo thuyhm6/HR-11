@@ -75,10 +75,12 @@
          ORDER BY PWFR.PA_WORK_FLOW_RECORDS_NO ASC
     </select>
 
-    <!-- Gọi stored procedure xử lý quy trình lương -->
+    <!-- Gọi stored procedure xử lý quy trình lương.
+         PKG_PA_WORK_FLOW_DATE: bản riêng của dự án mới - "Tính lương" theo ngày (PA_MONTH_CAL_DATE_P), các bước
+         khác chuyển nguyên sang PKG_PA_WORK_FLOW. KHÔNG gọi trực tiếp PKG_PA_WORK_FLOW (dự án cũ Hanwha_HTSV dùng chung DB). -->
     <select id="callModifyWorkFlow" statementType="CALLABLE"
             parameterType="com.ait.pa.workManagement.dto.PaWorkFlowDto">
-        {CALL PKG_PA_WORK_FLOW.PA_WORKFLOW_EXECUTE(
+        {CALL PKG_PA_WORK_FLOW_DATE.PA_WORKFLOW_EXECUTE(
             #{payScheduleNo, jdbcType=VARCHAR, mode=IN},
             #{adminID,       jdbcType=VARCHAR, mode=IN},
             #{adminIP,       jdbcType=VARCHAR, mode=IN},

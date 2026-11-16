@@ -5,6 +5,8 @@
        -> tự quy đổi sang ngày theo kỳ lương (PA_GET_PERIOD_DATE_F).
      - Code mới ghi ngày mà không ghi tháng -> tự điền tháng tương ứng.
    Khi UPDATE: chỉ quy đổi lại nếu tháng thay đổi còn ngày giữ nguyên.
+   Dùng chung database với dự án cũ Hanwha_HTSV (chỉ ghi tháng): trigger chỉ điền thêm cột ngày,
+   KHÔNG đổi dữ liệu tháng cũ và KHÔNG bao giờ raise lỗi làm hỏng INSERT/UPDATE của dự án cũ.
    1.0  2026/10/14  Created
 ******************************************************************************/
 CREATE OR REPLACE TRIGGER TRG_PA_PARAM_DATA_DATE
@@ -14,13 +16,23 @@ BEGIN
   IF (INSERTING AND :NEW.START_DATE IS NULL)
      OR (UPDATING AND NVL(:NEW.START_MONTH, '#') <> NVL(:OLD.START_MONTH, '#')
                   AND NVL(:NEW.START_DATE, DATE '0001-01-01') = NVL(:OLD.START_DATE, DATE '0001-01-01')) THEN
-    :NEW.START_DATE := PA_GET_PERIOD_DATE_F(:NEW.START_MONTH, :NEW.CPNY_ID, 'S');
+    BEGIN
+      :NEW.START_DATE := PA_GET_PERIOD_DATE_F(:NEW.START_MONTH, :NEW.CPNY_ID, 'S');
+    EXCEPTION
+      WHEN OTHERS THEN
+        :NEW.START_DATE := NULL; -- Tháng sai định dạng: không chặn thao tác của dự án cũ
+    END;
   END IF;
 
   IF (INSERTING AND :NEW.END_DATE IS NULL)
      OR (UPDATING AND NVL(:NEW.END_MONTH, '#') <> NVL(:OLD.END_MONTH, '#')
                   AND NVL(:NEW.END_DATE, DATE '0001-01-01') = NVL(:OLD.END_DATE, DATE '0001-01-01')) THEN
-    :NEW.END_DATE := PA_GET_PERIOD_DATE_F(:NEW.END_MONTH, :NEW.CPNY_ID, 'E');
+    BEGIN
+      :NEW.END_DATE := PA_GET_PERIOD_DATE_F(:NEW.END_MONTH, :NEW.CPNY_ID, 'E');
+    EXCEPTION
+      WHEN OTHERS THEN
+        :NEW.END_DATE := NULL; -- Tháng sai định dạng: không chặn thao tác của dự án cũ
+    END;
   END IF;
 
   IF :NEW.START_MONTH IS NULL AND :NEW.START_DATE IS NOT NULL THEN
@@ -39,13 +51,23 @@ BEGIN
   IF (INSERTING AND :NEW.START_DATE IS NULL)
      OR (UPDATING AND NVL(:NEW.START_MONTH, '#') <> NVL(:OLD.START_MONTH, '#')
                   AND NVL(:NEW.START_DATE, DATE '0001-01-01') = NVL(:OLD.START_DATE, DATE '0001-01-01')) THEN
-    :NEW.START_DATE := PA_GET_PERIOD_DATE_F(:NEW.START_MONTH, :NEW.CPNY_ID, 'S');
+    BEGIN
+      :NEW.START_DATE := PA_GET_PERIOD_DATE_F(:NEW.START_MONTH, :NEW.CPNY_ID, 'S');
+    EXCEPTION
+      WHEN OTHERS THEN
+        :NEW.START_DATE := NULL; -- Tháng sai định dạng: không chặn thao tác của dự án cũ
+    END;
   END IF;
 
   IF (INSERTING AND :NEW.END_DATE IS NULL)
      OR (UPDATING AND NVL(:NEW.END_MONTH, '#') <> NVL(:OLD.END_MONTH, '#')
                   AND NVL(:NEW.END_DATE, DATE '0001-01-01') = NVL(:OLD.END_DATE, DATE '0001-01-01')) THEN
-    :NEW.END_DATE := PA_GET_PERIOD_DATE_F(:NEW.END_MONTH, :NEW.CPNY_ID, 'E');
+    BEGIN
+      :NEW.END_DATE := PA_GET_PERIOD_DATE_F(:NEW.END_MONTH, :NEW.CPNY_ID, 'E');
+    EXCEPTION
+      WHEN OTHERS THEN
+        :NEW.END_DATE := NULL; -- Tháng sai định dạng: không chặn thao tác của dự án cũ
+    END;
   END IF;
 
   IF :NEW.START_MONTH IS NULL AND :NEW.START_DATE IS NOT NULL THEN

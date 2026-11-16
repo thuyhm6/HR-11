@@ -309,62 +309,16 @@ CREATE OR REPLACE PACKAGE BODY "PKG_WAGEBASE_EXCEL_TEMP" is
        AND A.UPLOAD_BY = V_PERSON_ID;
 
     --日期格式验证
-    -- [2026/10/14] Tính lương theo ngày: Excel nhập START_DATE/END_DATE (theo ngày) hoặc START_MONTH/END_MONTH
-    -- (MMYYYY, như cũ). Nhập theo tháng -> quy đổi sang ngày đầu/cuối kỳ lương bằng PA_GET_PERIOD_DATE_F
-    -- (giống trigger TRG_PA_PARAM_DATA_DATE).
-    UPDATE PA_PARAM_DATA_TEMP A
-       SET A.START_MONTH = CASE WHEN LENGTH(A.START_MONTH) = 5 THEN '0' || A.START_MONTH ELSE A.START_MONTH END,
-           A.END_MONTH   = CASE WHEN LENGTH(A.END_MONTH) = 5 THEN '0' || A.END_MONTH ELSE A.END_MONTH END
-     WHERE A.CPNY_ID = V_CPNY_ID
-       AND A.UPLOAD_BY = V_PERSON_ID;
-
     UPDATE PA_PARAM_DATA_TEMP A
        SET A.UPLOAD_ERROR_MSG = NVL(A.UPLOAD_ERROR_MSG, '') ||
-                                '[Start date / start month format error or empty!]', --开始日期/开始月格式错误或为空!
+                                '[Start month date format error or empty!]', --开始月日期格式错误或为空!
            A.RESULT_FLAG      = 'E'
      WHERE A.CPNY_ID = V_CPNY_ID
        AND A.UPLOAD_BY = V_PERSON_ID
-       AND A.START_DATE IS NULL
        AND NOT EXISTS
-     (select 1 from dual where IS_DATE(A.START_MONTH, 'mmyyyy') = '1');
-
-    UPDATE PA_PARAM_DATA_TEMP A
-       SET A.UPLOAD_ERROR_MSG = NVL(A.UPLOAD_ERROR_MSG, '') ||
-                                '[End date / end month format error!]',
-           A.RESULT_FLAG      = 'E'
-     WHERE A.CPNY_ID = V_CPNY_ID
-       AND A.UPLOAD_BY = V_PERSON_ID
-       AND A.END_DATE IS NULL
-       AND A.END_MONTH IS NOT NULL
-       AND NOT EXISTS
-     (select 1 from dual where IS_DATE(A.END_MONTH, 'mmyyyy') = '1');
-
-    -- Quy đổi tháng -> ngày (chỉ dòng có tháng hợp lệ)
-    UPDATE PA_PARAM_DATA_TEMP A
-       SET A.START_DATE = PA_GET_PERIOD_DATE_F(A.START_MONTH, A.CPNY_ID, 'S')
-     WHERE A.CPNY_ID = V_CPNY_ID
-       AND A.UPLOAD_BY = V_PERSON_ID
-       AND A.START_DATE IS NULL
-       AND EXISTS (select 1 from dual where IS_DATE(A.START_MONTH, 'mmyyyy') = '1');
-
-    UPDATE PA_PARAM_DATA_TEMP A
-       SET A.END_DATE = PA_GET_PERIOD_DATE_F(A.END_MONTH, A.CPNY_ID, 'E')
-     WHERE A.CPNY_ID = V_CPNY_ID
-       AND A.UPLOAD_BY = V_PERSON_ID
-       AND A.END_DATE IS NULL
-       AND A.END_MONTH IS NOT NULL
-       AND EXISTS (select 1 from dual where IS_DATE(A.END_MONTH, 'mmyyyy') = '1');
-
-    UPDATE PA_PARAM_DATA_TEMP A
-       SET A.UPLOAD_ERROR_MSG = NVL(A.UPLOAD_ERROR_MSG, '') ||
-                                '[End date is before start date!]',
-           A.RESULT_FLAG      = 'E'
-     WHERE A.CPNY_ID = V_CPNY_ID
-       AND A.UPLOAD_BY = V_PERSON_ID
-       AND A.START_DATE IS NOT NULL
-       AND A.END_DATE IS NOT NULL
-       AND A.END_DATE < A.START_DATE;
-
+     (select 1
+              from dual
+             where IS_DATE(CASE WHEN LENGTH(A.Start_Month) = 5 THEN '0'||A.Start_Month ELSE A.Start_Month END, 'mmyyyy') = '1');
     IF V_DISTINCT_FIELD = 'POST_GRADE_NO' THEN
       --职级别导入，去除职级两段的空格
       UPDATE PA_PARAM_DATA_TEMP A
@@ -406,37 +360,6 @@ CREATE OR REPLACE PACKAGE BODY "PKG_WAGEBASE_EXCEL_TEMP" is
             OR A.POST_GRADE_NO IS NULL;
       END IF;
 
-      -- Chồng lấn ngày hiệu lực (tham số chia theo ngày PRORATE_TYPE 2, 3): cùng chức danh + loại lương,
-      -- trong file import hoặc với PA_PARAM_DATA_OTHER đã có (sẽ bị cộng 2 lần khi tính lương)
-      UPDATE PA_PARAM_DATA_TEMP A
-         SET A.UPLOAD_ERROR_MSG = NVL(A.UPLOAD_ERROR_MSG, '') ||
-                                  '[Effective dates overlap with existing data!]',
-             A.RESULT_FLAG      = 'E'
-       WHERE A.CPNY_ID = V_CPNY_ID
-         AND A.UPLOAD_BY = V_PERSON_ID
-         AND A.START_DATE IS NOT NULL
-         AND EXISTS (SELECT 1 FROM PA_PARAM_ITEM_PARAM C
-                      WHERE C.PARAM_NO = A.PARAM_NO
-                        AND C.CPNY_ID = A.CPNY_ID
-                        AND NVL(C.PRORATE_TYPE, 0) IN (2, 3))
-         AND (EXISTS (SELECT 1 FROM PA_PARAM_DATA_OTHER P
-                       WHERE P.CPNY_ID = A.CPNY_ID
-                         AND P.PARAM_NO = A.PARAM_NO
-                         AND P.FIELD1_VALUE = A.POST_GRADE_NO
-                         AND NVL(P.FIELD2_VALUE, '#') = NVL(A.WAGE_TYPE, '#')
-                         AND P.ACTIVITY = 1
-                         AND P.START_DATE <= NVL(A.END_DATE, DATE '9999-12-31')
-                         AND NVL(P.END_DATE, DATE '9999-12-31') >= A.START_DATE)
-              OR EXISTS (SELECT 1 FROM PA_PARAM_DATA_TEMP B
-                          WHERE B.CPNY_ID = A.CPNY_ID
-                            AND B.UPLOAD_BY = A.UPLOAD_BY
-                            AND B.PARAM_NO = A.PARAM_NO
-                            AND B.POST_GRADE_NO = A.POST_GRADE_NO
-                            AND NVL(B.WAGE_TYPE, '#') = NVL(A.WAGE_TYPE, '#')
-                            AND B.ROWID <> A.ROWID
-                            AND B.START_DATE IS NOT NULL
-                            AND B.START_DATE <= NVL(A.END_DATE, DATE '9999-12-31')
-                            AND NVL(B.END_DATE, DATE '9999-12-31') >= A.START_DATE));
     ELSE
       --权限验证
 
@@ -463,40 +386,6 @@ CREATE OR REPLACE PACKAGE BODY "PKG_WAGEBASE_EXCEL_TEMP" is
                 FROM HR_EMPLOYEE
                WHERE EMPID = A.EMPID
                  AND CPNY_ID = A.Cpny_Id);
-
-      -- Chồng lấn ngày hiệu lực (tham số chia theo ngày PRORATE_TYPE 2, 3): cùng nhân viên,
-      -- trong file import hoặc với PA_PARAM_DATA đã có (cùng điều kiện PA_CHECK_PARAM_OVERLAP_F)
-      UPDATE PA_PARAM_DATA_TEMP A
-         SET A.UPLOAD_ERROR_MSG = NVL(A.UPLOAD_ERROR_MSG, '') ||
-                                  '[Effective dates overlap with existing data!]',
-             A.RESULT_FLAG      = 'E'
-       WHERE A.CPNY_ID = V_CPNY_ID
-         AND A.UPLOAD_BY = V_PERSON_ID
-         AND A.START_DATE IS NOT NULL
-         AND EXISTS (SELECT 1 FROM PA_PARAM_ITEM_PARAM C
-                      WHERE C.PARAM_NO = A.PARAM_NO
-                        AND C.CPNY_ID = A.CPNY_ID
-                        AND NVL(C.PRORATE_TYPE, 0) IN (2, 3))
-         AND (EXISTS (SELECT 1 FROM PA_PARAM_DATA P, HR_EMPLOYEE HR
-                       WHERE HR.EMPID = A.EMPID
-                         AND HR.CPNY_ID = A.CPNY_ID
-                         AND P.PERSON_ID = HR.PERSON_ID
-                         AND P.CPNY_ID = A.CPNY_ID
-                         AND P.PARAM_NO = A.PARAM_NO
-                         AND P.ACTIVITY = 1
-                         AND NVL(P.REMARK, ' ') <> 'Employee Resign'
-                         AND NVL(P.CREATED_BY, ' ') <> 'BEFORE_CAL'
-                         AND P.START_DATE <= NVL(A.END_DATE, DATE '9999-12-31')
-                         AND NVL(P.END_DATE, DATE '9999-12-31') >= A.START_DATE)
-              OR EXISTS (SELECT 1 FROM PA_PARAM_DATA_TEMP B
-                          WHERE B.CPNY_ID = A.CPNY_ID
-                            AND B.UPLOAD_BY = A.UPLOAD_BY
-                            AND B.PARAM_NO = A.PARAM_NO
-                            AND B.EMPID = A.EMPID
-                            AND B.ROWID <> A.ROWID
-                            AND B.START_DATE IS NOT NULL
-                            AND B.START_DATE <= NVL(A.END_DATE, DATE '9999-12-31')
-                            AND NVL(B.END_DATE, DATE '9999-12-31') >= A.START_DATE));
     END IF;
     --结果返回
     SELECT COUNT(1)
@@ -548,8 +437,6 @@ CREATE OR REPLACE PACKAGE BODY "PKG_WAGEBASE_EXCEL_TEMP" is
            FIELD2_VALUE,
            START_MONTH,
            END_MONTH,
-           START_DATE,
-           END_DATE,
            RETURN_VALUE,
            REMARK,
            CPNY_ID,
@@ -560,11 +447,8 @@ CREATE OR REPLACE PACKAGE BODY "PKG_WAGEBASE_EXCEL_TEMP" is
                   PARAM_NO,
                   POST_GRADE_NO,
                   Wage_Type,
-                  -- START_MONTH/END_MONTH đã chuẩn hóa ở bước validate; nhập theo ngày thì suy ra tháng
-                  NVL(START_MONTH, TO_CHAR(START_DATE, 'MMYYYY')),
-                  NVL(END_MONTH, TO_CHAR(END_DATE, 'MMYYYY')),
-                  START_DATE,
-                  END_DATE,
+                  CASE WHEN LENGTH(START_MONTH) = 5 THEN '0'||START_MONTH ELSE START_MONTH END,
+                  CASE WHEN LENGTH(END_MONTH) = 5 THEN '0'||END_MONTH ELSE END_MONTH END,
                   RETURN_VALUE,
                   REMARK,
                   CPNY_ID,
@@ -582,8 +466,6 @@ CREATE OR REPLACE PACKAGE BODY "PKG_WAGEBASE_EXCEL_TEMP" is
            PERSON_ID,
            START_MONTH,
            END_MONTH,
-           START_DATE,
-           END_DATE,
            RETURN_VALUE,
            REMARK,
            CPNY_ID,
@@ -596,11 +478,8 @@ CREATE OR REPLACE PACKAGE BODY "PKG_WAGEBASE_EXCEL_TEMP" is
                      from hr_employee hr
                     where hr.empid = t.empid
                       and hr.cpny_id = t.cpny_id),
-                  -- START_MONTH/END_MONTH đã chuẩn hóa ở bước validate; nhập theo ngày thì suy ra tháng
-                  NVL(START_MONTH, TO_CHAR(START_DATE, 'MMYYYY')),
-                  NVL(END_MONTH, TO_CHAR(END_DATE, 'MMYYYY')),
-                  START_DATE,
-                  END_DATE,
+                  CASE WHEN LENGTH(START_MONTH) = 5 THEN '0'||START_MONTH ELSE START_MONTH END,
+                  CASE WHEN LENGTH(END_MONTH) = 5 THEN '0'||END_MONTH ELSE END_MONTH END,
                   RETURN_VALUE,
                   REMARK,
                   CPNY_ID,

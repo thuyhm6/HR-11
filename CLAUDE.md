@@ -32,7 +32,7 @@ src/main/java/com/ait/
   util/          I18nUtil, MultilingualUtil, IpUtil, CsrfUtil, ExcelJxForEachUtil, DataTablesSearchUtil...
   annotation/    @RequireLogin      aspect/ LoggingAspect      validation/
   <module>/<chức năng>/{controller, service, service/impl, mapper, dto}
-     Module: ar (chấm công), ess (tự phục vụ NV), hrm (nhân sự), org (tổ chức), pa (lương),
+     Module: ar (chấm công), ess (Phân hệ người dùng), hrm (nhân sự), org (tổ chức), pa (lương),
              evs (đánh giá), edu (đào tạo), contract, report, disc, sy (hệ thống: user, role, menu, code, i18n...),
              cleverse (SOAP phê duyệt/mail + scheduler đồng bộ)
 src/main/java/hanwha/neo/...   Stub SOAP client Cleverse (Axis) — không sửa tay

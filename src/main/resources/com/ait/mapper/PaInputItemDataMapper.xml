@@ -602,7 +602,8 @@
 
     <!-- ── Gọi stored procedure import từ temp sang chính thức ─────────────── -->
     <update id="callImportParamDataTemp" parameterType="map" statementType="CALLABLE">
-        {CALL PKG_WAGEBASE_EXCEL_TEMP.PR_IMPORT_PAPARAM_DATA(
+        <!-- Bản import theo ngày của dự án mới; PKG_WAGEBASE_EXCEL_TEMP giữ nguyên cho dự án cũ dùng chung DB -->
+        {CALL PKG_WAGEBASE_EXCEL_TEMP_DATE.PR_IMPORT_PAPARAM_DATA(
             #{adminID,       jdbcType=VARCHAR, mode=IN},
             #{cpnyId,        jdbcType=VARCHAR, mode=IN},
             #{distinctField, jdbcType=VARCHAR, mode=IN},

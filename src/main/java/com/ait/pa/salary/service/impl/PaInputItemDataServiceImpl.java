@@ -260,7 +260,7 @@ public class PaInputItemDataServiceImpl implements PaInputItemDataService {
             params.put("message", "");
             mapper.callImportParamDataTemp(params);
             String message = params.get("message") != null ? params.get("message").toString().trim() : "";
-            log.info("Gọi PKG_WAGEBASE_EXCEL_TEMP.PR_IMPORT_PAPARAM_DATA, paramNo={}, distinctField={}, message={}",
+            log.info("Gọi PKG_WAGEBASE_EXCEL_TEMP_DATE.PR_IMPORT_PAPARAM_DATA, paramNo={}, distinctField={}, message={}",
                     paramNo, distinctField, message);
             // Package trả 'OK' khi thành công, 'NG' khi dữ liệu temp có dòng lỗi, còn lại là lỗi hệ thống
             if ("OK".equals(message)) return "";
@@ -349,7 +349,7 @@ public class PaInputItemDataServiceImpl implements PaInputItemDataService {
      * Đọc ô Ngày bắt đầu/kết thúc của file import: trả về {ngày 'yyyy-MM-dd', tháng 'MMYYYY'} (chỉ 1 trong 2 có giá trị).
      * - Ô kiểu ngày Excel, chuỗi dd/MM/yyyy hoặc yyyy-MM-dd -> theo ngày (START_DATE/END_DATE).
      * - Chuỗi MMYYYY / MYYYY / MM/YYYY -> theo tháng (START_MONTH/END_MONTH), package quy đổi sang ngày đầu/cuối kỳ lương.
-     * - Định dạng khác -> giữ nguyên ở cột tháng để PKG_WAGEBASE_EXCEL_TEMP báo lỗi định dạng.
+     * - Định dạng khác -> giữ nguyên ở cột tháng để PKG_WAGEBASE_EXCEL_TEMP_DATE báo lỗi định dạng.
      */
     private String[] getEffectiveCell(Cell cell, DataFormatter formatter) {
         if (cell == null) return new String[] { null, null };

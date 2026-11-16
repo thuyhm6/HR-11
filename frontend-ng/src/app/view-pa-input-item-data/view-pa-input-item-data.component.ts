@@ -103,7 +103,7 @@ const EMPTY_FORM: DataForm = {
  * Ngày hiệu lực: đổi từ Tháng bắt đầu/kết thúc (MMYYYY) sang Ngày bắt đầu/kết thúc (nz-date-picker dd/MM/yyyy,
  * gửi BE 'YYYY-MM-DD') để tính lương theo ngày khi thay đổi giữa tháng (xem PA_BUILD_PARAM_UPDATE_F).
  * "Tháng lương" ở điều kiện tìm kiếm vẫn theo tháng - BE lọc các bản ghi giao với kỳ lương của tháng đó.
- * Import Excel nhập theo ngày (dd/MM/yyyy) hoặc theo tháng (MMYYYY) - PKG_WAGEBASE_EXCEL_TEMP quy đổi
+ * Import Excel nhập theo ngày (dd/MM/yyyy) hoặc theo tháng (MMYYYY) - PKG_WAGEBASE_EXCEL_TEMP_DATE quy đổi
  * tháng sang ngày đầu/cuối kỳ lương và kiểm tra chồng lấn ngày hiệu lực.
  * Hạng mục có DISTINCT_FIELD khác PERSON_ID (chức danh, chức vụ, công ty...) lưu ở PA_PARAM_DATA_OTHER
  * (FIELD1_VALUE/FIELD2_VALUE) - đúng viewPaInputItemDataList.jsp bản gốc Hanwha_HTSV: bảng hiển thị

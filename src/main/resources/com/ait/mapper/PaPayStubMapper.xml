@@ -200,10 +200,11 @@
            AND ACTIVITY        = 1
     </select>
 
-    <!-- Gọi stored procedure tính lại lương cho từng nhân viên -->
+    <!-- Gọi stored procedure tính lại lương cho từng nhân viên - bản tính theo ngày của dự án mới
+         (PA_MONTH_CAL_FOR_EMP_DATE_P); PA_MONTH_CAL_FOR_EMP_P giữ nguyên cho dự án cũ dùng chung DB. -->
     <select id="callRecalculateForEmp" statementType="CALLABLE"
             parameterType="com.ait.pa.workManagement.dto.PaPayStubDto">
-        {CALL PA_MONTH_CAL_FOR_EMP_P(
+        {CALL PA_MONTH_CAL_FOR_EMP_DATE_P(
             #{payScheduleNo, jdbcType=VARCHAR, mode=IN},
             #{adminID,       jdbcType=VARCHAR, mode=IN},
             #{cpnyId,        jdbcType=VARCHAR, mode=IN},
