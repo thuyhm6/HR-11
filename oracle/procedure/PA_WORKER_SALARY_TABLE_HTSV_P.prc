@@ -15,9 +15,6 @@
 
   ******************************************************************************/
   VAR_LOG_FLAG       NUMBER :=1;
-  -- Kỳ hiệu lực tham số lương (theo ngày) của tháng trả lương - xem PA_GET_PERIOD_DATE_F
-  V_PERIOD_START     DATE := PA_GET_PERIOD_DATE_F(TO_CHAR(TO_DATE(IN_PAY_DATE,'YYYY/MM/DD'),'MMYYYY'), 'HTSV', 'S');
-  V_PERIOD_END       DATE := PA_GET_PERIOD_DATE_F(TO_CHAR(TO_DATE(IN_PAY_DATE,'YYYY/MM/DD'),'MMYYYY'), 'HTSV', 'E');
   -- Worker工资Table游标
    CURSOR CUS_ITEM IS
      SELECT *
@@ -60,8 +57,9 @@ BEGIN
                         SELECT PPD.PERSON_ID FROM PA_PARAM_DATA PPD
                         WHERE PPD.CPNY_ID = 'HTSV'
                            AND PPD.PARAM_NO = 2
-                           AND PPD.START_DATE <= V_PERIOD_END
-                           AND NVL(PPD.END_DATE, DATE '9999-12-31') >= V_PERIOD_START
+                           AND TO_CHAR(TO_DATE(IN_PAY_DATE,'YYYY/MM/DD'),'YYYYMM') BETWEEN
+                           TO_CHAR(TO_DATE(PPD.START_MONTH,'MM/YYYY'),'YYYYMM') AND
+                           TO_CHAR(TO_DATE(PPD.END_MONTH,'MM/YYYY'),'YYYYMM')
                     );
 
       END IF;
@@ -81,8 +79,9 @@ BEGIN
                         SELECT PPD.PERSON_ID FROM PA_PARAM_DATA PPD
                         WHERE PPD.CPNY_ID = 'HTSV'
                            AND PPD.PARAM_NO = 7
-                           AND PPD.START_DATE <= V_PERIOD_END
-                           AND NVL(PPD.END_DATE, DATE '9999-12-31') >= V_PERIOD_START
+                           AND TO_CHAR(TO_DATE(IN_PAY_DATE,'YYYY/MM/DD'),'YYYYMM') BETWEEN
+                           TO_CHAR(TO_DATE(PPD.START_MONTH,'MM/YYYY'),'YYYYMM') AND
+                           TO_CHAR(TO_DATE(PPD.END_MONTH,'MM/YYYY'),'YYYYMM')
                     );
       END IF;
       IF ITEM_ROW.TRANSPORTATION > 0 THEN
@@ -101,8 +100,9 @@ BEGIN
                         SELECT PPD.PERSON_ID FROM PA_PARAM_DATA PPD
                         WHERE PPD.CPNY_ID = 'HTSV'
                            AND PPD.PARAM_NO = 4
-                           AND PPD.START_DATE <= V_PERIOD_END
-                           AND NVL(PPD.END_DATE, DATE '9999-12-31') >= V_PERIOD_START
+                           AND TO_CHAR(TO_DATE(IN_PAY_DATE,'YYYY/MM/DD'),'YYYYMM') BETWEEN
+                           TO_CHAR(TO_DATE(PPD.START_MONTH,'MM/YYYY'),'YYYYMM') AND
+                           TO_CHAR(TO_DATE(PPD.END_MONTH,'MM/YYYY'),'YYYYMM')
                     );
       END IF;
       IF ITEM_ROW.LONG_ATTENDANCE > 0 THEN
@@ -121,8 +121,9 @@ BEGIN
                         SELECT PPD.PERSON_ID FROM PA_PARAM_DATA PPD
                         WHERE PPD.CPNY_ID = 'HTSV'
                            AND PPD.PARAM_NO = 6
-                           AND PPD.START_DATE <= V_PERIOD_END
-                           AND NVL(PPD.END_DATE, DATE '9999-12-31') >= V_PERIOD_START
+                           AND TO_CHAR(TO_DATE(IN_PAY_DATE,'YYYY/MM/DD'),'YYYYMM') BETWEEN
+                           TO_CHAR(TO_DATE(PPD.START_MONTH,'MM/YYYY'),'YYYYMM') AND
+                           TO_CHAR(TO_DATE(PPD.END_MONTH,'MM/YYYY'),'YYYYMM')
                     );
       END IF;
     --插入 2-3Months 的数据
@@ -145,8 +146,9 @@ BEGIN
                         SELECT PPD.PERSON_ID FROM PA_PARAM_DATA PPD
                         WHERE PPD.CPNY_ID = 'HTSV'
                            AND PPD.PARAM_NO = 1
-                           AND PPD.START_DATE <= V_PERIOD_END
-                           AND NVL(PPD.END_DATE, DATE '9999-12-31') >= V_PERIOD_START
+                           AND TO_CHAR(TO_DATE(IN_PAY_DATE,'YYYY/MM/DD'),'YYYYMM') BETWEEN
+                           TO_CHAR(TO_DATE(PPD.START_MONTH,'MM/YYYY'),'YYYYMM') AND
+                           TO_CHAR(TO_DATE(PPD.END_MONTH,'MM/YYYY'),'YYYYMM')
                     );
       END IF;
       IF ITEM_ROW.FULL_ATTEND > 0 THEN
@@ -167,8 +169,9 @@ BEGIN
                         SELECT PPD.PERSON_ID FROM PA_PARAM_DATA PPD
                         WHERE PPD.CPNY_ID = 'HTSV'
                            AND PPD.PARAM_NO = 7
-                           AND PPD.START_DATE <= V_PERIOD_END
-                           AND NVL(PPD.END_DATE, DATE '9999-12-31') >= V_PERIOD_START
+                           AND TO_CHAR(TO_DATE(IN_PAY_DATE,'YYYY/MM/DD'),'YYYYMM') BETWEEN
+                           TO_CHAR(TO_DATE(PPD.START_MONTH,'MM/YYYY'),'YYYYMM') AND
+                           TO_CHAR(TO_DATE(PPD.END_MONTH,'MM/YYYY'),'YYYYMM')
                     );
       END IF;
       IF ITEM_ROW.TRANSPORTATION > 0 THEN
@@ -189,8 +192,9 @@ BEGIN
                         SELECT PPD.PERSON_ID FROM PA_PARAM_DATA PPD
                         WHERE PPD.CPNY_ID = 'HTSV'
                            AND PPD.PARAM_NO = 5
-                           AND PPD.START_DATE <= V_PERIOD_END
-                           AND NVL(PPD.END_DATE, DATE '9999-12-31') >= V_PERIOD_START
+                           AND TO_CHAR(TO_DATE(IN_PAY_DATE,'YYYY/MM/DD'),'YYYYMM') BETWEEN
+                           TO_CHAR(TO_DATE(PPD.START_MONTH,'MM/YYYY'),'YYYYMM') AND
+                           TO_CHAR(TO_DATE(PPD.END_MONTH,'MM/YYYY'),'YYYYMM')
                     );
       END IF;
       IF ITEM_ROW.LONG_ATTENDANCE > 0 THEN
@@ -211,8 +215,9 @@ BEGIN
                         SELECT PPD.PERSON_ID FROM PA_PARAM_DATA PPD
                         WHERE PPD.CPNY_ID = 'HTSV'
                            AND PPD.PARAM_NO = 6
-                           AND PPD.START_DATE <= V_PERIOD_END
-                           AND NVL(PPD.END_DATE, DATE '9999-12-31') >= V_PERIOD_START
+                           AND TO_CHAR(TO_DATE(IN_PAY_DATE,'YYYY/MM/DD'),'YYYYMM') BETWEEN
+                           TO_CHAR(TO_DATE(PPD.START_MONTH,'MM/YYYY'),'YYYYMM') AND
+                           TO_CHAR(TO_DATE(PPD.END_MONTH,'MM/YYYY'),'YYYYMM')
                     );
       END IF;
 
@@ -236,8 +241,9 @@ BEGIN
                         SELECT PPD.PERSON_ID FROM PA_PARAM_DATA PPD
                         WHERE PPD.CPNY_ID = 'HTSV'
                            AND PPD.PARAM_NO = 1
-                           AND PPD.START_DATE <= V_PERIOD_END
-                           AND NVL(PPD.END_DATE, DATE '9999-12-31') >= V_PERIOD_START
+                           AND TO_CHAR(TO_DATE(IN_PAY_DATE,'YYYY/MM/DD'),'YYYYMM') BETWEEN
+                           TO_CHAR(TO_DATE(PPD.START_MONTH,'MM/YYYY'),'YYYYMM') AND
+                           TO_CHAR(TO_DATE(PPD.END_MONTH,'MM/YYYY'),'YYYYMM')
                     );
       END IF;
       IF ITEM_ROW.FULL_ATTEND > 0 THEN
@@ -258,8 +264,9 @@ BEGIN
                         SELECT PPD.PERSON_ID FROM PA_PARAM_DATA PPD
                         WHERE PPD.CPNY_ID = 'HTSV'
                            AND PPD.PARAM_NO = 7
-                           AND PPD.START_DATE <= V_PERIOD_END
-                           AND NVL(PPD.END_DATE, DATE '9999-12-31') >= V_PERIOD_START
+                           AND TO_CHAR(TO_DATE(IN_PAY_DATE,'YYYY/MM/DD'),'YYYYMM') BETWEEN
+                           TO_CHAR(TO_DATE(PPD.START_MONTH,'MM/YYYY'),'YYYYMM') AND
+                           TO_CHAR(TO_DATE(PPD.END_MONTH,'MM/YYYY'),'YYYYMM')
                     );
       END IF;
       IF ITEM_ROW.TRANSPORTATION > 0 THEN
@@ -280,8 +287,9 @@ BEGIN
                         SELECT PPD.PERSON_ID FROM PA_PARAM_DATA PPD
                         WHERE PPD.CPNY_ID = 'HTSV'
                            AND PPD.PARAM_NO = 5
-                           AND PPD.START_DATE <= V_PERIOD_END
-                           AND NVL(PPD.END_DATE, DATE '9999-12-31') >= V_PERIOD_START
+                           AND TO_CHAR(TO_DATE(IN_PAY_DATE,'YYYY/MM/DD'),'YYYYMM') BETWEEN
+                           TO_CHAR(TO_DATE(PPD.START_MONTH,'MM/YYYY'),'YYYYMM') AND
+                           TO_CHAR(TO_DATE(PPD.END_MONTH,'MM/YYYY'),'YYYYMM')
                     );
       END IF;
       IF ITEM_ROW.LONG_ATTENDANCE > 0 THEN
@@ -302,8 +310,9 @@ BEGIN
                         SELECT PPD.PERSON_ID FROM PA_PARAM_DATA PPD
                         WHERE PPD.CPNY_ID = 'HTSV'
                            AND PPD.PARAM_NO = 6
-                           AND PPD.START_DATE <= V_PERIOD_END
-                           AND NVL(PPD.END_DATE, DATE '9999-12-31') >= V_PERIOD_START
+                           AND TO_CHAR(TO_DATE(IN_PAY_DATE,'YYYY/MM/DD'),'YYYYMM') BETWEEN
+                           TO_CHAR(TO_DATE(PPD.START_MONTH,'MM/YYYY'),'YYYYMM') AND
+                           TO_CHAR(TO_DATE(PPD.END_MONTH,'MM/YYYY'),'YYYYMM')
                     );
       END IF;
     --插入 7-12Months 的数据
@@ -326,8 +335,9 @@ BEGIN
                         SELECT PPD.PERSON_ID FROM PA_PARAM_DATA PPD
                         WHERE PPD.CPNY_ID = 'HTSV'
                            AND PPD.PARAM_NO = 1
-                           AND PPD.START_DATE <= V_PERIOD_END
-                           AND NVL(PPD.END_DATE, DATE '9999-12-31') >= V_PERIOD_START
+                           AND TO_CHAR(TO_DATE(IN_PAY_DATE,'YYYY/MM/DD'),'YYYYMM') BETWEEN
+                           TO_CHAR(TO_DATE(PPD.START_MONTH,'MM/YYYY'),'YYYYMM') AND
+                           TO_CHAR(TO_DATE(PPD.END_MONTH,'MM/YYYY'),'YYYYMM')
                     );
       END IF;
       IF ITEM_ROW.FULL_ATTEND > 0 THEN
@@ -348,8 +358,9 @@ BEGIN
                         SELECT PPD.PERSON_ID FROM PA_PARAM_DATA PPD
                         WHERE PPD.CPNY_ID = 'HTSV'
                            AND PPD.PARAM_NO = 7
-                           AND PPD.START_DATE <= V_PERIOD_END
-                           AND NVL(PPD.END_DATE, DATE '9999-12-31') >= V_PERIOD_START
+                           AND TO_CHAR(TO_DATE(IN_PAY_DATE,'YYYY/MM/DD'),'YYYYMM') BETWEEN
+                           TO_CHAR(TO_DATE(PPD.START_MONTH,'MM/YYYY'),'YYYYMM') AND
+                           TO_CHAR(TO_DATE(PPD.END_MONTH,'MM/YYYY'),'YYYYMM')
                     );
       END IF;
       IF ITEM_ROW.TRANSPORTATION > 0 THEN
@@ -370,8 +381,9 @@ BEGIN
                         SELECT PPD.PERSON_ID FROM PA_PARAM_DATA PPD
                         WHERE PPD.CPNY_ID = 'HTSV'
                            AND PPD.PARAM_NO = 5
-                           AND PPD.START_DATE <= V_PERIOD_END
-                           AND NVL(PPD.END_DATE, DATE '9999-12-31') >= V_PERIOD_START
+                           AND TO_CHAR(TO_DATE(IN_PAY_DATE,'YYYY/MM/DD'),'YYYYMM') BETWEEN
+                           TO_CHAR(TO_DATE(PPD.START_MONTH,'MM/YYYY'),'YYYYMM') AND
+                           TO_CHAR(TO_DATE(PPD.END_MONTH,'MM/YYYY'),'YYYYMM')
                     );
       END IF;
       IF ITEM_ROW.LONG_ATTENDANCE > 0 THEN
@@ -392,8 +404,9 @@ BEGIN
                         SELECT PPD.PERSON_ID FROM PA_PARAM_DATA PPD
                         WHERE PPD.CPNY_ID = 'HTSV'
                            AND PPD.PARAM_NO = 6
-                           AND PPD.START_DATE <= V_PERIOD_END
-                           AND NVL(PPD.END_DATE, DATE '9999-12-31') >= V_PERIOD_START
+                           AND TO_CHAR(TO_DATE(IN_PAY_DATE,'YYYY/MM/DD'),'YYYYMM') BETWEEN
+                           TO_CHAR(TO_DATE(PPD.START_MONTH,'MM/YYYY'),'YYYYMM') AND
+                           TO_CHAR(TO_DATE(PPD.END_MONTH,'MM/YYYY'),'YYYYMM')
                     );
       END IF;
     --插入 1 year ～ 的数据
@@ -416,8 +429,9 @@ BEGIN
                         SELECT PPD.PERSON_ID FROM PA_PARAM_DATA PPD
                         WHERE PPD.CPNY_ID = 'HTSV'
                            AND PPD.PARAM_NO = 1
-                           AND PPD.START_DATE <= V_PERIOD_END
-                           AND NVL(PPD.END_DATE, DATE '9999-12-31') >= V_PERIOD_START
+                           AND TO_CHAR(TO_DATE(IN_PAY_DATE,'YYYY/MM/DD'),'YYYYMM') BETWEEN
+                           TO_CHAR(TO_DATE(PPD.START_MONTH,'MM/YYYY'),'YYYYMM') AND
+                           TO_CHAR(TO_DATE(PPD.END_MONTH,'MM/YYYY'),'YYYYMM')
                     );
       END IF;
       IF ITEM_ROW.FULL_ATTEND > 0 THEN
@@ -438,8 +452,9 @@ BEGIN
                         SELECT PPD.PERSON_ID FROM PA_PARAM_DATA PPD
                         WHERE PPD.CPNY_ID = 'HTSV'
                            AND PPD.PARAM_NO = 7
-                           AND PPD.START_DATE <= V_PERIOD_END
-                           AND NVL(PPD.END_DATE, DATE '9999-12-31') >= V_PERIOD_START
+                           AND TO_CHAR(TO_DATE(IN_PAY_DATE,'YYYY/MM/DD'),'YYYYMM') BETWEEN
+                           TO_CHAR(TO_DATE(PPD.START_MONTH,'MM/YYYY'),'YYYYMM') AND
+                           TO_CHAR(TO_DATE(PPD.END_MONTH,'MM/YYYY'),'YYYYMM')
                     );
       END IF;
       IF ITEM_ROW.TRANSPORTATION > 0 THEN
@@ -460,8 +475,9 @@ BEGIN
                         SELECT PPD.PERSON_ID FROM PA_PARAM_DATA PPD
                         WHERE PPD.CPNY_ID = 'HTSV'
                            AND PPD.PARAM_NO = 5
-                           AND PPD.START_DATE <= V_PERIOD_END
-                           AND NVL(PPD.END_DATE, DATE '9999-12-31') >= V_PERIOD_START
+                           AND TO_CHAR(TO_DATE(IN_PAY_DATE,'YYYY/MM/DD'),'YYYYMM') BETWEEN
+                           TO_CHAR(TO_DATE(PPD.START_MONTH,'MM/YYYY'),'YYYYMM') AND
+                           TO_CHAR(TO_DATE(PPD.END_MONTH,'MM/YYYY'),'YYYYMM')
                     );
       END IF;
       IF ITEM_ROW.LONG_ATTENDANCE > 0 THEN
@@ -482,8 +498,9 @@ BEGIN
                         SELECT PPD.PERSON_ID FROM PA_PARAM_DATA PPD
                         WHERE PPD.CPNY_ID = 'HTSV'
                            AND PPD.PARAM_NO = 6
-                           AND PPD.START_DATE <= V_PERIOD_END
-                           AND NVL(PPD.END_DATE, DATE '9999-12-31') >= V_PERIOD_START
+                           AND TO_CHAR(TO_DATE(IN_PAY_DATE,'YYYY/MM/DD'),'YYYYMM') BETWEEN
+                           TO_CHAR(TO_DATE(PPD.START_MONTH,'MM/YYYY'),'YYYYMM') AND
+                           TO_CHAR(TO_DATE(PPD.END_MONTH,'MM/YYYY'),'YYYYMM')
                     );
       END IF;
     --插入 2 year ～ 的数据
@@ -506,8 +523,9 @@ BEGIN
                         SELECT PPD.PERSON_ID FROM PA_PARAM_DATA PPD
                         WHERE PPD.CPNY_ID = 'HTSV'
                            AND PPD.PARAM_NO = 1
-                           AND PPD.START_DATE <= V_PERIOD_END
-                           AND NVL(PPD.END_DATE, DATE '9999-12-31') >= V_PERIOD_START
+                           AND TO_CHAR(TO_DATE(IN_PAY_DATE,'YYYY/MM/DD'),'YYYYMM') BETWEEN
+                           TO_CHAR(TO_DATE(PPD.START_MONTH,'MM/YYYY'),'YYYYMM') AND
+                           TO_CHAR(TO_DATE(PPD.END_MONTH,'MM/YYYY'),'YYYYMM')
                     );
       END IF;
       IF ITEM_ROW.FULL_ATTEND > 0 THEN
@@ -528,8 +546,9 @@ BEGIN
                         SELECT PPD.PERSON_ID FROM PA_PARAM_DATA PPD
                         WHERE PPD.CPNY_ID = 'HTSV'
                            AND PPD.PARAM_NO = 7
-                           AND PPD.START_DATE <= V_PERIOD_END
-                           AND NVL(PPD.END_DATE, DATE '9999-12-31') >= V_PERIOD_START
+                           AND TO_CHAR(TO_DATE(IN_PAY_DATE,'YYYY/MM/DD'),'YYYYMM') BETWEEN
+                           TO_CHAR(TO_DATE(PPD.START_MONTH,'MM/YYYY'),'YYYYMM') AND
+                           TO_CHAR(TO_DATE(PPD.END_MONTH,'MM/YYYY'),'YYYYMM')
                     );
       END IF;
       IF ITEM_ROW.TRANSPORTATION > 0 THEN
@@ -550,8 +569,9 @@ BEGIN
                         SELECT PPD.PERSON_ID FROM PA_PARAM_DATA PPD
                         WHERE PPD.CPNY_ID = 'HTSV'
                            AND PPD.PARAM_NO = 5
-                           AND PPD.START_DATE <= V_PERIOD_END
-                           AND NVL(PPD.END_DATE, DATE '9999-12-31') >= V_PERIOD_START
+                           AND TO_CHAR(TO_DATE(IN_PAY_DATE,'YYYY/MM/DD'),'YYYYMM') BETWEEN
+                           TO_CHAR(TO_DATE(PPD.START_MONTH,'MM/YYYY'),'YYYYMM') AND
+                           TO_CHAR(TO_DATE(PPD.END_MONTH,'MM/YYYY'),'YYYYMM')
                     );
       END IF;
       IF ITEM_ROW.LONG_ATTENDANCE > 0 THEN
@@ -572,8 +592,9 @@ BEGIN
                         SELECT PPD.PERSON_ID FROM PA_PARAM_DATA PPD
                         WHERE PPD.CPNY_ID = 'HTSV'
                            AND PPD.PARAM_NO = 6
-                           AND PPD.START_DATE <= V_PERIOD_END
-                           AND NVL(PPD.END_DATE, DATE '9999-12-31') >= V_PERIOD_START
+                           AND TO_CHAR(TO_DATE(IN_PAY_DATE,'YYYY/MM/DD'),'YYYYMM') BETWEEN
+                           TO_CHAR(TO_DATE(PPD.START_MONTH,'MM/YYYY'),'YYYYMM') AND
+                           TO_CHAR(TO_DATE(PPD.END_MONTH,'MM/YYYY'),'YYYYMM')
                     );
       END IF;
     --插入 3 year ～ 的数据
@@ -596,8 +617,9 @@ BEGIN
                         SELECT PPD.PERSON_ID FROM PA_PARAM_DATA PPD
                         WHERE PPD.CPNY_ID = 'HTSV'
                            AND PPD.PARAM_NO = 1
-                           AND PPD.START_DATE <= V_PERIOD_END
-                           AND NVL(PPD.END_DATE, DATE '9999-12-31') >= V_PERIOD_START
+                           AND TO_CHAR(TO_DATE(IN_PAY_DATE,'YYYY/MM/DD'),'YYYYMM') BETWEEN
+                           TO_CHAR(TO_DATE(PPD.START_MONTH,'MM/YYYY'),'YYYYMM') AND
+                           TO_CHAR(TO_DATE(PPD.END_MONTH,'MM/YYYY'),'YYYYMM')
                     );
       END IF;
       IF ITEM_ROW.FULL_ATTEND > 0 THEN
@@ -618,8 +640,9 @@ BEGIN
                         SELECT PPD.PERSON_ID FROM PA_PARAM_DATA PPD
                         WHERE PPD.CPNY_ID = 'HTSV'
                            AND PPD.PARAM_NO = 7
-                           AND PPD.START_DATE <= V_PERIOD_END
-                           AND NVL(PPD.END_DATE, DATE '9999-12-31') >= V_PERIOD_START
+                           AND TO_CHAR(TO_DATE(IN_PAY_DATE,'YYYY/MM/DD'),'YYYYMM') BETWEEN
+                           TO_CHAR(TO_DATE(PPD.START_MONTH,'MM/YYYY'),'YYYYMM') AND
+                           TO_CHAR(TO_DATE(PPD.END_MONTH,'MM/YYYY'),'YYYYMM')
                     );
       END IF;
       IF ITEM_ROW.TRANSPORTATION > 0 THEN
@@ -640,8 +663,9 @@ BEGIN
                         SELECT PPD.PERSON_ID FROM PA_PARAM_DATA PPD
                         WHERE PPD.CPNY_ID = 'HTSV'
                            AND PPD.PARAM_NO = 5
-                           AND PPD.START_DATE <= V_PERIOD_END
-                           AND NVL(PPD.END_DATE, DATE '9999-12-31') >= V_PERIOD_START
+                           AND TO_CHAR(TO_DATE(IN_PAY_DATE,'YYYY/MM/DD'),'YYYYMM') BETWEEN
+                           TO_CHAR(TO_DATE(PPD.START_MONTH,'MM/YYYY'),'YYYYMM') AND
+                           TO_CHAR(TO_DATE(PPD.END_MONTH,'MM/YYYY'),'YYYYMM')
                     );
       END IF;
       IF ITEM_ROW.LONG_ATTENDANCE > 0 THEN
@@ -662,8 +686,9 @@ BEGIN
                         SELECT PPD.PERSON_ID FROM PA_PARAM_DATA PPD
                         WHERE PPD.CPNY_ID = 'HTSV'
                            AND PPD.PARAM_NO = 6
-                           AND PPD.START_DATE <= V_PERIOD_END
-                           AND NVL(PPD.END_DATE, DATE '9999-12-31') >= V_PERIOD_START
+                           AND TO_CHAR(TO_DATE(IN_PAY_DATE,'YYYY/MM/DD'),'YYYYMM') BETWEEN
+                           TO_CHAR(TO_DATE(PPD.START_MONTH,'MM/YYYY'),'YYYYMM') AND
+                           TO_CHAR(TO_DATE(PPD.END_MONTH,'MM/YYYY'),'YYYYMM')
                     );
       END IF;
     --插入 4 year ～ 的数据
@@ -686,8 +711,9 @@ BEGIN
                         SELECT PPD.PERSON_ID FROM PA_PARAM_DATA PPD
                         WHERE PPD.CPNY_ID = 'HTSV'
                            AND PPD.PARAM_NO = 1
-                           AND PPD.START_DATE <= V_PERIOD_END
-                           AND NVL(PPD.END_DATE, DATE '9999-12-31') >= V_PERIOD_START
+                           AND TO_CHAR(TO_DATE(IN_PAY_DATE,'YYYY/MM/DD'),'YYYYMM') BETWEEN
+                           TO_CHAR(TO_DATE(PPD.START_MONTH,'MM/YYYY'),'YYYYMM') AND
+                           TO_CHAR(TO_DATE(PPD.END_MONTH,'MM/YYYY'),'YYYYMM')
                     );
       END IF;
       IF ITEM_ROW.FULL_ATTEND > 0 THEN
@@ -708,8 +734,9 @@ BEGIN
                         SELECT PPD.PERSON_ID FROM PA_PARAM_DATA PPD
                         WHERE PPD.CPNY_ID = 'HTSV'
                            AND PPD.PARAM_NO = 7
-                           AND PPD.START_DATE <= V_PERIOD_END
-                           AND NVL(PPD.END_DATE, DATE '9999-12-31') >= V_PERIOD_START
+                           AND TO_CHAR(TO_DATE(IN_PAY_DATE,'YYYY/MM/DD'),'YYYYMM') BETWEEN
+                           TO_CHAR(TO_DATE(PPD.START_MONTH,'MM/YYYY'),'YYYYMM') AND
+                           TO_CHAR(TO_DATE(PPD.END_MONTH,'MM/YYYY'),'YYYYMM')
                     );
       END IF;
       IF ITEM_ROW.TRANSPORTATION > 0 THEN
@@ -730,8 +757,9 @@ BEGIN
                         SELECT PPD.PERSON_ID FROM PA_PARAM_DATA PPD
                         WHERE PPD.CPNY_ID = 'HTSV'
                            AND PPD.PARAM_NO = 5
-                           AND PPD.START_DATE <= V_PERIOD_END
-                           AND NVL(PPD.END_DATE, DATE '9999-12-31') >= V_PERIOD_START
+                           AND TO_CHAR(TO_DATE(IN_PAY_DATE,'YYYY/MM/DD'),'YYYYMM') BETWEEN
+                           TO_CHAR(TO_DATE(PPD.START_MONTH,'MM/YYYY'),'YYYYMM') AND
+                           TO_CHAR(TO_DATE(PPD.END_MONTH,'MM/YYYY'),'YYYYMM')
                     );
       END IF;
       IF ITEM_ROW.LONG_ATTENDANCE > 0 THEN
@@ -752,8 +780,9 @@ BEGIN
                         SELECT PPD.PERSON_ID FROM PA_PARAM_DATA PPD
                         WHERE PPD.CPNY_ID = 'HTSV'
                            AND PPD.PARAM_NO = 6
-                           AND PPD.START_DATE <= V_PERIOD_END
-                           AND NVL(PPD.END_DATE, DATE '9999-12-31') >= V_PERIOD_START
+                           AND TO_CHAR(TO_DATE(IN_PAY_DATE,'YYYY/MM/DD'),'YYYYMM') BETWEEN
+                           TO_CHAR(TO_DATE(PPD.START_MONTH,'MM/YYYY'),'YYYYMM') AND
+                           TO_CHAR(TO_DATE(PPD.END_MONTH,'MM/YYYY'),'YYYYMM')
                     );
       END IF;
     --插入 5 year ～ 的数据
@@ -777,8 +806,9 @@ BEGIN
                         SELECT PPD.PERSON_ID FROM PA_PARAM_DATA PPD
                         WHERE PPD.CPNY_ID = 'HTSV'
                            AND PPD.PARAM_NO = 1
-                           AND PPD.START_DATE <= V_PERIOD_END
-                           AND NVL(PPD.END_DATE, DATE '9999-12-31') >= V_PERIOD_START
+                           AND TO_CHAR(TO_DATE(IN_PAY_DATE,'YYYY/MM/DD'),'YYYYMM') BETWEEN
+                           TO_CHAR(TO_DATE(PPD.START_MONTH,'MM/YYYY'),'YYYYMM') AND
+                           TO_CHAR(TO_DATE(PPD.END_MONTH,'MM/YYYY'),'YYYYMM')
                     );
       END IF;
       IF ITEM_ROW.FULL_ATTEND > 0 THEN
@@ -799,8 +829,9 @@ BEGIN
                         SELECT PPD.PERSON_ID FROM PA_PARAM_DATA PPD
                         WHERE PPD.CPNY_ID = 'HTSV'
                            AND PPD.PARAM_NO = 7
-                           AND PPD.START_DATE <= V_PERIOD_END
-                           AND NVL(PPD.END_DATE, DATE '9999-12-31') >= V_PERIOD_START
+                           AND TO_CHAR(TO_DATE(IN_PAY_DATE,'YYYY/MM/DD'),'YYYYMM') BETWEEN
+                           TO_CHAR(TO_DATE(PPD.START_MONTH,'MM/YYYY'),'YYYYMM') AND
+                           TO_CHAR(TO_DATE(PPD.END_MONTH,'MM/YYYY'),'YYYYMM')
                     );
       END IF;
       IF ITEM_ROW.TRANSPORTATION > 0 THEN
@@ -821,8 +852,9 @@ BEGIN
                         SELECT PPD.PERSON_ID FROM PA_PARAM_DATA PPD
                         WHERE PPD.CPNY_ID = 'HTSV'
                            AND PPD.PARAM_NO = 5
-                           AND PPD.START_DATE <= V_PERIOD_END
-                           AND NVL(PPD.END_DATE, DATE '9999-12-31') >= V_PERIOD_START
+                           AND TO_CHAR(TO_DATE(IN_PAY_DATE,'YYYY/MM/DD'),'YYYYMM') BETWEEN
+                           TO_CHAR(TO_DATE(PPD.START_MONTH,'MM/YYYY'),'YYYYMM') AND
+                           TO_CHAR(TO_DATE(PPD.END_MONTH,'MM/YYYY'),'YYYYMM')
                     );
       END IF;
       IF ITEM_ROW.LONG_ATTENDANCE > 0 THEN
@@ -843,8 +875,9 @@ BEGIN
                         SELECT PPD.PERSON_ID FROM PA_PARAM_DATA PPD
                         WHERE PPD.CPNY_ID = 'HTSV'
                            AND PPD.PARAM_NO = 6
-                           AND PPD.START_DATE <= V_PERIOD_END
-                           AND NVL(PPD.END_DATE, DATE '9999-12-31') >= V_PERIOD_START
+                           AND TO_CHAR(TO_DATE(IN_PAY_DATE,'YYYY/MM/DD'),'YYYYMM') BETWEEN
+                           TO_CHAR(TO_DATE(PPD.START_MONTH,'MM/YYYY'),'YYYYMM') AND
+                           TO_CHAR(TO_DATE(PPD.END_MONTH,'MM/YYYY'),'YYYYMM')
                     );
       END IF;
 
@@ -868,8 +901,9 @@ BEGIN
                         SELECT PPD.PERSON_ID FROM PA_PARAM_DATA PPD
                         WHERE PPD.CPNY_ID = 'HTSV'
                            AND PPD.PARAM_NO = 1
-                           AND PPD.START_DATE <= V_PERIOD_END
-                           AND NVL(PPD.END_DATE, DATE '9999-12-31') >= V_PERIOD_START
+                           AND TO_CHAR(TO_DATE(IN_PAY_DATE,'YYYY/MM/DD'),'YYYYMM') BETWEEN
+                           TO_CHAR(TO_DATE(PPD.START_MONTH,'MM/YYYY'),'YYYYMM') AND
+                           TO_CHAR(TO_DATE(PPD.END_MONTH,'MM/YYYY'),'YYYYMM')
                     );
       END IF;
       IF ITEM_ROW.FULL_ATTEND > 0 THEN
@@ -889,8 +923,9 @@ BEGIN
                         SELECT PPD.PERSON_ID FROM PA_PARAM_DATA PPD
                         WHERE PPD.CPNY_ID = 'HTSV'
                            AND PPD.PARAM_NO = 7
-                           AND PPD.START_DATE <= V_PERIOD_END
-                           AND NVL(PPD.END_DATE, DATE '9999-12-31') >= V_PERIOD_START
+                           AND TO_CHAR(TO_DATE(IN_PAY_DATE,'YYYY/MM/DD'),'YYYYMM') BETWEEN
+                           TO_CHAR(TO_DATE(PPD.START_MONTH,'MM/YYYY'),'YYYYMM') AND
+                           TO_CHAR(TO_DATE(PPD.END_MONTH,'MM/YYYY'),'YYYYMM')
                     );
       END IF;
       IF ITEM_ROW.TRANSPORTATION > 0 THEN
@@ -910,8 +945,9 @@ BEGIN
                         SELECT PPD.PERSON_ID FROM PA_PARAM_DATA PPD
                         WHERE PPD.CPNY_ID = 'HTSV'
                            AND PPD.PARAM_NO = 5
-                           AND PPD.START_DATE <= V_PERIOD_END
-                           AND NVL(PPD.END_DATE, DATE '9999-12-31') >= V_PERIOD_START
+                           AND TO_CHAR(TO_DATE(IN_PAY_DATE,'YYYY/MM/DD'),'YYYYMM') BETWEEN
+                           TO_CHAR(TO_DATE(PPD.START_MONTH,'MM/YYYY'),'YYYYMM') AND
+                           TO_CHAR(TO_DATE(PPD.END_MONTH,'MM/YYYY'),'YYYYMM')
                     );
       END IF;
       IF ITEM_ROW.LONG_ATTENDANCE > 0 THEN
@@ -931,8 +967,9 @@ BEGIN
                         SELECT PPD.PERSON_ID FROM PA_PARAM_DATA PPD
                         WHERE PPD.CPNY_ID = 'HTSV'
                            AND PPD.PARAM_NO = 6
-                           AND PPD.START_DATE <= V_PERIOD_END
-                           AND NVL(PPD.END_DATE, DATE '9999-12-31') >= V_PERIOD_START
+                           AND TO_CHAR(TO_DATE(IN_PAY_DATE,'YYYY/MM/DD'),'YYYYMM') BETWEEN
+                           TO_CHAR(TO_DATE(PPD.START_MONTH,'MM/YYYY'),'YYYYMM') AND
+                           TO_CHAR(TO_DATE(PPD.END_MONTH,'MM/YYYY'),'YYYYMM')
                     );
       END IF;
     END IF;
